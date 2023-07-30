@@ -3,7 +3,6 @@ onnxruntime
 opencv_python
 pandas
 Pillow
-Pillow
 pyclipper
 Shapely
 streamlit
