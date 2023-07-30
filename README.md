@@ -1,5 +1,4 @@
-# Windrecorder
-A Rewind’s alternative for Windows platform
+# Windrecorder - A Rewind’s alternative for Windows platform
 It runs entirely locally, does not require an internet connection, and does not upload your personal data anywhere.
 
 **NOTE: This project is still under development and the availability of many features is not guaranteed.**
