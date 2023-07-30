@@ -1,0 +1,11 @@
+{
+    "record_screen_res": "3840x2160",
+    "target_screen_res": "scale=1920:1080",
+    "record_gap_time": 60,
+    "record_videos_dir": "videos",
+
+    "db_path": "./db",
+    "db_filename":"ocrSaved.db"
+
+
+}

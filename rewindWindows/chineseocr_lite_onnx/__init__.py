@@ -1,0 +1,1 @@
+__package__ = 'chineseocr_lite_onnx'  
