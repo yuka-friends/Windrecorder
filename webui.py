@@ -14,7 +14,6 @@ print("config.json:")
 print(config)
 
 db_path = config["db_path"]
-db_path = r'{}'.format(db_path)
 db_filename = config["db_filename"]
 db_filepath = db_path +"/"+ db_filename
 video_path = config["record_videos_dir"]
@@ -124,4 +123,3 @@ with tab2:
 
             timeCost=time.time() - timeCost
             st.write('Database Updated! Time cost: '+str(timeCost))
-        

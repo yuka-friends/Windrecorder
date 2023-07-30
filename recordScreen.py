@@ -5,7 +5,7 @@ import datetime
 import os
 import json
 
-ffmpeg_path = r'./ffmpeg.exe' 
+ffmpeg_path = 'ffmpeg' 
 
 with open('config.json') as f:
     config = json.load(f)
@@ -42,8 +42,10 @@ def record_screen(output_dir=config["record_videos_dir"],screen_res=config["reco
               '-t', str(gap_time), out_path]
         
         # 执行命令        
-        proc = subprocess.Popen(ffmpeg_cmd)
-        proc.wait()
+        try:
+            subprocess.run(ffmpeg_cmd)
+        except subprocess.CalledProcessError as ex:
+            print(f"[{ex.cmd}] failed with return code {ex.returncode}")
         
         # gaptime秒后继续 
         time.sleep(gap_time + 2)

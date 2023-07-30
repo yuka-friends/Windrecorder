@@ -11,7 +11,6 @@ print("config.json:")
 print(config)
 
 db_path = config["db_path"]
-db_path = r'{}'.format(db_path)
 db_filename = config["db_filename"]
 db_filepath = db_path +"/"+ db_filename
 

@@ -1,8 +1,0 @@
-numpy
-onnxruntime
-opencv_python
-pandas
-Pillow
-pyclipper
-Shapely
-streamlit

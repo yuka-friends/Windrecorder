@@ -21,7 +21,7 @@ Project Status: have very basic functions
 
 # 🦝 QuickStart
 
-- Get ffmpeg.exe and placed under Windrecorder folder.
+- Make sure you installed ffmpeg and it can be accessed from PATH.
 
 - Install dependencies: `pip install -r requirements.txt`
 
