@@ -14,6 +14,8 @@ Project Status: have very basic functions
 - [x] Continuously record screen with smaller file size.
 - [x] Extract unchanging frames in the file and ocr record them to the database.
 - [x] Provide basic webui for querying and updating database.
+- [ ] Better webui dashboard & control center
+- [ ] Automated operation
 - [ ] 🤔
 
 
