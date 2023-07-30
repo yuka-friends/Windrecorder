@@ -1,4 +1,4 @@
-# Windrecorder - A Rewind’s alternative for Windows platform
+# 🦝 Windrecorder - A Rewind’s alternative for Windows platform
 It runs entirely locally, does not require an internet connection, and does not upload your personal data anywhere.
 
 **NOTE: This project is still under development and the availability of many features is not guaranteed.**
@@ -12,7 +12,7 @@ Project Status: have very basic functions
 - [x] Provide basic webui for querying and updating database.
 - [ ] 🤔
 
-# QuickStart
+# 🦝 QuickStart
 - Get ffmpeg.exe and place under Windrecorder folder.
 - Install dependencies: `pip install -r requirements.txt`
 - Starting recording screen: `Python recordScreen.py`
