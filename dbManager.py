@@ -99,6 +99,26 @@ def db_print_all_data(db_filepath):
    conn.close()
 
 
+# 查询数据库一共有多少行
+def db_num_records(db_filepath):
+   print("——查询数据库一共有多少行")
+   conn = sqlite3.connect(db_filepath)
+   c = conn.cursor()
+   c.execute("SELECT COUNT(*) FROM video_text")
+   rows_count = c.fetchone()[0]
+   conn.close()
+   print(f"rows_count: {rows_count}")
+   return rows_count
+
+
+# 统计文件夹大小
+def file_how_big_videos_dir(dir):
+   size = 0
+   for root, dirs, files in os.walk(dir):
+      size += sum([os.path.getsize(os.path.join(root,name)) for name in files])
+   return size
+
+
 # 将输入的文件时间转为2000s秒数
 def date_to_seconds(date_str):
    print("——将输入的文件时间转为2000s秒数")
@@ -115,7 +135,7 @@ def date_to_seconds(date_str):
 def seconds_to_date(seconds):
    current_seconds = seconds + 946684800 # 2000/1/1 00:00:00 的秒数
    time_struct = time.localtime(current_seconds)
-   return time.strftime("%Y-%m-%d-%H-%M-%S", time_struct)
+   return time.strftime("%Y-%m-%d_%H-%M-%S", time_struct)
 
 
 # 获取表内最新的记录时间
