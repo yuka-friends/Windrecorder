@@ -1,11 +1,13 @@
 import streamlit as st
 import dbManager
-import pandas as pd
-import numpy as np
 import os
 import maintainManager
 import time
 import json
+
+update_button_key = "update_button"
+reset_button_key = "setting_reset"
+
 
 # python -m streamlit run webui.py
 with open('config.json') as f:
@@ -112,14 +114,25 @@ with tab1:
 
 
 
+def update_database_clicked():
+    st.session_state.update_button_disabled = True
+
 
 with tab2:
     st.header("Setting")
-    if st.button('Update Database',type="primary"):
-        with st.spinner("Updating Database... Don't press the button again until work done. You can see process on terminal. Estimated time:"):
-            timeCost=time.time()
-            # todo 给出预估剩余时间
-            maintainManager.maintain_manager_main()
 
-            timeCost=time.time() - timeCost
-            st.write('Database Updated! Time cost: '+str(timeCost))
+    if st.button('Update Database', type="primary", key='update_button_key', disabled=st.session_state.get("update_button_disabled", False), on_click=update_database_clicked):
+        try:
+            with st.spinner("Updating Database... You can see process on terminal. Estimated time:"):
+                timeCost=time.time()
+                # todo 给出预估剩余时间
+                maintainManager.maintain_manager_main()
+
+                timeCost=time.time() - timeCost
+        except Exception as ex:
+            st.write(f'Something went wrong!: {ex}')
+        else:
+            st.write(f'Database Updated! Time cost: {timeCost}')
+        finally:
+            st.session_state.update_button_disabled = False
+            st.button('Reset', key=reset_button_key)
