@@ -112,8 +112,6 @@ with tab1:
         else:
             st.write('Result about '+search_content)
             # 打表
-            format_dict = {'is_videofile_exist': ':checkbox'}
-            # st.dataframe(df, formatters=format_dict)
             st.dataframe(
                 df,
                 column_config={

@@ -86,15 +86,15 @@ def db_search_data(db_filepath,keyword_input):
 
 # 优化搜索数据结果的展示
 def db_refine_search_data(df):
-   print("优化搜索数据结果的展示")
+   print("——优化搜索数据结果的展示")
    df.drop('picturefile_name', axis=1, inplace=True)
    df.drop('is_picturefile_exist', axis=1, inplace=True)
 
    df.insert(1,'time_stamp',df['videofile_time'].apply(seconds_to_date))
-   df.drop('videofile_time', axis=1, inplace=True)
+   # df.drop('videofile_time', axis=1, inplace=True)
 
    df.insert(len(df.columns)-1,'videofile_name',df.pop('videofile_name'))
-
+   df.insert(len(df.columns)-1,'videofile_time',df.pop('videofile_time'))
    # df['is_videofile_exist'] = df['is_videofile_exist'].astype(str)
    return df
 
