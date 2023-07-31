@@ -1,12 +1,12 @@
-from config import *
-from crnn import CRNNHandle
-from angnet import  AngleNetHandle
-from utils import draw_bbox, crop_rect, sorted_boxes, get_rotate_crop_image
+from .config import *
+from .crnn import CRNNHandle
+from .angnet import  AngleNetHandle
+from .utils import draw_bbox, crop_rect, sorted_boxes, get_rotate_crop_image
 from PIL import Image
 import numpy as np
 import cv2
 import copy
-from dbnet.dbnet_infer import DBNET
+from .dbnet.dbnet_infer import DBNET
 import time
 import traceback
 
