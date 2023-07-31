@@ -43,9 +43,9 @@ def record_screen(output_dir=config["record_videos_dir"],screen_res=config["reco
         
         # 执行命令        
         try:
-            subprocess.run(ffmpeg_cmd)
+            subprocess.run(ffmpeg_cmd, check=True)
         except subprocess.CalledProcessError as ex:
-            print(f"[{ex.cmd}] failed with return code {ex.returncode}")
+            print(f"{ex.cmd} failed with return code {ex.returncode}")
         
         # gaptime秒后继续 
         time.sleep(gap_time + 2)
