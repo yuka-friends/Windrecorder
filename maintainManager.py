@@ -206,13 +206,19 @@ def maintain_manager_main():
     print(config)
 
     db_path = config["db_path"]
-    db_path = r'{}'.format(db_path)
     db_filename = config["db_filename"]
     db_filepath = db_path +"/"+ db_filename
+    record_videos_dir = config["record_videos_dir"]
+    i_frames_dir = 'i_frames'
+
+    if not os.path.exists(i_frames_dir):
+        os.mkdir(i_frames_dir)
+    if not os.path.exists(record_videos_dir):
+        os.mkdir(record_videos_dir)
 
     # 初始化一下数据库
     dbManager.db_main_initialize()
-    ocr_process_videos(config["record_videos_dir"],"i_frames",db_filepath)
+    ocr_process_videos(record_videos_dir,i_frames_dir,db_filepath)
 
     # 打印结果
     # dbManager.db_print_all_data(db_filepath)
