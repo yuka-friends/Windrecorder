@@ -111,14 +111,6 @@ def db_num_records(db_filepath):
    return rows_count
 
 
-# 统计文件夹大小
-def file_how_big_videos_dir(dir):
-   size = 0
-   for root, dirs, files in os.walk(dir):
-      size += sum([os.path.getsize(os.path.join(root,name)) for name in files])
-   return size
-
-
 # 将输入的文件时间转为2000s秒数
 def date_to_seconds(date_str):
    print("——将输入的文件时间转为2000s秒数")

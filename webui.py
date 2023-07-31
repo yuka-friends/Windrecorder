@@ -4,6 +4,7 @@ import os
 import maintainManager
 import time
 import json
+import utils
 
 update_button_key = "update_button"
 reset_button_key = "setting_reset"
@@ -76,7 +77,7 @@ def web_footer_state():
 
     latest_db_records = dbManager.db_num_records(db_filepath)
 
-    videos_file_size = round(dbManager.file_how_big_videos_dir(video_path)/(1024*1024*1024),3)
+    videos_file_size = round(utils.get_dir_size(video_path)/(1024*1024*1024),3)
 
     # webUI draw
     st.divider()
