@@ -26,7 +26,7 @@ angle_net_path = os.path.join(father_path, "models/angle_net.onnx")
 
 max_post_time = 100 # ip 访问最大次数
 
-from crnn.keys import alphabetChinese as alphabet
+from .crnn.keys import alphabetChinese as alphabet
 
 
 white_ips = [] #白名单
