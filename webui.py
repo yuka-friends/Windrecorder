@@ -4,6 +4,7 @@ import os
 import maintainManager
 import time
 import json
+import utils
 
 update_button_key = "update_button"
 reset_button_key = "setting_reset"
@@ -69,6 +70,19 @@ def choose_search_result_num(df):
         show_n_locate_video_timestamp(df,select_num)
 
 
+# footer状态信息
+def web_footer_state():
+    latest_record_time_int = dbManager.db_latest_record_time(db_filepath)
+    latest_record_time_str = dbManager.seconds_to_date(latest_record_time_int)
+
+    latest_db_records = dbManager.db_num_records(db_filepath)
+
+    videos_file_size = round(utils.get_dir_size(video_path)/(1024*1024*1024),3)
+
+    # webUI draw
+    st.divider()
+    st.markdown(f'Database latest record time: **{latest_record_time_str}**, Database records: **{latest_db_records}**, Video Files on disk: **{videos_file_size} GB**')
+
 
 
 # 主界面
@@ -104,13 +118,8 @@ with tab1:
         # os.startfile(first_videofile_path)
     # else:
         # st.write('Searching something.')
-
-    latest_record_time_int = dbManager.db_latest_record_time(db_filepath)
-    print("latest_record_time_int")
-    print(latest_record_time_int)
-    latest_record_time_str = dbManager.seconds_to_date(latest_record_time_int)
-    st.divider()
-    st.write('Database latest record time: ' + latest_record_time_str)
+    
+    web_footer_state()
 
 
 
