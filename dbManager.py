@@ -74,12 +74,28 @@ def db_update_data(db_filepath,videofile_name, picturefile_name, videofile_time,
 
 # 查询关键词数据
 def db_search_data(db_filepath,keyword_input):
+   print("——查询关键词数据")
    conn = sqlite3.connect(db_filepath)
    # cursor = conn.cursor()
    # cursor.execute("SELECT * FROM video_text WHERE ocr_text LIKE '%" + keyword_input + "%'")
    # results = cursor.fetchall()
    df = pd.read_sql_query("SELECT * FROM video_text WHERE ocr_text LIKE '%" + keyword_input + "%'",conn)
    conn.close()
+   return df
+
+
+# 优化搜索数据结果的展示
+def db_refine_search_data(df):
+   print("优化搜索数据结果的展示")
+   df.drop('picturefile_name', axis=1, inplace=True)
+   df.drop('is_picturefile_exist', axis=1, inplace=True)
+
+   df.insert(1,'time_stamp',df['videofile_time'].apply(seconds_to_date))
+   df.drop('videofile_time', axis=1, inplace=True)
+
+   df.insert(len(df.columns)-1,'videofile_name',df.pop('videofile_name'))
+
+   # df['is_videofile_exist'] = df['is_videofile_exist'].astype(str)
    return df
 
 
@@ -125,7 +141,7 @@ def date_to_seconds(date_str):
 
 # 将2000s秒数转为时间
 def seconds_to_date(seconds):
-   current_seconds = seconds + 946684800 # 2000/1/1 00:00:00 的秒数
+   current_seconds = seconds + 946684800 - 28800 # 2000/1/1 00:00:00 的秒数
    time_struct = time.localtime(current_seconds)
    return time.strftime("%Y-%m-%d_%H-%M-%S", time_struct)
 

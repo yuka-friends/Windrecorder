@@ -105,12 +105,31 @@ with tab1:
 
         # 获取数据
         df = dbManager.db_search_data(db_filepath,search_content)
+        df = dbManager.db_refine_search_data(df)
+
         if len(df) == 0:
             st.write('Nothing with ' + search_content)
         else:
             st.write('Result about '+search_content)
             # 打表
-            st.dataframe(df)
+            format_dict = {'is_videofile_exist': ':checkbox'}
+            # st.dataframe(df, formatters=format_dict)
+            st.dataframe(
+                df,
+                column_config={
+                    "is_videofile_exist": st.column_config.CheckboxColumn(
+                    "is_videofile_exist",
+                    help="Is video file existed?",
+                    default=False,
+                    ),
+
+                    "ocr_text": st.column_config.TextColumn(
+                    "ocr_text",
+                    help="Something I found!🎈",
+                    width="large"
+                    )
+                }
+            )
             # 选择视频
             choose_search_result_num(df)
 
@@ -144,4 +163,4 @@ with tab2:
             st.write(f'Database Updated! Time cost: {timeCost}')
         finally:
             st.session_state.update_button_disabled = False
-            st.button('Reset', key=reset_button_key)
+            st.button('Got it.', key=reset_button_key)
