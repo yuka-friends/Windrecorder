@@ -4,6 +4,8 @@ It runs entirely locally, does not require an internet connection, and does not 
 
 (What's Rewind: https://www.rewind.ai/)
 
+![Windrecorder](https://github.com/Antonoko/Windrecorder/blob/main/__assets__/preview.png)
+
 
 **NOTE: This project is still under development and the availability of many features is not guaranteed.**
 
