@@ -21,7 +21,7 @@ def record_screen(output_dir=config["record_videos_dir"],screen_res=config["reco
     while True:
         # 构建输出文件名 
         now = datetime.datetime.now()
-        out_name = now.strftime("%Y-%m-%d-%H-%M-%S") + ".mp4"
+        out_name = now.strftime("%Y-%m-%d_%H-%M-%S") + ".mp4"
         out_path = output_dir + "/" + out_name
 
         if not os.path.exists(output_dir):

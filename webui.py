@@ -22,10 +22,10 @@ db_filepath = db_path +"/"+ db_filename
 video_path = config["record_videos_dir"]
 
 st.set_page_config(
-     page_title="Wide screen",
-     page_icon="🦝",
-     layout="wide"
+     page_title="Windrecorder",
+     page_icon="🦝"
 )
+#      layout="wide"
 
 dbManager.db_main_initialize()
 
@@ -65,9 +65,10 @@ def choose_search_result_num(df):
     total_raw = df.shape[0]
     print("total_raw:" + str(total_raw))
     select_num = st.slider('rewind video', 0, total_raw - 1,0)
-    submit_btn = st.button('Locate Video')
-    if submit_btn:
-        show_n_locate_video_timestamp(df,select_num)
+    # submit_btn = st.button('Locate Video')
+    show_n_locate_video_timestamp(df,select_num)
+    # if submit_btn:
+        # show_n_locate_video_timestamp(df,select_num)
 
 
 # footer状态信息
@@ -86,7 +87,8 @@ def web_footer_state():
 
 
 # 主界面
-st.title('🦝 Windrecorder Dashboard')
+# st.title('🦝 Windrecorder Dashboard')
+st.markdown('### 🦝 Windrecorder Dashboard')
 
 
 
@@ -94,7 +96,7 @@ st.title('🦝 Windrecorder Dashboard')
 tab1, tab2 = st.tabs(["Search", "Setting"])
 
 with tab1:
-    st.header("Search")
+    # st.header("Search")
     
     # todo 指定搜索时间范围
     search_content = st.text_input('Search OCR Keyword', 'Hello')
@@ -110,7 +112,7 @@ with tab1:
         if len(df) == 0:
             st.write('Nothing with ' + search_content)
         else:
-            st.write('Result about '+search_content)
+            # st.write('Result about '+search_content)
             # 打表
             st.dataframe(
                 df,
@@ -163,7 +165,7 @@ with tab2:
         except Exception as ex:
             st.write(f'Something went wrong!: {ex}')
         else:
-            st.write(f'Database Updated! Time cost: {timeCost}')
+            st.write(f'Database Updated! Time cost: {timeCost}s')
         finally:
             st.session_state.update_button_disabled = False
             st.button('Got it.', key=reset_button_key)
