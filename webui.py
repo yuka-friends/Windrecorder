@@ -46,11 +46,14 @@ def show_n_locate_video_timestamp(df,num):
     vid_timestamp = calc_vid_inside_time(df,num)
     print("vid_timestamp: "+str(vid_timestamp))
 
+    st.session_state.vid_vid_timestamp = 0
+    st.session_state.vid_vid_timestamp = vid_timestamp
+    st.session_state.vid_vid_timestamp
     # 判断视频文件是否存在
     if os.path.isfile(videofile_path):
         video_file = open(videofile_path, 'rb')
         video_bytes = video_file.read()
-        st.video(video_bytes, start_time=vid_timestamp)
+        st.video(video_bytes, start_time=st.session_state.vid_vid_timestamp)
     else:
         st.markdown(f"Video File **{videofile_path}** not on disk.")
 
