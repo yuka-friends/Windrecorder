@@ -5,7 +5,8 @@
     "record_videos_dir": "videos",
 
     "db_path": "./db",
-    "db_filename":"ocrSaved.db"
+    "db_filename":"ocrSaved.db",
 
+    "search_max_num":"50"
 
 }

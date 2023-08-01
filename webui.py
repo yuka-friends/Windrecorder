@@ -5,6 +5,7 @@ import maintainManager
 import time
 import json
 import utils
+import datetime
 
 update_button_key = "update_button"
 reset_button_key = "setting_reset"
@@ -45,9 +46,13 @@ def show_n_locate_video_timestamp(df,num):
     vid_timestamp = calc_vid_inside_time(df,num)
     print("vid_timestamp: "+str(vid_timestamp))
 
-    video_file = open(videofile_path, 'rb')
-    video_bytes = video_file.read()
-    st.video(video_bytes, start_time=vid_timestamp)
+    # 判断视频文件是否存在
+    if os.path.isfile(videofile_path):
+        video_file = open(videofile_path, 'rb')
+        video_bytes = video_file.read()
+        st.video(video_bytes, start_time=vid_timestamp)
+    else:
+        st.markdown(f"Video File **{videofile_path}** not on disk.")
 
 
 # 计算视频对应时间戳
@@ -64,7 +69,7 @@ def choose_search_result_num(df):
     # shape是一个元组,索引0对应行数,索引1对应列数。
     total_raw = df.shape[0]
     print("total_raw:" + str(total_raw))
-    select_num = st.slider('rewind video', 0, total_raw - 1,0)
+    select_num = st.slider('Rewind Video', 0, total_raw - 1,0)
     # submit_btn = st.button('Locate Video')
     show_n_locate_video_timestamp(df,select_num)
     # if submit_btn:
@@ -86,27 +91,37 @@ def web_footer_state():
 
 
 
-# 主界面
-# st.title('🦝 Windrecorder Dashboard')
-st.markdown('### 🦝 Windrecorder Dashboard')
 
+
+# 主界面
+st.markdown('## 🦝 Windrecorder Dashboard')
 
 
 
 tab1, tab2 = st.tabs(["Search", "Setting"])
 
 with tab1:
-    # st.header("Search")
+
+    col1, col2 = st.columns([2,1])
+    with col1:
+        search_content = st.text_input('Search Keyword', 'Hello')
+        # 时间搜索范围组件
+        latest_record_time_int = dbManager.db_latest_record_time(db_filepath)
+    with col2:
+        search_date_range_in, search_date_range_out=st.date_input(
+            "Range",
+            (datetime.datetime(2000, 1, 1) + datetime.timedelta(seconds=latest_record_time_int) - datetime.timedelta(seconds=86400), datetime.datetime.now()),
+            format="YYYY-MM-DD"
+            )
     
-    # todo 指定搜索时间范围
-    search_content = st.text_input('Search OCR Keyword', 'Hello')
     search_cb = st.checkbox('Searching')
+    
 
     # if st.button('Search'):
     if search_cb:
 
         # 获取数据
-        df = dbManager.db_search_data(db_filepath,search_content)
+        df = dbManager.db_search_data(db_filepath,search_content,search_date_range_in,search_date_range_out)
         df = dbManager.db_refine_search_data(df)
 
         if len(df) == 0:
@@ -167,5 +182,6 @@ with tab2:
         else:
             st.write(f'Database Updated! Time cost: {timeCost}s')
         finally:
+            st.balloons()
             st.session_state.update_button_disabled = False
             st.button('Got it.', key=reset_button_key)
