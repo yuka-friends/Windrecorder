@@ -40,7 +40,7 @@ def db_initialize(db_filepath):
    if c.fetchone() is None:
       print("db is empty, write new table.")
       db_create_table(db_filepath)
-      db_update_data(db_filepath,'scaffold.mp4','scaffold.jpg', 1, 'Welcome! Go to Setting and Update your screen recording files.', False, False)
+      db_update_data(db_filepath,'scaffold.mp4','scaffold.jpg', 1, 'Welcome! Go to Setting and Update your screen recording files.', False, False,'base64')
    else:
       print("db existed and not empty")
 
@@ -55,19 +55,20 @@ def db_create_table(db_filepath):
                videofile_time INT, 
                ocr_text TEXT,
                is_videofile_exist BOOLEAN,
-               is_picturefile_exist BOOLEAN);''')
+               is_picturefile_exist BOOLEAN,
+               thumbnail TEXT);''')
    conn.close()
 
 
 # 插入数据 
-def db_update_data(db_filepath,videofile_name, picturefile_name, videofile_time, ocr_text, is_videofile_exist, is_picturefile_exist):
+def db_update_data(db_filepath,videofile_name, picturefile_name, videofile_time, ocr_text, is_videofile_exist, is_picturefile_exist, thumbnail):
    print("——插入数据")
    # 使用方法：db_update_data(db_filepath,'video1.mp4','iframe_0.jpg', 120, 'text from ocr', True, False)
    conn = sqlite3.connect(db_filepath)
    c = conn.cursor()
  
-   c.execute("INSERT INTO video_text (videofile_name, picturefile_name, videofile_time, ocr_text, is_videofile_exist, is_picturefile_exist) VALUES (?, ?, ?, ?, ?, ?)", 
-             (videofile_name, picturefile_name, videofile_time, ocr_text, is_videofile_exist, is_picturefile_exist))
+   c.execute("INSERT INTO video_text (videofile_name, picturefile_name, videofile_time, ocr_text, is_videofile_exist, is_picturefile_exist, thumbnail) VALUES (?, ?, ?, ?, ?, ?, ?)", 
+             (videofile_name, picturefile_name, videofile_time, ocr_text, is_videofile_exist, is_picturefile_exist,thumbnail))
    conn.commit()
    conn.close()
 
@@ -96,6 +97,10 @@ def db_refine_search_data(df):
    df.insert(len(df.columns)-1,'videofile_name',df.pop('videofile_name'))
    df.insert(len(df.columns)-1,'videofile_time',df.pop('videofile_time'))
    # df['is_videofile_exist'] = df['is_videofile_exist'].astype(str)
+
+   df['thumbnail'] = 'data:image/png;base64,' + df['thumbnail']
+   df.insert(0,'thumbnail',df.pop('thumbnail'))
+
    return df
 
 

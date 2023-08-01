@@ -125,7 +125,12 @@ with tab1:
                     "ocr_text",
                     help="Something I found!🎈",
                     width="large"
+                    ),
+
+                    "thumbnail": st.column_config.ImageColumn(
+                    "thumbnail", help="timestamp preview screenshots"
                     )
+
                 }
             )
             # 选择视频

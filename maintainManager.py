@@ -3,6 +3,7 @@ import numpy as np
 import os
 from chineseocr_lite_onnx.model import OcrHandle 
 from utils import empty_directory
+import base64
 
 import dbManager
 import json
@@ -98,6 +99,26 @@ def compare_image_similarity(img_path1, img_path2, threshold=0.7):
         return False
 
 
+# 将图片缩小到等比例、宽度为70px的thumbnail，并返回base64
+def resize_imahe_as_base64(img_path):
+    img = cv2.imread(img_path)
+
+    # 计算缩放比例,使宽度为70
+    ratio = 70 / img.shape[1]
+    dim = (70, int(img.shape[0] * ratio))
+    
+    # 进行缩放
+    resized = cv2.resize(img, dim, interpolation=cv2.INTER_AREA)
+    
+    # 编码为JPEG格式,质量为30
+    encode_param = [int(cv2.IMWRITE_JPEG_QUALITY), 10]
+    _, encimg = cv2.imencode('.jpg', resized, encode_param)
+    
+    # 转为base64字符串
+    img_b64 = base64.b64encode(encimg).decode('utf-8')
+    return img_b64
+
+
 # 处理视频的流程
 def ocr_process_videos(video_path,iframe_path,db_filepath):
     print("——处理视频的流程")
@@ -162,7 +183,9 @@ def ocr_process_videos(video_path,iframe_path,db_filepath):
                 calc_to_sec_vidname = os.path.splitext(vid_file_name)[0]
                 calc_to_sec_picname = round(int(os.path.splitext(img_file_name)[0]) / 2)
                 calc_to_sec_data = dbManager.date_to_seconds(calc_to_sec_vidname) + calc_to_sec_picname
-                dbManager.db_update_data(db_filepath,vid_file_name,img_file_name,calc_to_sec_data, ocr_result_stringB,True,False)
+                # 计算图片预览图
+                img_thumbnail = resize_imahe_as_base64(img)
+                dbManager.db_update_data(db_filepath,vid_file_name,img_file_name,calc_to_sec_data, ocr_result_stringB,True,False,img_thumbnail)
                 dbManager.db_print_all_data(db_filepath)
                 ocr_result_stringA = ocr_result_stringB
 
