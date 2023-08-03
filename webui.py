@@ -21,6 +21,11 @@ db_path = config["db_path"]
 db_filename = config["db_filename"]
 db_filepath = db_path +"/"+ db_filename
 video_path = config["record_videos_dir"]
+lang = config["lang"]
+
+with open("languages.json", encoding='utf-8') as f:
+    d_lang = json.load(f)
+
 
 st.set_page_config(
      page_title="Windrecorder",
@@ -102,6 +107,22 @@ def web_db_check_folder_marked_file(folder_path):
     return count, nocred_count
 
 
+# 更改语言
+def config_set_lang(lang):
+    with open('config.json') as f:
+        config = json.load(f)
+    
+    if lang == "English":
+        config['lang'] = "en"
+    elif lang == "简体中文":
+        config['lang'] = "zh"
+    
+    with open('config.json', 'w') as f:
+        json.dump(config, f) 
+    
+    
+
+
 
 # footer状态信息
 def web_footer_state():
@@ -124,27 +145,27 @@ def web_footer_state():
 
 
 # 主界面_________________________________________________________
-st.markdown('## 🦝 Windrecorder Dashboard')
+st.markdown(d_lang[lang]["main_title"])
 
 
 
-tab1, tab2, tab3 = st.tabs(["Search", "Recording", "Setting"])
+tab1, tab2, tab3 = st.tabs([d_lang[lang]["tab_name_search"], d_lang[lang]["tab_name_recording"], d_lang[lang]["tab_name_setting"]])
 
 with tab1:
 
     
     col1,col2 = st.columns([1,2])
     with col1:
-        st.markdown("## Search")
+        st.markdown(d_lang[lang]["tab_search_title"])
 
         col1a,col2a = st.columns([3,2])
         with col1a:
-            search_content = st.text_input('Search Keyword', 'Hello')
+            search_content = st.text_input(d_lang[lang]["tab_search_compname"], 'Hello')
         with col2a:
             # 时间搜索范围组件
             latest_record_time_int = dbManager.db_latest_record_time(db_filepath)
             search_date_range_in, search_date_range_out=st.date_input(
-                "Date Range",
+                d_lang[lang]["tab_search_daterange"],
                 (datetime.datetime(2000, 1, 1) + datetime.timedelta(seconds=latest_record_time_int) - datetime.timedelta(seconds=86400), datetime.datetime.now()),
                 format="YYYY-MM-DD"
                 )
@@ -163,7 +184,7 @@ with tab1:
         result_choose_num = choose_search_result_num(df,is_df_result_exist)
 
         if len(df) == 0:
-            st.write(f'Nothing with "{search_content}".')
+            st.write(d_lang[lang]["tab_search_word_no"].format(search_content=search_content))
 
         else:
             # st.write('Result about '+search_content)
@@ -237,8 +258,10 @@ with tab3:
         # 选择语言
         st.markdown("### Interface\n")
         language_option = st.selectbox(
-        'Interface Language / 更改界面显示语言',
-        ('English', '简体中文'))
+            'Interface Language / 更改界面显示语言',
+            ('English', '简体中文'))
+        config_set_lang(language_option)
+        st.button('Update Language',type="secondary")
     
 
 

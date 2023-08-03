@@ -1,0 +1,25 @@
+{
+    "en": {
+        "tab_search_title": "## Search", 
+        "main_title": "## 🦝 Windrecorder Dashboard",
+        "tab_name_search": "Search",
+        "tab_name_recording": "Recording",
+        "tab_name_setting": "Setting",
+        "tab_search_compname": "Search Keyword",
+        "tab_search_daterange": "Date Range",
+        "tab_search_word_no": "Nothing with \"{search_content}\"."
+
+    },
+  
+    "zh": {  
+        "tab_search_title": "### 搜索",
+        "main_title": "## 🦝 抽风搜索",
+        "tab_name_search": "搜索",
+        "tab_name_recording": "录制状态",
+        "tab_name_setting": "设置",
+        "tab_search_compname": "搜索关键词",
+        "tab_search_daterange": "日期范围",
+        "tab_search_word_no": "没有找到 \"{search_content}\"。"
+
+    }
+}
