@@ -69,8 +69,8 @@ def calc_vid_inside_time(df,num):
 
 
 # 选择播放视频的行数 的滑杆组件
-def choose_search_result_num(df):
-    if is_df_result_exist:
+def choose_search_result_num(df,is_df_result_exist):
+    if not is_df_result_exist == 0:
         # shape是一个元组,索引0对应行数,索引1对应列数。
         total_raw = df.shape[0]
         print("total_raw:" + str(total_raw))
@@ -85,8 +85,10 @@ def web_db_state_info_before():
     count, nocred_count = web_db_check_folder_marked_file(video_path)
     if nocred_count>0:
         st.warning(f' {nocred_count} Video Files need to index. ({count} files total on disk.)',icon='🧭')
+        return True
     else:
         st.success(f'No Video Files need to index. ({count} files total on disk.)',icon='✅')
+        return False
 
 
 # 检查 videos 文件夹内有无以"-OCRED"结尾的视频
@@ -133,6 +135,7 @@ with tab1:
     
     col1,col2 = st.columns([1,2])
     with col1:
+        st.markdown("## Search")
 
         col1a,col2a = st.columns([3,2])
         with col1a:
@@ -154,19 +157,17 @@ with tab1:
         # 获取数据
         df = dbManager.db_search_data(db_filepath,search_content,search_date_range_in,search_date_range_out)
         df = dbManager.db_refine_search_data(df)
-        is_df_result_exist = False
+        is_df_result_exist = len(df)
 
         # 滑杆选择
-        result_choose_num = choose_search_result_num(df)
+        result_choose_num = choose_search_result_num(df,is_df_result_exist)
 
         if len(df) == 0:
             st.write(f'Nothing with "{search_content}".')
-            is_df_result_exist = False
 
         else:
             # st.write('Result about '+search_content)
             # 打表
-            is_df_result_exist = True
             st.dataframe(
                 df,
                 column_config={
@@ -187,7 +188,7 @@ with tab1:
                     )
 
                 },
-                height = 800
+                height = 700
             )
 
     with col2:
@@ -213,7 +214,7 @@ with tab3:
     with col1b:
         # 更新数据库
         st.markdown("### Datebase\n")
-        web_db_state_info_before()
+        need_to_update_db = web_db_state_info_before()
         if st.button('Update Database', type="primary", key='update_button_key', disabled=st.session_state.get("update_button_disabled", False), on_click=update_database_clicked):
             try:
                 with st.spinner("Updating Database... You can see process on terminal. Estimated time:"):
