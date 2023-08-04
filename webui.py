@@ -25,6 +25,17 @@ lang = config["lang"]
 
 with open("languages.json", encoding='utf-8') as f:
     d_lang = json.load(f)
+lang_map = d_lang['lang_map']
+
+# 获取配置中语言选项是第几位；使设置选择项能匹配
+def get_language_index(lang,data):
+  for i, l in enumerate(data):
+    if l == lang:
+      return i
+  return 1
+
+lang_index = get_language_index(lang,d_lang)
+
 
 
 st.set_page_config(
@@ -36,7 +47,7 @@ st.set_page_config(
 dbManager.db_main_initialize()
 
 
-# 将数据库的视频名加上OCRED标志，使之能正常读取到
+# 将数据库的视频名加上-OCRED标志，使之能正常读取到
 def combine_vid_name_withOCR(video_name):
     vidname = os.path.splitext(video_name)[0] + "-OCRED" + os.path.splitext(video_name)[1]
     return vidname
@@ -79,7 +90,8 @@ def choose_search_result_num(df,is_df_result_exist):
         # shape是一个元组,索引0对应行数,索引1对应列数。
         total_raw = df.shape[0]
         print("total_raw:" + str(total_raw))
-        select_num = st.slider('Rewind Video', 0, total_raw - 1,0)
+        # 使用滑杆选择视频
+        select_num = st.slider(d_lang[lang]["def_search_slider"], 0, total_raw - 1,0)
         return select_num
     else:
         return 0
@@ -89,10 +101,12 @@ def choose_search_result_num(df,is_df_result_exist):
 def web_db_state_info_before():
     count, nocred_count = web_db_check_folder_marked_file(video_path)
     if nocred_count>0:
-        st.warning(f' {nocred_count} Video Files need to index. ({count} files total on disk.)',icon='🧭')
+        # st.warning(f' {nocred_count} Video Files need to index. ({count} files total on disk.)',icon='🧭')
+        st.warning(d_lang[lang]["tab_setting_db_state1"].format(nocred_count=nocred_count,count=count),icon='🧭')
         return True
     else:
-        st.success(f'No Video Files need to index. ({count} files total on disk.)',icon='✅')
+        # st.success(f'No Video Files need to index. ({count} files total on disk.)',icon='✅')
+        st.success(d_lang[lang]["tab_setting_db_state2"].format(nocred_count=nocred_count,count=count),icon='✅')
         return False
 
 
@@ -108,15 +122,19 @@ def web_db_check_folder_marked_file(folder_path):
 
 
 # 更改语言
-def config_set_lang(lang):
+def config_set_lang(lang_name):
+    INVERTED_LANG_MAP = {v: k for k, v in lang_map.items()}
+    lang_code = INVERTED_LANG_MAP.get(lang_name)
+    
+    if not lang_code:
+        print(f"Invalid language name: {lang_name}")
+        return
+
     with open('config.json') as f:
         config = json.load(f)
-    
-    if lang == "English":
-        config['lang'] = "en"
-    elif lang == "简体中文":
-        config['lang'] = "zh"
-    
+
+    config['lang'] = lang_code
+
     with open('config.json', 'w') as f:
         json.dump(config, f) 
     
@@ -135,7 +153,8 @@ def web_footer_state():
 
     # webUI draw
     st.divider()
-    st.markdown(f'Database latest record time: **{latest_record_time_str}**, Database records: **{latest_db_records}**, Video Files on disk: **{videos_file_size} GB**')
+    # st.markdown(f'Database latest record time: **{latest_record_time_str}**, Database records: **{latest_db_records}**, Video Files on disk: **{videos_file_size} GB**')
+    st.markdown(d_lang[lang]["footer_info"].format(latest_record_time_str=latest_record_time_str,latest_db_records=latest_db_records,videos_file_size=videos_file_size))
 
 
 
@@ -194,18 +213,19 @@ with tab1:
                 column_config={
                     "is_videofile_exist": st.column_config.CheckboxColumn(
                     "is_videofile_exist",
-                    help="Is video file existed?",
+                    help=d_lang[lang]["tab_search_table_help1"],
                     default=False,
                     ),
 
                     "ocr_text": st.column_config.TextColumn(
                     "ocr_text",
-                    help="Something I found!🎈",
+                    help=d_lang[lang]["tab_search_table_help2"],
                     width="large"
                     ),
 
                     "thumbnail": st.column_config.ImageColumn(
-                    "thumbnail", help="timestamp preview screenshots"
+                    "thumbnail", 
+                    help=d_lang[lang]["tab_search_table_help3"]
                     )
 
                 },
@@ -226,48 +246,51 @@ def update_database_clicked():
     st.session_state.update_button_disabled = True
 
 with tab2:
-    st.markdown("## Recording State")
+    st.markdown(d_lang[lang]["tab_record_title"])
 
 with tab3:
-    st.markdown("## Setting")
+    st.markdown(d_lang[lang]["tab_setting_title"])
 
     col1b,col2b = st.columns([1,3])
     with col1b:
         # 更新数据库
-        st.markdown("### Datebase\n")
+        st.markdown(d_lang[lang]["tab_setting_db_title"])
         need_to_update_db = web_db_state_info_before()
-        if st.button('Update Database', type="primary", key='update_button_key', disabled=st.session_state.get("update_button_disabled", False), on_click=update_database_clicked):
+        if st.button(d_lang[lang]["tab_setting_db_btn"], type="primary", key='update_button_key', disabled=st.session_state.get("update_button_disabled", False), on_click=update_database_clicked):
             try:
-                with st.spinner("Updating Database... You can see process on terminal. Estimated time:"):
+                with st.spinner(d_lang[lang]["tab_setting_db_tip1"]):
                     timeCost=time.time()
                     # todo 给出预估剩余时间
                     maintainManager.maintain_manager_main()
 
                     timeCost=time.time() - timeCost
             except Exception as ex:
-                st.write(f'Something went wrong!: {ex}')
+                st.write(d_lang[lang]["tab_setting_db_tip2"].format(ex=ex))
+                # st.write(f'Something went wrong!: {ex}')
             else:
-                st.write(f'Database Updated! Time cost: {timeCost}s')
+                st.write(d_lang[lang]["tab_setting_db_tip3"].format(timeCost=timeCost))
+                # st.write(f'Database Updated! Time cost: {timeCost}s')
             finally:
                 st.snow()
                 st.session_state.update_button_disabled = False
-                st.button('Got it.', key=reset_button_key)
+                st.button(d_lang[lang]["tab_setting_db_btn_gotit"], key=reset_button_key)
 
         st.divider()
 
         # 选择语言
-        st.markdown("### Interface\n")
+        # todo: 配置化
+        st.markdown(d_lang[lang]["tab_setting_i18n_title"])
         language_option = st.selectbox(
             'Interface Language / 更改界面显示语言',
-            ('English', '简体中文'))
+            ('English', '简体中文'),
+            index=lang_index)
         config_set_lang(language_option)
-        st.button('Update Language',type="secondary")
+        st.button('Update Language / 更改语言',type="secondary")
     
 
 
     with col2b:
-        print("col2b")
-
+        st.write("WIP")
 
 
 
