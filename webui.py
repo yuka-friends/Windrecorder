@@ -6,6 +6,7 @@ import time
 import json
 import utils
 import datetime
+from collections import OrderedDict
 
 update_button_key = "update_button"
 reset_button_key = "setting_reset"
@@ -280,9 +281,10 @@ with tab3:
         # 选择语言
         # todo: 配置化
         st.markdown(d_lang[lang]["tab_setting_i18n_title"])
+        lang_choice = OrderedDict((k, ''+v) for k,v in lang_map.items())
         language_option = st.selectbox(
             'Interface Language / 更改界面显示语言',
-            ('English', '简体中文'),
+            (list(lang_choice.values())),
             index=lang_index)
         config_set_lang(language_option)
         st.button('Update Language / 更改语言',type="secondary")
@@ -291,6 +293,7 @@ with tab3:
 
     with col2b:
         st.write("WIP")
+
 
 
 
