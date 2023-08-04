@@ -1,6 +1,6 @@
 {
     "en": {
-        "tab_search_title": "## Search", 
+        "tab_search_title": "### Search", 
         "main_title": "## 🦝 Windrecorder Dashboard",
         "tab_name_search": "Search",
         "tab_name_recording": "Recording",
@@ -11,9 +11,9 @@
         "tab_search_table_help1": "Is video file existed?",
         "tab_search_table_help2": "Something I found!🎈",
         "tab_search_table_help3": "timestamp preview screenshots",
-        "tab_record_title": "## Recording State",
-        "tab_setting_title": "## Setting",
-        "tab_setting_db_title": "### Datebase\n",
+        "tab_record_title": "### Recording State",
+        "tab_setting_title": "### Setting",
+        "tab_setting_db_title": "#### Datebase\n",
         "tab_setting_db_state1":" {nocred_count} Video Files need to index. ({count} files total on disk.)",
         "tab_setting_db_state2":"No Video Files need to index. ({count} files total on disk.)",
         "tab_setting_db_state3":"",
@@ -22,10 +22,13 @@
         "tab_setting_db_tip2": "Something went wrong!: {ex}",
         "tab_setting_db_tip3": "Database Updated! Time cost: {timeCost}s",
         "tab_setting_db_btn_gotit": "Got it.",
-        "tab_setting_i18n_title": "### Interface\n",
+        "tab_setting_ui_title": "#### Interface\n",
+        "tab_setting_ui_result_num": "Maximum display results pre page",
         "def_search_slider": "Rewind Video",
-        "footer_info": "Database latest record time: **{latest_record_time_str}**, Database records: **{latest_db_records}**, Video Files on disk: **{videos_file_size} GB**"
-
+        "footer_info": "Database latest record time: **{latest_record_time_str}**, Database records: **{latest_db_records}**, Video Files on disk: **{videos_file_size} GB**",
+        "tab_setting_maintain_title":"#### Automated Maintainer",
+        "tab_setting_m_vid_store_time":"Video files retention time (days)",
+        "tab_setting_m_enable_vd":"OCR: Enable Graphic Card Acceleration"
 
 
     },
@@ -42,20 +45,24 @@
         "tab_search_table_help1": "视频文件是否存在",
         "tab_search_table_help2": "看我找到了什么！🎈",
         "tab_search_table_help3": "时间戳的小预览图",
-        "tab_record_title": "## 录制状态",
-        "tab_setting_title": "## 设置",
-        "tab_setting_db_title": "### 数据库\n",
+        "tab_record_title": "### 录制状态",
+        "tab_setting_title": "### 设置",
+        "tab_setting_db_title": "#### 数据库\n",
         "tab_setting_db_state1":"有 {nocred_count} 个视频等待索引。 (磁盘上有 {count}个文件。)",
-        "tab_setting_db_state2":"没有新视频需要被索引啦。  (磁盘上有 {count}个文件。)",
+        "tab_setting_db_state2":"暂时没有新视频需要索引啦。  (磁盘上有 {count}个文件。)",
         "tab_setting_db_state3":"",
         "tab_setting_db_btn": "更新数据库",
-        "tab_setting_db_tip1": "更新数据库中，请不要与界面交互。你可以在后台命令行界面看到更新过程。预估剩余时间：",
+        "tab_setting_db_tip1": "更新数据库中，请不要与界面交互、或者刷新界面。你可以在后台命令行界面看到更新过程。预估剩余时间：",
         "tab_setting_db_tip2": "哎呀出错了…… 错误信息: {ex}",
         "tab_setting_db_tip3": "数据库更新成功！用时： {timeCost}s",
         "tab_setting_db_btn_gotit": "我知道了",
-        "tab_setting_i18n_title": "### 界面\n",
+        "tab_setting_ui_title": "#### 界面\n",
+        "tab_setting_ui_result_num": "每页显示结果的最大数量",
         "def_search_slider": "回溯桌面",
-        "footer_info": "最新的数据时间： **{latest_record_time_str}**， 数据库记录了行数： **{latest_db_records}**，视频文件占用空间： **{videos_file_size} GB**"
+        "footer_info": "最新的数据时间： **{latest_record_time_str}**， 数据库记录了行数： **{latest_db_records}**，视频文件占用空间： **{videos_file_size} GB**",
+        "tab_setting_maintain_title": "#### 自动化维护",
+        "tab_setting_m_vid_store_time":"视频文件保留时长（天）",
+        "tab_setting_m_enable_vd":"OCR 识别：启用显卡加速"
     },
 
     "lang_map": {

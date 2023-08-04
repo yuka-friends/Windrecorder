@@ -249,6 +249,15 @@ def update_database_clicked():
 with tab2:
     st.markdown(d_lang[lang]["tab_record_title"])
 
+    col1c,col2c = st.columns([1,3])
+    with col1c:
+        st.write("WIP")
+    
+    with col2c:
+        st.write("WIP")
+
+
+
 with tab3:
     st.markdown(d_lang[lang]["tab_setting_title"])
 
@@ -276,14 +285,25 @@ with tab3:
                 st.session_state.update_button_disabled = False
                 st.button(d_lang[lang]["tab_setting_db_btn_gotit"], key=reset_button_key)
 
+
+        st.divider()
+
+        # 自动化维护选项 WIP
+        st.markdown(d_lang[lang]["tab_setting_maintain_title"])
+        config_vid_store_day = st.number_input(d_lang[lang]["tab_setting_m_vid_store_time"],min_value=1,value=90)
+        config_is_ocr_vc_enable = st.checkbox(d_lang[lang]["tab_setting_m_enable_vd"],value=False)
+        
+
         st.divider()
 
         # 选择语言
-        # todo: 配置化
-        st.markdown(d_lang[lang]["tab_setting_i18n_title"])
+        st.markdown(d_lang[lang]["tab_setting_ui_title"])
+
+        config_search_num = st.number_input(d_lang[lang]["tab_setting_ui_result_num"],min_value=1,max_value=500,value=50)
+
         lang_choice = OrderedDict((k, ''+v) for k,v in lang_map.items())
         language_option = st.selectbox(
-            'Interface Language / 更改界面显示语言',
+            'Interface Language / 更改显示语言',
             (list(lang_choice.values())),
             index=lang_index)
         config_set_lang(language_option)
