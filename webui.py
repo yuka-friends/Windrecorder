@@ -86,16 +86,32 @@ def calc_vid_inside_time(df,num):
 
 
 # 选择播放视频的行数 的滑杆组件
+
 def choose_search_result_num(df,is_df_result_exist):
-    if not is_df_result_exist == 0:
+    select_num = 0
+
+    if is_df_result_exist == 1:
+        # 如果结果只有一个，直接显示结果而不显示滑杆
+        return 0
+    elif not is_df_result_exist == 0:
         # shape是一个元组,索引0对应行数,索引1对应列数。
         total_raw = df.shape[0]
         print("total_raw:" + str(total_raw))
+
         # 使用滑杆选择视频
-        select_num = st.slider(d_lang[lang]["def_search_slider"], 0, total_raw - 1,0)
+        col1,col2 = st.columns([5,1])
+        with col1:
+            select_num = st.slider(d_lang[lang]["def_search_slider"], 0, total_raw - 1,select_num)
+        with col2:
+            select_num = st.number_input(d_lang[lang]["def_search_slider"],label_visibility="hidden",min_value=0,max_value=total_raw - 1,value=select_num)
+    
         return select_num
     else:
         return 0
+
+
+
+
 
 
 # 数据库的前置索引状态提示
@@ -137,9 +153,20 @@ def config_set_lang(lang_name):
     config['lang'] = lang_code
 
     with open('config.json', 'w') as f:
+        json.dump(config, f)
+
+
+# 更改config文件项目
+def config_set(name,value):
+    with open('config.json') as f:
+        config = json.load(f)
+
+    config[name] = value
+
+    with open('config.json', 'w') as f:
         json.dump(config, f) 
-    
-    
+
+
 
 
 
@@ -238,13 +265,7 @@ with tab1:
         show_n_locate_video_timestamp(df,result_choose_num)
 
 
-    
-    web_footer_state()
 
-
-
-def update_database_clicked():
-    st.session_state.update_button_disabled = True
 
 with tab2:
     st.markdown(d_lang[lang]["tab_record_title"])
@@ -252,11 +273,22 @@ with tab2:
     col1c,col2c = st.columns([1,3])
     with col1c:
         st.write("WIP")
+        st.success("正在持续录制屏幕……",icon="🦚")
+        st.error("录制服务未启用。当前未在录制屏幕。",icon="🦫")
+        st.warning("录制服务已启用。当前暂停录制屏幕。",icon="🦫")
+        st.button('开始持续录制',type="primary")
+        st.button('停止录制屏幕',type="secondary")
+        st.checkbox('开机后自动开始录制',value=False)
+        st.checkbox('当鼠标一段时间没有移动时暂停录制，直到鼠标开始移动',value=False)
+        st.number_input('鼠标停止移动的第几分钟暂停录制',value=5,min_value=1)
     
     with col2c:
         st.write("WIP")
 
 
+
+def update_database_clicked():
+    st.session_state.update_button_disabled = True
 
 with tab3:
     st.markdown(d_lang[lang]["tab_setting_title"])
@@ -266,7 +298,16 @@ with tab3:
         # 更新数据库
         st.markdown(d_lang[lang]["tab_setting_db_title"])
         need_to_update_db = web_db_state_info_before()
-        if st.button(d_lang[lang]["tab_setting_db_btn"], type="primary", key='update_button_key', disabled=st.session_state.get("update_button_disabled", False), on_click=update_database_clicked):
+
+        col1,col2 = st.columns([1,1])
+        with col1:
+            update_db_btn = st.button(d_lang[lang]["tab_setting_db_btn"], type="primary", key='update_button_key', disabled=st.session_state.get("update_button_disabled", False), on_click=update_database_clicked)
+        with col2:
+            st.checkbox('更新完毕后关闭计算机',value=False)
+            st.selectbox('本地 OCR 引擎',('Windows.Media.Ocr.Cli','ChineseOCR_lite_onnx'))
+        
+        
+        if update_db_btn:
             try:
                 with st.spinner(d_lang[lang]["tab_setting_db_tip1"]):
                     timeCost=time.time()
@@ -290,24 +331,30 @@ with tab3:
 
         # 自动化维护选项 WIP
         st.markdown(d_lang[lang]["tab_setting_maintain_title"])
+        st.selectbox('OCR 索引策略',
+             ('计算机空闲时自动索引','每录制完一个视频切片就自动更新一次','不自动更新，仅手动更新')
+             )
         config_vid_store_day = st.number_input(d_lang[lang]["tab_setting_m_vid_store_time"],min_value=1,value=90)
-        config_is_ocr_vc_enable = st.checkbox(d_lang[lang]["tab_setting_m_enable_vd"],value=False)
-        
+
 
         st.divider()
 
         # 选择语言
         st.markdown(d_lang[lang]["tab_setting_ui_title"])
 
-        config_search_num = st.number_input(d_lang[lang]["tab_setting_ui_result_num"],min_value=1,max_value=500,value=50)
-
+        config_max_search_result_num = st.number_input(d_lang[lang]["tab_setting_ui_result_num"],min_value=1,max_value=500,value=config["max_page_result"])
+        
         lang_choice = OrderedDict((k, ''+v) for k,v in lang_map.items())
         language_option = st.selectbox(
             'Interface Language / 更改显示语言',
             (list(lang_choice.values())),
             index=lang_index)
-        config_set_lang(language_option)
-        st.button('Update Language / 更改语言',type="secondary")
+        
+        if st.button('Apple Change / 应用更改',type="secondary"):
+            config_set_lang(language_option)
+            config_set("max_page_result",config_max_search_result_num)
+            st.toast("已应用更改。",icon="🦝")
+            st.experimental_rerun()
     
 
 
@@ -316,4 +363,4 @@ with tab3:
 
 
 
-
+web_footer_state()

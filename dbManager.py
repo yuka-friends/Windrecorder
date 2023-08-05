@@ -13,7 +13,7 @@ print(config)
 db_path = config["db_path"]
 db_filename = config["db_filename"]
 db_filepath = db_path +"/"+ db_filename
-db_search_max_num = int(config["search_max_num"])
+db_max_page_result = int(config["max_page_result"])
 
 
 # 初始化数据库：检查、创建、连接数据库对象
@@ -80,7 +80,7 @@ def db_search_data(db_filepath,keyword_input,date_in,date_out):
    date_in_ts = int(date_to_seconds(date_in.strftime("%Y-%m-%d_00-00-00")))
    date_out_ts = int(date_to_seconds(date_out.strftime("%Y-%m-%d_23-59-59")))
    conn = sqlite3.connect(db_filepath)
-   df = pd.read_sql_query(f"SELECT * FROM video_text WHERE ocr_text LIKE '%{keyword_input}%' AND videofile_time BETWEEN {date_in_ts} AND {date_out_ts} LIMIT {db_search_max_num}",conn)
+   df = pd.read_sql_query(f"SELECT * FROM video_text WHERE ocr_text LIKE '%{keyword_input}%' AND videofile_time BETWEEN {date_in_ts} AND {date_out_ts} LIMIT {db_max_page_result}",conn)
    conn.close()
    return df
 

@@ -8,6 +8,12 @@ import base64
 import dbManager
 import json
 
+with open('config.json') as f:
+    config = json.load(f)
+print("config.json:")
+print(config)
+# ocr_short_side = int(config["ocr_short_size"])
+
 
 # 提取视频i帧
 # todo - 加入检测视频是否为合法视频?
@@ -42,12 +48,13 @@ def ocr_image(img_input):
     # 读取图片,并调用text_predict()方法进行OCR识别
     img = cv2.imread(img_input)
     results = ocr_handle.text_predict(img,short_size=768)
+    # results = ocr_handle.text_predict(img,short_size=ocr_short_side)
     # text_predict()方法需要传入图像和短边大小,它会处理图像,执行DBNET文本检测和CRNN文本识别,并返回结果列表。
     ocr_sentence_result = ""
 
     # 每个结果包含[文本框坐标, 识别文字, 置信度分数]。
     for box,text,score in results:
-        print(box,text,score)
+        # print(box,text,score)
         ocr_sentence_result = ocr_sentence_result + "," + text
 
     print("ocr_sentence_result:")
