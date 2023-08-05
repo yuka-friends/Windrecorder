@@ -302,29 +302,35 @@ with tab3:
         col1,col2 = st.columns([1,1])
         with col1:
             update_db_btn = st.button(d_lang[lang]["tab_setting_db_btn"], type="primary", key='update_button_key', disabled=st.session_state.get("update_button_disabled", False), on_click=update_database_clicked)
-        with col2:
             st.checkbox('更新完毕后关闭计算机',value=False)
-            st.selectbox('本地 OCR 引擎',('Windows.Media.Ocr.Cli','ChineseOCR_lite_onnx'))
-        
-        
-        if update_db_btn:
-            try:
-                with st.spinner(d_lang[lang]["tab_setting_db_tip1"]):
-                    timeCost=time.time()
-                    # todo 给出预估剩余时间
-                    maintainManager.maintain_manager_main()
 
-                    timeCost=time.time() - timeCost
-            except Exception as ex:
-                st.write(d_lang[lang]["tab_setting_db_tip2"].format(ex=ex))
-                # st.write(f'Something went wrong!: {ex}')
-            else:
-                st.write(d_lang[lang]["tab_setting_db_tip3"].format(timeCost=timeCost))
-                # st.write(f'Database Updated! Time cost: {timeCost}s')
-            finally:
-                st.snow()
-                st.session_state.update_button_disabled = False
-                st.button(d_lang[lang]["tab_setting_db_btn_gotit"], key=reset_button_key)
+            if update_db_btn:
+                try:
+                    with st.spinner(d_lang[lang]["tab_setting_db_tip1"]):
+                        timeCost=time.time()
+                        # todo 给出预估剩余时间
+                        maintainManager.maintain_manager_main()
+
+                        timeCost=time.time() - timeCost
+                except Exception as ex:
+                    # st.write(d_lang[lang]["tab_setting_db_tip2"].format(ex=ex))
+                    st.exception(ex)
+                    # st.write(f'Something went wrong!: {ex}')
+                else:
+                    st.write(d_lang[lang]["tab_setting_db_tip3"].format(timeCost=timeCost))
+                    # st.write(f'Database Updated! Time cost: {timeCost}s')
+                finally:
+                    st.snow()
+                    st.session_state.update_button_disabled = False
+                    st.button(d_lang[lang]["tab_setting_db_btn_gotit"], key=reset_button_key)
+        with col2:
+            if config["ocr_engine"] == "Windows.Media.Ocr.Cli":
+                config_ocr_engine_choice_index = 0
+            elif config["ocr_engine"] == "ChineseOCR_lite_onnx":
+                config_ocr_engine_choice_index = 1
+            config_ocr_engine = st.selectbox('本地 OCR 引擎',('Windows.Media.Ocr.Cli','ChineseOCR_lite_onnx'),index=config_ocr_engine_choice_index)
+            
+        
 
 
         st.divider()
@@ -350,9 +356,13 @@ with tab3:
             (list(lang_choice.values())),
             index=lang_index)
         
-        if st.button('Apple Change / 应用更改',type="secondary"):
+
+        st.divider()
+
+        if st.button('Apple All Change / 应用所有更改',type="primary"):
             config_set_lang(language_option)
             config_set("max_page_result",config_max_search_result_num)
+            config_set("ocr_engine",config_ocr_engine)
             st.toast("已应用更改。",icon="🦝")
             st.experimental_rerun()
     

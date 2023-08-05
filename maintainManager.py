@@ -4,7 +4,8 @@ import os
 from chineseocr_lite_onnx.model import OcrHandle 
 from utils import empty_directory
 import base64
-
+import subprocess
+import tempfile
 import dbManager
 import json
 
@@ -13,6 +14,7 @@ with open('config.json') as f:
 print("config.json:")
 print(config)
 # ocr_short_side = int(config["ocr_short_size"])
+
 
 
 # 提取视频i帧
@@ -39,8 +41,20 @@ def extract_iframe(video_file, iframe_interval=4000):
     cap.release()
 
 
-# OCR文本
+# OCR 分流器
 def ocr_image(img_input):
+    with open('config.json') as f:
+        config = json.load(f)
+    ocr_engine = config["ocr_engine"]
+    print(f"ocr_engine:{ocr_engine}")
+    if ocr_engine == "Windows.Media.Ocr.Cli":
+        return ocr_image_ms(img_input)
+    elif ocr_engine == "ChineseOCR_lite_onnx":
+        return ocr_image_col(img_input)
+
+
+# OCR文本-chineseOCRlite
+def ocr_image_col(img_input):
     print("——OCR文本")
     # 输入图片路径，like 'test.jpg'
     # 实例化OcrHandle对象
@@ -62,11 +76,28 @@ def ocr_image(img_input):
     return ocr_sentence_result
 
 
+# OCR文本-MS自带方式
+def ocr_image_ms(img_input):
+    print("——OCR文本.MS")
+    # 调用Windows.Media.Ocr.Cli.exe,参数为图片路径
+    command = ['Windows.Media.Ocr.Cli.exe', img_input]
+    
+    # 在临时文件中捕获输出
+    with tempfile.TemporaryFile() as tempf:
+        # proc = subprocess.Popen(command, stdout=tempf)
+        proc = subprocess.Popen(command, stdout=subprocess.PIPE)
+
+        text = proc.stdout.read().decode('gbk')
+        text = str(text.encode('utf-8').decode('utf-8'))
+    
+    return text
+
+
 # 计算两次结果的重合率
 def compare_strings(a, b, threshold=70):
     print("——计算两次结果的重合率")
-    print("a:"+a)
-    print("b:"+b)
+    print(f"a:{a}")
+    print(f"b:{b}")
     # 计算两个字符串的重合率
     overlap = len(set(a) & set(b)) / len(set(a) | set(b)) * 100
     print("overlap:"+str(overlap))
@@ -179,7 +210,7 @@ def ocr_process_videos(video_path,iframe_path,db_filepath):
 
             img = os.path.join(iframe_path, img_file_name) 
             ocr_result_stringB = ocr_image(img)
-            print("ocr_result_stringB:"+ocr_result_stringB)
+            print(f"ocr_result_stringB:{ocr_result_stringB}")
 
             is_str_same = compare_strings(ocr_result_stringA,ocr_result_stringB)
             if is_str_same:
