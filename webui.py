@@ -165,17 +165,6 @@ def config_set_lang(lang_name):
         json.dump(config, f)
 
 
-# 更改config文件项目
-def config_set(name,value):
-    with open('config.json') as f:
-        config = json.load(f)
-
-    config[name] = value
-
-    with open('config.json', 'w') as f:
-        json.dump(config, f) 
-
-
 
 
 
@@ -368,15 +357,15 @@ with tab3:
 
         if st.button('Apple All Change / 应用所有更改',type="primary"):
             config_set_lang(language_option)
-            config_set("max_page_result",config_max_search_result_num)
-            config_set("ocr_engine",config_ocr_engine)
+            utils.config_set("max_page_result",config_max_search_result_num)
+            utils.config_set("ocr_engine",config_ocr_engine)
             st.toast("已应用更改。",icon="🦝")
             st.experimental_rerun()
     
 
 
     with col2b:
-        st.write("WIP")
+        st.markdown("关注 [長瀬有花 / YUKA NAGASE](https://www.youtube.com/channel/UCf-PcSHzYAtfcoiBr5C9DZA) on Youtube")
 
 
 
