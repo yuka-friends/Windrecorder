@@ -89,7 +89,7 @@ def repeat_check_recording():
     else:
         state_is_recording = False
     print(f"state_is_recording:{state_is_recording}")
-    placeholder.text(f"state_is_recording:{state_is_recording}") # 试图使用据说可以自动更新的组件来强制刷新状态
+    placeholder.text(f"state_is_recording:{state_is_recording}") # 试图使用据说可以自动更新的组件来强制刷新状态(https://towardsdatascience.com/creating-dynamic-dashboards-with-streamlit-747b98a68ab5)
 
 
 
