@@ -7,6 +7,7 @@ import json
 import utils
 import datetime
 from collections import OrderedDict
+import subprocess
 
 update_button_key = "update_button"
 reset_button_key = "setting_reset"
@@ -128,11 +129,9 @@ def db_set_page(btn,page_index):
 def web_db_state_info_before():
     count, nocred_count = web_db_check_folder_marked_file(video_path)
     if nocred_count>0:
-        # st.warning(f' {nocred_count} Video Files need to index. ({count} files total on disk.)',icon='🧭')
         st.warning(d_lang[lang]["tab_setting_db_state1"].format(nocred_count=nocred_count,count=count),icon='🧭')
         return True
     else:
-        # st.success(f'No Video Files need to index. ({count} files total on disk.)',icon='✅')
         st.success(d_lang[lang]["tab_setting_db_state2"].format(nocred_count=nocred_count,count=count),icon='✅')
         return False
 
@@ -229,11 +228,6 @@ with tab1:
             # 翻页
             page_index = st.number_input("搜索结果页数",min_value=0,step=1)
 
-        # search_cb = st.checkbox('Searching',value=True)
-
-
-        # if search_cb:
-
 
 
         # 获取数据
@@ -248,7 +242,6 @@ with tab1:
             st.write(d_lang[lang]["tab_search_word_no"].format(search_content=search_content))
 
         else:
-            # st.write('Result about '+search_content)
             # 打表
             st.dataframe(
                 df,
@@ -316,7 +309,7 @@ with tab3:
         col1,col2 = st.columns([1,1])
         with col1:
             update_db_btn = st.button(d_lang[lang]["tab_setting_db_btn"], type="primary", key='update_button_key', disabled=st.session_state.get("update_button_disabled", False), on_click=update_database_clicked)
-            st.checkbox('更新完毕后关闭计算机',value=False)
+            is_shutdown_pasocon_after_updatedDB = st.checkbox('更新完毕后关闭计算机',value=False)
 
             if update_db_btn:
                 try:
@@ -327,13 +320,13 @@ with tab3:
 
                         timeCost=time.time() - timeCost
                 except Exception as ex:
-                    # st.write(d_lang[lang]["tab_setting_db_tip2"].format(ex=ex))
                     st.exception(ex)
                     # st.write(f'Something went wrong!: {ex}')
                 else:
                     st.write(d_lang[lang]["tab_setting_db_tip3"].format(timeCost=timeCost))
-                    # st.write(f'Database Updated! Time cost: {timeCost}s')
                 finally:
+                    if is_shutdown_pasocon_after_updatedDB:
+                        subprocess.run(["shutdown", "-s", "-t", "60"], shell=True)
                     st.snow()
                     st.session_state.update_button_disabled = False
                     st.button(d_lang[lang]["tab_setting_db_btn_gotit"], key=reset_button_key)
