@@ -16,6 +16,15 @@ db_filepath = db_path +"/"+ db_filename
 db_max_page_result = int(config["max_page_result"])
 
 
+# 重新读取配置文件
+def db_update_read_config():
+   with open('config.json') as f:
+    config = json.load(f)
+   
+   global db_max_page_result
+   db_max_page_result = int(config["max_page_result"])
+
+
 # 初始化数据库：检查、创建、连接数据库对象
 def db_check_exist(db_path,db_filename):
    print("——初始化数据库：检查、创建、连接数据库对象")
@@ -75,12 +84,23 @@ def db_update_data(db_filepath,videofile_name, picturefile_name, videofile_time,
 
 
 # 查询关键词数据
-def db_search_data(db_filepath,keyword_input,date_in,date_out):
+def db_search_data(db_filepath,keyword_input,date_in,date_out,page_index):
    print("——查询关键词数据")
+   db_update_read_config()
    date_in_ts = int(date_to_seconds(date_in.strftime("%Y-%m-%d_00-00-00")))
    date_out_ts = int(date_to_seconds(date_out.strftime("%Y-%m-%d_23-59-59")))
+   start_from = 0 + page_index*db_max_page_result
+   end_from = db_max_page_result + page_index*db_max_page_result
+   limit = end_from - start_from + 1
+   offset = start_from - 1
+
    conn = sqlite3.connect(db_filepath)
-   df = pd.read_sql_query(f"SELECT * FROM video_text WHERE ocr_text LIKE '%{keyword_input}%' AND videofile_time BETWEEN {date_in_ts} AND {date_out_ts} LIMIT {db_max_page_result}",conn)
+   df = pd.read_sql_query(f"""
+                          SELECT * FROM video_text 
+                          WHERE ocr_text LIKE '%{keyword_input}%' 
+                          AND videofile_time BETWEEN {date_in_ts} AND {date_out_ts} 
+                          LIMIT {limit} OFFSET {offset}"""
+                          ,conn)
    conn.close()
    return df
 

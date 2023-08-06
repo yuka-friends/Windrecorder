@@ -86,7 +86,6 @@ def ocr_image_ms(img_input):
     with tempfile.TemporaryFile() as tempf:
         # proc = subprocess.Popen(command, stdout=tempf)
         proc = subprocess.Popen(command, stdout=subprocess.PIPE)
-
         text = proc.stdout.read().decode('gbk')
         text = str(text.encode('utf-8').decode('utf-8'))
     

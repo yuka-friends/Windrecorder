@@ -110,7 +110,17 @@ def choose_search_result_num(df,is_df_result_exist):
         return 0
 
 
-
+# 对搜索结果执行翻页查询
+def db_set_page(btn,page_index):
+    if btn == "L":
+        if page_index <= 0:
+            return 0
+        else:
+            page_index -= 1
+            return page_index
+    elif btn == "R":
+        page_index += 1
+        return page_index
 
 
 
@@ -195,7 +205,6 @@ def web_footer_state():
 st.markdown(d_lang[lang]["main_title"])
 
 
-
 tab1, tab2, tab3 = st.tabs([d_lang[lang]["tab_name_search"], d_lang[lang]["tab_name_recording"], d_lang[lang]["tab_name_setting"]])
 
 with tab1:
@@ -205,7 +214,7 @@ with tab1:
     with col1:
         st.markdown(d_lang[lang]["tab_search_title"])
 
-        col1a,col2a = st.columns([3,2])
+        col1a,col2a,col3a = st.columns([3,2,1])
         with col1a:
             search_content = st.text_input(d_lang[lang]["tab_search_compname"], 'Hello')
         with col2a:
@@ -216,14 +225,19 @@ with tab1:
                 (datetime.datetime(2000, 1, 1) + datetime.timedelta(seconds=latest_record_time_int) - datetime.timedelta(seconds=86400), datetime.datetime.now()),
                 format="YYYY-MM-DD"
                 )
+        with col3a:
+            # 翻页
+            page_index = st.number_input("搜索结果页数",min_value=0,step=1)
 
         # search_cb = st.checkbox('Searching',value=True)
 
 
         # if search_cb:
 
+
+
         # 获取数据
-        df = dbManager.db_search_data(db_filepath,search_content,search_date_range_in,search_date_range_out)
+        df = dbManager.db_search_data(db_filepath,search_content,search_date_range_in,search_date_range_out,page_index)
         df = dbManager.db_refine_search_data(df)
         is_df_result_exist = len(df)
 
@@ -244,21 +258,21 @@ with tab1:
                     help=d_lang[lang]["tab_search_table_help1"],
                     default=False,
                     ),
-
                     "ocr_text": st.column_config.TextColumn(
                     "ocr_text",
                     help=d_lang[lang]["tab_search_table_help2"],
                     width="large"
                     ),
-
                     "thumbnail": st.column_config.ImageColumn(
                     "thumbnail", 
                     help=d_lang[lang]["tab_search_table_help3"]
                     )
 
                 },
-                height = 700
+                height = 800
             )
+
+
 
     with col2:
         # 选择视频
