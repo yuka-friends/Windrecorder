@@ -1,6 +1,7 @@
 import streamlit as st
 import dbManager
 import os
+from os import getpid
 import maintainManager
 import time
 import json
@@ -8,6 +9,7 @@ import utils
 import datetime
 from collections import OrderedDict
 import subprocess
+from multiprocessing import Semaphore
 
 update_button_key = "update_button"
 reset_button_key = "setting_reset"
@@ -268,10 +270,21 @@ with tab2:
 
     col1c,col2c = st.columns([1,3])
     with col1c:
-        st.write("WIP")
-        st.success("正在持续录制屏幕……",icon="🦚")
-        st.error("录制服务未启用。当前未在录制屏幕。",icon="🦫")
-        st.warning("录制服务已启用。当前暂停录制屏幕。",icon="🦫")
+        # 检查录屏服务有无进行中
+        with open("lock_file_record") as f:
+            check_pid = int(f.read())
+
+        check_result = subprocess.run(['tasklist'], stdout=subprocess.PIPE, text=True)
+        check_output = check_result.stdout
+        check_result = subprocess.run(['findstr', str(check_pid)], input=check_output, stdout=subprocess.PIPE, text=True)
+        check_output = check_result.stdout
+        if "python" in check_output:
+            st.success("正在持续录制屏幕……",icon="🦚")
+        else:
+            st.error("录制服务未启用。当前未在录制屏幕。",icon="🦫")
+
+
+        # st.warning("录制服务已启用。当前暂停录制屏幕。",icon="🦫")
         st.button('开始持续录制',type="primary")
         st.button('停止录制屏幕',type="secondary")
         st.checkbox('开机后自动开始录制',value=False)

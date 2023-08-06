@@ -1,9 +1,10 @@
 import subprocess
 import datetime
 import time
-import datetime
 import os
+from os import getpid
 import json
+import utils
 
 ffmpeg_path = 'ffmpeg' 
 
@@ -43,6 +44,10 @@ def record_screen(output_dir=config["record_videos_dir"],screen_res=config["reco
         
         # 执行命令        
         try:
+            # 添加服务监测信息
+            with open("lock_file_record", 'w') as f:
+                f.write(str(getpid()))
+
             subprocess.run(ffmpeg_cmd, check=True)
         except subprocess.CalledProcessError as ex:
             print(f"{ex.cmd} failed with return code {ex.returncode}")

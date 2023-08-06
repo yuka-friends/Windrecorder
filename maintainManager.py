@@ -82,12 +82,9 @@ def ocr_image_ms(img_input):
     # 调用Windows.Media.Ocr.Cli.exe,参数为图片路径
     command = ['Windows.Media.Ocr.Cli.exe', img_input]
     
-    # 在临时文件中捕获输出
-    with tempfile.TemporaryFile() as tempf:
-        # proc = subprocess.Popen(command, stdout=tempf)
-        proc = subprocess.Popen(command, stdout=subprocess.PIPE)
-        text = proc.stdout.read().decode('gbk')
-        text = str(text.encode('utf-8').decode('utf-8'))
+    proc = subprocess.Popen(command, stdout=subprocess.PIPE)
+    text = proc.stdout.read().decode('gbk')
+    text = str(text.encode('utf-8').decode('utf-8'))
     
     return text
 
