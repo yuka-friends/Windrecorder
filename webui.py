@@ -10,6 +10,9 @@ import datetime
 from collections import OrderedDict
 import subprocess
 from multiprocessing import Semaphore
+import threading
+from streamlit.runtime.scriptrunner import add_script_run_ctx
+
 
 update_button_key = "update_button"
 reset_button_key = "setting_reset"
@@ -49,6 +52,53 @@ st.set_page_config(
 )
 
 dbManager.db_main_initialize()
+
+
+# 启动定时执行线程
+class RepeatingTimer(threading.Thread):
+    def __init__(self, interval, function):
+        threading.Thread.__init__(self)
+        self.interval = interval
+        self.function = function
+        self.running = False
+        
+    def run(self):
+        self.running = True
+        while self.running: 
+            time.sleep(self.interval)
+            self.function()
+            
+    def stop(self):
+        self.running = False
+
+
+# 检测录屏服务有没有在运行
+state_is_recording = False
+placeholder = st.empty()
+def repeat_check_recording():
+    with open("lock_file_record") as f:
+        check_pid = int(f.read())
+
+    check_result = subprocess.run(['tasklist'], stdout=subprocess.PIPE, text=True)
+    check_output = check_result.stdout
+    check_result = subprocess.run(['findstr', str(check_pid)], input=check_output, stdout=subprocess.PIPE, text=True)
+    check_output = check_result.stdout
+    global state_is_recording
+    if "python" in check_output:
+        state_is_recording = True
+    else:
+        state_is_recording = False
+    print(f"state_is_recording:{state_is_recording}")
+    placeholder.text(f"state_is_recording:{state_is_recording}") # 试图使用据说可以自动更新的组件来强制刷新状态
+
+
+
+# 用另外的线程虽然能持续检测到服务有没有运行，但是byd streamlit就是没法自动更新，state只能在主线程访问；用了这个（https://github.com/streamlit/streamlit/issues/1326）讨论中的临时措施，虽然可以自动更新了，但还是无法动态更新页面
+# 目的：让它可以自动检测服务是否在运行，并且在页面中更新显示状态
+timer_repeat_check_recording = RepeatingTimer(1, repeat_check_recording)
+add_script_run_ctx(timer_repeat_check_recording)
+timer_repeat_check_recording.start()
+
 
 
 # 将数据库的视频名加上-OCRED标志，使之能正常读取到
@@ -217,7 +267,7 @@ with tab1:
                 )
         with col3a:
             # 翻页
-            page_index = st.number_input("搜索结果页数",min_value=0,step=1)
+            page_index = st.number_input("搜索结果页数",min_value=1,step=1) - 1
 
 
 
@@ -230,7 +280,7 @@ with tab1:
         result_choose_num = choose_search_result_num(df,is_df_result_exist)
 
         if len(df) == 0:
-            st.write(d_lang[lang]["tab_search_word_no"].format(search_content=search_content))
+            st.info(d_lang[lang]["tab_search_word_no"].format(search_content=search_content),icon="🎐")
 
         else:
             # 打表
@@ -271,22 +321,39 @@ with tab2:
     col1c,col2c = st.columns([1,3])
     with col1c:
         # 检查录屏服务有无进行中
-        with open("lock_file_record") as f:
-            check_pid = int(f.read())
+        # 持续探测服务状态
 
-        check_result = subprocess.run(['tasklist'], stdout=subprocess.PIPE, text=True)
-        check_output = check_result.stdout
-        check_result = subprocess.run(['findstr', str(check_pid)], input=check_output, stdout=subprocess.PIPE, text=True)
-        check_output = check_result.stdout
-        if "python" in check_output:
+        
+        # with open("lock_file_record") as f:
+        #     check_pid = int(f.read())
+
+        # check_result = subprocess.run(['tasklist'], stdout=subprocess.PIPE, text=True)
+        # check_output = check_result.stdout
+        # check_result = subprocess.run(['findstr', str(check_pid)], input=check_output, stdout=subprocess.PIPE, text=True)
+        # check_output = check_result.stdout
+        # if "python" in check_output:
+        #     st.success("正在持续录制屏幕……",icon="🦚")
+        #     st.button('停止录制屏幕',type="secondary")
+        # else:
+        #     st.error("当前未在录制屏幕。",icon="🦫")
+        #     start_record_btn = st.button('开始持续录制',type="primary")
+        #     if start_record_btn:
+        #         os.startfile('start_record.bat', 'open')
+
+
+
+        if state_is_recording:
             st.success("正在持续录制屏幕……",icon="🦚")
+            st.button('停止录制屏幕',type="secondary")
         else:
-            st.error("录制服务未启用。当前未在录制屏幕。",icon="🦫")
+            st.error("当前未在录制屏幕。",icon="🦫")
+            start_record_btn = st.button('开始持续录制',type="primary")
+            if start_record_btn:
+                os.startfile('start_record.bat', 'open')
 
 
         # st.warning("录制服务已启用。当前暂停录制屏幕。",icon="🦫")
-        st.button('开始持续录制',type="primary")
-        st.button('停止录制屏幕',type="secondary")
+        st.divider()
         st.checkbox('开机后自动开始录制',value=False)
         st.checkbox('当鼠标一段时间没有移动时暂停录制，直到鼠标开始移动',value=False)
         st.number_input('鼠标停止移动的第几分钟暂停录制',value=5,min_value=1)
