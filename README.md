@@ -18,6 +18,7 @@ Project Status: have very basic functions
 - [x] Provide basic webui for querying and updating database.
 - [ ] Better webui dashboard & control center
 - [ ] Automated operation
+- [ ] Fully i18n support
 - [ ] 🤔
 
 
@@ -32,3 +33,5 @@ Project Status: have very basic functions
   - **NOTE:** This function is crude and can only be run and terminated manually at present. Before recording, you need to adjust your screen resolution and block recording time in `config.json`, currently the default set is 3840x2160, 60 seconds.
 
 - Query and update database through webui: `python -m streamlit run webui.py` or run  `start_webui.bat`
+
+- We recommend using Windows.Media.Ocr.Cli method to OCR Video data, so make sure your Windows computer has installed the corresponding OCR language module (it should have been installed with IME by default) For more information: ![https://learn.microsoft.com/en-us/windows/powertoys/text-extractor](https://learn.microsoft.com/en-us/windows/powertoys/text-extractor)
