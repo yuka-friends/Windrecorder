@@ -28,16 +28,21 @@ def db_update_read_config():
 # 初始化数据库：检查、创建、连接数据库对象
 def db_check_exist(db_path,db_filename):
    print("——初始化数据库：检查、创建、连接数据库对象")
+   is_db_exist = False
    # 检查数据库是否存在
    if not os.path.exists(db_filepath):
       print("db not existed")
+      is_db_exist = False
       if not os.path.exists(db_path):
          os.mkdir(db_path)
          print("db dir not existed, mkdir")
+   else:
+      is_db_exist = True
 
    # 连接/创建数据库
    conn = sqlite3.connect(db_filepath)
    conn.close()
+   return is_db_exist
 
 
 # 初始化数据库：如果内容为空，则创建表初始化
@@ -50,7 +55,10 @@ def db_initialize(db_filepath):
    if c.fetchone() is None:
       print("db is empty, write new table.")
       db_create_table(db_filepath)
-      db_update_data(db_filepath,'scaffold.mp4','scaffold.jpg', 1, 'Welcome! Go to Setting and Update your screen recording files.', False, False,'base64')
+      now = datetime.datetime.now()
+      now_name = now.strftime("%Y-%m-%d_%H-%M-%S")
+      now_time = int(date_to_seconds(now_name))
+      db_update_data(db_filepath,now_name + ".mp4",'0.jpg', now_time, 'Welcome! Go to Setting and Update your screen recording files.', False, False,'base64')
    else:
       print("db existed and not empty")
 
@@ -188,6 +196,7 @@ def db_main_initialize():
    print("——初始化数据库中……")
    conn_check = db_check_exist(db_path,db_filename)
    db_initialize(db_filepath)
+   return conn_check
 
 
 # 写点数据试试

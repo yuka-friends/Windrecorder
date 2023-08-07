@@ -12,6 +12,7 @@ import subprocess
 from multiprocessing import Semaphore
 import threading
 from streamlit.runtime.scriptrunner import add_script_run_ctx
+from pathlib import Path
 
 
 update_button_key = "update_button"
@@ -34,6 +35,7 @@ with open("languages.json", encoding='utf-8') as f:
     d_lang = json.load(f)
 lang_map = d_lang['lang_map']
 
+
 # 获取配置中语言选项是第几位；使设置选择项能匹配
 def get_language_index(lang,data):
   for i, l in enumerate(data):
@@ -51,7 +53,17 @@ st.set_page_config(
      layout="wide"
 )
 
-dbManager.db_main_initialize()
+
+# 检测是否初次使用工具，如果不存在数据库/数据库中只有一条数据，则判定为是
+def check_is_onboarding():
+    is_db_existed = dbManager.db_main_initialize()
+    if is_db_existed == False:
+        return True
+    latest_db_records = dbManager.db_num_records(db_filepath)
+    if latest_db_records == 1:
+        return True
+    return False
+    
 
 
 # 启动定时执行线程
@@ -95,7 +107,7 @@ def repeat_check_recording():
 
 # 用另外的线程虽然能持续检测到服务有没有运行，但是byd streamlit就是没法自动更新，state只能在主线程访问；用了这个（https://github.com/streamlit/streamlit/issues/1326）讨论中的临时措施，虽然可以自动更新了，但还是无法动态更新页面
 # 目的：让它可以自动检测服务是否在运行，并且在页面中更新显示状态
-timer_repeat_check_recording = RepeatingTimer(1, repeat_check_recording)
+timer_repeat_check_recording = RepeatingTimer(5, repeat_check_recording)
 add_script_run_ctx(timer_repeat_check_recording)
 timer_repeat_check_recording.start()
 
@@ -148,7 +160,6 @@ def calc_vid_inside_time(df,num):
 
 
 # 选择播放视频的行数 的滑杆组件
-
 def choose_search_result_num(df,is_df_result_exist):
     select_num = 0
 
@@ -254,13 +265,20 @@ def web_footer_state():
 st.markdown(d_lang[lang]["main_title"])
 
 
-tab1, tab2, tab3 = st.tabs([d_lang[lang]["tab_name_search"], d_lang[lang]["tab_name_recording"], d_lang[lang]["tab_name_setting"]])
+tab1, tab2, tab3, tab4 = st.tabs([d_lang[lang]["tab_name_search"], "Rewind Time", d_lang[lang]["tab_name_recording"], d_lang[lang]["tab_name_setting"]])
 
 with tab1:
-
     
     col1,col2 = st.columns([1,2])
     with col1:
+        is_db_existed = check_is_onboarding()
+        if is_db_existed == True:
+            # 数据库不存在，展示 Onboarding 提示
+            st.success("欢迎使用 Windrecorder！",icon="😺")
+            intro_markdown = Path("onboarding.md").read_text(encoding='utf-8')
+            st.markdown(intro_markdown)
+            st.divider()
+
         st.markdown(d_lang[lang]["tab_search_title"])
 
         col1a,col2a,col3a = st.columns([3,2,1])
@@ -271,7 +289,7 @@ with tab1:
             latest_record_time_int = dbManager.db_latest_record_time(db_filepath)
             search_date_range_in, search_date_range_out=st.date_input(
                 d_lang[lang]["tab_search_daterange"],
-                (datetime.datetime(2000, 1, 1) + datetime.timedelta(seconds=latest_record_time_int) - datetime.timedelta(seconds=86400), datetime.datetime.now()),
+                (datetime.datetime(2000, 1, 2) + datetime.timedelta(seconds=latest_record_time_int) - datetime.timedelta(seconds=86400), datetime.datetime.now()),
                 format="YYYY-MM-DD"
                 )
         with col3a:
@@ -322,9 +340,11 @@ with tab1:
         show_n_locate_video_timestamp(df,result_choose_num)
 
 
-
-
 with tab2:
+    st.write("WIP")
+
+
+with tab3:
     st.markdown(d_lang[lang]["tab_record_title"])
 
     col1c,col2c = st.columns([1,3])
@@ -378,7 +398,7 @@ with tab2:
 def update_database_clicked():
     st.session_state.update_button_disabled = True
 
-with tab3:
+with tab4:
     st.markdown(d_lang[lang]["tab_setting_title"])
 
     col1b,col2b = st.columns([1,3])

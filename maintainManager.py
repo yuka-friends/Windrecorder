@@ -83,7 +83,14 @@ def ocr_image_ms(img_input):
     command = ['Windows.Media.Ocr.Cli.exe', img_input]
     
     proc = subprocess.Popen(command, stdout=subprocess.PIPE)
-    text = proc.stdout.read().decode('gbk')
+    encodings_try = ['gbk', 'utf-8'] #强制兼容
+    for enc in encodings_try:
+     try: 
+        text = proc.stdout.read().decode(enc)
+        break  
+     except UnicodeDecodeError:
+        pass
+    
     text = str(text.encode('utf-8').decode('utf-8'))
     
     return text
