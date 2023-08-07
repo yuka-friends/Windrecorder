@@ -101,6 +101,15 @@ timer_repeat_check_recording.start()
 
 
 
+# 结束录屏服务进程
+def kill_recording():
+    with open("lock_file_record") as f:
+        check_pid = int(f.read())
+    check_result = subprocess.run(['taskkill','/pid',check_pid,'t'], stdout=subprocess.PIPE, text=True)
+    print(check_result.stdout)
+
+
+
 # 将数据库的视频名加上-OCRED标志，使之能正常读取到
 def combine_vid_name_withOCR(video_name):
     vidname = os.path.splitext(video_name)[0] + "-OCRED" + os.path.splitext(video_name)[1]
@@ -344,12 +353,15 @@ with tab2:
 
         if state_is_recording:
             st.success("正在持续录制屏幕……",icon="🦚")
-            st.button('停止录制屏幕',type="secondary")
+            if st.button('停止录制屏幕',type="secondary"):
+                kill_recording()
+                st.toast("正在结束录屏进程……")
         else:
             st.error("当前未在录制屏幕。",icon="🦫")
             start_record_btn = st.button('开始持续录制',type="primary")
             if start_record_btn:
                 os.startfile('start_record.bat', 'open')
+                st.toast("启动录屏中……")
 
 
         # st.warning("录制服务已启用。当前暂停录制屏幕。",icon="🦫")
