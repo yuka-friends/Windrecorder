@@ -4,7 +4,7 @@ It runs entirely locally, does not require any internet request after deployed, 
 
 (What's Rewind: https://www.rewind.ai/)
 
-![Windrecorder](https://github.com/Antonoko/Windrecorder/blob/main/__assets__/preview.png)
+[Windrecorder](https://github.com/Antonoko/Windrecorder/blob/main/__assets__/preview.png)
 
 
 **NOTE: This project is still under development and the availability of many features are not guaranteed.**
@@ -34,4 +34,4 @@ Project Status: have very basic functions
 
 - Query and update database through webui: `python -m streamlit run webui.py` or run  `start_webui.bat`
 
-- We recommend using Windows.Media.Ocr.Cli method to OCR Video data, so make sure your Windows computer has installed the corresponding OCR language module (it should have been installed with IME by default) For more information: ![https://learn.microsoft.com/en-us/windows/powertoys/text-extractor](https://learn.microsoft.com/en-us/windows/powertoys/text-extractor)
+- We recommend using Windows.Media.Ocr.Cli method to OCR Video data, so make sure your Windows computer has installed the corresponding OCR language module (it should have been installed with IME by default) For more information: [https://learn.microsoft.com/en-us/windows/powertoys/text-extractor](https://learn.microsoft.com/en-us/windows/powertoys/text-extractor)
