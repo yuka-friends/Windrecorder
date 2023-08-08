@@ -1,7 +1,7 @@
 import os
 import shutil
 import json
-
+import pyautogui
 
 def empty_directory(path):
     with os.scandir(path) as it:
@@ -29,3 +29,7 @@ def config_set(name, value):
 
     with open('config.json', 'w', encoding='utf-8') as f:
         json.dump(config, f, indent=2)
+
+
+def get_screen_resolution():
+    return pyautogui.size()
