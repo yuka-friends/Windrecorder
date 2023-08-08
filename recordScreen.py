@@ -70,5 +70,14 @@ def record_screen(
         time.sleep(2)
 
 
+def test_ffmpeg():
+    try:
+        res = subprocess.run('ffmpeg -version')
+    except Exception:
+        print('Error: ffmpeg is not installed! Please ensure ffmpeg is in the PATH')
+        exit(1)
+
+
 if __name__ == '__main__':
+    test_ffmpeg()
     record_screen()
