@@ -25,7 +25,7 @@ print(config)
 
 db_path = config["db_path"]
 db_filename = config["db_filename"]
-db_filepath = db_path + "/" + db_filename
+db_filepath = os.path.join(db_path, db_filename)
 video_path = config["record_videos_dir"]
 lang = config["lang"]
 

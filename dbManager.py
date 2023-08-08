@@ -12,7 +12,7 @@ print(config)
 
 db_path = config["db_path"]
 db_filename = config["db_filename"]
-db_filepath = db_path + "/" + db_filename
+db_filepath = os.path.join(db_path, db_filename)
 db_max_page_result = int(config["max_page_result"])
 
 

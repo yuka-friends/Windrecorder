@@ -249,7 +249,7 @@ def maintain_manager_main():
 
     db_path = config["db_path"]
     db_filename = config["db_filename"]
-    db_filepath = db_path + "/" + db_filename
+    db_filepath = os.path.join(db_path, db_filename)
     record_videos_dir = config["record_videos_dir"]
     i_frames_dir = 'i_frames'
 
