@@ -8,7 +8,7 @@ import utils
 
 ffmpeg_path = 'ffmpeg'
 
-with open('config.json') as f:
+with open('config.json', encoding='utf-8') as f:
     config = json.load(f)
 print("config.json:")
 print(config)
@@ -46,7 +46,7 @@ def record_screen(output_dir=config["record_videos_dir"], screen_res=config["rec
         # 执行命令        
         try:
             # 添加服务监测信息
-            with open("lock_file_record", 'w') as f:
+            with open("lock_file_record", 'w', encoding='utf-8') as f:
                 f.write(str(getpid()))
 
             subprocess.run(ffmpeg_cmd, check=True)

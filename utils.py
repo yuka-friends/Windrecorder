@@ -22,10 +22,10 @@ def get_dir_size(dir):
 
 # 更写 config.json
 def config_set(name, value):
-    with open('config.json') as f:
+    with open('config.json', encoding='utf-8') as f:
         config = json.load(f)
 
     config[name] = value
 
-    with open('config.json', 'w') as f:
+    with open('config.json', 'w', encoding='utf-8') as f:
         json.dump(config, f, indent=2)

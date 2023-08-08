@@ -18,7 +18,7 @@ update_button_key = "update_button"
 reset_button_key = "setting_reset"
 
 # python -m streamlit run webui.py
-with open('config.json') as f:
+with open('config.json', encoding='utf-8', encoding='utf-8') as f:
     config = json.load(f)
 print("config.json:")
 print(config)
@@ -29,7 +29,7 @@ db_filepath = os.path.join(db_path, db_filename)
 video_path = config["record_videos_dir"]
 lang = config["lang"]
 
-with open("languages.json", encoding='utf-8') as f:
+with open("languages.json", encoding='utf-8', encoding='utf-8') as f:
     d_lang = json.load(f)
 lang_map = d_lang['lang_map']
 
@@ -86,7 +86,7 @@ placeholder = st.empty()
 
 
 def repeat_check_recording():
-    with open("lock_file_record") as f:
+    with open("lock_file_record", encoding='utf-8') as f:
         check_pid = int(f.read())
 
     check_result = subprocess.run(['tasklist'], stdout=subprocess.PIPE, text=True)
@@ -112,7 +112,7 @@ timer_repeat_check_recording.start()
 
 # 结束录屏服务进程
 def kill_recording():
-    with open("lock_file_record") as f:
+    with open("lock_file_record", encoding='utf-8') as f:
         check_pid = int(f.read())
     check_result = subprocess.run(['taskkill', '/pid', check_pid, 't'], stdout=subprocess.PIPE, text=True)
     print(check_result.stdout)
@@ -224,12 +224,12 @@ def config_set_lang(lang_name):
         print(f"Invalid language name: {lang_name}")
         return
 
-    with open('config.json') as f:
+    with open('config.json', encoding='utf-8') as f:
         config = json.load(f)
 
     config['lang'] = lang_code
 
-    with open('config.json', 'w') as f:
+    with open('config.json', 'w', encoding='utf-8') as f:
         json.dump(config, f, indent=2)
 
 
@@ -337,7 +337,7 @@ with tab3:
         # 检查录屏服务有无进行中
         # 持续探测服务状态
 
-        # with open("lock_file_record") as f:
+        # with open("lock_file_record", encoding='utf-8') as f:
         #     check_pid = int(f.read())
 
         # check_result = subprocess.run(['tasklist'], stdout=subprocess.PIPE, text=True)

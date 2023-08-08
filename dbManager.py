@@ -5,7 +5,7 @@ import time
 import pandas as pd
 import json
 
-with open('config.json') as f:
+with open('config.json', encoding='utf-8') as f:
     config = json.load(f)
 print("config.json:")
 print(config)
@@ -18,7 +18,7 @@ db_max_page_result = int(config["max_page_result"])
 
 # 重新读取配置文件
 def db_update_read_config():
-    with open('config.json') as f:
+    with open('config.json', encoding='utf-8') as f:
         config = json.load(f)
 
     global db_max_page_result

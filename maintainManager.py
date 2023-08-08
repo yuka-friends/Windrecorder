@@ -9,7 +9,7 @@ import tempfile
 import dbManager
 import json
 
-with open('config.json') as f:
+with open('config.json', encoding='utf-8') as f:
     config = json.load(f)
 print("config.json:")
 print(config)
@@ -44,7 +44,7 @@ def extract_iframe(video_file, iframe_interval=4000):
 
 # OCR 分流器
 def ocr_image(img_input):
-    with open('config.json') as f:
+    with open('config.json', encoding='utf-8') as f:
         config = json.load(f)
     ocr_engine = config["ocr_engine"]
     print(f"ocr_engine:{ocr_engine}")
@@ -242,7 +242,7 @@ def ocr_process_videos(video_path, iframe_path, db_filepath):
 
 
 def maintain_manager_main():
-    with open('config.json') as f:
+    with open('config.json', encoding='utf-8') as f:
         config = json.load(f)
     print("config.json:")
     print(config)
