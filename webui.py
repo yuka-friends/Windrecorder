@@ -254,7 +254,7 @@ def web_footer_state():
 # 主界面_________________________________________________________
 st.markdown(d_lang[lang]["main_title"])
 
-tab1, tab2, tab3, tab4 = st.tabs([d_lang[lang]["tab_name_search"], "一天之时", d_lang[lang]["tab_name_recording"],
+tab1, tab2, tab3, tab4, tab5 = st.tabs([d_lang[lang]["tab_name_search"], "一天之时","记忆摘要", d_lang[lang]["tab_name_recording"],
                                   d_lang[lang]["tab_name_setting"]])
 
 with tab1:
@@ -331,6 +331,9 @@ with tab2:
     st.write("WIP")
 
 with tab3:
+    st.write("WIP")
+
+with tab4:
     st.markdown(d_lang[lang]["tab_record_title"])
 
     col1c, col2c = st.columns([1, 3])
@@ -391,7 +394,7 @@ def update_database_clicked():
     st.session_state.update_button_disabled = True
 
 
-with tab4:
+with tab5:
     st.markdown(d_lang[lang]["tab_setting_title"])
 
     col1b, col2b = st.columns([1, 3])
