@@ -28,4 +28,4 @@ def config_set(name, value):
     config[name] = value
 
     with open('config.json', 'w') as f:
-        json.dump(config, f)
+        json.dump(config, f, indent=2)

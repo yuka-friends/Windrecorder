@@ -230,7 +230,7 @@ def config_set_lang(lang_name):
     config['lang'] = lang_code
 
     with open('config.json', 'w') as f:
-        json.dump(config, f)
+        json.dump(config, f, indent=2)
 
 
 # footer状态信息
