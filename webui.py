@@ -18,7 +18,7 @@ update_button_key = "update_button"
 reset_button_key = "setting_reset"
 
 # python -m streamlit run webui.py
-with open('config.json', encoding='utf-8', encoding='utf-8') as f:
+with open('config.json', encoding='utf-8') as f:
     config = json.load(f)
 print("config.json:")
 print(config)
@@ -29,7 +29,7 @@ db_filepath = os.path.join(db_path, db_filename)
 video_path = config["record_videos_dir"]
 lang = config["lang"]
 
-with open("languages.json", encoding='utf-8', encoding='utf-8') as f:
+with open("languages.json", encoding='utf-8') as f:
     d_lang = json.load(f)
 lang_map = d_lang['lang_map']
 
