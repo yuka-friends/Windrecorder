@@ -82,7 +82,7 @@ class RepeatingTimer(threading.Thread):
 
 # 检测录屏服务有没有在运行
 state_is_recording = False
-placeholder = st.empty()
+# placeholder = st.empty()
 
 
 def repeat_check_recording():
@@ -99,23 +99,24 @@ def repeat_check_recording():
     else:
         state_is_recording = False
     print(f"state_is_recording:{state_is_recording}")
-    placeholder.text(
-        f"state_is_recording:{state_is_recording}")  # 试图使用据说可以自动更新的组件来强制刷新状态(https://towardsdatascience.com/creating-dynamic-dashboards-with-streamlit-747b98a68ab5)
+    # placeholder.text(
+    #     f"state_is_recording:{state_is_recording}")  # 试图使用据说可以自动更新的组件来强制刷新状态(https://towardsdatascience.com/creating-dynamic-dashboards-with-streamlit-747b98a68ab5)
 
 
 # 用另外的线程虽然能持续检测到服务有没有运行，但是byd streamlit就是没法自动更新，state只能在主线程访问；用了这个（https://github.com/streamlit/streamlit/issues/1326）讨论中的临时措施，虽然可以自动更新了，但还是无法动态更新页面
 # 目的：让它可以自动检测服务是否在运行，并且在页面中更新显示状态
-timer_repeat_check_recording = RepeatingTimer(5, repeat_check_recording)
-add_script_run_ctx(timer_repeat_check_recording)
-timer_repeat_check_recording.start()
+# timer_repeat_check_recording = RepeatingTimer(5, repeat_check_recording)
+# add_script_run_ctx(timer_repeat_check_recording)
+# timer_repeat_check_recording.start()
 
 
 # 结束录屏服务进程
 def kill_recording():
     with open("lock_file_record", encoding='utf-8') as f:
         check_pid = int(f.read())
-    check_result = subprocess.run(['taskkill', '/pid', check_pid, 't'], stdout=subprocess.PIPE, text=True)
-    print(check_result.stdout)
+    check_result = subprocess.run(['taskkill', '/pid', str(check_pid), '-t','-f'], stdout=subprocess.PIPE, text=True)
+    st.toast(f"已结束录屏进程，{check_result.stdout}")
+    print(f"已结束录屏进程，{check_result.stdout}")
 
 
 # 将数据库的视频名加上-OCRED标志，使之能正常读取到
@@ -253,7 +254,7 @@ def web_footer_state():
 # 主界面_________________________________________________________
 st.markdown(d_lang[lang]["main_title"])
 
-tab1, tab2, tab3, tab4 = st.tabs([d_lang[lang]["tab_name_search"], "Rewind Time", d_lang[lang]["tab_name_recording"],
+tab1, tab2, tab3, tab4 = st.tabs([d_lang[lang]["tab_name_search"], "一天之时", d_lang[lang]["tab_name_recording"],
                                   d_lang[lang]["tab_name_setting"]])
 
 with tab1:
@@ -335,35 +336,46 @@ with tab3:
     col1c, col2c = st.columns([1, 3])
     with col1c:
         # 检查录屏服务有无进行中
-        # 持续探测服务状态
+        # todo：持续、自动探测服务状态？
 
-        # with open("lock_file_record", encoding='utf-8') as f:
-        #     check_pid = int(f.read())
+        # 管理刷新服务的按钮状态：手动管理状态，polyfill streamlit只能读按钮是否被按下的问题（一旦有其他按钮按下，其他按钮就会回弹导致持续的逻辑重置、重新加载）
+        # todo：去掉需要双击的操作……
+        def update_record_service_btn_clicked():
+            st.session_state.update_btn_dis_record = True
 
-        # check_result = subprocess.run(['tasklist'], stdout=subprocess.PIPE, text=True)
-        # check_output = check_result.stdout
-        # check_result = subprocess.run(['findstr', str(check_pid)], input=check_output, stdout=subprocess.PIPE, text=True)
-        # check_output = check_result.stdout
-        # if "python" in check_output:
-        #     st.success("正在持续录制屏幕……",icon="🦚")
-        #     st.button('停止录制屏幕',type="secondary")
-        # else:
-        #     st.error("当前未在录制屏幕。",icon="🦫")
-        #     start_record_btn = st.button('开始持续录制',type="primary")
-        #     if start_record_btn:
-        #         os.startfile('start_record.bat', 'open')
+        if 'update_btn_refresh_press' not in st.session_state:
+            st.session_state.update_btn_refresh_press = False
+        def update_record_btn_state():
+            if st.session_state.update_btn_refresh_press == True:
+                st.session_state.update_btn_refresh_press = False
+            else:
+                st.session_state.update_btn_refresh_press = True
+            st.session_state.update_btn_dis_record = False
 
-        if state_is_recording:
-            st.success("正在持续录制屏幕……", icon="🦚")
-            if st.button('停止录制屏幕', type="secondary"):
-                kill_recording()
-                st.toast("正在结束录屏进程……")
-        else:
-            st.error("当前未在录制屏幕。", icon="🦫")
-            start_record_btn = st.button('开始持续录制', type="primary")
-            if start_record_btn:
-                os.startfile('start_record.bat', 'open')
-                st.toast("启动录屏中……")
+        
+        btn_refresh = st.button("刷新服务状态 ⟳",on_click=update_record_btn_state)
+
+        if st.session_state.update_btn_refresh_press == True :
+            repeat_check_recording() # 检测有无运行
+
+            if state_is_recording:
+                st.success("正在持续录制屏幕……  请刷新查看最新运行状态。", icon="🦚")
+                stop_record_btn = st.button('停止录制屏幕', type="secondary",disabled=st.session_state.get("update_btn_dis_record",False),on_click=update_record_service_btn_clicked)
+                if stop_record_btn:
+                    st.toast("正在结束录屏进程……")
+                    kill_recording()
+                    
+            else:
+                st.error("当前未在录制屏幕。  请刷新查看最新运行状态。", icon="🦫")
+                start_record_btn = st.button('开始持续录制', type="primary",disabled=st.session_state.get("update_btn_dis_record",False),on_click=update_record_service_btn_clicked)
+                if start_record_btn:
+                    os.startfile('start_record.bat', 'open')
+                    st.toast("启动录屏中……")
+                    st.session_state.update_btn_refresh_press = False
+
+
+
+
 
         # st.warning("录制服务已启用。当前暂停录制屏幕。",icon="🦫")
         st.divider()
