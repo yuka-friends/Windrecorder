@@ -15,7 +15,7 @@ print(config)
 
 
 def record_screen(output_dir=config["record_videos_dir"], screen_res=config["record_screen_res"],
-                  target_res=config["target_screen_res"], gap_time=config["record_gap_time"]):
+                  target_res=config["target_screen_res"], record_time=config["record_time"]):
     """
     用ffmpeg持续录制屏幕,每15分钟保存一个视频文件
     """
@@ -41,7 +41,7 @@ def record_screen(output_dir=config["record_videos_dir"], screen_res=config["rec
                       '-vf', target_res,
                       '-c:v', 'libx264', '-b:v', '200k',
                       '-bf', '8', '-g', '600', '-sc_threshold', '10',
-                      '-t', str(gap_time), out_path]
+                      '-t', str(record_time), out_path]
 
         # 执行命令        
         try:
@@ -53,8 +53,8 @@ def record_screen(output_dir=config["record_videos_dir"], screen_res=config["rec
         except subprocess.CalledProcessError as ex:
             print(f"{ex.cmd} failed with return code {ex.returncode}")
 
-        # gaptime秒后继续 
-        time.sleep(gap_time + 2)
+        # 2 秒后继续
+        time.sleep(2)
 
 
 # 使用方法:
