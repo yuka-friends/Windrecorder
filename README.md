@@ -7,7 +7,7 @@
 This tool can continuously record and OCR your desktop screen, and search to retrieve the picture at that moment at any time.
 It runs entirely locally, stored your private data locally, without any need of Internet connection. 
 
-这是一款可以持续录制并 OCR 你的桌面屏幕、通过搜索等手段随时找回任意时刻画面的工具。它完全运行在本地、在本地存储数据、无需联网、不会外泄你任何数据的工具。
+这是一款可以持续录制并识别你的屏幕内容、通过搜索等手段随时找回相关记忆的工具。它完全运行在本地、在本地存储数据、无需联网、不会外泄你任何数据。
 
 
 ![Windrecorder](https://github.com/Antonoko/Windrecorder/blob/main/__assets__/preview.png)
