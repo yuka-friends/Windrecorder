@@ -1,5 +1,5 @@
 import streamlit as st
-import dbManager
+from dbManager import dbManager
 import os
 from os import getpid
 import maintainManager
@@ -56,7 +56,7 @@ def check_is_onboarding():
     is_db_existed = dbManager.db_main_initialize()
     if is_db_existed == False:
         return True
-    latest_db_records = dbManager.db_num_records(db_filepath)
+    latest_db_records = dbManager.db_num_records()
     if latest_db_records == 1:
         return True
     return False
@@ -154,7 +154,7 @@ def show_n_locate_video_timestamp(df, num):
 def calc_vid_inside_time(df, num):
     fulltime = df.iloc[num]['videofile_time']
     vidfilename = os.path.splitext(df.iloc[num]['videofile_name'])[0]
-    vid_timestamp = fulltime - dbManager.date_to_seconds(vidfilename)
+    vid_timestamp = fulltime - utils.date_to_seconds(vidfilename)
     print("fulltime:" + str(fulltime) + "\n vidfilename:" + str(vidfilename) + "\n vid_timestamp:" + str(vid_timestamp))
     return vid_timestamp
 
@@ -239,10 +239,10 @@ def config_set_lang(lang_name):
 
 # footer状态信息
 def web_footer_state():
-    latest_record_time_int = dbManager.db_latest_record_time(db_filepath)
-    latest_record_time_str = dbManager.seconds_to_date(latest_record_time_int)
+    latest_record_time_int = dbManager.db_latest_record_time()
+    latest_record_time_str = utils.seconds_to_date(latest_record_time_int)
 
-    latest_db_records = dbManager.db_num_records(db_filepath)
+    latest_db_records = dbManager.db_num_records()
 
     videos_file_size = round(utils.get_dir_size(video_path) / (1024 * 1024 * 1024), 3)
 
@@ -278,7 +278,7 @@ with tab1:
             search_content = st.text_input(d_lang[lang]["tab_search_compname"], 'Hello')
         with col2a:
             # 时间搜索范围组件
-            latest_record_time_int = dbManager.db_latest_record_time(db_filepath)
+            latest_record_time_int = dbManager.db_latest_record_time()
             search_date_range_in, search_date_range_out = st.date_input(
                 d_lang[lang]["tab_search_daterange"],
                 (datetime.datetime(2000, 1, 2)
@@ -292,7 +292,7 @@ with tab1:
             page_index = st.number_input("搜索结果页数", min_value=1, step=1) - 1
 
         # 获取数据
-        df = dbManager.db_search_data(db_filepath, search_content, search_date_range_in, search_date_range_out,
+        df = dbManager.db_search_data(search_content, search_date_range_in, search_date_range_out,
                                       page_index)
         df = dbManager.db_refine_search_data(df)
         is_df_result_exist = len(df)
