@@ -102,8 +102,13 @@ def compare_strings(a, b, threshold=70):
     print("——计算两次结果的重合率")
     print(f"a:{a}")
     print(f"b:{b}")
+
+    # a 和 b 都不含任何文字
+    if len(set(a) | set(b)) == 0:
+        return False
+
     # 计算两个字符串的重合率
-    overlap = len(set(a) & set(b))  * 100 / len(set(a) | set(b))
+    overlap = len(set(a) & set(b)) / len(set(a) | set(b)) * 100
     print("overlap:" + str(overlap))
 
     # 判断重合率是否超过阈值
