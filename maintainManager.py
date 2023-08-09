@@ -2,11 +2,11 @@ import cv2
 import numpy as np
 import os
 from chineseocr_lite_onnx.model import OcrHandle
-from utils import empty_directory
+from utils import empty_directory, date_to_seconds, seconds_to_date
 import base64
 import subprocess
 import tempfile
-import dbManager
+from dbManager import dbManager
 import json
 
 with open('config.json', encoding='utf-8') as f:
@@ -102,6 +102,11 @@ def compare_strings(a, b, threshold=70):
     print("——计算两次结果的重合率")
     print(f"a:{a}")
     print(f"b:{b}")
+
+    # a 和 b 都不含任何文字
+    if len(set(a) | set(b)) == 0:
+        return False
+
     # 计算两个字符串的重合率
     overlap = len(set(a) & set(b)) / len(set(a) | set(b)) * 100
     print("overlap:" + str(overlap))
@@ -223,12 +228,12 @@ def ocr_process_videos(video_path, iframe_path, db_filepath):
                 # 使用os.path.splitext()可以把文件名和文件扩展名分割开来，os.path.splitext(file_name)会返回一个元组,元组的第一个元素是文件名,第二个元素是扩展名
                 calc_to_sec_vidname = os.path.splitext(vid_file_name)[0]
                 calc_to_sec_picname = round(int(os.path.splitext(img_file_name)[0]) / 2)
-                calc_to_sec_data = dbManager.date_to_seconds(calc_to_sec_vidname) + calc_to_sec_picname
+                calc_to_sec_data = date_to_seconds(calc_to_sec_vidname) + calc_to_sec_picname
                 # 计算图片预览图
                 img_thumbnail = resize_imahe_as_base64(img)
-                dbManager.db_update_data(db_filepath, vid_file_name, img_file_name, calc_to_sec_data,
+                dbManager.db_update_data(vid_file_name, img_file_name, calc_to_sec_data,
                                          ocr_result_stringB, True, False, img_thumbnail)
-                dbManager.db_print_all_data(db_filepath)
+                dbManager.db_print_all_data()
                 ocr_result_stringA = ocr_result_stringB
 
         # 清理文件

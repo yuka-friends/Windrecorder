@@ -1,5 +1,5 @@
 import streamlit as st
-import dbManager
+from dbManager import dbManager
 import os
 from os import getpid
 import maintainManager
@@ -56,7 +56,7 @@ def check_is_onboarding():
     is_db_existed = dbManager.db_main_initialize()
     if is_db_existed == False:
         return True
-    latest_db_records = dbManager.db_num_records(db_filepath)
+    latest_db_records = dbManager.db_num_records()
     if latest_db_records == 1:
         return True
     return False
@@ -99,11 +99,16 @@ def repeat_check_recording():
     else:
         state_is_recording = False
     print(f"state_is_recording:{state_is_recording}")
+
+    # 试图使用据说可以自动更新的组件来强制刷新状态
+    # (https://towardsdatascience.com/creating-dynamic-dashboards-with-streamlit-747b98a68ab5)
     # placeholder.text(
-    #     f"state_is_recording:{state_is_recording}")  # 试图使用据说可以自动更新的组件来强制刷新状态(https://towardsdatascience.com/creating-dynamic-dashboards-with-streamlit-747b98a68ab5)
+    #     f"state_is_recording:{state_is_recording}")
 
 
-# 用另外的线程虽然能持续检测到服务有没有运行，但是byd streamlit就是没法自动更新，state只能在主线程访问；用了这个（https://github.com/streamlit/streamlit/issues/1326）讨论中的临时措施，虽然可以自动更新了，但还是无法动态更新页面
+# 用另外的线程虽然能持续检测到服务有没有运行，但是byd streamlit就是没法自动更新，state只能在主线程访问；
+# 用了这个（https://github.com/streamlit/streamlit/issues/1326）讨论中的临时措施
+# 虽然可以自动更新了，但还是无法动态更新页面
 # 目的：让它可以自动检测服务是否在运行，并且在页面中更新显示状态
 # timer_repeat_check_recording = RepeatingTimer(5, repeat_check_recording)
 # add_script_run_ctx(timer_repeat_check_recording)
@@ -151,7 +156,7 @@ def show_n_locate_video_timestamp(df, num):
 def calc_vid_inside_time(df, num):
     fulltime = df.iloc[num]['videofile_time']
     vidfilename = os.path.splitext(df.iloc[num]['videofile_name'])[0]
-    vid_timestamp = fulltime - dbManager.date_to_seconds(vidfilename)
+    vid_timestamp = fulltime - utils.date_to_seconds(vidfilename)
     print("fulltime:" + str(fulltime) + "\n vidfilename:" + str(vidfilename) + "\n vid_timestamp:" + str(vid_timestamp))
     return vid_timestamp
 
@@ -236,10 +241,10 @@ def config_set_lang(lang_name):
 
 # footer状态信息
 def web_footer_state():
-    latest_record_time_int = dbManager.db_latest_record_time(db_filepath)
-    latest_record_time_str = dbManager.seconds_to_date(latest_record_time_int)
+    latest_record_time_int = dbManager.db_latest_record_time()
+    latest_record_time_str = utils.seconds_to_date(latest_record_time_int)
 
-    latest_db_records = dbManager.db_num_records(db_filepath)
+    latest_db_records = dbManager.db_num_records()
 
     videos_file_size = round(utils.get_dir_size(video_path) / (1024 * 1024 * 1024), 3)
 
@@ -275,12 +280,13 @@ with tab1:
             search_content = st.text_input(d_lang[lang]["tab_search_compname"], 'Hello')
         with col2a:
             # 时间搜索范围组件
-            latest_record_time_int = dbManager.db_latest_record_time(db_filepath)
+            latest_record_time_int = dbManager.db_latest_record_time()
             search_date_range_in, search_date_range_out = st.date_input(
                 d_lang[lang]["tab_search_daterange"],
-                (
-                datetime.datetime(2000, 1, 2) + datetime.timedelta(seconds=latest_record_time_int) - datetime.timedelta(
-                    seconds=86400), datetime.datetime.now()),
+                (datetime.datetime(2000, 1, 2)
+                    + datetime.timedelta(seconds=latest_record_time_int)
+                    - datetime.timedelta(seconds=86400),
+                datetime.datetime.now()),
                 format="YYYY-MM-DD"
             )
         with col3a:
@@ -288,7 +294,7 @@ with tab1:
             page_index = st.number_input("搜索结果页数", min_value=1, step=1) - 1
 
         # 获取数据
-        df = dbManager.db_search_data(db_filepath, search_content, search_date_range_in, search_date_range_out,
+        df = dbManager.db_search_data(search_content, search_date_range_in, search_date_range_out,
                                       page_index)
         df = dbManager.db_refine_search_data(df)
         is_df_result_exist = len(df)

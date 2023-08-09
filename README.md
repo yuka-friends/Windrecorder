@@ -38,7 +38,8 @@ Project Status: have very basic functions
 
 # 🦝 QuickStart ｜ 快速开始
 
-- Installed ffmpeg and make sure it can be accessed from PATH.
+
+- Ensure ffmpeg is installed and can be accessed from PATH.
 
 - Install dependencies: `pip install -r requirements.txt`
 
