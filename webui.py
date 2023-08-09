@@ -149,7 +149,8 @@ def show_n_locate_video_timestamp(df, num):
             video_bytes = video_file.read()
             st.video(video_bytes, start_time=st.session_state.vid_vid_timestamp)
         else:
-            st.markdown(f"Video File **{videofile_path}** not on disk.")
+            # st.markdown(f"Video File **{videofile_path}** not on disk.")
+            st.warning(f"Video File **{videofile_path}** not on disk.", icon="🦫")
 
 
 # 计算视频对应时间戳
@@ -333,8 +334,50 @@ with tab1:
         # 选择视频
         show_n_locate_video_timestamp(df, result_choose_num)
 
+
+
 with tab2:
-    st.write("WIP")
+    st.markdown("### 2023/08/10")
+
+    # 时间轴
+    col1, col2, col3 = st.columns([3, 1, 1])
+    with col1:
+        st.markdown("当日最早记录：:orange[22-59-10]")
+    with col2:
+        st.markdown("✈")
+    with col3:
+        st.markdown('<p align="right"> 现在 </p>', unsafe_allow_html=True)
+
+    start_time = datetime.time(11, 30)
+    end_time = datetime.time(21, 30)
+    default_time = datetime.time(12, 30)
+    st.slider("Time Rewind",label_visibility="collapsed",min_value=start_time,max_value=end_time,value=default_time)
+    # st.slider("Time Rewind",label_visibility="collapsed")
+    
+    col1a, col2a = st.columns([1,3])
+    with col1a:
+        st.divider()
+        st.checkbox("启用搜索")
+        col1,col2 = st.columns([2,1])
+        with col1:
+            st.text_input(d_lang[lang]["tab_search_compname"], 'Hello',key=2)
+        with col2:
+            st.date_input("当天日期")
+        col1b,col2b,col3b = st.columns([2,1,2])
+        with col1b:
+            st.button("← 上条记录",use_container_width=True)
+        with col2b:
+            st.markdown("<p align='center'> 1/5 </p>", unsafe_allow_html=True)
+        with col3b:
+            st.button("下条记录 →",use_container_width=True)
+    with col2a:
+        st.write("video placed here")
+        st.info("2023-08-07_22-59-10 时间下没有录制记录。", icon="🎐")
+        st.warning("磁盘上没有 2023-08-07_22-59-10.mp4。", icon="🦫")
+
+
+
+
 
 with tab3:
     st.write("WIP")
