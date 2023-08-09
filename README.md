@@ -17,13 +17,13 @@ It runs entirely locally, stored your private data locally, without any need of 
 
 **注意：这个项目仍然在开发中的阶段，部分能力和特性不保证可以正常运行。**
 
--
+----
 
 Project Status: have very basic functions
 
 项目状态：初级阶段，具有基本的功能。
 
--
+---
 
 ### Todo:
 - [x] Continuously record screen with smaller file size.
@@ -54,6 +54,6 @@ Project Status: have very basic functions
 # 🧡
 If you like this project, feel free to check [長瀬有花 / YUKA NAGASE](https://www.youtube.com/channel/UCf-PcSHzYAtfcoiBr5C9DZA) 's healing music on YouTube and Stream music platform <3 thx
 
-如果你喜欢这个工具，请考虑在 Youtube 与流媒体音乐平台上支持**长濑有花**温柔的音乐，谢谢！
+如果你喜欢这个工具，欢迎在 Youtube 与流媒体音乐平台上支持**长濑有花**温柔的音乐，谢谢！
 
 > "Your tools suck, check out my girl Yuka Nagase, she's amazing, I code 10 times faster when listening to her." -- @jpswing
