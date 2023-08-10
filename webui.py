@@ -381,6 +381,7 @@ with tab2:
 
 with tab3:
     st.write("WIP")
+    st.write("数据记忆的时间柱状图表；词云")
 
 with tab4:
     st.markdown(d_lang[lang]["tab_record_title"])
