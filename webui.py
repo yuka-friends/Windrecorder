@@ -1,7 +1,6 @@
 import streamlit as st
 from dbManager import dbManager
 import os
-from os import getpid
 import maintainManager
 import time
 import json
@@ -9,7 +8,6 @@ import utils
 import datetime
 from collections import OrderedDict
 import subprocess
-from multiprocessing import Semaphore
 import threading
 from streamlit.runtime.scriptrunner import add_script_run_ctx
 from pathlib import Path
@@ -411,8 +409,8 @@ with tab1:
 with tab2:
     col1, col2 = st.columns([1, 2])
     with col1:
-        is_db_existed = check_is_onboarding()
-        if is_db_existed == True:
+        is_onboarding = check_is_onboarding()
+        if is_onboarding == True:
             # 数据库不存在，展示 Onboarding 提示
             st.success("欢迎使用 Windrecorder！", icon="😺")
             intro_markdown = Path("onboarding.md").read_text(encoding='utf-8')
