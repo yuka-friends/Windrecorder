@@ -59,8 +59,8 @@ class DBManager:
         if not os.path.exists(self.db_filepath):
             print("db not existed")
             is_db_exist = False
-            if not os.path.exists(self.db_filepath):
-                os.mkdir(self.db_filepath)
+            if not os.path.exists(self.db_path):
+                os.mkdir(self.db_path)
                 print("db dir not existed, mkdir")
         else:
             is_db_exist = True
@@ -179,6 +179,7 @@ class DBManager:
 
 with open('config.json', encoding='utf-8') as f:
     config = json.load(f)
+
 dbManager = DBManager(
     config["db_path"],
     config["db_filename"],
