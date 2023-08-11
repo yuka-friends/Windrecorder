@@ -17,6 +17,14 @@ print(config)
 
 # ocr_short_side = int(config["ocr_short_size"])
 
+# 检查文件是否被占用
+def is_file_in_use(file_path):
+    try:
+        fd = os.open(file_path, os.O_RDWR|os.O_EXCL)
+        os.close(fd)
+        return False
+    except OSError:
+        return True
 
 # 提取视频i帧
 # todo - 加入检测视频是否为合法视频?
@@ -166,7 +174,7 @@ def resize_imahe_as_base64(img_path):
     return img_b64
 
 
-# 处理视频的流程
+# 处理视频的主要流程
 def ocr_process_videos(video_path, iframe_path, db_filepath):
     print("——处理视频的流程")
     vid_file_names = os.listdir(video_path)
@@ -182,7 +190,11 @@ def ocr_process_videos(video_path, iframe_path, db_filepath):
             continue
 
         file_path = os.path.join(video_path, vid_file_name)
-        # 处理流程
+        # 判断文件是否正在被占用
+        if is_file_in_use(file_path):
+            continue
+
+        # 视频文件的处理流程
         # - 提取i帧
         extract_iframe(file_path)
 
