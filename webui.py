@@ -260,83 +260,10 @@ def web_footer_state():
 # 主界面_________________________________________________________
 st.markdown(d_lang[lang]["main_title"])
 
-tab1, tab2, tab3, tab4, tab5 = st.tabs([d_lang[lang]["tab_name_search"], "一天之时","记忆摘要", d_lang[lang]["tab_name_recording"],
+tab1, tab2, tab3, tab4, tab5 = st.tabs(["一天之时", d_lang[lang]["tab_name_search"], "记忆摘要", d_lang[lang]["tab_name_recording"],
                                   d_lang[lang]["tab_name_setting"]])
 
 with tab1:
-    col1, col2 = st.columns([1, 2])
-    with col1:
-        is_db_existed = check_is_onboarding()
-        if is_db_existed == True:
-            # 数据库不存在，展示 Onboarding 提示
-            st.success("欢迎使用 Windrecorder！", icon="😺")
-            intro_markdown = Path("onboarding.md").read_text(encoding='utf-8')
-            st.markdown(intro_markdown)
-            st.divider()
-
-        st.markdown(d_lang[lang]["tab_search_title"])
-
-        col1a, col2a, col3a = st.columns([3, 2, 1])
-        with col1a:
-            search_content = st.text_input(d_lang[lang]["tab_search_compname"], 'Hello')
-        with col2a:
-            # 时间搜索范围组件
-            latest_record_time_int = dbManager.db_latest_record_time()
-            search_date_range_in, search_date_range_out = st.date_input(
-                d_lang[lang]["tab_search_daterange"],
-                (datetime.datetime(2000, 1, 2)
-                    + datetime.timedelta(seconds=latest_record_time_int)
-                    - datetime.timedelta(seconds=86400),
-                datetime.datetime.now()),
-                format="YYYY-MM-DD"
-            )
-        with col3a:
-            # 翻页
-            page_index = st.number_input("搜索结果页数", min_value=1, step=1) - 1
-
-        # 获取数据
-        df = dbManager.db_search_data(search_content, search_date_range_in, search_date_range_out,
-                                      page_index)
-        df = dbManager.db_refine_search_data(df)
-        is_df_result_exist = len(df)
-
-        # 滑杆选择
-        result_choose_num = choose_search_result_num(df, is_df_result_exist)
-
-        if len(df) == 0:
-            st.info(d_lang[lang]["tab_search_word_no"].format(search_content=search_content), icon="🎐")
-
-        else:
-            # 打表
-            st.dataframe(
-                df,
-                column_config={
-                    "is_videofile_exist": st.column_config.CheckboxColumn(
-                        "is_videofile_exist",
-                        help=d_lang[lang]["tab_search_table_help1"],
-                        default=False,
-                    ),
-                    "ocr_text": st.column_config.TextColumn(
-                        "ocr_text",
-                        help=d_lang[lang]["tab_search_table_help2"],
-                        width="large"
-                    ),
-                    "thumbnail": st.column_config.ImageColumn(
-                        "thumbnail",
-                        help=d_lang[lang]["tab_search_table_help3"]
-                    )
-
-                },
-                height=800
-            )
-
-    with col2:
-        # 选择视频
-        show_n_locate_video_timestamp(df, result_choose_num)
-
-
-
-with tab2:
     st.markdown("### 2023/08/10")
 
     # 时间轴
@@ -375,6 +302,81 @@ with tab2:
         st.info("2023-08-07_22-59-10 时间下没有录制记录。", icon="🎐")
         st.warning("磁盘上没有 2023-08-07_22-59-10.mp4。", icon="🦫")
 
+
+
+with tab2:
+    col1, col2 = st.columns([1, 2])
+    with col1:
+        is_db_existed = check_is_onboarding()
+        if is_db_existed == True:
+            # 数据库不存在，展示 Onboarding 提示
+            st.success("欢迎使用 Windrecorder！", icon="😺")
+            intro_markdown = Path("onboarding.md").read_text(encoding='utf-8')
+            st.markdown(intro_markdown)
+            st.divider()
+
+        st.markdown(d_lang[lang]["tab_search_title"])
+
+        col1a, col2a, col3a = st.columns([3, 2, 1])
+        with col1a:
+            search_content = st.text_input(d_lang[lang]["tab_search_compname"], 'Hello')
+        with col2a:
+            # 时间搜索范围组件
+            latest_record_time_int = dbManager.db_latest_record_time()
+            search_date_range_in, search_date_range_out = st.date_input(
+                d_lang[lang]["tab_search_daterange"],
+                (datetime.datetime(2000, 1, 2)
+                    + datetime.timedelta(seconds=latest_record_time_int)
+                    - datetime.timedelta(seconds=86400),
+                datetime.datetime.now()),
+                format="YYYY-MM-DD"
+            )
+        with col3a:
+            # 翻页
+            if 'max_page_count' not in st.session_state:
+                st.session_state.max_page_count = 1
+            page_index = st.number_input("搜索结果页数", min_value=1, step=1,max_value=st.session_state.max_page_count+1) - 1
+
+        # 获取数据
+        df,all_result_counts,st.session_state.max_page_count = dbManager.db_search_data(search_content, search_date_range_in, search_date_range_out,
+                                      page_index)
+        df = dbManager.db_refine_search_data(df)
+        is_df_result_exist = len(df)
+        st.markdown(f"`搜索到 {all_result_counts} 条、共 {st.session_state.max_page_count} 页关于 \"{search_content}\" 的结果。`")
+
+        # 滑杆选择
+        result_choose_num = choose_search_result_num(df, is_df_result_exist)
+
+        if len(df) == 0:
+            st.info(d_lang[lang]["tab_search_word_no"].format(search_content=search_content), icon="🎐")
+
+        else:
+            # 打表
+            st.dataframe(
+                df,
+                column_config={
+                    "is_videofile_exist": st.column_config.CheckboxColumn(
+                        "is_videofile_exist",
+                        help=d_lang[lang]["tab_search_table_help1"],
+                        default=False,
+                    ),
+                    "ocr_text": st.column_config.TextColumn(
+                        "ocr_text",
+                        help=d_lang[lang]["tab_search_table_help2"],
+                        width="large"
+                    ),
+                    "thumbnail": st.column_config.ImageColumn(
+                        "thumbnail",
+                        help=d_lang[lang]["tab_search_table_help3"]
+                    )
+
+                },
+                height=800
+            )
+
+    with col2:
+        # 选择视频
+        show_n_locate_video_timestamp(df, result_choose_num)
 
 
 

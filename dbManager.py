@@ -4,6 +4,7 @@ import pandas as pd
 import json
 import datetime
 from utils import date_to_seconds, seconds_to_date
+import math
 
 
 class DBManager:
@@ -22,6 +23,7 @@ class DBManager:
         return conn_check
 
         # 初始化数据库：如果内容为空，则创建表初始化
+
 
     def db_initialize(self):
         print("——初始化数据库：如果内容为空，则创建表初始化")
@@ -47,9 +49,11 @@ class DBManager:
         else:
             print("db existed and not empty")
 
+
     # 重新读取配置文件
     def db_update_read_config(self, config):
         self.db_max_page_result = int(config["max_page_result"])
+
 
     # 初始化数据库：检查、创建、连接数据库对象
     def db_check_exist(self):
@@ -70,6 +74,7 @@ class DBManager:
         conn.close()
         return is_db_exist
 
+
     # 创建表
     def db_create_table(self):
         print("——创建表")
@@ -83,6 +88,7 @@ class DBManager:
                    is_picturefile_exist BOOLEAN,
                    thumbnail TEXT);''')
         conn.close()
+
 
     # 插入数据
     def db_update_data(self, videofile_name, picturefile_name, videofile_time, ocr_text, is_videofile_exist,
@@ -99,9 +105,11 @@ class DBManager:
         conn.commit()
         conn.close()
 
+
     # 查询关键词数据
     def db_search_data(self, keyword_input, date_in, date_out, page_index):
         print("——查询关键词数据")
+        # 初始化查询数据
         with open('config.json', encoding='utf-8') as f:
             config = json.load(f)
         self.db_update_read_config(config)
@@ -112,15 +120,31 @@ class DBManager:
         limit = end_from - start_from + 1
         offset = start_from - 1
 
+        # 连接数据库
         conn = sqlite3.connect(self.db_filepath)
+
+        # 查询总结果数量，获得页数
+        c = conn.cursor()
+        c.execute(f"""SELECT COUNT(*) FROM video_text 
+                    WHERE ocr_text LIKE '%{keyword_input}%' 
+                    AND videofile_time BETWEEN {date_in_ts} AND {date_out_ts} """)
+        all_result_counts = c.fetchone()[0]
+        max_page = int(math.ceil(int(all_result_counts)/int(self.db_max_page_result)))
+
+        # 查询结果
         df = pd.read_sql_query(f"""
                               SELECT * FROM video_text 
                               WHERE ocr_text LIKE '%{keyword_input}%' 
                               AND videofile_time BETWEEN {date_in_ts} AND {date_out_ts} 
                               LIMIT {limit} OFFSET {offset}"""
                                , conn)
+        
+        if max_page <= 0:
+            max_page = 1
+
         conn.close()
-        return df
+        return df,all_result_counts,max_page
+
 
     # 优化搜索数据结果的展示
     def db_refine_search_data(self, df):
@@ -140,6 +164,7 @@ class DBManager:
 
         return df
 
+
     # 列出所有数据
     def db_print_all_data(self):
         print("——列出所有数据")
@@ -155,6 +180,7 @@ class DBManager:
             print(row)
         conn.close()
 
+
     # 查询数据库一共有多少行
     def db_num_records(self):
         print("——查询数据库一共有多少行")
@@ -165,6 +191,7 @@ class DBManager:
         conn.close()
         print(f"rows_count: {rows_count}")
         return rows_count
+
 
     # 获取表内最新的记录时间
     def db_latest_record_time(self):
