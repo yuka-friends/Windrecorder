@@ -355,12 +355,16 @@ with tab2:
         with col2a:
             # 时间搜索范围组件
             latest_record_time_int = dbManager.db_latest_record_time()
+            earlist_record_time_int = dbManager.db_first_earliest_record_time()
             search_date_range_in, search_date_range_out = st.date_input(
                 d_lang[lang]["tab_search_daterange"],
                 (datetime.datetime(2000, 1, 2)
-                    + datetime.timedelta(seconds=latest_record_time_int)
+                    + datetime.timedelta(seconds=earlist_record_time_int)
                     - datetime.timedelta(seconds=86400),
-                datetime.datetime.now()),
+                datetime.datetime(2000, 1, 2)
+                    + datetime.timedelta(seconds=latest_record_time_int)
+                    - datetime.timedelta(seconds=86400)
+                ),
                 format="YYYY-MM-DD"
             )
         with col3a:
@@ -460,9 +464,6 @@ with tab4:
                     os.startfile('start_record.bat', 'open')
                     st.toast("启动录屏中……")
                     st.session_state.update_btn_refresh_press = False
-
-
-
 
 
         # st.warning("录制服务已启用。当前暂停录制屏幕。",icon="🦫")

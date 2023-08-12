@@ -202,6 +202,17 @@ class DBManager:
         max_time = c.fetchone()[0]
         conn.close()
         return max_time
+    
+
+    # 获取表内最早的记录时间
+    def db_first_earliest_record_time(self):
+        conn = sqlite3.connect(self.db_filepath)
+        c = conn.cursor()
+
+        c.execute("SELECT MIN(videofile_time) FROM video_text")
+        min_time = c.fetchone()[0]
+        conn.close()
+        return min_time
 
 
 with open('config.json', encoding='utf-8') as f:
