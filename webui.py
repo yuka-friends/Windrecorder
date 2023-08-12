@@ -13,6 +13,7 @@ from multiprocessing import Semaphore
 import threading
 from streamlit.runtime.scriptrunner import add_script_run_ctx
 from pathlib import Path
+import pandas as pd
 
 update_button_key = "update_button"
 reset_button_key = "setting_reset"
@@ -129,6 +130,44 @@ def kill_recording():
     print(f"已结束录屏进程，{check_result.stdout}")
 
 
+# 一天之时功能模块
+class OneDay:
+    def __init__(self):
+        print("a")
+
+    def checkout(self, dt_in):
+        # 获取输入的时间
+        # dt_in 的输入格式：datetime.datetime
+        # now = datetime.datetime.now()
+        search_content = ""
+        search_date_range_in = dt_in.replace(hour=0, minute=0, second=0, microsecond=0)
+        search_date_range_out = dt_in.replace(hour=23, minute=59, second=59, microsecond=0)
+        page_index = 0
+        # 获取当日所有的索引信息
+        df,_,_ = dbManager.db_search_data(search_content, search_date_range_in, search_date_range_out,page_index,is_p_index_used=False) # 不启用页数限制，以返回所有结果
+
+        # 获得结果数量
+        search_result_num = len(df)
+
+        if search_result_num < 2:
+            # 没有结果的处理
+            print("none")
+            check, noocred_count = web_db_state_info_before()
+            return False,noocred_count,0,None,None
+        else:
+            # 有结果 - 返回其中最早、最晚的结果，以写入slider；提供总索引数目、未索引数量
+            min_timestamp = df['videofile_time'].min()
+            max_timestamp = df['videofile_time'].max()
+            min_timestamp_dt = utils.seconds_to_datetime(min_timestamp)
+            max_timestamp_dt = utils.seconds_to_datetime(max_timestamp)
+            check, noocred_count = web_db_state_info_before()
+            return True,noocred_count-1,search_result_num,min_timestamp_dt,max_timestamp_dt
+        # 返回当天是否有数据、没有索引的文件数量、搜索结果总数、最早时间datetime、最晚时间datetime
+
+
+
+
+
 # 将数据库的视频名加上-OCRED标志，使之能正常读取到
 def combine_vid_name_withOCR(video_name):
     vidname = os.path.splitext(video_name)[0] + "-OCRED" + os.path.splitext(video_name)[1]
@@ -205,19 +244,19 @@ def db_set_page(btn, page_index):
         return page_index
 
 
-# 数据库的前置索引状态提示
+# 数据库的前置更新索引状态提示
 def web_db_state_info_before():
     count, nocred_count = web_db_check_folder_marked_file(video_path)
     is_recording = repeat_check_recording()
     if nocred_count == 1 and is_recording:
         st.success(d_lang[lang]["tab_setting_db_state3"].format(nocred_count=nocred_count, count=count), icon='✅')
-        return False
+        return False,0
     elif nocred_count >= 1:
         st.warning(d_lang[lang]["tab_setting_db_state1"].format(nocred_count=nocred_count, count=count), icon='🧭')
-        return True
+        return True,nocred_count
     else:
         st.success(d_lang[lang]["tab_setting_db_state2"].format(nocred_count=nocred_count, count=count), icon='✅')
-        return False
+        return False,0
 
 
 # 检查 videos 文件夹内有无以"-OCRED"结尾的视频
@@ -289,6 +328,21 @@ def web_footer_state():
                                                    videos_file_size=videos_file_size))
 
 
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 # 主界面_________________________________________________________
 st.markdown(d_lang[lang]["main_title"])
 
@@ -296,7 +350,25 @@ tab1, tab2, tab3, tab4, tab5 = st.tabs(["一天之时", d_lang[lang]["tab_name_s
                                   d_lang[lang]["tab_name_setting"]])
 
 with tab1:
-    st.markdown("### 2023/08/10")
+    # todo 获取当日时间
+    # 根据时间检查已有数据
+    # 如有 获取最早、最晚数据时间，写入slider
+    # 如无，判断是否为未索引，引导索引；即使有，也需要提供未索引的文件数量
+    # 搜索功能实现与接入
+
+    # 标题日期
+    dt_in = datetime.datetime.now()
+    dt_in
+    day_has_data, day_noocred_count,day_search_result_num,day_min_timestamp_dt,day_max_timestamp_dt = OneDay().checkout(dt_in)
+
+
+    day_has_data, day_noocred_count,day_search_result_num,day_min_timestamp_dt,day_max_timestamp_dt
+
+    now_str = datetime.datetime.now().strftime("%Y/%m/%d")
+    st.markdown(f"### {now_str}")
+
+
+
 
     # 时间轴
     col1, col2, col3 = st.columns([3, 1, 1])

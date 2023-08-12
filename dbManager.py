@@ -107,9 +107,10 @@ class DBManager:
 
 
     # 查询关键词数据
-    def db_search_data(self, keyword_input, date_in, date_out, page_index):
+    def db_search_data(self, keyword_input, date_in, date_out, page_index,is_p_index_used=True):
         print("——查询关键词数据")
         # 初始化查询数据
+        # date_in/date_out : 类型为datetime.datetime
         with open('config.json', encoding='utf-8') as f:
             config = json.load(f)
         self.db_update_read_config(config)
@@ -130,17 +131,25 @@ class DBManager:
                     AND videofile_time BETWEEN {date_in_ts} AND {date_out_ts} """)
         all_result_counts = c.fetchone()[0]
         max_page = int(math.ceil(int(all_result_counts)/int(self.db_max_page_result)))
-
-        # 查询结果
-        df = pd.read_sql_query(f"""
-                              SELECT * FROM video_text 
-                              WHERE ocr_text LIKE '%{keyword_input}%' 
-                              AND videofile_time BETWEEN {date_in_ts} AND {date_out_ts} 
-                              LIMIT {limit} OFFSET {offset}"""
-                               , conn)
-        
         if max_page <= 0:
             max_page = 1
+
+        # 是否限制页数的搜索范围; 以pd方式返回
+        if is_p_index_used:
+            # 查询对应页数的结果
+            df = pd.read_sql_query(f"""
+                                  SELECT * FROM video_text 
+                                  WHERE ocr_text LIKE '%{keyword_input}%' 
+                                  AND videofile_time BETWEEN {date_in_ts} AND {date_out_ts} 
+                                  LIMIT {limit} OFFSET {offset}"""
+                                   , conn)
+        else:
+            # 查询所有关键词和时间段下的结果
+            df = pd.read_sql_query(f"""
+                                  SELECT * FROM video_text 
+                                  WHERE ocr_text LIKE '%{keyword_input}%' 
+                                  AND videofile_time BETWEEN {date_in_ts} AND {date_out_ts} """
+                                   , conn)
 
         conn.close()
         return df,all_result_counts,max_page

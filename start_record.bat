@@ -1,4 +1,5 @@
 @echo off
+color 0B
 echo Starting Recording Screen...
 cd /d %~dp0
 python "%~dp0\recordScreen.py"
