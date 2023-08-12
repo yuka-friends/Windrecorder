@@ -8,6 +8,7 @@ import subprocess
 import tempfile
 from dbManager import dbManager
 import json
+import win32file
 
 with open('config.json', encoding='utf-8') as f:
     config = json.load(f)
@@ -18,13 +19,27 @@ print(config)
 # ocr_short_side = int(config["ocr_short_size"])
 
 # 检查文件是否被占用
+# def is_file_in_use(file_path):
+#     try:
+#         fd = os.open(file_path, os.O_RDWR|os.O_EXCL)
+#         os.close(fd)
+#         return False
+#     except OSError:
+#         return True
+
+# 使用 win32file 的判断实现
 def is_file_in_use(file_path):
     try:
-        fd = os.open(file_path, os.O_RDWR|os.O_EXCL)
-        os.close(fd)
-        return False
-    except OSError:
+        vHandle = win32file.CreateFile(file_path, win32file.GENERIC_READ, 0, None, win32file.OPEN_EXISTING, win32file.FILE_ATTRIBUTE_NORMAL, None)
+        return int(vHandle) == win32file.INVALID_HANDLE_VALUE
+    except:
         return True
+    finally:
+        try:
+            win32file.CloseHandle(vHandle)
+        except:
+            pass
+
 
 # 提取视频i帧
 # todo - 加入检测视频是否为合法视频?

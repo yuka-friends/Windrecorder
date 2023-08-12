@@ -2,6 +2,7 @@ import os
 import shutil
 import json
 import datetime
+from datetime import timedelta
 import time
 
 import pyautogui
@@ -54,3 +55,22 @@ def seconds_to_date(seconds):
     current_seconds = seconds + 946684800 - 28800  # 2000/1/1 00:00:00 的秒数
     time_struct = time.localtime(current_seconds)
     return time.strftime("%Y-%m-%d_%H-%M-%S", time_struct)
+
+
+# 将输入的秒数格式化为HH-MM-SS
+def convert_seconds_to_hhmmss(seconds):
+  seconds = int(round(seconds))
+  td = timedelta(seconds=seconds)
+
+  hours = td.seconds // 3600
+  minutes = (td.seconds // 60) % 60
+  seconds = td.seconds % 60
+
+  time_str = ""
+  if hours > 0:
+    time_str += str(hours) + ":"
+  if minutes > 0 or hours > 0:  
+    time_str += str(minutes).zfill(2) + ":"
+  time_str += str(seconds).zfill(2)
+
+  return time_str

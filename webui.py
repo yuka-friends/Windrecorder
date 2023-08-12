@@ -18,6 +18,7 @@ update_button_key = "update_button"
 reset_button_key = "setting_reset"
 
 # python -m streamlit run webui.py
+# 初始化读取参数
 with open('config.json', encoding='utf-8') as f:
     config = json.load(f)
 print("config.json:")
@@ -27,6 +28,7 @@ db_path = config["db_path"]
 db_filename = config["db_filename"]
 db_filepath = os.path.join(db_path, db_filename)
 video_path = config["record_videos_dir"]
+video_length = config["record_time"]
 lang = config["lang"]
 
 with open("languages.json", encoding='utf-8') as f:
@@ -222,6 +224,29 @@ def web_db_check_folder_marked_file(folder_path):
     return count, nocred_count
 
 
+# 检查配置使用的ocr引擎
+def check_ocr_engine():
+    global config_ocr_engine_choice_index
+    if config["ocr_engine"] == "Windows.Media.Ocr.Cli":
+        config_ocr_engine_choice_index = 0
+    elif config["ocr_engine"] == "ChineseOCR_lite_onnx":
+        config_ocr_engine_choice_index = 1
+
+
+# 估计索引时间
+def estimate_index_time():
+    count, nocred_count = web_db_check_folder_marked_file(video_path)
+    vid_length = int(video_length)/60
+    ocr_cost_time_table = {
+        "Windows.Media.Ocr.Cli":15,
+        "ChineseOCR_lite_onnx":25
+    }
+    ocr_cost_time = ocr_cost_time_table[config["ocr_engine"]]
+    estimate_time = int(nocred_count) * int(round(vid_length)) * int(ocr_cost_time)
+    estimate_time_str = utils.convert_seconds_to_hhmmss(estimate_time)
+    return estimate_time_str
+
+
 # 更改语言
 def config_set_lang(lang_name):
     INVERTED_LANG_MAP = {v: k for k, v in lang_map.items()}
@@ -385,6 +410,7 @@ with tab3:
     st.write("WIP")
     st.write("数据记忆的时间柱状图表；词云")
 
+
 with tab4:
     st.markdown(d_lang[lang]["tab_record_title"])
 
@@ -462,11 +488,12 @@ with tab5:
                                       on_click=update_database_clicked)
             is_shutdown_pasocon_after_updatedDB = st.checkbox('更新完毕后关闭计算机', value=False)
 
+            # 更新数据库按钮
             if update_db_btn:
                 try:
-                    with st.spinner(d_lang[lang]["tab_setting_db_tip1"]):
+                    estimate_time_str = estimate_index_time()
+                    with st.spinner(d_lang[lang]["tab_setting_db_tip1"].format(estimate_index_time=estimate_index_time)):
                         timeCost = time.time()
-                        # todo 给出预估剩余时间
                         maintainManager.maintain_manager_main()
 
                         timeCost = time.time() - timeCost
@@ -474,20 +501,21 @@ with tab5:
                     st.exception(ex)
                     # st.write(f'Something went wrong!: {ex}')
                 else:
-                    st.write(d_lang[lang]["tab_setting_db_tip3"].format(timeCost=timeCost))
+                    timeCostStr = utils.convert_seconds_to_hhmmss(timeCost)
+                    st.write(d_lang[lang]["tab_setting_db_tip3"].format(timeCostStr=timeCostStr))
                 finally:
                     if is_shutdown_pasocon_after_updatedDB:
                         subprocess.run(["shutdown", "-s", "-t", "60"], shell=True)
                     st.snow()
                     st.session_state.update_button_disabled = False
                     st.button(d_lang[lang]["tab_setting_db_btn_gotit"], key=reset_button_key)
+        
         with col2:
-            if config["ocr_engine"] == "Windows.Media.Ocr.Cli":
-                config_ocr_engine_choice_index = 0
-            elif config["ocr_engine"] == "ChineseOCR_lite_onnx":
-                config_ocr_engine_choice_index = 1
+            # 设置ocr引擎
+            check_ocr_engine()
             config_ocr_engine = st.selectbox('本地 OCR 引擎', ('Windows.Media.Ocr.Cli', 'ChineseOCR_lite_onnx'),
                                              index=config_ocr_engine_choice_index)
+
 
         st.divider()
 
