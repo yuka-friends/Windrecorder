@@ -68,9 +68,9 @@ def convert_seconds_to_hhmmss(seconds):
 
   time_str = ""
   if hours > 0:
-    time_str += str(hours) + ":"
+    time_str += str(hours) + "h"
   if minutes > 0 or hours > 0:  
-    time_str += str(minutes).zfill(2) + ":"
-  time_str += str(seconds).zfill(2)
+    time_str += str(minutes).zfill(2) + "m"
+  time_str += str(seconds).zfill(2) + "s"
 
   return time_str
