@@ -98,9 +98,12 @@ def repeat_check_recording():
     global state_is_recording
     if "python" in check_output:
         state_is_recording = True
+        print(f"state_is_recording:{state_is_recording}")
+        return True
     else:
         state_is_recording = False
-    print(f"state_is_recording:{state_is_recording}")
+        print(f"state_is_recording:{state_is_recording}")
+        return False
 
     # 试图使用据说可以自动更新的组件来强制刷新状态
     # (https://towardsdatascience.com/creating-dynamic-dashboards-with-streamlit-747b98a68ab5)
@@ -205,7 +208,11 @@ def db_set_page(btn, page_index):
 # 数据库的前置索引状态提示
 def web_db_state_info_before():
     count, nocred_count = web_db_check_folder_marked_file(video_path)
-    if nocred_count > 0:
+    is_recording = repeat_check_recording()
+    if nocred_count == 1 and is_recording:
+        st.success(d_lang[lang]["tab_setting_db_state3"].format(nocred_count=nocred_count, count=count), icon='✅')
+        return False
+    elif nocred_count >= 1:
         st.warning(d_lang[lang]["tab_setting_db_state1"].format(nocred_count=nocred_count, count=count), icon='🧭')
         return True
     else:
@@ -492,7 +499,7 @@ with tab5:
             if update_db_btn:
                 try:
                     estimate_time_str = estimate_index_time()
-                    with st.spinner(d_lang[lang]["tab_setting_db_tip1"].format(estimate_index_time=estimate_index_time)):
+                    with st.spinner(d_lang[lang]["tab_setting_db_tip1"].format(estimate_time_str=estimate_time_str)):
                         timeCost = time.time()
                         maintainManager.maintain_manager_main()
 
