@@ -52,9 +52,22 @@ def date_to_seconds(date_str):
 
 # 将2000s秒数转为时间
 def seconds_to_date(seconds):
-    current_seconds = seconds + 946684800 - 28800  # 2000/1/1 00:00:00 的秒数
-    time_struct = time.localtime(current_seconds)
-    return time.strftime("%Y-%m-%d_%H-%M-%S", time_struct)
+    start_time = 946684800
+    dt = datetime.datetime.utcfromtimestamp(start_time + seconds)
+    # dt = dt.replace(tzinfo=datetime.timezone.utc).astimezone(tz=None)
+    return dt.strftime("%Y-%m-%d_%H-%M-%S")
+
+    # 旧实现
+    # current_seconds = seconds + 946684800 - 28800  # 2000/1/1 00:00:00 的秒数，减去八小时
+    # time_struct = time.localtime(current_seconds)
+    # return time.strftime("%Y-%m-%d_%H-%M-%S", time_struct)
+
+
+# 将2000s秒数转为datetime格式
+def seconds_to_datetime(seconds):
+    start_time = 946684800
+    dt = datetime.datetime.utcfromtimestamp(start_time + seconds)
+    return dt
 
 
 # 将输入的秒数格式化为HH-MM-SS
