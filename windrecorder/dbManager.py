@@ -1,11 +1,12 @@
 import sqlite3
 import os
-import pandas as pd
 import json
 import datetime
-from utils import date_to_seconds, seconds_to_date
 import math
 
+import pandas as pd
+
+from windrecorder.utils import date_to_seconds, seconds_to_date
 
 class DBManager:
     def __init__(self, db_path, db_filename, db_filepath, db_max_page_result):

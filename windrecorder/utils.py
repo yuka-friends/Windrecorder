@@ -3,7 +3,6 @@ import shutil
 import json
 import datetime
 from datetime import timedelta
-import time
 
 import pyautogui
 

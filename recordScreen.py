@@ -4,7 +4,8 @@ import time
 import os
 from os import getpid
 import json
-import utils
+
+import windrecorder.utils as utils
 
 ffmpeg_path = 'ffmpeg'
 
