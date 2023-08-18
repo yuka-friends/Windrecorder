@@ -72,7 +72,7 @@ def show_n_locate_video_timestamp(df, num):
 # 检测是否初次使用工具，如果不存在数据库/数据库中只有一条数据，则判定为是
 def check_is_onboarding():
     is_db_existed = dbManager.db_main_initialize()
-    if is_db_existed == False:
+    if not is_db_existed:
         return True
     latest_db_records = dbManager.db_num_records()
     if latest_db_records == 1:
@@ -252,7 +252,7 @@ with tab2:
     col1, col2 = st.columns([1, 2])
     with col1:
         is_onboarding = check_is_onboarding()
-        if is_onboarding == True:
+        if is_onboarding:
             # 数据库不存在，展示 Onboarding 提示
             st.success("欢迎使用 Windrecorder！", icon="😺")
             intro_markdown = Path("onboarding.md").read_text(encoding='utf-8')
@@ -349,7 +349,7 @@ with tab4:
         if 'update_btn_refresh_press' not in st.session_state:
             st.session_state.update_btn_refresh_press = False
         def update_record_btn_state():
-            if st.session_state.update_btn_refresh_press == True:
+            if st.session_state.update_btn_refresh_press:
                 st.session_state.update_btn_refresh_press = False
             else:
                 st.session_state.update_btn_refresh_press = True
@@ -358,7 +358,7 @@ with tab4:
         
         btn_refresh = st.button("刷新服务状态 ⟳",on_click=update_record_btn_state)
 
-        if st.session_state.update_btn_refresh_press == True :
+        if st.session_state.update_btn_refresh_press:
 
             if record.is_recording():
                 st.success("正在持续录制屏幕……  请刷新查看最新运行状态。", icon="🦚")
