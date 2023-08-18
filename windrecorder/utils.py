@@ -3,8 +3,32 @@ import shutil
 import json
 import datetime
 from datetime import timedelta
+import subprocess
+import time
+import threading
 
 import pyautogui
+
+import windrecorder.files as files
+from windrecorder.config import config
+
+
+# 启动定时执行线程
+class RepeatingTimer(threading.Thread):
+    def __init__(self, interval, function):
+        threading.Thread.__init__(self)
+        self.interval = interval
+        self.function = function
+        self.running = False
+
+    def run(self):
+        self.running = True
+        while self.running:
+            time.sleep(self.interval)
+            self.function()
+
+    def stop(self):
+        self.running = False
 
 def empty_directory(path):
     with os.scandir(path) as it:
@@ -21,17 +45,6 @@ def get_dir_size(dir):
     for root, _, files in os.walk(dir):
         size += sum([os.path.getsize(os.path.join(root, name)) for name in files])
     return size
-
-
-# 更写 config.json
-def config_set(name, value):
-    with open('config.json', encoding='utf-8') as f:
-        config = json.load(f)
-
-    config[name] = value
-
-    with open('config.json', 'w', encoding='utf-8') as f:
-        json.dump(config, f, indent=2)
 
 
 def get_screen_resolution():
@@ -86,3 +99,35 @@ def convert_seconds_to_hhmmss(seconds):
   time_str += str(seconds).zfill(2) + "s"
 
   return time_str
+
+
+# 结束录屏服务进程
+def kill_recording():
+    with open("lock_file_record", encoding='utf-8') as f:
+        check_pid = int(f.read())
+    check_result = subprocess.run(['taskkill', '/pid', str(check_pid), '-t','-f'], stdout=subprocess.PIPE, text=True)
+    # st.toast(f"已结束录屏进程，{check_result.stdout}")
+    print(f"已结束录屏进程，{check_result.stdout}")
+
+
+# 计算视频对应时间戳
+def calc_vid_inside_time(df, num):
+    fulltime = df.iloc[num]['videofile_time']
+    vidfilename = os.path.splitext(df.iloc[num]['videofile_name'])[0]
+    vid_timestamp = fulltime - date_to_seconds(vidfilename)
+    print("fulltime:" + str(fulltime) + "\n vidfilename:" + str(vidfilename) + "\n vid_timestamp:" + str(vid_timestamp))
+    return vid_timestamp
+
+
+# 估计索引时间
+def estimate_indexing_time():
+    count, nocred_count = files.get_videos_and_ocred_videos_count(config.record_videos_dir)
+    record_minutes = int(config.record_seconds)/60
+    ocr_cost_time_table = {
+        "Windows.Media.Ocr.Cli":15,
+        "ChineseOCR_lite_onnx":25
+    }
+    ocr_cost_time = ocr_cost_time_table[config.ocr_engine]
+    estimate_time = int(nocred_count) * int(round(record_minutes)) * int(ocr_cost_time)
+    estimate_time_str = convert_seconds_to_hhmmss(estimate_time)
+    return estimate_time_str
