@@ -1,22 +1,20 @@
-import cv2
-import numpy as np
 import os
-from chineseocr_lite_onnx.model import OcrHandle
-from utils import empty_directory, date_to_seconds, seconds_to_date
 import base64
 import subprocess
-import tempfile
-from dbManager import dbManager
 import json
+
+import cv2
+import numpy as np
+from chineseocr_lite_onnx.model import OcrHandle
 import win32file
 
-with open('config.json', encoding='utf-8') as f:
-    config = json.load(f)
-print("config.json:")
-print(config)
+from windrecorder.utils import empty_directory, date_to_seconds, seconds_to_date
+from windrecorder.dbManager import dbManager
+from windrecorder.config import config
 
 
-# ocr_short_side = int(config["ocr_short_size"])
+
+# ocr_short_side = int(config.ocr_short_size)
 
 # 检查文件是否被占用
 # def is_file_in_use(file_path):
@@ -67,9 +65,7 @@ def extract_iframe(video_file, iframe_interval=4000):
 
 # OCR 分流器
 def ocr_image(img_input):
-    with open('config.json', encoding='utf-8') as f:
-        config = json.load(f)
-    ocr_engine = config["ocr_engine"]
+    ocr_engine = config.ocr_engine
     print(f"ocr_engine:{ocr_engine}")
     if ocr_engine == "Windows.Media.Ocr.Cli":
         return ocr_image_ms(img_input)
@@ -106,11 +102,11 @@ def ocr_image_ms(img_input):
     # 调用Windows.Media.Ocr.Cli.exe,参数为图片路径
     command = ['Windows.Media.Ocr.Cli.exe', img_input]
 
-    proc = subprocess.Popen(command, stdout=subprocess.PIPE)
+    proc = subprocess.run(command, capture_output=True)
     encodings_try = ['gbk', 'utf-8']  # 强制兼容
     for enc in encodings_try:
         try:
-            text = proc.stdout.read().decode(enc)
+            text = proc.stdout.decode(enc)
             break
         except UnicodeDecodeError:
             pass
@@ -274,15 +270,10 @@ def ocr_process_videos(video_path, iframe_path, db_filepath):
 
 
 def maintain_manager_main():
-    with open('config.json', encoding='utf-8') as f:
-        config = json.load(f)
-    print("config.json:")
-    print(config)
-
-    db_path = config["db_path"]
-    db_filename = config["db_filename"]
+    db_path = config.db_path
+    db_filename = config.db_filename
     db_filepath = os.path.join(db_path, db_filename)
-    record_videos_dir = config["record_videos_dir"]
+    record_videos_dir = config.record_videos_dir
     i_frames_dir = 'i_frames'
 
     if not os.path.exists(i_frames_dir):

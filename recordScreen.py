@@ -4,20 +4,17 @@ import time
 import os
 from os import getpid
 import json
-import utils
+
+import windrecorder.utils as utils
+from windrecorder.config import config
 
 ffmpeg_path = 'ffmpeg'
 
-with open('config.json', encoding='utf-8') as f:
-    config = json.load(f)
-print("config.json:")
-print(config)
-
 
 def record_screen(
-        output_dir=config["record_videos_dir"],
-        target_res=config["target_screen_res"],
-        record_time=config["record_time"]
+        output_dir=config.record_videos_dir,
+        target_res=config.target_screen_res,
+        record_time=config.record_seconds
 ):
     """
     用ffmpeg持续录制屏幕,每15分钟保存一个视频文件

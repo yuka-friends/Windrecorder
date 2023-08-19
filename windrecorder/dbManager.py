@@ -1,11 +1,13 @@
 import sqlite3
 import os
-import pandas as pd
 import json
 import datetime
-from utils import date_to_seconds, seconds_to_date
 import math
 
+import pandas as pd
+
+from windrecorder.utils import date_to_seconds, seconds_to_date
+from windrecorder.config import config
 
 class DBManager:
     def __init__(self, db_path, db_filename, db_filepath, db_max_page_result):
@@ -52,7 +54,7 @@ class DBManager:
 
     # 重新读取配置文件
     def db_update_read_config(self, config):
-        self.db_max_page_result = int(config["max_page_result"])
+        self.db_max_page_result = int(config.max_page_result)
 
 
     # 初始化数据库：检查、创建、连接数据库对象
@@ -111,8 +113,6 @@ class DBManager:
         print("——查询关键词数据")
         # 初始化查询数据
         # date_in/date_out : 类型为datetime.datetime
-        with open('config.json', encoding='utf-8') as f:
-            config = json.load(f)
         self.db_update_read_config(config)
         date_in_ts = int(date_to_seconds(date_in.strftime("%Y-%m-%d_00-00-00")))
         date_out_ts = int(date_to_seconds(date_out.strftime("%Y-%m-%d_23-59-59")))
@@ -224,12 +224,9 @@ class DBManager:
         return min_time
 
 
-with open('config.json', encoding='utf-8') as f:
-    config = json.load(f)
-
 dbManager = DBManager(
-    config["db_path"],
-    config["db_filename"],
-    os.path.join(config["db_path"], config["db_filename"]),
-    int(config["max_page_result"])
+    config.db_path,
+    config.db_filename,
+    config.db_filepath,
+    int(config.max_page_result)
 )
