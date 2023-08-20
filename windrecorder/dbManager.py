@@ -24,9 +24,8 @@ class DBManager:
         self.db_initialize()
         return conn_check
 
-        # 初始化数据库：如果内容为空，则创建表初始化
 
-
+    # 初始化数据库：如果内容为空，则创建表初始化
     def db_initialize(self):
         print("——初始化数据库：如果内容为空，则创建表初始化")
         conn = sqlite3.connect(self.db_filepath)
@@ -110,6 +109,7 @@ class DBManager:
 
     # 查询关键词数据
     def db_search_data(self, keyword_input, date_in, date_out, page_index,is_p_index_used=True):
+        # 返回值：df，所有结果的总行数，最大分几页
         print("——查询关键词数据")
         # 初始化查询数据
         # date_in/date_out : 类型为datetime.datetime
@@ -222,6 +222,10 @@ class DBManager:
         min_time = c.fetchone()[0]
         conn.close()
         return min_time
+
+
+
+
 
 
 dbManager = DBManager(

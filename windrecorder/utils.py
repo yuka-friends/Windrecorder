@@ -84,6 +84,25 @@ def seconds_to_datetime(seconds):
     return dt
 
 
+# 将2000s秒数转为24.格式
+def seconds_to_24numfloat(seconds):
+    dt = seconds_to_datetime(seconds)
+    hour = dt.hour
+    minute = dt.minute
+    minute_decimal = minute / 60 
+    time_float = hour + minute_decimal
+    return round(time_float, 2)
+
+
+# 将datatime转为24.格式
+def datetime_to_24numfloat(dt):
+    hour = dt.hour
+    minute = dt.minute
+    minute_decimal = minute / 60 
+    time_float = hour + minute_decimal
+    return round(time_float, 2)
+
+
 # 将datetime输入的时间转为  %Y-%m-%d_%H-%M-%S str
 def datetime_to_dateStr(dt):
     return dt.strftime("%Y-%m-%d_%H-%M-%S")
@@ -94,7 +113,7 @@ def datetime_to_dateDayStr(dt):
     return dt.strftime("%Y-%m-%d")
 
 
-# 将输入的秒数格式化为HH-MM-SS
+# 将输入的秒数格式化为 HH-MM-SS str
 def convert_seconds_to_hhmmss(seconds):
   seconds = int(round(seconds))
   td = timedelta(seconds=seconds)

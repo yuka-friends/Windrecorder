@@ -203,7 +203,7 @@ with tab1:
     dt_in = datetime.datetime.now()
     dt_in
     # 检查数据库中关于今天的数据
-    day_has_data, day_noocred_count,day_search_result_num,day_min_timestamp_dt,day_max_timestamp_dt = OneDay().checkout(dt_in)
+    day_has_data, day_noocred_count,day_search_result_num,day_min_timestamp_dt,day_max_timestamp_dt,day_df = OneDay().checkout(dt_in)
 
     day_has_data, day_noocred_count,day_search_result_num,day_min_timestamp_dt,day_max_timestamp_dt
 
@@ -214,6 +214,10 @@ with tab1:
 
     # 判断数据库中有无今天的数据，有则启用功能：
     if day_has_data:
+        # 可视化时间轴
+        chart_data = OneDay().get_day_statistic_chart(df = day_df, start = day_min_timestamp_dt.hour, end = day_max_timestamp_dt.hour+1)
+        print(chart_data)
+
         # 时间轴
         col1, col2, col3 = st.columns([3, 1, 1])
         with col1:
@@ -228,9 +232,11 @@ with tab1:
         default_time = datetime.time(12, 30)
         st.slider("Time Rewind",label_visibility="collapsed",min_value=start_time,max_value=end_time,value=default_time)
 
+        st.bar_chart(chart_data,x="hour",y="data",use_container_width=True,height=200)
+
         col1a, col2a = st.columns([1,3])
         with col1a:
-            st.divider()
+            # st.divider()
             st.checkbox("启用搜索")
             col1,col2 = st.columns([2,1])
             with col1:

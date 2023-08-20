@@ -1,3 +1,5 @@
+import pandas as pd
+
 import windrecorder.utils as utils
 import windrecorder.files as files
 from windrecorder.dbManager import dbManager
@@ -36,8 +38,27 @@ class OneDay:
             min_timestamp_dt = utils.seconds_to_datetime(min_timestamp)
             max_timestamp_dt = utils.seconds_to_datetime(max_timestamp)
             _, noocred_count = files.get_videos_and_ocred_videos_count(config.record_videos_dir)
-            return True,noocred_count-1,search_result_num,min_timestamp_dt,max_timestamp_dt
-        # 返回当天是否有数据、没有索引的文件数量、搜索结果总数、最早时间datetime、最晚时间datetime
+            return True,noocred_count-1,search_result_num,min_timestamp_dt,max_timestamp_dt,df
+        # 返回：当天是否有数据、没有索引的文件数量、搜索结果总数、最早时间datetime、最晚时间datetime、df
+    
+
+    # 获得当天表中的时间轴统计数据
+    def get_day_statistic_chart(self,df,start,end):
+        # 入参：df、开始小时数、结束小时数
+        if start == end:
+            end += 1
+        
+        df_B = df.copy()
+        df_B['videofile_time'] = df_B['videofile_time'].apply(utils.seconds_to_24numfloat)
+      
+        df_C = pd.DataFrame(columns=['hour', 'data'])
+        for step in range(int(start), int(end)):
+          filtered = df_B[(df_B['videofile_time'] >= step) & (df_B['videofile_time'] < step + 0.5)]
+          df_C.loc[len(df_C)] = [step, len(filtered)]
+      
+        return df_C
+
+
 
 
 
