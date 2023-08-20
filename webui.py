@@ -189,62 +189,78 @@ st.markdown(d_lang[config.lang]["main_title"])
 tab1, tab2, tab3, tab4, tab5 = st.tabs(["一天之时", d_lang[config.lang]["tab_name_search"], "记忆摘要", d_lang[config.lang]["tab_name_recording"],
                                   d_lang[config.lang]["tab_name_setting"]])
 
-# with tab1:
-#     # todo 获取当日时间
-#     # 根据时间检查已有数据
-#     # 如有 获取最早、最晚数据时间，写入slider
-#     # 如无，判断是否为未索引，引导索引；即使有，也需要提供未索引的文件数量
-#     # 搜索功能实现与接入
+# TAB：今天也是一天
+with tab1:
+    # todo 获取当日时间
+    # 根据时间检查已有数据
+    # 如有 获取最早、最晚数据时间，写入slider
+    # 如无，判断是否为未索引，引导索引；即使有，也需要提供未索引的文件数量
+    # 搜索功能实现与接入
 
-#     # 标题日期
-#     dt_in = datetime.datetime.now()
-#     dt_in
-#     day_has_data, day_noocred_count,day_search_result_num,day_min_timestamp_dt,day_max_timestamp_dt = OneDay().checkout(dt_in)
+    # 标题日期
+
+    # 获取现在的时间
+    dt_in = datetime.datetime.now()
+    dt_in
+    # 检查数据库中关于今天的数据
+    day_has_data, day_noocred_count,day_search_result_num,day_min_timestamp_dt,day_max_timestamp_dt = OneDay().checkout(dt_in)
+
+    day_has_data, day_noocred_count,day_search_result_num,day_min_timestamp_dt,day_max_timestamp_dt
+
+    # 标题
+    # todo：添加今天是星期几？
+    now_str = dt_in.strftime("%Y/%m/%d")
+    st.markdown(f"### {now_str}")
+
+    # 判断数据库中有无今天的数据，有则启用功能：
+    if day_has_data:
+        # 时间轴
+        col1, col2, col3 = st.columns([3, 1, 1])
+        with col1:
+            st.markdown("当日最早记录：:orange[22-59-10]")
+        with col2:
+            st.markdown("✈")
+        with col3:
+            st.markdown('<p align="right"> 现在 </p>', unsafe_allow_html=True)
+
+        start_time = datetime.time(11, 30)
+        end_time = datetime.time(21, 30)
+        default_time = datetime.time(12, 30)
+        st.slider("Time Rewind",label_visibility="collapsed",min_value=start_time,max_value=end_time,value=default_time)
+
+        col1a, col2a = st.columns([1,3])
+        with col1a:
+            st.divider()
+            st.checkbox("启用搜索")
+            col1,col2 = st.columns([2,1])
+            with col1:
+                st.text_input(d_lang[config.lang]["tab_search_compname"], 'Hello',key=2)
+            with col2:
+                st.date_input("当天日期")
+            col1b,col2b,col3b = st.columns([2,1,2])
+            with col1b:
+                st.button("← 上条记录",use_container_width=True)
+            with col2b:
+                st.markdown("<p align='center'> 1/5 </p>", unsafe_allow_html=True)
+            with col3b:
+                st.button("下条记录 →",use_container_width=True)
+        with col2a:
+            st.write("video placed here")
+            st.info("2023-08-07_22-59-10 时间下没有录制记录。", icon="🎐")
+            st.warning("磁盘上没有 2023-08-07_22-59-10.mp4。", icon="🦫")
 
 
-#     day_has_data, day_noocred_count,day_search_result_num,day_min_timestamp_dt,day_max_timestamp_dt
+    else:
+        # 数据库中没有今天的记录
+        # 判断videos下有无今天的视频文件
+        if files.find_filename_in_dir("videos",utils.datetime_to_dateDayStr(dt_in)):
+            st.info("数据库中没有这一天的数据索引。不过，磁盘上有这一天的视频还未索引，请前往「设置」进行索引。→", icon="📎")
+        else:
+            st.info("没有找到这一天的数据索引和视频文件。", icon="🎐")
 
-#     now_str = datetime.datetime.now().strftime("%Y/%m/%d")
-#     st.markdown(f"### {now_str}")
 
 
 
-
-#     # 时间轴
-#     col1, col2, col3 = st.columns([3, 1, 1])
-#     with col1:
-#         st.markdown("当日最早记录：:orange[22-59-10]")
-#     with col2:
-#         st.markdown("✈")
-#     with col3:
-#         st.markdown('<p align="right"> 现在 </p>', unsafe_allow_html=True)
-
-#     start_time = datetime.time(11, 30)
-#     end_time = datetime.time(21, 30)
-#     default_time = datetime.time(12, 30)
-#     st.slider("Time Rewind",label_visibility="collapsed",min_value=start_time,max_value=end_time,value=default_time)
-#     # st.slider("Time Rewind",label_visibility="collapsed")
-    
-#     col1a, col2a = st.columns([1,3])
-#     with col1a:
-#         st.divider()
-#         st.checkbox("启用搜索")
-#         col1,col2 = st.columns([2,1])
-#         with col1:
-#             st.text_input(d_lang[config.lang]["tab_search_compname"], 'Hello',key=2)
-#         with col2:
-#             st.date_input("当天日期")
-#         col1b,col2b,col3b = st.columns([2,1,2])
-#         with col1b:
-#             st.button("← 上条记录",use_container_width=True)
-#         with col2b:
-#             st.markdown("<p align='center'> 1/5 </p>", unsafe_allow_html=True)
-#         with col3b:
-#             st.button("下条记录 →",use_container_width=True)
-#     with col2a:
-#         st.write("video placed here")
-#         st.info("2023-08-07_22-59-10 时间下没有录制记录。", icon="🎐")
-#         st.warning("磁盘上没有 2023-08-07_22-59-10.mp4。", icon="🦫")
 
 
 
@@ -405,34 +421,35 @@ with tab5:
                                       disabled=st.session_state.get("update_button_disabled", False),
                                       on_click=update_database_clicked)
             is_shutdown_pasocon_after_updatedDB = st.checkbox('更新完毕后关闭计算机', value=False)
-
-            # 更新数据库按钮
-            if update_db_btn:
-                try:
-                    estimate_time_str = utils.estimate_indexing_time()
-                    with st.spinner(d_lang[config.lang]["tab_setting_db_tip1"].format(estimate_time_str=estimate_time_str)):
-                        timeCost = time.time()
-                        maintainManager.maintain_manager_main()
-
-                        timeCost = time.time() - timeCost
-                except Exception as ex:
-                    st.exception(ex)
-                    # st.write(f'Something went wrong!: {ex}')
-                else:
-                    timeCostStr = utils.convert_seconds_to_hhmmss(timeCost)
-                    st.write(d_lang[config.lang]["tab_setting_db_tip3"].format(timeCostStr=timeCostStr))
-                finally:
-                    if is_shutdown_pasocon_after_updatedDB:
-                        subprocess.run(["shutdown", "-s", "-t", "60"], shell=True)
-                    st.snow()
-                    st.session_state.update_button_disabled = False
-                    st.button(d_lang[config.lang]["tab_setting_db_btn_gotit"], key=reset_button_key)
         
         with col2:
             # 设置ocr引擎
             check_ocr_engine()
             config_ocr_engine = st.selectbox('本地 OCR 引擎', ('Windows.Media.Ocr.Cli', 'ChineseOCR_lite_onnx'),
                                              index=config_ocr_engine_choice_index)
+
+        # 更新数据库按钮
+        if update_db_btn:
+            try:
+                st.divider()
+                estimate_time_str = utils.estimate_indexing_time()
+                with st.spinner(d_lang[config.lang]["tab_setting_db_tip1"].format(estimate_time_str=estimate_time_str)):
+                    timeCost = time.time()
+                    maintainManager.maintain_manager_main()
+
+                    timeCost = time.time() - timeCost
+            except Exception as ex:
+                st.exception(ex)
+                # st.write(f'Something went wrong!: {ex}')
+            else:
+                timeCostStr = utils.convert_seconds_to_hhmmss(timeCost)
+                st.write(d_lang[config.lang]["tab_setting_db_tip3"].format(timeCostStr=timeCostStr))
+            finally:
+                if is_shutdown_pasocon_after_updatedDB:
+                    subprocess.run(["shutdown", "-s", "-t", "60"], shell=True)
+                st.snow()
+                st.session_state.update_button_disabled = False
+                st.button(d_lang[config.lang]["tab_setting_db_btn_gotit"], key=reset_button_key)
 
 
         st.divider()

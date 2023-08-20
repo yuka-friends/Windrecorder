@@ -54,7 +54,7 @@
         "tab_setting_db_btn": "更新数据库",
         "tab_setting_db_tip1": "更新数据库中，请不要操作或刷新页面。您可以在后台命令行界面看到更新过程。预估所需时间：{estimate_time_str}",
         "tab_setting_db_tip2": "哎呀出错了…… 错误信息: {ex}",
-        "tab_setting_db_tip3": "数据库更新成功！用时： {timeCostStr}",
+        "tab_setting_db_tip3": "🧃 数据库更新成功！用时： {timeCostStr}",
         "tab_setting_db_btn_gotit": "我知道了",
         "tab_setting_ui_title": "#### 界面\n",
         "tab_setting_ui_result_num": "每页显示结果的最大数量",

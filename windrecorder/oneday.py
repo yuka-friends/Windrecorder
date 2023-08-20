@@ -38,3 +38,6 @@ class OneDay:
             _, noocred_count = files.get_videos_and_ocred_videos_count(config.record_videos_dir)
             return True,noocred_count-1,search_result_num,min_timestamp_dt,max_timestamp_dt
         # 返回当天是否有数据、没有索引的文件数量、搜索结果总数、最早时间datetime、最晚时间datetime
+
+
+

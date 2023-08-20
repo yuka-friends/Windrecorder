@@ -47,10 +47,12 @@ def get_dir_size(dir):
     return size
 
 
+# 获得屏幕分辨率
 def get_screen_resolution():
     return pyautogui.size()
 
-# 将输入的文件时间转为2000s秒数
+
+# 将输入的文件（ %Y-%m-%d_%H-%M-%S str）时间转为2000s秒数
 def date_to_seconds(date_str):
     print("——将输入的文件时间转为2000s秒数")
     # 这里我们先定义了时间格式,然后设置一个epoch基准时间为2000年1月1日。使用strptime()将输入的字符串解析为datetime对象,然后计算这个时间和epoch时间的时间差,转换为秒数返回。
@@ -62,7 +64,7 @@ def date_to_seconds(date_str):
     return int(time_delta.total_seconds())
 
 
-# 将2000s秒数转为时间
+# 将2000s秒数格式化为时间 %Y-%m-%d_%H-%M-%S
 def seconds_to_date(seconds):
     start_time = 946684800
     dt = datetime.datetime.utcfromtimestamp(start_time + seconds)
@@ -80,6 +82,16 @@ def seconds_to_datetime(seconds):
     start_time = 946684800
     dt = datetime.datetime.utcfromtimestamp(start_time + seconds)
     return dt
+
+
+# 将datetime输入的时间转为  %Y-%m-%d_%H-%M-%S str
+def datetime_to_dateStr(dt):
+    return dt.strftime("%Y-%m-%d_%H-%M-%S")
+
+
+# 将datetime输入的时间转为  %Y-%m-%d str
+def datetime_to_dateDayStr(dt):
+    return dt.strftime("%Y-%m-%d")
 
 
 # 将输入的秒数格式化为HH-MM-SS
