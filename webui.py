@@ -2,6 +2,7 @@ import os
 import time
 import json
 import datetime
+from datetime import timedelta
 from collections import OrderedDict
 import subprocess
 import threading
@@ -191,58 +192,53 @@ tab1, tab2, tab3, tab4, tab5 = st.tabs(["一天之时", d_lang[config.lang]["tab
 
 # TAB：今天也是一天
 with tab1:
-    # todo 获取当日时间
-    # 根据时间检查已有数据
-    # 如有 获取最早、最晚数据时间，写入slider
-    # 如无，判断是否为未索引，引导索引；即使有，也需要提供未索引的文件数量
-    # 搜索功能实现与接入
-
-    # 标题日期
-
+    # 标题
+    st.markdown("### 一天之时")
+    # todo：添加今天是星期几？
+    col1c,col2c = st.columns([1,11])
+    with col1c:
+        day_date_input = st.date_input("当天日期",label_visibility="collapsed")
+    with col2c:
+        st.empty()
+    
     # 获取现在的时间
-    dt_in = datetime.datetime.now()
-    dt_in
+    # dt_in = datetime.datetime.now()
+    dt_in = datetime.datetime(day_date_input.year,day_date_input.month,day_date_input.day,0,0,0)
     # 检查数据库中关于今天的数据
     day_has_data, day_noocred_count,day_search_result_num,day_min_timestamp_dt,day_max_timestamp_dt,day_df = OneDay().checkout(dt_in)
 
-    day_has_data, day_noocred_count,day_search_result_num,day_min_timestamp_dt,day_max_timestamp_dt
+    # day_has_data, day_noocred_count,day_search_result_num,day_min_timestamp_dt,day_max_timestamp_dt
 
-    # 标题
-    # todo：添加今天是星期几？
-    now_str = dt_in.strftime("%Y/%m/%d")
-    st.markdown(f"### {now_str}")
 
     # 判断数据库中有无今天的数据，有则启用功能：
     if day_has_data:
+
+        # # 时间轴信息
+        # col1, col2, col3 = st.columns([3, 1, 1])
+        # with col1:
+        #     day_earliest = day_min_timestamp_dt.strftime("%H:%M:%S")
+        #     st.markdown(f'当日最早记录于 :orange[{day_earliest}]')
+        # with col2:
+        #     st.markdown("✈")
+        # with col3:
+        #     day_latest = day_max_timestamp_dt.strftime("%H:%M:%S")
+        #     st.markdown(f'<p align="right">最晚记录于 <span  style="color:chocolate">{day_latest}<span> </p>', unsafe_allow_html=True)
+
+        # 滑动控制杆
+        start_time = datetime.time(day_min_timestamp_dt.hour, day_min_timestamp_dt.minute)
+        end_time = datetime.time(day_max_timestamp_dt.hour, day_max_timestamp_dt.minute)
+        st.slider("Time Rewind",label_visibility="collapsed",min_value=start_time,max_value=end_time,value=end_time,step=timedelta(seconds=30),disabled=False)
+
         # 可视化时间轴
-        chart_data = OneDay().get_day_statistic_chart(df = day_df, start = day_min_timestamp_dt.hour, end = day_max_timestamp_dt.hour+1)
-        print(chart_data)
-
-        # 时间轴
-        col1, col2, col3 = st.columns([3, 1, 1])
-        with col1:
-            st.markdown("当日最早记录：:orange[22-59-10]")
-        with col2:
-            st.markdown("✈")
-        with col3:
-            st.markdown('<p align="right"> 现在 </p>', unsafe_allow_html=True)
-
-        start_time = datetime.time(11, 30)
-        end_time = datetime.time(21, 30)
-        default_time = datetime.time(12, 30)
-        st.slider("Time Rewind",label_visibility="collapsed",min_value=start_time,max_value=end_time,value=default_time)
-
-        st.bar_chart(chart_data,x="hour",y="data",use_container_width=True,height=200)
+        day_chart_data = OneDay().get_day_statistic_chart(df = day_df, start = day_min_timestamp_dt.hour, end = day_max_timestamp_dt.hour+1)
+        st.bar_chart(day_chart_data,x="hour",y="data",use_container_width=True,height=100)
 
         col1a, col2a = st.columns([1,3])
         with col1a:
             # st.divider()
             st.checkbox("启用搜索")
-            col1,col2 = st.columns([2,1])
-            with col1:
-                st.text_input(d_lang[config.lang]["tab_search_compname"], 'Hello',key=2)
-            with col2:
-                st.date_input("当天日期")
+            st.text_input(d_lang[config.lang]["tab_search_compname"], 'Hello',key=2)
+
             col1b,col2b,col3b = st.columns([2,1,2])
             with col1b:
                 st.button("← 上条记录",use_container_width=True)

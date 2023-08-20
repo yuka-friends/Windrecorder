@@ -30,7 +30,7 @@ class OneDay:
             print("none")
             
             _, noocred_count = files.get_videos_and_ocred_videos_count(config.record_videos_dir)
-            return False,noocred_count,0,None,None
+            return False,noocred_count,0,None,None,None
         else:
             # 有结果 - 返回其中最早、最晚的结果，以写入slider；提供总索引数目、未索引数量
             min_timestamp = df['videofile_time'].min()
