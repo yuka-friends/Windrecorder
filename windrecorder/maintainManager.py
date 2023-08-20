@@ -99,6 +99,7 @@ def ocr_image_col(img_input):
 # OCR文本-MS自带方式
 def ocr_image_ms(img_input):
     print("——OCR文本.MS")
+    text = ""
     # 调用Windows.Media.Ocr.Cli.exe,参数为图片路径
     command = ['Windows.Media.Ocr.Cli.exe', img_input]
 
@@ -107,6 +108,8 @@ def ocr_image_ms(img_input):
     for enc in encodings_try:
         try:
             text = proc.stdout.decode(enc)
+            if text is None or text == "":
+                pass
             break
         except UnicodeDecodeError:
             pass
@@ -197,6 +200,7 @@ def ocr_process_videos(video_path, iframe_path, db_filepath):
         # 清理文件
         empty_directory(iframe_path)
 
+        # 检查视频文件是否已被索引
         if not vid_file_name.endswith('.mp4') or vid_file_name.endswith("-OCRED.mp4"):
             continue
 
@@ -218,6 +222,7 @@ def ocr_process_videos(video_path, iframe_path, db_filepath):
             img = os.path.join(iframe_path, img_file_name)
             print("img=" + img)
 
+            # 填充slot队列
             if is_first_process_image_similarity == 1:
                 img1_path_temp = img
                 is_first_process_image_similarity = 2
@@ -237,6 +242,7 @@ def ocr_process_videos(video_path, iframe_path, db_filepath):
         ocr_result_stringA = ""
         ocr_result_stringB = ""
         for img_file_name in os.listdir(iframe_path):
+            print("_____________________")
             print("processing IMG - OCR:" + img_file_name)
 
             img = os.path.join(iframe_path, img_file_name)
