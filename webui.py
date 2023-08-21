@@ -220,8 +220,14 @@ with tab1:
     #     day_date_input = st.date_input("当天日期",label_visibility="collapsed")
     # with col2c:
     #     st.empty()
+    col1, col2, col3 = st.columns([6,1,1])
+    with col1:
+        day_date_input = st.date_input("当天日期",label_visibility="collapsed")
+    with col2:
+        st.button("← 前一天",use_container_width=True)
+    with col3:
+        st.button("后一天 →",use_container_width=True)
     
-    day_date_input = st.date_input("当天日期",label_visibility="collapsed")
     # 获取输入的日期
     # 清理格式到HMS
     dt_in = datetime.datetime(day_date_input.year,day_date_input.month,day_date_input.day,0,0,0)
@@ -249,6 +255,7 @@ with tab1:
         start_time = datetime.time(day_min_timestamp_dt.hour, day_min_timestamp_dt.minute)
         end_time = datetime.time(day_max_timestamp_dt.hour, day_max_timestamp_dt.minute)
         st.slider("Time Rewind",label_visibility="collapsed",min_value=start_time,max_value=end_time,value=end_time,step=timedelta(seconds=30),disabled=False)
+
 
         # 可视化时间轴
         day_chart_data = OneDay().get_day_statistic_chart(df = day_df, start = day_min_timestamp_dt.hour, end = day_max_timestamp_dt.hour+1)
