@@ -14,7 +14,8 @@ class OneDay:
     def checkout(self, dt_in):
         # 获取输入的时间
         # dt_in 的输入格式：datetime.datetime
-        # now = datetime.datetime.now()
+
+        # 划定日期范围，取得其中所有数据
         search_content = ""
         search_date_range_in = dt_in.replace(hour=0, minute=0, second=0, microsecond=0)
         search_date_range_out = dt_in.replace(hour=23, minute=59, second=59, microsecond=0)
@@ -28,7 +29,6 @@ class OneDay:
         if search_result_num < 2:
             # 没有结果的处理
             print("none")
-            
             _, noocred_count = files.get_videos_and_ocred_videos_count(config.record_videos_dir)
             return False,noocred_count,0,None,None,None
         else:

@@ -81,6 +81,17 @@ def check_is_onboarding():
     return False
 
 
+# 检测并渲染onboarding提示
+def web_onboarding():
+    is_onboarding = check_is_onboarding()
+    if is_onboarding:
+        # 数据库不存在，展示 Onboarding 提示
+        st.success("欢迎使用 Windrecorder！", icon="😺")
+        intro_markdown = Path("onboarding.md").read_text(encoding='utf-8')
+        st.markdown(intro_markdown)
+        st.divider()
+
+
 # 选择播放视频的行数 的滑杆组件
 def choose_search_result_num(df, is_df_result_exist):
     select_num = 0
@@ -192,17 +203,26 @@ tab1, tab2, tab3, tab4, tab5 = st.tabs(["一天之时", d_lang[config.lang]["tab
 
 # TAB：今天也是一天
 with tab1:
+    # onboarding
+    web_onboarding()
+
     # 标题
     st.markdown("### 一天之时")
-    # todo：添加今天是星期几？
-    col1c,col2c = st.columns([1,11])
-    with col1c:
-        day_date_input = st.date_input("当天日期",label_visibility="collapsed")
-    with col2c:
-        st.empty()
+
     
-    # 获取现在的时间
-    # dt_in = datetime.datetime.now()
+    
+
+    # todo：添加今天是星期几？
+    # todo：添加无数据库的onboarding
+    # col1c,col2c = st.columns([1,11])
+    # with col1c:
+    #     day_date_input = st.date_input("当天日期",label_visibility="collapsed")
+    # with col2c:
+    #     st.empty()
+    
+    day_date_input = st.date_input("当天日期",label_visibility="collapsed")
+    # 获取输入的日期
+    # 清理格式到HMS
     dt_in = datetime.datetime(day_date_input.year,day_date_input.month,day_date_input.day,0,0,0)
     # 检查数据库中关于今天的数据
     day_has_data, day_noocred_count,day_search_result_num,day_min_timestamp_dt,day_max_timestamp_dt,day_df = OneDay().checkout(dt_in)
@@ -269,13 +289,7 @@ with tab1:
 with tab2:
     col1, col2 = st.columns([1, 2])
     with col1:
-        is_onboarding = check_is_onboarding()
-        if is_onboarding:
-            # 数据库不存在，展示 Onboarding 提示
-            st.success("欢迎使用 Windrecorder！", icon="😺")
-            intro_markdown = Path("onboarding.md").read_text(encoding='utf-8')
-            st.markdown(intro_markdown)
-            st.divider()
+        web_onboarding()
 
         st.markdown(d_lang[config.lang]["tab_search_title"])
 
