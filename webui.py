@@ -49,9 +49,9 @@ st.set_page_config(
 
 # 定位视频时间码，展示视频
 def show_n_locate_video_timestamp(df, num):
+    # 入参：df，滑杆选择到表中的第几项
     if is_df_result_exist:
         # todo 获取有多少行结果 对num进行合法性判断
-        # todo 判断视频需要存在才能播放
         videofile_path = os.path.join(config.record_videos_dir, files.add_OCRED_suffix(df.iloc[num]['videofile_name']))
         print("videofile_path: " + videofile_path)
         vid_timestamp = utils.calc_vid_inside_time(df, num)
@@ -64,7 +64,8 @@ def show_n_locate_video_timestamp(df, num):
         if os.path.isfile(videofile_path):
             video_file = open(videofile_path, 'rb')
             video_bytes = video_file.read()
-            st.video(video_bytes, start_time=st.session_state.vid_vid_timestamp)
+            with st.empty():
+                st.video(video_bytes, start_time=st.session_state.vid_vid_timestamp)
         else:
             # st.markdown(f"Video File **{videofile_path}** not on disk.")
             st.warning(f"Video File **{videofile_path}** not on disk.", icon="🦫")
