@@ -281,7 +281,7 @@ with tab1:
 
         col1b, col2b,col3b = st.columns([.8,1,1])
         with col1b:
-            if st.checkbox("通过关键词搜索当天数据"):
+            if st.checkbox("通过关键词搜索当天数据(WIP)"):
                 st.session_state.day_time_slider_disable = True
                 st.session_state.day_is_search_data = True
             else:
@@ -450,6 +450,7 @@ with tab3:
 
 with tab4:
     st.markdown(d_lang[config.lang]["tab_record_title"])
+    st.write("WIP")
 
     col1c, col2c = st.columns([1, 3])
     with col1c:
@@ -555,6 +556,7 @@ with tab5:
 
         # 自动化维护选项 WIP
         st.markdown(d_lang[config.lang]["tab_setting_maintain_title"])
+        st.write("WIP")
         st.selectbox('OCR 索引策略',
                      ('计算机空闲时自动索引', '每录制完一个视频切片就自动更新一次', '不自动更新，仅手动更新')
                      )

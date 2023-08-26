@@ -13,25 +13,26 @@ It runs entirely locally, stored your private data locally, without any need of 
 ![Windrecorder](https://github.com/Antonoko/Windrecorder/blob/main/__assets__/preview.png)
 
 
-**NOTE: This project is still under development and the availability of many features are not guaranteed.**
+**NOTE: This project is still under early development and the availability of many features are not guaranteed.**
 
-**注意：这个项目仍然在开发中的阶段，部分能力和特性不保证可以正常运行。**
+**注意：这个项目仍然在开发早期阶段，部分能力和特性不保证可以正常运行。**
 
 ----
 
-Project Status: have very basic functions
+Project Status: have very basic functions, under intensity development
 
-项目状态：初级阶段，具有基本的功能。
+项目状态：初级阶段，具有基本的功能。仍在持续开发中。
 
 ---
 
 ### Todo:
 - [x] Continuously record screen with smaller file size.
-- [x] Extract unchanging frames in the file and ocr record them to the database.
+- [x] Extract unchanging frames in video file and save OCR result in database.
 - [x] Provide basic webui for querying and updating database.
-- [ ] Better webui dashboard & control center
+- [ ] Full functional webui dashboard & control center
 - [ ] Automated operation
 - [ ] Fully i18n support
+- [ ] Setup an easier to use Onboarding/installer
 - [ ] Polishing details
 - [ ] 🤔
 
@@ -43,17 +44,17 @@ Project Status: have very basic functions
 
 - Install dependencies: `pip install -r requirements.txt`
 
-- Starting recording screen: `Python recordScreen.py` or run `start_record.bat`
+- Starting recording screen: run `start_record.bat` (send "ctrl C" to stop recording)
 
-  - **NOTE:** This function is crude and can only be run and terminated manually at present. ~~Before recording, you need to adjust your screen resolution and block recording time in `config.json`, currently the default set is 3840x2160, 60 seconds.~~
+  - **NOTE:** This function is crude and can only be run and terminated manually at present.
 
-- Query and update database through webui: `python -m streamlit run webui.py` or run  `start_webui.bat`
+- Query and update database through webui: run  `start_webui.bat`
 
 - We recommend using Windows.Media.Ocr.Cli method to OCR Video data, so make sure your Windows computer has installed the corresponding OCR language module (it should have been installed with IME by default). For more information: https://learn.microsoft.com/en-us/windows/powertoys/text-extractor
 
 
 # 🧡
-If you like this project, feel free to check [長瀬有花 / YUKA NAGASE](https://www.youtube.com/channel/UCf-PcSHzYAtfcoiBr5C9DZA) 's healing music on YouTube and Stream music platform <3 thx
+If you like this project, feel free to check [長瀬有花 / YUKA NAGASE](https://www.youtube.com/channel/UCf-PcSHzYAtfcoiBr5C9DZA) 's healing music on YouTube and Stream music platform <3
 
 如果你喜欢这个工具，欢迎在 Youtube 与流媒体音乐平台上支持**长濑有花**温柔的音乐，谢谢！
 
