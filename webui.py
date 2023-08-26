@@ -7,6 +7,7 @@ from collections import OrderedDict
 import subprocess
 import threading
 from pathlib import Path
+import builtins
 
 import streamlit as st
 from streamlit.runtime.scriptrunner import add_script_run_ctx
@@ -207,33 +208,35 @@ with tab1:
     # onboarding
     web_onboarding()
 
-    # 标题
-    st.markdown("### 一天之时")
-
+    # 标题 # todo:添加今天是星期几以增强时间观念
     
-    
+    # 日期选择器们
+    if 'day_date_input' not in st.session_state:
+        st.session_state['day_date_input'] = datetime.date.today()
 
-    # todo：添加今天是星期几？
-    # todo：添加无数据库的onboarding
-    # col1c,col2c = st.columns([1,11])
-    # with col1c:
-    #     day_date_input = st.date_input("当天日期",label_visibility="collapsed")
-    # with col2c:
-    #     st.empty()
-    col1, col2, col3 = st.columns([6,1,1])
+    col1, col2, col3, col4 = st.columns([1,6,1,1])
     with col1:
-        day_date_input = st.date_input("当天日期",label_visibility="collapsed")
+        st.markdown("### 一天之时")
     with col2:
-        st.button("← 前一天",use_container_width=True)
+        st.empty()
     with col3:
-        st.button("后一天 →",use_container_width=True)
+        if st.button("← 前一天",use_container_width=True):
+            st.session_state.day_date_input -= datetime.timedelta(days=1)
+    with col4:
+        if st.button("后一天 →",use_container_width=True):
+            st.session_state.day_date_input += datetime.timedelta(days=1)
+
+    st.session_state.day_date_input = st.date_input("当天日期",label_visibility="collapsed",value=st.session_state.day_date_input)
     
+
     # 获取输入的日期
     # 清理格式到HMS
-    dt_in = datetime.datetime(day_date_input.year,day_date_input.month,day_date_input.day,0,0,0)
+    dt_in = datetime.datetime(st.session_state.day_date_input.year,st.session_state.day_date_input.month,st.session_state.day_date_input.day,0,0,0)
+    # dt_in = datetime.datetime(day_date_input.year,day_date_input.month,day_date_input.day,0,0,0)
     # 检查数据库中关于今天的数据
     day_has_data, day_noocred_count,day_search_result_num,day_min_timestamp_dt,day_max_timestamp_dt,day_df = OneDay().checkout(dt_in)
 
+    # for debug print
     # day_has_data, day_noocred_count,day_search_result_num,day_min_timestamp_dt,day_max_timestamp_dt
 
 
@@ -251,20 +254,28 @@ with tab1:
         #     day_latest = day_max_timestamp_dt.strftime("%H:%M:%S")
         #     st.markdown(f'<p align="right">最晚记录于 <span  style="color:chocolate">{day_latest}<span> </p>', unsafe_allow_html=True)
 
+        if 'day_time_slider_disable' not in st.session_state:
+            st.session_state['day_time_slider_disable'] = False
         # 滑动控制杆
         start_time = datetime.time(day_min_timestamp_dt.hour, day_min_timestamp_dt.minute)
         end_time = datetime.time(day_max_timestamp_dt.hour, day_max_timestamp_dt.minute)
-        st.slider("Time Rewind",label_visibility="collapsed",min_value=start_time,max_value=end_time,value=end_time,step=timedelta(seconds=30),disabled=False)
-
+        st.slider("Time Rewind",label_visibility="collapsed",min_value=start_time,max_value=end_time,value=end_time,step=timedelta(seconds=30),disabled=st.session_state.day_time_slider_disable)
 
         # 可视化时间轴
         day_chart_data = OneDay().get_day_statistic_chart(df = day_df, start = day_min_timestamp_dt.hour, end = day_max_timestamp_dt.hour+1)
         st.bar_chart(day_chart_data,x="hour",y="data",use_container_width=True,height=100)
 
+
+        # 搜索组件
         col1a, col2a = st.columns([1,3])
         with col1a:
             # st.divider()
-            st.checkbox("启用搜索")
+            if st.checkbox("检索当天数据"):
+                st.session_state.day_time_slider_disable = True
+                st.session_state.day_is_search_data = True
+            else:
+                st.session_state.day_time_slider_disable = False
+                st.session_state.day_is_search_data = False
             st.text_input(d_lang[config.lang]["tab_search_compname"], 'Hello',key=2)
 
             col1b,col2b,col3b = st.columns([2,1,2])
