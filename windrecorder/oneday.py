@@ -1,4 +1,7 @@
 import pandas as pd
+import os
+import datetime
+import re
 
 import windrecorder.utils as utils
 import windrecorder.files as files
@@ -43,22 +46,61 @@ class OneDay:
     
 
     # 获得当天表中的时间轴统计数据
-    def get_day_statistic_chart(self,df,start,end):
+    def get_day_statistic_chart_overview(self,df,start,end):
         # 入参：df、开始小时数、结束小时数
         if start == end:
             end += 1
         
+        # 复制一份表，然后把视频文件名的时间都转成x.x的格式用于统计
         df_B = df.copy()
         df_B['videofile_time'] = df_B['videofile_time'].apply(utils.seconds_to_24numfloat)
       
+        # 新建一份表，统计每个时间段中有多少视频
         df_C = pd.DataFrame(columns=['hour', 'data'])
         for step in range(int(start), int(end)):
           filtered = df_B[(df_B['videofile_time'] >= step) & (df_B['videofile_time'] < step + 0.5)]
           df_C.loc[len(df_C)] = [step, len(filtered)]
-      
+        
         return df_C
 
 
+    # 当输入时间戳时，查询最近的视频文件，同时检查是否为合法的对应范围（通过config 录制视频时间长度来比对）
+    # 以寻找视频文件的方式
+    def find_closest_video_by_filesys(self,target_datetime):
+        # 获取视频文件名列表 
+        video_files = os.listdir('videos')
+
+        # 提取视频文件名中的时间信息
+        file_times = []
+        for f in video_files:
+            match = re.match(r'(\d{4}-\d{2}-\d{2}_\d{2}-\d{2}-\d{2})', f)
+            if match:
+                file_dt = datetime.datetime.strptime(match.group(1), '%Y-%m-%d_%H-%M-%S')
+                if file_dt < target_datetime: 
+                    file_times.append((f, file_dt))
+
+        # 寻找时间距离target_datetime最近的先前时间的视频文件
+        closest_file = max(file_times, key=lambda x: x[1]) 
+
+        # 判断时间差是否在阈值内 
+        time_diff = abs(closest_file[1] - target_datetime).total_seconds()
+        if time_diff > config.record_seconds:
+           return False, None
+        else:
+           return True, closest_file[0]
 
 
+    # 同上功能，但以搜索数据库的方式
+    def find_closest_video_by_database(self,df, time):
+        # Find the closest previous time in the dataframe
+        prev_time = df['videofile_time'].iloc[(df['videofile_time'] - time).abs().argsort()[:1]].values[0]
+        # Check if difference is less than CONFIG seconds
+        if time - prev_time < config.record_seconds:
+            # Return video name if difference is small enough
+            row = df.loc[df['videofile_time'] == prev_time]
+            # 只返回时间戳
+            # return True, df.loc[df['videofile_time'] == prev_time, 'videofile_name'].values[0]
+            return True, row
+        else:
+            return False, None
 

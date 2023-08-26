@@ -48,8 +48,8 @@ st.set_page_config(
 )
 
 
-# 定位视频时间码，展示视频
-def show_n_locate_video_timestamp(df, num):
+# 通过表内搜索结果定位视频时间码，展示视频
+def show_n_locate_video_timestamp_by_df(df, num):
     # 入参：df，滑杆选择到表中的第几项
     if is_df_result_exist:
         # todo 获取有多少行结果 对num进行合法性判断
@@ -70,6 +70,18 @@ def show_n_locate_video_timestamp(df, num):
         else:
             # st.markdown(f"Video File **{videofile_path}** not on disk.")
             st.warning(f"Video File **{videofile_path}** not on disk.", icon="🦫")
+
+
+# 直接定位视频时间码、展示视频
+def show_n_locate_video_timestamp_by_filename_n_time(video,timestamp):
+    # 合并视频文件路径
+    videofile_path = os.path.join(config.record_videos_dir, video)
+    print("videofile_path: " + videofile_path)
+    # 打开并展示定位视频文件
+    video_file = open(videofile_path, 'rb')
+    video_bytes = video_file.read()
+    with st.empty():
+        st.video(video_bytes, start_time=timestamp)
 
 
 # 检测是否初次使用工具，如果不存在数据库/数据库中只有一条数据，则判定为是
@@ -141,6 +153,30 @@ def draw_db_status():
         st.warning(d_lang[config.lang]["tab_setting_db_state1"].format(nocred_count=nocred_count, count=count), icon='🧭')
     else:
         st.success(d_lang[config.lang]["tab_setting_db_state2"].format(nocred_count=nocred_count, count=count), icon='✅')
+
+
+# 规范化的打表渲染组件
+def draw_dataframe(df,heightIn=800):
+    st.dataframe(
+        df,
+        column_config={
+            "is_videofile_exist": st.column_config.CheckboxColumn(
+                "is_videofile_exist",
+                help=d_lang[config.lang]["tab_search_table_help1"],
+                default=False,
+            ),
+            "ocr_text": st.column_config.TextColumn(
+                "ocr_text",
+                help=d_lang[config.lang]["tab_search_table_help2"],
+                width="large"
+            ),
+            "thumbnail": st.column_config.ImageColumn(
+                "thumbnail",
+                help=d_lang[config.lang]["tab_search_table_help3"]
+            )
+        },
+        height=heightIn
+    )
 
 
 # 检查配置使用的ocr引擎
@@ -243,53 +279,80 @@ with tab1:
     # 判断数据库中有无今天的数据，有则启用功能：
     if day_has_data:
 
-        # # 时间轴信息
-        # col1, col2, col3 = st.columns([3, 1, 1])
-        # with col1:
-        #     day_earliest = day_min_timestamp_dt.strftime("%H:%M:%S")
-        #     st.markdown(f'当日最早记录于 :orange[{day_earliest}]')
-        # with col2:
-        #     st.markdown("✈")
-        # with col3:
-        #     day_latest = day_max_timestamp_dt.strftime("%H:%M:%S")
-        #     st.markdown(f'<p align="right">最晚记录于 <span  style="color:chocolate">{day_latest}<span> </p>', unsafe_allow_html=True)
+        col1b, col2b,col3b = st.columns([.8,1,1])
+        with col1b:
+            if st.checkbox("通过关键词搜索当天数据"):
+                st.session_state.day_time_slider_disable = True
+                st.session_state.day_is_search_data = True
+            else:
+                st.session_state.day_time_slider_disable = False
+                st.session_state.day_is_search_data = False
+        with col2b:
+            # 搜索组件
+            # if st.session_state.day_time_slider_disable:
+            col1c,col2c,col3c,col4c,col5c = st.columns([1,2,1,.5,1])
+            with col1c:
+                st.markdown("<p align='right' style='line-height:2.3;'> 关键词搜索：</p>", unsafe_allow_html=True)
+            with col2c:
+                st.text_input(d_lang[config.lang]["tab_search_compname"], 'Keyword',key=2,label_visibility="collapsed",disabled=not st.session_state.day_time_slider_disable)
+            with col3c:
+                st.button("← 上条记录",use_container_width=True,disabled=not st.session_state.day_time_slider_disable)
+            with col4c:
+                st.markdown("<p align='center' style='line-height:2.3;'> 1/5 </p>", unsafe_allow_html=True)
+            with col5c:
+                st.button("下条记录 →",use_container_width=True,disabled=not st.session_state.day_time_slider_disable)
+            # else:
+            #     st.empty()
+        with col3b:
+            st.empty()
+
 
         if 'day_time_slider_disable' not in st.session_state:
             st.session_state['day_time_slider_disable'] = False
         # 滑动控制杆
         start_time = datetime.time(day_min_timestamp_dt.hour, day_min_timestamp_dt.minute)
         end_time = datetime.time(day_max_timestamp_dt.hour, day_max_timestamp_dt.minute)
-        st.slider("Time Rewind",label_visibility="collapsed",min_value=start_time,max_value=end_time,value=end_time,step=timedelta(seconds=30),disabled=st.session_state.day_time_slider_disable)
-
-        # 可视化时间轴
-        day_chart_data = OneDay().get_day_statistic_chart(df = day_df, start = day_min_timestamp_dt.hour, end = day_max_timestamp_dt.hour+1)
-        st.bar_chart(day_chart_data,x="hour",y="data",use_container_width=True,height=100)
+        
+        st.session_state.day_time_select_24h =st.slider("Time Rewind",label_visibility="collapsed",min_value=start_time,max_value=end_time,value=end_time,step=timedelta(seconds=30),disabled=st.session_state.day_time_slider_disable)
 
 
-        # 搜索组件
-        col1a, col2a = st.columns([1,3])
+        # 可视化数据时间轴
+        day_chart_data_overview = OneDay().get_day_statistic_chart_overview(df = day_df, start = day_min_timestamp_dt.hour, end = day_max_timestamp_dt.hour+1)
+        st.bar_chart(day_chart_data_overview,x="hour",y="data",use_container_width=True,height=100)
+
+
+        # 视频展示区域
+        col1a, col2a, col3a = st.columns([1,3,1])
         with col1a:
-            # st.divider()
-            if st.checkbox("检索当天数据"):
-                st.session_state.day_time_slider_disable = True
-                st.session_state.day_is_search_data = True
-            else:
-                st.session_state.day_time_slider_disable = False
-                st.session_state.day_is_search_data = False
-            st.text_input(d_lang[config.lang]["tab_search_compname"], 'Hello',key=2)
-
-            col1b,col2b,col3b = st.columns([2,1,2])
-            with col1b:
-                st.button("← 上条记录",use_container_width=True)
-            with col2b:
-                st.markdown("<p align='center'> 1/5 </p>", unsafe_allow_html=True)
-            with col3b:
-                st.button("下条记录 →",use_container_width=True)
+            st.empty()
         with col2a:
-            st.write("video placed here")
-            st.info("2023-08-07_22-59-10 时间下没有录制记录。", icon="🎐")
-            st.warning("磁盘上没有 2023-08-07_22-59-10.mp4。", icon="🦫")
+            # 视频结果显示区域
 
+            if st.session_state.day_is_search_data:
+                st.write("启用了搜索功能")
+
+            else:
+                # st.write("时间线功能")
+                # 获取选择的时间，查询对应时间下有无视频，有则换算与定位
+                day_full_select_datetime = utils.merge_date_day_datetime_together(st.session_state.day_date_input,st.session_state.day_time_select_24h) #合并时间为dt
+                day_is_result_exist, day_video_file_name = OneDay().find_closest_video_by_filesys(day_full_select_datetime) #通过文件查询
+                # 计算换算用于播放视频的时间
+
+                if day_is_result_exist:
+                    # 换算时间、定位播放视频
+                    vidfile_timestamp = utils.calc_vid_name_to_timestamp(day_video_file_name)
+                    select_timestamp = utils.datetime_to_seconds(day_full_select_datetime)
+                    shown_timestamp = select_timestamp - vidfile_timestamp
+                    show_n_locate_video_timestamp_by_filename_n_time(day_video_file_name,shown_timestamp)
+                else:
+                    # 没有对应的视频，查一下有无索引了的数据
+                    is_data_found,found_row =OneDay().find_closest_video_by_database(day_df,utils.datetime_to_seconds(day_full_select_datetime))
+                    if is_data_found:
+                        st.info("磁盘上没有找到这个时间的视频文件，不过这个时间附近有以下数据可以检索。", icon="🎐")
+                        found_row = dbManager.db_refine_search_data(found_row) # 优化下数据展示
+                        draw_dataframe(found_row,heightIn=0)
+                    else:
+                        st.warning("磁盘上没有找到这个时间的视频文件和索引记录。", icon="🦫")
 
     else:
         # 数据库中没有今天的记录
@@ -351,31 +414,32 @@ with tab2:
 
         else:
             # 打表
-            st.dataframe(
-                df,
-                column_config={
-                    "is_videofile_exist": st.column_config.CheckboxColumn(
-                        "is_videofile_exist",
-                        help=d_lang[config.lang]["tab_search_table_help1"],
-                        default=False,
-                    ),
-                    "ocr_text": st.column_config.TextColumn(
-                        "ocr_text",
-                        help=d_lang[config.lang]["tab_search_table_help2"],
-                        width="large"
-                    ),
-                    "thumbnail": st.column_config.ImageColumn(
-                        "thumbnail",
-                        help=d_lang[config.lang]["tab_search_table_help3"]
-                    )
+            draw_dataframe(df,heightIn=800)
+            # st.dataframe(
+            #     df,
+            #     column_config={
+            #         "is_videofile_exist": st.column_config.CheckboxColumn(
+            #             "is_videofile_exist",
+            #             help=d_lang[config.lang]["tab_search_table_help1"],
+            #             default=False,
+            #         ),
+            #         "ocr_text": st.column_config.TextColumn(
+            #             "ocr_text",
+            #             help=d_lang[config.lang]["tab_search_table_help2"],
+            #             width="large"
+            #         ),
+            #         "thumbnail": st.column_config.ImageColumn(
+            #             "thumbnail",
+            #             help=d_lang[config.lang]["tab_search_table_help3"]
+            #         )
 
-                },
-                height=800
-            )
+            #     },
+            #     height=800
+            # )
 
     with col2:
         # 选择视频
-        show_n_locate_video_timestamp(df, result_choose_num)
+        show_n_locate_video_timestamp_by_df(df, result_choose_num)
 
 
 

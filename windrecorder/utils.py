@@ -6,6 +6,7 @@ from datetime import timedelta
 import subprocess
 import time
 import threading
+import re
 
 import pyautogui
 
@@ -94,6 +95,14 @@ def seconds_to_24numfloat(seconds):
     return round(time_float, 2)
 
 
+# 将datetime转为2000s秒数格式
+def datetime_to_seconds(dt):
+    epoch = datetime.datetime(2000, 1, 1)
+    target_date = dt
+    time_delta = target_date - epoch
+    return int(time_delta.total_seconds())
+
+
 # 将datatime转为24.格式
 def datetime_to_24numfloat(dt):
     hour = dt.hour
@@ -132,6 +141,29 @@ def convert_seconds_to_hhmmss(seconds):
   return time_str
 
 
+# 将只有天的datetime和只有日期的datetime合为完整的datetime
+def merge_date_day_datetime_together(date,today):
+    dt = datetime.datetime(
+        year=date.year, 
+        month=date.month, 
+        day=date.day,
+        hour=today.hour,
+        minute=today.minute,
+        second=today.second
+    )
+    return dt
+
+
+# 将整个视频文件名中的YYYY-MM-DD_HH-MM-SS转换为2000s时间戳
+def calc_vid_name_to_timestamp(filename):
+    pattern = r'(\d{4}-\d{2}-\d{2}_\d{2}-\d{2}-\d{2})'
+    match = re.search(pattern, filename)
+    if match:
+        return date_to_seconds(match.group(1))
+    else:
+        return None
+
+
 # 结束录屏服务进程
 def kill_recording():
     with open("lock_file_record", encoding='utf-8') as f:
@@ -141,10 +173,11 @@ def kill_recording():
     print(f"已结束录屏进程，{check_result.stdout}")
 
 
-# 计算视频对应时间戳
+# 通过数据库内项目计算视频对应时间戳
 def calc_vid_inside_time(df, num):
     fulltime = df.iloc[num]['videofile_time']
     vidfilename = os.path.splitext(df.iloc[num]['videofile_name'])[0]
+    # 用记录时的总时间减去视频文件时间（开始记录的时间）即可得到相对的时间
     vid_timestamp = fulltime - date_to_seconds(vidfilename)
     print("fulltime:" + str(fulltime) + "\n vidfilename:" + str(vidfilename) + "\n vid_timestamp:" + str(vid_timestamp))
     return vid_timestamp
