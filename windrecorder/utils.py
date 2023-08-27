@@ -141,6 +141,16 @@ def convert_seconds_to_hhmmss(seconds):
   return time_str
 
 
+# 将整个视频文件名中的YYYY-MM-DD_HH-MM-SS转换为2000s时间戳
+def calc_vid_name_to_timestamp(filename):
+    pattern = r'(\d{4}-\d{2}-\d{2}_\d{2}-\d{2}-\d{2})'
+    match = re.search(pattern, filename)
+    if match:
+        return date_to_seconds(match.group(1))
+    else:
+        return None
+
+
 # 将只有天的datetime和只有日期的datetime合为完整的datetime
 def merge_date_day_datetime_together(date,today):
     dt = datetime.datetime(
@@ -154,14 +164,31 @@ def merge_date_day_datetime_together(date,today):
     return dt
 
 
-# 将整个视频文件名中的YYYY-MM-DD_HH-MM-SS转换为2000s时间戳
-def calc_vid_name_to_timestamp(filename):
-    pattern = r'(\d{4}-\d{2}-\d{2}_\d{2}-\d{2}-\d{2})'
-    match = re.search(pattern, filename)
-    if match:
-        return date_to_seconds(match.group(1))
-    else:
-        return None
+# 将完整的datetime只保留当日时间的datetime.time
+def set_full_datetime_to_day_time(dt):
+    return dt.timetz()
+    # datetime.timetz()方法保留时分秒保留时区信息(如果原datetime包含时区信息), 返回一个只包含时分秒的datetime.time对象。
+
+
+# 将输入的不完整的datetime补齐为默认年月日时分秒的datetime
+def complete_datetime(dt):
+    if isinstance(dt, datetime.date): 
+        # 如果是 date 类型,先转换为 datetime 
+        dt = datetime.datetime(dt.year, dt.month, dt.day)
+    
+    if dt.year == 1900 and dt.month == 1 and dt.day == 1:
+        # 日期缺失,使用当前日期
+        dt = dt.replace(year=datetime.datetime.now().year,
+                       month=datetime.datetime.now().month,
+                       day=datetime.datetime.now().day)
+
+    if dt.hour == 0 and dt.minute == 0 and dt.second == 0:
+        # 时间缺失,使用当前时间
+        dt = dt.replace(hour=datetime.datetime.now().hour,
+                       minute=datetime.datetime.now().minute,  
+                       second=datetime.datetime.now().second)
+                       
+    return dt
 
 
 # 结束录屏服务进程
@@ -195,3 +222,17 @@ def estimate_indexing_time():
     estimate_time = int(nocred_count) * int(round(record_minutes)) * int(ocr_cost_time)
     estimate_time_str = convert_seconds_to_hhmmss(estimate_time)
     return estimate_time_str
+
+
+# 检查视频文件是否存在
+def check_video_exist_in_videos_dir(video_name):
+  video_path = os.path.join(config.record_videos_dir, video_name) 
+  ocred_video_name = os.path.splitext(video_name)[0] + '-OCRED' + os.path.splitext(video_name)[1]
+  ocred_path = os.path.join(config.record_videos_dir, ocred_video_name)
+
+  if os.path.exists(video_path):
+    return video_name
+  elif os.path.exists(ocred_path):  
+    return ocred_video_name
+  else:
+    return None

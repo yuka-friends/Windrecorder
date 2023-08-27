@@ -14,17 +14,29 @@ class OneDay:
     def __init__(self):
         pass
 
+
+    # 在数据库中搜索当天所有关于xx的数据
+    def search_day_data(self,dt_in, search_content = ""):
+        # 入参：查询时间，搜索内容
+        search_date_range_in = dt_in.replace(hour=0, minute=0, second=0, microsecond=0)
+        search_date_range_out = dt_in.replace(hour=23, minute=59, second=59, microsecond=0)
+        page_index = 0
+        df,_,_ = dbManager.db_search_data(search_content, search_date_range_in, search_date_range_out,page_index,is_p_index_used=False) # 不启用页数限制，以返回所有结果
+        return df
+
+    # 检查当天数据索引情况
     def checkout(self, dt_in):
         # 获取输入的时间
         # dt_in 的输入格式：datetime.datetime
 
         # 划定日期范围，取得其中所有数据
-        search_content = ""
-        search_date_range_in = dt_in.replace(hour=0, minute=0, second=0, microsecond=0)
-        search_date_range_out = dt_in.replace(hour=23, minute=59, second=59, microsecond=0)
-        page_index = 0
-        # 获取当日所有的索引信息
-        df,_,_ = dbManager.db_search_data(search_content, search_date_range_in, search_date_range_out,page_index,is_p_index_used=False) # 不启用页数限制，以返回所有结果
+        # search_content = ""
+        # search_date_range_in = dt_in.replace(hour=0, minute=0, second=0, microsecond=0)
+        # search_date_range_out = dt_in.replace(hour=23, minute=59, second=59, microsecond=0)
+        # page_index = 0
+        # # 获取当日所有的索引信息
+        # df,_,_ = dbManager.db_search_data(search_content, search_date_range_in, search_date_range_out,page_index,is_p_index_used=False) # 不启用页数限制，以返回所有结果
+        df = OneDay().search_day_data(dt_in)
 
         # 获得结果数量
         search_result_num = len(df)
@@ -68,7 +80,7 @@ class OneDay:
     # 以寻找视频文件的方式
     def find_closest_video_by_filesys(self,target_datetime):
         # 获取视频文件名列表 
-        video_files = os.listdir('videos')
+        video_files = os.listdir(config.record_videos_dir)
 
         # 提取视频文件名中的时间信息
         file_times = []
@@ -89,7 +101,6 @@ class OneDay:
         else:
            return True, closest_file[0]
 
-
     # 同上功能，但以搜索数据库的方式
     def find_closest_video_by_database(self,df, time):
         # Find the closest previous time in the dataframe
@@ -103,4 +114,24 @@ class OneDay:
             return True, row
         else:
             return False, None
+
+
+    # 通过输入的数据库与index、找到是否有视频文件、返回其时间戳与视频文件名
+    def get_result_df_video_time(self,df,index):
+        video_name = df.loc[index, 'videofile_name']
+        video_search_result_timestamp = df.loc[index, 'videofile_time']
+        check_on_disk_path = utils.check_video_exist_in_videos_dir(video_name)
+        if check_on_disk_path == None:
+            # 磁盘上没有文件
+            return False,video_name,None
+        else:
+            # 磁盘上有视频文件
+            video_name_timestamp = utils.calc_vid_name_to_timestamp(video_name)
+            local_video_timestamp = video_search_result_timestamp - video_name_timestamp
+            return True,check_on_disk_path,local_video_timestamp
+
+
+
+
+
 

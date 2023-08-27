@@ -268,20 +268,21 @@ with tab1:
     # 获取输入的日期
     # 清理格式到HMS
     dt_in = datetime.datetime(st.session_state.day_date_input.year,st.session_state.day_date_input.month,st.session_state.day_date_input.day,0,0,0)
-    # dt_in = datetime.datetime(day_date_input.year,day_date_input.month,day_date_input.day,0,0,0)
     # 检查数据库中关于今天的数据
     day_has_data, day_noocred_count,day_search_result_num,day_min_timestamp_dt,day_max_timestamp_dt,day_df = OneDay().checkout(dt_in)
-
-    # for debug print
-    # day_has_data, day_noocred_count,day_search_result_num,day_min_timestamp_dt,day_max_timestamp_dt
 
 
     # 判断数据库中有无今天的数据，有则启用功能：
     if day_has_data:
 
+        # 初始化滑杆启用状态，这个状态同时用来判断是否启用搜索功能，如果True则启用
+        if 'day_time_slider_disable' not in st.session_state:
+            st.session_state['day_time_slider_disable'] = False
+
+        # 关键词搜索模块
         col1b, col2b,col3b = st.columns([.8,1,1])
         with col1b:
-            if st.checkbox("通过关键词搜索当天数据(WIP)"):
+            if st.checkbox("通过关键词搜索当天数据"):
                 st.session_state.day_time_slider_disable = True
                 st.session_state.day_is_search_data = True
             else:
@@ -289,31 +290,58 @@ with tab1:
                 st.session_state.day_is_search_data = False
         with col2b:
             # 搜索组件
-            # if st.session_state.day_time_slider_disable:
-            col1c,col2c,col3c,col4c,col5c = st.columns([1,2,1,.5,1])
+            if 'day_search_query_page_index' not in st.session_state:
+                st.session_state['day_search_query_page_index'] = 0
+
+            col1c,col2c,col3c,col4c,col5c = st.columns([1,2,1.5,2,.5])
             with col1c:
                 st.markdown("<p align='right' style='line-height:2.3;'> 关键词搜索：</p>", unsafe_allow_html=True)
             with col2c:
-                st.text_input(d_lang[config.lang]["tab_search_compname"], 'Keyword',key=2,label_visibility="collapsed",disabled=not st.session_state.day_time_slider_disable)
+                # 搜索框
+                day_search_keyword = st.text_input(d_lang[config.lang]["tab_search_compname"], 'Keyword',key=2,label_visibility="collapsed",disabled=not st.session_state.day_time_slider_disable)
+                # 执行搜索，搜索结果
+                df_day_search_result = OneDay().search_day_data(utils.complete_datetime(st.session_state.day_date_input),search_content=day_search_keyword)
             with col3c:
-                st.button("← 上条记录",use_container_width=True,disabled=not st.session_state.day_time_slider_disable)
+                # 结果条目数
+                if st.session_state.day_is_search_data:
+                    result_num = df_day_search_result.shape[0]
+                    st.markdown(f"<p align='right' style='line-height:2.3;'> 共找到 {result_num} 条结果：</p>", unsafe_allow_html=True)
+                else:
+                    st.empty()
             with col4c:
-                st.markdown("<p align='center' style='line-height:2.3;'> 1/5 </p>", unsafe_allow_html=True)
+                # 翻页器
+                def update_slider(dt):
+                    # 翻页结果时刷新控制时间滑杆的定位；入参：需要被定位的datetime.time
+                    if st.session_state.day_is_search_data:
+                        st.session_state.day_time_select_slider = dt
+                        
+                # 初始化值
+                if 'day_search_result_index_num' not in st.session_state:
+                    st.session_state['day_search_result_index_num'] = 0
+                # 翻页控件
+                st.session_state.day_search_result_index_num = st.number_input(
+                    "PageIndex",
+                    value=0,
+                    min_value=0,
+                    max_value=df_day_search_result.shape[0]-1,
+                    label_visibility="collapsed",
+                    disabled=not st.session_state.day_time_slider_disable,
+                    on_change=update_slider(utils.set_full_datetime_to_day_time(utils.seconds_to_datetime(df_day_search_result.loc[st.session_state.day_search_result_index_num, 'videofile_time'])))
+                    )
             with col5c:
-                st.button("下条记录 →",use_container_width=True,disabled=not st.session_state.day_time_slider_disable)
-            # else:
-            #     st.empty()
+                st.button(label="⟳",
+                          on_click=update_slider(utils.set_full_datetime_to_day_time(utils.seconds_to_datetime(df_day_search_result.loc[st.session_state.day_search_result_index_num, 'videofile_time']))),
+                          disabled=not st.session_state.day_time_slider_disable
+                          )
+
         with col3b:
             st.empty()
 
 
-        if 'day_time_slider_disable' not in st.session_state:
-            st.session_state['day_time_slider_disable'] = False
-        # 滑动控制杆
+        # 时间滑动控制杆
         start_time = datetime.time(day_min_timestamp_dt.hour, day_min_timestamp_dt.minute)
         end_time = datetime.time(day_max_timestamp_dt.hour, day_max_timestamp_dt.minute)
-        
-        st.session_state.day_time_select_24h =st.slider("Time Rewind",label_visibility="collapsed",min_value=start_time,max_value=end_time,value=end_time,step=timedelta(seconds=30),disabled=st.session_state.day_time_slider_disable)
+        st.session_state.day_time_select_24h = st.slider("Time Rewind",label_visibility="collapsed",min_value=start_time,max_value=end_time,value=end_time,step=timedelta(seconds=30),disabled=st.session_state.day_time_slider_disable,key="day_time_select_slider")
 
 
         # 可视化数据时间轴
@@ -324,15 +352,30 @@ with tab1:
         # 视频展示区域
         col1a, col2a, col3a = st.columns([1,3,1])
         with col1a:
-            st.empty()
-        with col2a:
-            # 视频结果显示区域
-
+            # 居左部分
             if st.session_state.day_is_search_data:
-                st.write("启用了搜索功能")
+                # 如果是搜索视图，这里展示全部的搜索结果
+                df_day_search_result_refine = dbManager.db_refine_search_data(df_day_search_result) # 优化下数据展示
+                draw_dataframe(df_day_search_result_refine)
+            else:
+                st.empty()
+
+        with col2a:
+            # 居中部分：视频结果显示区域
+            if st.session_state.day_is_search_data:
+                # 【搜索功能】
+                # 获取关键词，搜索出所有结果的dt，然后使用上下翻页来定位，定位后展示对应的视频
+                day_is_video_ondisk,day_video_file_name,shown_timestamp = OneDay().get_result_df_video_time(df_day_search_result,st.session_state.day_search_result_index_num)
+                if day_is_video_ondisk:
+                    show_n_locate_video_timestamp_by_filename_n_time(day_video_file_name,shown_timestamp)
+                else:
+                    st.info("磁盘上没有找到这个时间的视频文件，不过有文本数据可被检索。", icon="🎐")
+                    found_row = df_day_search_result.loc[st.session_state.day_search_result_index_num].to_frame().T
+                    found_row = dbManager.db_refine_search_data(found_row) # 优化下数据展示
+                    draw_dataframe(found_row,heightIn=0)
 
             else:
-                # st.write("时间线功能")
+                # 【时间线速查功能】
                 # 获取选择的时间，查询对应时间下有无视频，有则换算与定位
                 day_full_select_datetime = utils.merge_date_day_datetime_together(st.session_state.day_date_input,st.session_state.day_time_select_24h) #合并时间为dt
                 day_is_result_exist, day_video_file_name = OneDay().find_closest_video_by_filesys(day_full_select_datetime) #通过文件查询
@@ -353,6 +396,7 @@ with tab1:
                         draw_dataframe(found_row,heightIn=0)
                     else:
                         st.warning("磁盘上没有找到这个时间的视频文件和索引记录。", icon="🦫")
+
 
     else:
         # 数据库中没有今天的记录
@@ -543,7 +587,8 @@ with tab5:
                 # st.write(f'Something went wrong!: {ex}')
             else:
                 timeCostStr = utils.convert_seconds_to_hhmmss(timeCost)
-                st.write(d_lang[config.lang]["tab_setting_db_tip3"].format(timeCostStr=timeCostStr))
+                st.success(d_lang[config.lang]["tab_setting_db_tip3"].format(timeCostStr=timeCostStr),icon="🧃")
+                # st.write(d_lang[config.lang]["tab_setting_db_tip3"].format(timeCostStr=timeCostStr))
             finally:
                 if is_shutdown_pasocon_after_updatedDB:
                     subprocess.run(["shutdown", "-s", "-t", "60"], shell=True)
