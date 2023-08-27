@@ -12,6 +12,7 @@ class Config:
         ocr_engine,
         max_page_result,
         target_screen_res,
+        exclude_words,
         **other_field
     ) -> None:
         self.db_path = db_path
@@ -23,6 +24,7 @@ class Config:
         self.ocr_engine = ocr_engine
         self.max_page_result = max_page_result
         self.target_screen_res = target_screen_res
+        self.exclude_words = exclude_words
     
     def set_and_save_config(self, attr: str, value):
         if not hasattr(self, attr):
@@ -41,11 +43,13 @@ class Config:
         self.filter_unwanted_field(config_json)
         # 写入 config.json 文件
         with open('config.json', 'w', encoding='utf-8') as f:
-            json.dump(config_json, f, indent=2)
+            json.dump(config_json, f, indent=2, ensure_ascii=False)
     
     def filter_unwanted_field(self, config_json):
         del config_json["db_filepath"]
         return config_json
+    
+
 
 
 def get_config_json():

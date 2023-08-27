@@ -236,3 +236,22 @@ def check_video_exist_in_videos_dir(video_name):
     return ocred_video_name
   else:
     return None
+  
+
+# 将列表转换为以逗号分隔的字符串
+def list_to_string(lst):
+  return ", ".join(lst)
+
+# 将字符串转换为列表  
+def string_to_list(string):
+  return string.split(", ")
+
+
+# 判断字符串是否包含列表中的元素
+def is_str_contain_list_word(string, list_items):
+    string = string.lower()
+    for item in list_items:
+        item = item.lower()
+        if item in string:
+            return True
+    return False

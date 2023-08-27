@@ -11,6 +11,7 @@ import win32file
 from windrecorder.utils import empty_directory, date_to_seconds, seconds_to_date
 from windrecorder.dbManager import dbManager
 from windrecorder.config import config
+import windrecorder.utils as utils
 
 
 
@@ -253,17 +254,21 @@ def ocr_process_videos(video_path, iframe_path, db_filepath):
             if is_str_same:
                 print("内容一致，不写入数据库，跳过")
             else:
-                print("内容不一致，写入数据库")
-                # 使用os.path.splitext()可以把文件名和文件扩展名分割开来，os.path.splitext(file_name)会返回一个元组,元组的第一个元素是文件名,第二个元素是扩展名
-                calc_to_sec_vidname = os.path.splitext(vid_file_name)[0]
-                calc_to_sec_picname = round(int(os.path.splitext(img_file_name)[0]) / 2)
-                calc_to_sec_data = date_to_seconds(calc_to_sec_vidname) + calc_to_sec_picname
-                # 计算图片预览图
-                img_thumbnail = resize_imahe_as_base64(img)
-                dbManager.db_update_data(vid_file_name, img_file_name, calc_to_sec_data,
-                                         ocr_result_stringB, True, False, img_thumbnail)
-                dbManager.db_print_all_data()
-                ocr_result_stringA = ocr_result_stringB
+                print("内容不一致")
+                if utils.is_str_contain_list_word(ocr_result_stringB, config.exclude_words):
+                    print("内容存在排除列表词汇，不写入数据库")
+                else:
+                    print("写入数据库")
+                    # 使用os.path.splitext()可以把文件名和文件扩展名分割开来，os.path.splitext(file_name)会返回一个元组,元组的第一个元素是文件名,第二个元素是扩展名
+                    calc_to_sec_vidname = os.path.splitext(vid_file_name)[0]
+                    calc_to_sec_picname = round(int(os.path.splitext(img_file_name)[0]) / 2)
+                    calc_to_sec_data = date_to_seconds(calc_to_sec_vidname) + calc_to_sec_picname
+                    # 计算图片预览图
+                    img_thumbnail = resize_imahe_as_base64(img)
+                    dbManager.db_update_data(vid_file_name, img_file_name, calc_to_sec_data,
+                                             ocr_result_stringB, True, False, img_thumbnail)
+                    dbManager.db_print_all_data()
+                    ocr_result_stringA = ocr_result_stringB
 
         # 清理文件
         empty_directory(iframe_path)

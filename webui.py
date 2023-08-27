@@ -572,23 +572,25 @@ with tab5:
             config_ocr_engine = st.selectbox('本地 OCR 引擎', ('Windows.Media.Ocr.Cli', 'ChineseOCR_lite_onnx'),
                                              index=config_ocr_engine_choice_index)
 
+            # 设置排除词
+            exclude_words = st.text_area("当 OCR 存在以下词语时跳过索引",value=utils.list_to_string(config.exclude_words),help="当有些画面/应用不想被索引时，可以在此添加它们可能出现的关键词，以半角逗号“, ”分割。比如不想记录在 捕风记录仪 的查询画面，可以添加“, 捕风记录仪”。")
+            
+
         # 更新数据库按钮
         if update_db_btn:
             try:
                 st.divider()
-                estimate_time_str = utils.estimate_indexing_time()
+                estimate_time_str = utils.estimate_indexing_time() # 预估剩余时间
                 with st.spinner(d_lang[config.lang]["tab_setting_db_tip1"].format(estimate_time_str=estimate_time_str)):
-                    timeCost = time.time()
-                    maintainManager.maintain_manager_main()
+                    timeCost = time.time() # 预埋计算实际时长
+                    maintainManager.maintain_manager_main() # 更新数据库
 
                     timeCost = time.time() - timeCost
             except Exception as ex:
                 st.exception(ex)
-                # st.write(f'Something went wrong!: {ex}')
             else:
                 timeCostStr = utils.convert_seconds_to_hhmmss(timeCost)
                 st.success(d_lang[config.lang]["tab_setting_db_tip3"].format(timeCostStr=timeCostStr),icon="🧃")
-                # st.write(d_lang[config.lang]["tab_setting_db_tip3"].format(timeCostStr=timeCostStr))
             finally:
                 if is_shutdown_pasocon_after_updatedDB:
                     subprocess.run(["shutdown", "-s", "-t", "60"], shell=True)
@@ -627,7 +629,9 @@ with tab5:
             config_set_lang(language_option)
             config.set_and_save_config("max_page_result", config_max_search_result_num)
             config.set_and_save_config("ocr_engine", config_ocr_engine)
+            config.set_and_save_config("exclude_words",utils.string_to_list(exclude_words))
             st.toast("已应用更改。", icon="🦝")
+            time.sleep(2)
             st.experimental_rerun()
 
     with col2b:
