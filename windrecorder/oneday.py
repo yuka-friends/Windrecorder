@@ -24,6 +24,7 @@ class OneDay:
         df,_,_ = dbManager.db_search_data(search_content, search_date_range_in, search_date_range_out,page_index,is_p_index_used=False) # 不启用页数限制，以返回所有结果
         return df
 
+
     # 检查当天数据索引情况
     def checkout(self, dt_in):
         # 获取输入的时间

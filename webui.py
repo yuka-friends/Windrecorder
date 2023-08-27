@@ -74,6 +74,7 @@ def show_n_locate_video_timestamp_by_df(df, num):
 
 # 直接定位视频时间码、展示视频
 def show_n_locate_video_timestamp_by_filename_n_time(video,timestamp):
+    st.session_state.day_timestamp = int(timestamp)
     # 合并视频文件路径
     videofile_path = os.path.join(config.record_videos_dir, video)
     print("videofile_path: " + videofile_path)
@@ -81,7 +82,7 @@ def show_n_locate_video_timestamp_by_filename_n_time(video,timestamp):
     video_file = open(videofile_path, 'rb')
     video_bytes = video_file.read()
     with st.empty():
-        st.video(video_bytes, start_time=timestamp)
+        st.video(video_bytes, start_time=st.session_state.day_timestamp)
 
 
 # 检测是否初次使用工具，如果不存在数据库/数据库中只有一条数据，则判定为是
@@ -298,41 +299,55 @@ with tab1:
                 st.markdown("<p align='right' style='line-height:2.3;'> 关键词搜索：</p>", unsafe_allow_html=True)
             with col2c:
                 # 搜索框
-                day_search_keyword = st.text_input(d_lang[config.lang]["tab_search_compname"], 'Keyword',key=2,label_visibility="collapsed",disabled=not st.session_state.day_time_slider_disable)
+                def search_result():
+                    # 搜索前清除状态
+                    st.session_state.day_search_result_index_num = 0
+                    print("AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA")
+                day_search_keyword = st.text_input(d_lang[config.lang]["tab_search_compname"], 'Keyword',key=2,label_visibility="collapsed",on_change=search_result(),disabled=not st.session_state.day_time_slider_disable)
                 # 执行搜索，搜索结果
                 df_day_search_result = OneDay().search_day_data(utils.complete_datetime(st.session_state.day_date_input),search_content=day_search_keyword)
             with col3c:
                 # 结果条目数
                 if st.session_state.day_is_search_data:
-                    result_num = df_day_search_result.shape[0]
-                    st.markdown(f"<p align='right' style='line-height:2.3;'> 共找到 {result_num} 条结果：</p>", unsafe_allow_html=True)
+                    # 启用了搜索功能
+                    if df_day_search_result.empty:
+                        st.markdown(f"<p align='right' style='line-height:2.3;'> 没有找到结果 </p>", unsafe_allow_html=True)
+                    else:
+                        result_num = df_day_search_result.shape[0]
+                        st.markdown(f"<p align='right' style='line-height:2.3;'> 共找到 {result_num} 条结果：</p>", unsafe_allow_html=True)
                 else:
                     st.empty()
             with col4c:
                 # 翻页器
-                def update_slider(dt):
-                    # 翻页结果时刷新控制时间滑杆的定位；入参：需要被定位的datetime.time
-                    if st.session_state.day_is_search_data:
-                        st.session_state.day_time_select_slider = dt
-                        
-                # 初始化值
-                if 'day_search_result_index_num' not in st.session_state:
-                    st.session_state['day_search_result_index_num'] = 0
-                # 翻页控件
-                st.session_state.day_search_result_index_num = st.number_input(
-                    "PageIndex",
-                    value=0,
-                    min_value=0,
-                    max_value=df_day_search_result.shape[0]-1,
-                    label_visibility="collapsed",
-                    disabled=not st.session_state.day_time_slider_disable,
-                    on_change=update_slider(utils.set_full_datetime_to_day_time(utils.seconds_to_datetime(df_day_search_result.loc[st.session_state.day_search_result_index_num, 'videofile_time'])))
-                    )
+                if df_day_search_result.empty:
+                    st.empty()
+                else:
+                    def update_slider(dt):
+                        # 翻页结果时刷新控制时间滑杆的定位；入参：需要被定位的datetime.time
+                        if st.session_state.day_is_search_data:
+                            st.session_state.day_time_select_slider = dt
+
+                    # 初始化值
+                    if 'day_search_result_index_num' not in st.session_state:
+                        st.session_state['day_search_result_index_num'] = 0
+                    # 翻页控件
+                    st.session_state.day_search_result_index_num = st.number_input(
+                        "PageIndex",
+                        value=0,
+                        min_value=0,
+                        max_value=df_day_search_result.shape[0]-1,
+                        label_visibility="collapsed",
+                        disabled=not st.session_state.day_time_slider_disable,
+                        on_change=update_slider(utils.set_full_datetime_to_day_time(utils.seconds_to_datetime(df_day_search_result.loc[st.session_state.day_search_result_index_num, 'videofile_time'])))
+                        )
             with col5c:
-                st.button(label="⟳",
-                          on_click=update_slider(utils.set_full_datetime_to_day_time(utils.seconds_to_datetime(df_day_search_result.loc[st.session_state.day_search_result_index_num, 'videofile_time']))),
-                          disabled=not st.session_state.day_time_slider_disable
-                          )
+                if df_day_search_result.empty:
+                    st.empty()
+                else:
+                    st.button(label="⟳",
+                              on_click=update_slider(utils.set_full_datetime_to_day_time(utils.seconds_to_datetime(df_day_search_result.loc[st.session_state.day_search_result_index_num, 'videofile_time']))),
+                              disabled=not st.session_state.day_time_slider_disable
+                              )
 
         with col3b:
             st.empty()
@@ -353,7 +368,7 @@ with tab1:
         col1a, col2a, col3a = st.columns([1,3,1])
         with col1a:
             # 居左部分
-            if st.session_state.day_is_search_data:
+            if st.session_state.day_is_search_data and not df_day_search_result.empty:
                 # 如果是搜索视图，这里展示全部的搜索结果
                 df_day_search_result_refine = dbManager.db_refine_search_data(df_day_search_result) # 优化下数据展示
                 draw_dataframe(df_day_search_result_refine)
@@ -362,7 +377,7 @@ with tab1:
 
         with col2a:
             # 居中部分：视频结果显示区域
-            if st.session_state.day_is_search_data:
+            if st.session_state.day_is_search_data and not df_day_search_result.empty:
                 # 【搜索功能】
                 # 获取关键词，搜索出所有结果的dt，然后使用上下翻页来定位，定位后展示对应的视频
                 day_is_video_ondisk,day_video_file_name,shown_timestamp = OneDay().get_result_df_video_time(df_day_search_result,st.session_state.day_search_result_index_num)
