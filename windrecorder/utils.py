@@ -7,6 +7,7 @@ import subprocess
 import time
 import threading
 import re
+import signal
 
 import pyautogui
 
@@ -200,7 +201,7 @@ def kill_recording():
     with open("lock_file_record", encoding='utf-8') as f:
         check_pid = int(f.read())
     check_result = subprocess.run(['taskkill', '/pid', str(check_pid), '-t','-f'], stdout=subprocess.PIPE, text=True)
-    # st.toast(f"已结束录屏进程，{check_result.stdout}")
+    # os.kill(check_pid, signal.SIGINT) #通过发送中断信号来停止，但是失败了
     print(f"已结束录屏进程，{check_result.stdout}")
 
 
@@ -251,7 +252,7 @@ def string_to_list(string):
   return string.split(", ")
 
 
-# 判断字符串是否包含列表中的元素
+# 判断字符串是否包含列表内的元素
 def is_str_contain_list_word(string, list_items):
     string = string.lower()
     for item in list_items:

@@ -512,11 +512,12 @@ with tab3:
     st.write("WIP")
     st.write("数据记忆的时间柱状图表；词云")
 
+
 with tab4:
     st.markdown(d_lang[config.lang]["tab_record_title"])
     st.write("WIP")
 
-    col1c, col2c = st.columns([1, 3])
+    col1c, col2c = st.columns([1, 2])
     with col1c:
         # 检查录屏服务有无进行中
         # todo：持续、自动探测服务状态？
@@ -541,11 +542,11 @@ with tab4:
         if st.session_state.update_btn_refresh_press:
 
             if record.is_recording():
-                st.success("正在持续录制屏幕……  请刷新查看最新运行状态。", icon="🦚")
-                stop_record_btn = st.button('停止录制屏幕', type="secondary",disabled=st.session_state.get("update_btn_dis_record",False),on_click=update_record_service_btn_clicked)
-                if stop_record_btn:
-                    st.toast("正在结束录屏进程……")
-                    utils.kill_recording()
+                st.success("正在持续录制屏幕……  请刷新查看最新运行状态。若想停止录制屏幕，请手动关闭后台的 “Windrecorder - Recording Screening” 终端窗口。", icon="🦚")
+                # stop_record_btn = st.button('停止录制屏幕', type="secondary",disabled=st.session_state.get("update_btn_dis_record",False),on_click=update_record_service_btn_clicked)
+                # if stop_record_btn:
+                #     st.toast("正在结束录屏进程……")
+                #     utils.kill_recording()
                     
             else:
                 st.error("当前未在录制屏幕。  请刷新查看最新运行状态。", icon="🦫")
@@ -558,6 +559,7 @@ with tab4:
 
         # st.warning("录制服务已启用。当前暂停录制屏幕。",icon="🦫")
         st.divider()
+        st.write('WIP')
         st.checkbox('开机后自动开始录制', value=False)
         st.checkbox('当鼠标一段时间没有移动时暂停录制，直到鼠标开始移动', value=False)
         st.number_input('鼠标停止移动的第几分钟暂停录制', value=5, min_value=1)
@@ -573,7 +575,7 @@ def update_database_clicked():
 with tab5:
     st.markdown(d_lang[config.lang]["tab_setting_title"])
 
-    col1b, col2b = st.columns([1, 3])
+    col1b, col2b = st.columns([1, 2])
     with col1b:
         # 更新数据库
         st.markdown(d_lang[config.lang]["tab_setting_db_title"])
