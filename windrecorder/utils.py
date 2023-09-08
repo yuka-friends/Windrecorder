@@ -31,6 +31,7 @@ class RepeatingTimer(threading.Thread):
     def stop(self):
         self.running = False
 
+# 清空指定目录下的所有文件和子目录
 def empty_directory(path):
     with os.scandir(path) as it:
         for entry in it:
@@ -53,23 +54,24 @@ def get_screen_resolution():
     return pyautogui.size()
 
 
-# 将输入的文件（ %Y-%m-%d_%H-%M-%S str）时间转为2000s秒数
+# 将输入的文件（ %Y-%m-%d_%H-%M-%S str）时间转为时间戳秒数
 def date_to_seconds(date_str):
-    print("——将输入的文件时间转为2000s秒数")
+    print("——将输入的文件时间转为时间戳秒数")
     # 这里我们先定义了时间格式,然后设置一个epoch基准时间为2000年1月1日。使用strptime()将输入的字符串解析为datetime对象,然后计算这个时间和epoch时间的时间差,转换为秒数返回。
     format = "%Y-%m-%d_%H-%M-%S"
-    epoch = datetime.datetime(2000, 1, 1)
+    # epoch = datetime.datetime(2000, 1, 1)
+    epoch = datetime.datetime(1970, 1, 1)
     target_date = datetime.datetime.strptime(date_str, format)
     time_delta = target_date - epoch
     print(time_delta.total_seconds())
     return int(time_delta.total_seconds())
 
 
-# 将2000s秒数格式化为时间 %Y-%m-%d_%H-%M-%S
+# 将时间戳秒数格式化为时间 %Y-%m-%d_%H-%M-%S
 def seconds_to_date(seconds):
-    start_time = 946684800
+    # start_time = 946684800
+    start_time = 0
     dt = datetime.datetime.utcfromtimestamp(start_time + seconds)
-    # dt = dt.replace(tzinfo=datetime.timezone.utc).astimezone(tz=None)
     return dt.strftime("%Y-%m-%d_%H-%M-%S")
 
     # 旧实现
@@ -78,14 +80,15 @@ def seconds_to_date(seconds):
     # return time.strftime("%Y-%m-%d_%H-%M-%S", time_struct)
 
 
-# 将2000s秒数转为datetime格式
+# 将时间戳秒数转为datetime格式
 def seconds_to_datetime(seconds):
-    start_time = 946684800
+    # start_time = 946684800
+    start_time = 0
     dt = datetime.datetime.utcfromtimestamp(start_time + seconds)
     return dt
 
 
-# 将2000s秒数转为24.格式
+# 将时间戳秒数转为24.格式
 def seconds_to_24numfloat(seconds):
     dt = seconds_to_datetime(seconds)
     hour = dt.hour
@@ -95,9 +98,10 @@ def seconds_to_24numfloat(seconds):
     return round(time_float, 2)
 
 
-# 将datetime转为2000s秒数格式
+# 将datetime转为时间戳秒数格式
 def datetime_to_seconds(dt):
-    epoch = datetime.datetime(2000, 1, 1)
+    # epoch = datetime.datetime(2000, 1, 1)
+    epoch = datetime.datetime(1970, 1, 1)
     target_date = dt
     time_delta = target_date - epoch
     return int(time_delta.total_seconds())
@@ -141,7 +145,7 @@ def convert_seconds_to_hhmmss(seconds):
   return time_str
 
 
-# 将整个视频文件名中的YYYY-MM-DD_HH-MM-SS转换为2000s时间戳
+# 将整个视频文件名中的YYYY-MM-DD_HH-MM-SS转换为1970时间戳
 def calc_vid_name_to_timestamp(filename):
     pattern = r'(\d{4}-\d{2}-\d{2}_\d{2}-\d{2}-\d{2})'
     match = re.search(pattern, filename)
