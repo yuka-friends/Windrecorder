@@ -242,8 +242,13 @@ tab1, tab2, tab3, tab4, tab5 = st.tabs(["一天之时", d_lang[config.lang]["tab
 
 # TAB：今天也是一天
 with tab1:
-    # onboarding
-    web_onboarding()
+    # onboarding checking
+    if check_is_onboarding():
+        col1, col2 = st.columns([1, 2])
+        with col1:
+            web_onboarding()
+        with col2:
+            st.empty()
 
     # 标题 # todo:添加今天是星期几以增强时间观念
     
@@ -426,7 +431,7 @@ with tab1:
 
 
 
-
+# tab：全局关键词搜索
 with tab2:
     col1, col2 = st.columns([1, 2])
     with col1:
