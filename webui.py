@@ -448,10 +448,10 @@ with tab2:
             earlist_record_time_int = dbManager.db_first_earliest_record_time()
             search_date_range_in, search_date_range_out = st.date_input(
                 d_lang[config.lang]["tab_search_daterange"],
-                (datetime.datetime(2000, 1, 2)
+                (datetime.datetime(1970, 1, 2)
                     + datetime.timedelta(seconds=earlist_record_time_int)
                     - datetime.timedelta(seconds=86400),
-                datetime.datetime(2000, 1, 2)
+                datetime.datetime(1970, 1, 2)
                     + datetime.timedelta(seconds=latest_record_time_int)
                     - datetime.timedelta(seconds=86400)
                 ),
