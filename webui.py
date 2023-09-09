@@ -256,20 +256,23 @@ with tab1:
     if 'day_date_input' not in st.session_state:
         st.session_state['day_date_input'] = datetime.date.today()
 
-    col1, col2, col3, col4 = st.columns([1,6,1,1])
+    col1, col2, col3 = st.columns([.8,1,1])
     with col1:
         st.markdown("### 一天之时")
     with col2:
-        st.empty()
+        # 日期切换控件
+        col1, col2, col3 = st.columns([1,1,1])
+        with col1:
+            if st.button("← 前一天",use_container_width=True):
+                st.session_state.day_date_input -= datetime.timedelta(days=1)
+        with col2:
+            if st.button("后一天 →",use_container_width=True):
+               st.session_state.day_date_input += datetime.timedelta(days=1)
+        with col3:
+            st.session_state.day_date_input = st.date_input("当天日期",label_visibility="collapsed",value=st.session_state.day_date_input)
     with col3:
-        if st.button("← 前一天",use_container_width=True):
-            st.session_state.day_date_input -= datetime.timedelta(days=1)
-    with col4:
-        if st.button("后一天 →",use_container_width=True):
-            st.session_state.day_date_input += datetime.timedelta(days=1)
+        st.empty()
 
-    st.session_state.day_date_input = st.date_input("当天日期",label_visibility="collapsed",value=st.session_state.day_date_input)
-    
 
     # 获取输入的日期
     # 清理格式到HMS
@@ -288,20 +291,20 @@ with tab1:
         # 关键词搜索模块
         col1b, col2b,col3b = st.columns([.8,1,1])
         with col1b:
-            if st.checkbox("通过关键词搜索当天数据"):
-                st.session_state.day_time_slider_disable = True
-                st.session_state.day_is_search_data = True
-            else:
-                st.session_state.day_time_slider_disable = False
-                st.session_state.day_is_search_data = False
+            st.empty()
         with col2b:
             # 搜索组件
             if 'day_search_query_page_index' not in st.session_state:
                 st.session_state['day_search_query_page_index'] = 0
 
-            col1c,col2c,col3c,col4c,col5c = st.columns([1,2,1.5,2,.5])
+            col1c,col2c,col3c,col4c,col5c = st.columns([1.2,2,1.5,2,.5])
             with col1c:
-                st.markdown("<p align='right' style='line-height:2.3;'> 关键词搜索：</p>", unsafe_allow_html=True)
+                if st.checkbox("关键词搜索"):
+                    st.session_state.day_time_slider_disable = True
+                    st.session_state.day_is_search_data = True
+                else:
+                    st.session_state.day_time_slider_disable = False
+                    st.session_state.day_is_search_data = False
             with col2c:
                 # 搜索框
                 def search_result():
@@ -351,7 +354,7 @@ with tab1:
                 else:
                     st.button(label="⟳",
                               on_click=update_slider(utils.set_full_datetime_to_day_time(utils.seconds_to_datetime(df_day_search_result.loc[st.session_state.day_search_result_index_num, 'videofile_time']))),
-                              disabled=not st.session_state.day_time_slider_disable
+                              disabled=not st.session_state.day_time_slider_disable,use_container_width=True
                               )
 
         with col3b:
