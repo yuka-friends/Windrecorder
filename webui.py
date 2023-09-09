@@ -297,7 +297,7 @@ with tab1:
             if 'day_search_query_page_index' not in st.session_state:
                 st.session_state['day_search_query_page_index'] = 0
 
-            col1c,col2c,col3c,col4c,col5c = st.columns([1.2,2,1.5,2,.5])
+            col1c,col2c,col3c,col4c,col5c = st.columns([1,1.5,1.5,1.5,.5])
             with col1c:
                 if st.checkbox("关键词搜索"):
                     st.session_state.day_time_slider_disable = True
