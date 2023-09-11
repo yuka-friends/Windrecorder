@@ -27,6 +27,7 @@ reset_button_key = "setting_reset"
 
 # python -m streamlit run webui.py
 
+# 获取i18n表，调用方式为 d_lang[config.lang]["key"].format(var=var, var=var)
 with open("languages.json", encoding='utf-8') as f:
     d_lang = json.load(f)
 lang_map = d_lang['lang_map']
@@ -518,7 +519,6 @@ with tab3:
 
 with tab4:
     st.markdown(d_lang[config.lang]["tab_record_title"])
-    st.write("WIP")
 
     col1c, col2c = st.columns([1, 2])
     with col1c:
@@ -545,7 +545,7 @@ with tab4:
         if st.session_state.update_btn_refresh_press:
 
             if record.is_recording():
-                st.success("正在持续录制屏幕……  请刷新查看最新运行状态。若想停止录制屏幕，请手动关闭后台的 “Windrecorder - Recording Screening” 终端窗口。", icon="🦚")
+                st.success("正在持续录制屏幕，刷新以查询最新运行状态。若想停止录制屏幕，请手动关闭后台的 “Windrecorder - Recording Screening” 终端窗口。", icon="🦚")
                 # stop_record_btn = st.button('停止录制屏幕', type="secondary",disabled=st.session_state.get("update_btn_dis_record",False),on_click=update_record_service_btn_clicked)
                 # if stop_record_btn:
                 #     st.toast("正在结束录屏进程……")
@@ -595,7 +595,8 @@ with tab5:
             # 设置ocr引擎
             check_ocr_engine()
             config_ocr_engine = st.selectbox('本地 OCR 引擎', ('Windows.Media.Ocr.Cli', 'ChineseOCR_lite_onnx'),
-                                             index=config_ocr_engine_choice_index)
+                                             index=config_ocr_engine_choice_index,
+                                             help="（待补充描述）推荐使用 Windows.Media.Ocr.Cli")
 
             # 设置排除词
             exclude_words = st.text_area("当 OCR 存在以下词语时跳过索引",value=utils.list_to_string(config.exclude_words),help="当有些画面/应用不想被索引时，可以在此添加它们可能出现的关键词，以半角逗号“, ”分割。比如不想记录在 捕风记录仪 的查询画面，可以添加“, 捕风记录仪”。")
@@ -629,20 +630,28 @@ with tab5:
         # 自动化维护选项 WIP
         st.markdown(d_lang[config.lang]["tab_setting_maintain_title"])
         st.write("WIP")
-        st.selectbox('OCR 索引策略',
-                     ('计算机空闲时自动索引', '每录制完一个视频切片就自动更新一次', '不自动更新，仅手动更新')
+        ocr_strategy_option_dict = {
+            "不自动更新，仅手动更新":0,
+            "视频切片录制完毕时自动索引":1
+        }
+        ocr_strategy_option = st.selectbox('OCR 索引策略',
+                     (list(ocr_strategy_option_dict.keys())),
+                     index=config.OCR_index_strategy
                      )
-        config_vid_store_day = st.number_input(d_lang[config.lang]["tab_setting_m_vid_store_time"], min_value=1, value=90)
+        config_vid_store_day = st.number_input(d_lang[config.lang]["tab_setting_m_vid_store_time"], min_value=1, value=config.config_vid_store_day)
 
         st.divider()
 
-        # 选择语言
+
+        # 界面设置组
         st.markdown(d_lang[config.lang]["tab_setting_ui_title"])
 
+        # 每页结果最大数量
         config_max_search_result_num = st.number_input(d_lang[config.lang]["tab_setting_ui_result_num"], min_value=1,
                                                        max_value=500, value=config.max_page_result)
 
-        lang_choice = OrderedDict((k, '' + v) for k, v in lang_map.items())
+        # 选择语言
+        lang_choice = OrderedDict((k, '' + v) for k, v in lang_map.items())   #根据读入列表排下序
         language_option = st.selectbox(
             'Interface Language / 更改显示语言',
             (list(lang_choice.values())),
@@ -650,8 +659,10 @@ with tab5:
 
         st.divider()
 
-        if st.button('Apple All Change / 应用所有更改', type="primary"):
+        if st.button('Save and Apple All Change / 保存并应用所有更改', type="primary"):
             config_set_lang(language_option)
+            config.set_and_save_config("OCR_index_strategy",ocr_strategy_option_dict[ocr_strategy_option])
+            config.set_and_save_config("config_vid_store_day",config_vid_store_day)
             config.set_and_save_config("max_page_result", config_max_search_result_num)
             config.set_and_save_config("ocr_engine", config_ocr_engine)
             config.set_and_save_config("exclude_words",utils.string_to_list(exclude_words))

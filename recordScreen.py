@@ -4,6 +4,8 @@ import time
 import os
 from os import getpid
 import json
+import asyncio
+import windrecorder.maintainManager as maintainManager
 
 import windrecorder.utils as utils
 from windrecorder.config import config
@@ -11,7 +13,12 @@ from windrecorder.config import config
 ffmpeg_path = 'ffmpeg'
 
 
-def record_screen(
+async def index_video_data():
+    maintainManager.maintain_manager_main() # 更新数据库
+
+
+
+async def record_screen(
         output_dir=config.record_videos_dir,
         target_res=config.target_screen_res,
         record_time=config.record_seconds
@@ -19,7 +26,6 @@ def record_screen(
     """
     用ffmpeg持续录制屏幕,每15分钟保存一个视频文件
     """
-
     while True:
         # 构建输出文件名 
         now = datetime.datetime.now()
@@ -63,8 +69,13 @@ def record_screen(
         except subprocess.CalledProcessError as ex:
             print(f"{ex.cmd} failed with return code {ex.returncode}")
 
+        # 是否在录制完毕后索引
+        if config.OCR_index_strategy == 1:
+            asyncio.create_task(index_video_data())
+            
         # 2 秒后继续
         time.sleep(2)
+
 
 
 def test_ffmpeg():
@@ -77,4 +88,9 @@ def test_ffmpeg():
 
 if __name__ == '__main__':
     test_ffmpeg()
-    record_screen()
+
+    loop = asyncio.get_event_loop()
+    try:
+        loop.run_until_complete(record_screen())
+    finally:
+        loop.close()
