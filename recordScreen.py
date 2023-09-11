@@ -69,6 +69,8 @@ async def record_screen(
         except subprocess.CalledProcessError as ex:
             print(f"{ex.cmd} failed with return code {ex.returncode}")
 
+        time.sleep(2)
+
         # 是否在录制完毕后索引
         if config.OCR_index_strategy == 1:
             asyncio.create_task(index_video_data())
