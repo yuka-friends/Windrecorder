@@ -189,6 +189,20 @@ def resize_imahe_as_base64(img_path):
     return img_b64
 
 
+# 回滚操作
+def rollback_data(video_path,vid_file_name):
+    # 擦除db中没索引完全的数据
+    vid_file_name_db = vid_file_name.replace("-INDEX","")
+    print(f"——回滚操作:{vid_file_name}")
+    dbManager.db_rollback_delete_video_refer_record(vid_file_name_db)
+
+    # 回滚完毕，将命名调整回来
+    # file_path = os.path.join(video_path, vid_file_name)
+    # new_file_path = file_path.replace("-INDEX","")
+    # os.rename(file_path,new_file_path)
+
+
+
 # 处理视频的主要流程
 def ocr_process_videos(video_path, iframe_path, db_filepath):
     print("——处理视频的流程")
@@ -209,6 +223,20 @@ def ocr_process_videos(video_path, iframe_path, db_filepath):
         # 判断文件是否正在被占用
         if is_file_in_use(file_path):
             continue
+        
+
+        # 判断文件是否为上次索引未完成的文件
+        if "-INDEX" in vid_file_name:
+            # 是-执行回滚操作
+            print("——存在-INDEX标识，执行回滚操作")
+            rollback_data(video_path,vid_file_name)
+        else:
+            # 为正在索引的视频文件改名添加"-INDEX"
+            new_filename = vid_file_name.replace(".","-INDEX.")
+            new_file_path = os.path.join(video_path, new_filename)
+            os.rename(file_path,new_file_path)
+            file_path = new_file_path
+
 
         # 视频文件的处理流程
         # - 提取i帧
@@ -261,6 +289,7 @@ def ocr_process_videos(video_path, iframe_path, db_filepath):
                     print("写入数据库")
                     # 使用os.path.splitext()可以把文件名和文件扩展名分割开来，os.path.splitext(file_name)会返回一个元组,元组的第一个元素是文件名,第二个元素是扩展名
                     calc_to_sec_vidname = os.path.splitext(vid_file_name)[0]
+                    calc_to_sec_vidname = calc_to_sec_vidname.replace("-INDEX","")
                     calc_to_sec_picname = round(int(os.path.splitext(img_file_name)[0]) / 2)
                     calc_to_sec_data = date_to_seconds(calc_to_sec_vidname) + calc_to_sec_picname
                     # 计算图片预览图
@@ -274,13 +303,20 @@ def ocr_process_videos(video_path, iframe_path, db_filepath):
         empty_directory(iframe_path)
 
         print("重命名标记")
-        new_name = vid_file_name.split('.')[0] + "-OCRED." + vid_file_name.split('.')[1]
-        os.rename(file_path, os.path.join(video_path, new_name))
+        # new_name = vid_file_name.split('.')[0] + "-OCRED." + vid_file_name.split('.')[1]
+        # os.rename(file_path, os.path.join(video_path, new_name))
+
+        new_file_path = file_path.replace("-INDEX","-OCRED")
+        os.rename(file_path,new_file_path)
+
 
     # _________________________________________________________________
 
 
 def maintain_manager_main():
+    """
+    数据库主维护方式
+    """
     db_path = config.db_path
     db_filename = config.db_filename
     db_filepath = os.path.join(db_path, db_filename)
@@ -294,6 +330,7 @@ def maintain_manager_main():
 
     # 初始化一下数据库
     dbManager.db_main_initialize()
+    # 对目录下视频进行OCR提取处理
     ocr_process_videos(record_videos_dir, i_frames_dir, db_filepath)
 
     # 打印结果

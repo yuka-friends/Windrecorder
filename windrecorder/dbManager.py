@@ -222,6 +222,23 @@ class DBManager:
         min_time = c.fetchone()[0]
         conn.close()
         return min_time
+    
+
+    # 回滚操作：删除输入视频文件名相关的所有条目
+    def db_rollback_delete_video_refer_record(self,videofile_name):
+        print(f"移除{videofile_name}相关条目")
+        conn = sqlite3.connect(self.db_filepath)
+        c = conn.cursor()
+
+        # 构建SQL语句，使用LIKE操作符进行模糊匹配
+        sql = f"DELETE FROM video_text WHERE videofile_name LIKE '%{videofile_name}%'"
+        # 精确匹配的方式
+        # sql = f"DELETE FROM video_text WHERE videofile_name = '{videofile_name}'"
+        # 执行SQL语句
+        c.execute(sql)
+        # 提交更改并关闭连接
+        conn.commit()
+        conn.close()
 
 
 
