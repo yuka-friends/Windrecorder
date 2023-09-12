@@ -149,10 +149,11 @@ def db_set_page(btn, page_index):
 # 数据库的前置更新索引状态提示
 def draw_db_status():
     count, nocred_count = files.get_videos_and_ocred_videos_count(config.record_videos_dir)
+    timeCostStr = utils.estimate_indexing_time()
     if nocred_count == 1 and record.is_recording():
         st.success(d_lang[config.lang]["tab_setting_db_state3"].format(nocred_count=nocred_count, count=count), icon='✅')
     elif nocred_count >= 1:
-        st.warning(d_lang[config.lang]["tab_setting_db_state1"].format(nocred_count=nocred_count, count=count), icon='🧭')
+        st.warning(d_lang[config.lang]["tab_setting_db_state1"].format(nocred_count=nocred_count, count=count, timeCostStr=timeCostStr), icon='🧭')
     else:
         st.success(d_lang[config.lang]["tab_setting_db_state2"].format(nocred_count=nocred_count, count=count), icon='✅')
 
@@ -582,6 +583,8 @@ with tab5:
     with col1b:
         # 更新数据库
         st.markdown(d_lang[config.lang]["tab_setting_db_title"])
+
+        # 绘制数据库提示横幅
         draw_db_status()
 
         col1, col2 = st.columns([1, 1])

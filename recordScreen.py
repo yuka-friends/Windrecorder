@@ -14,6 +14,7 @@ ffmpeg_path = 'ffmpeg'
 
 
 async def index_video_data():
+    print("--Indexing OCR data")
     maintainManager.maintain_manager_main() # 更新数据库
 
 
@@ -51,7 +52,7 @@ async def record_screen(
             '-framerate', '2',
             '-i', 'desktop',
             '-vf', target_res,
-            # 默认使用编码成 h254 格式
+            # 默认使用编码成 h264 格式
             '-c:v', 'libx264',
             # 默认码率为 200kbps
             '-b:v', '200k',
@@ -64,15 +65,17 @@ async def record_screen(
             # 添加服务监测信息
             with open("lock_file_record", 'w', encoding='utf-8') as f:
                 f.write(str(getpid()))
-
+            print("---Start Recording via FFmpeg")
             subprocess.run(ffmpeg_cmd, check=True)
         except subprocess.CalledProcessError as ex:
             print(f"{ex.cmd} failed with return code {ex.returncode}")
 
+        print("--Recorded. Prepare to indexing OCR data.")
         time.sleep(2)
 
         # 是否在录制完毕后索引
         if config.OCR_index_strategy == 1:
+            print("-asyncio.create_task(index_video_data())")
             asyncio.create_task(index_video_data())
             
         # 2 秒后继续
@@ -88,8 +91,10 @@ def test_ffmpeg():
         exit(1)
 
 
+
 if __name__ == '__main__':
     test_ffmpeg()
+    print(f"-config.OCR_index_strategy: {config.OCR_index_strategy}")
 
     loop = asyncio.get_event_loop()
     try:
