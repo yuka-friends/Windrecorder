@@ -288,6 +288,7 @@ def ocr_process_videos(video_path, iframe_path, db_filepath):
                 else:
                     print("写入数据库")
                     # 使用os.path.splitext()可以把文件名和文件扩展名分割开来，os.path.splitext(file_name)会返回一个元组,元组的第一个元素是文件名,第二个元素是扩展名
+                    vid_file_name = vid_file_name.replace("-INDEX","")
                     calc_to_sec_vidname = os.path.splitext(vid_file_name)[0]
                     calc_to_sec_vidname = calc_to_sec_vidname.replace("-INDEX","")
                     calc_to_sec_picname = round(int(os.path.splitext(img_file_name)[0]) / 2)
