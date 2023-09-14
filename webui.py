@@ -43,7 +43,7 @@ def get_language_index(lang, data):
 lang_index = get_language_index(config.lang, d_lang)
 
 st.set_page_config(
-    page_title="Windrecorder",
+    page_title="Windrecord - webui",
     page_icon="🦝",
     layout="wide"
 )

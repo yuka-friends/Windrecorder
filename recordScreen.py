@@ -14,7 +14,7 @@ ffmpeg_path = 'ffmpeg'
 
 
 async def index_video_data():
-    print("--Indexing OCR data")
+    print("---\n---Indexing OCR data\n---")
     maintainManager.maintain_manager_main() # 更新数据库
 
 
