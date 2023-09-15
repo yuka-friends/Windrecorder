@@ -198,11 +198,14 @@ def complete_datetime(dt):
 
 # 结束录屏服务进程
 def kill_recording():
-    with open("lock_file_record", encoding='utf-8') as f:
-        check_pid = int(f.read())
-    check_result = subprocess.run(['taskkill', '/pid', str(check_pid), '-t','-f'], stdout=subprocess.PIPE, text=True)
-    # os.kill(check_pid, signal.SIGINT) #通过发送中断信号来停止，但是失败了
-    print(f"已结束录屏进程，{check_result.stdout}")
+    try:
+        with open("lock_file_record", encoding='utf-8') as f:
+            check_pid = int(f.read())
+        check_result = subprocess.run(['taskkill', '/pid', str(check_pid), '-t','-f'], stdout=subprocess.PIPE, text=True)
+        # os.kill(check_pid, signal.SIGINT) #通过发送中断信号来停止，但是失败了
+        print(f"已结束录屏进程，{check_result.stdout}")
+    except:
+        print(f"未能找到进程锁")
 
 
 # 通过数据库内项目计算视频对应时间戳

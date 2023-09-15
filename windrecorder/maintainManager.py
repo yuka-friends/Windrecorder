@@ -270,6 +270,7 @@ def ocr_process_videos(video_path, iframe_path, db_filepath):
         # - OCR所有i帧图像
         ocr_result_stringA = ""
         ocr_result_stringB = ""
+        # todo: os.listdir 应该进行正确的数字排序、以确保是按视频顺序索引的
         for img_file_name in os.listdir(iframe_path):
             print("_____________________")
             print("processing IMG - OCR:" + img_file_name)
@@ -296,7 +297,7 @@ def ocr_process_videos(video_path, iframe_path, db_filepath):
                     img_thumbnail = resize_imahe_as_base64(img)
                     dbManager.db_update_data(vid_file_name, img_file_name, calc_to_sec_data,
                                              ocr_result_stringB, True, False, img_thumbnail)
-                    dbManager.db_print_all_data()
+                    # dbManager.db_print_all_data()
                     ocr_result_stringA = ocr_result_stringB
 
         # 清理文件
