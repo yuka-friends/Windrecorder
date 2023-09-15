@@ -1,22 +1,25 @@
 import subprocess
 
 def is_recording():
-    with open("lock_file_record", encoding='utf-8') as f:
-        check_pid = int(f.read())
+    try:
+        with open("lock_file_record", encoding='utf-8') as f:
+            check_pid = int(f.read())
 
-    check_result = subprocess.run(['tasklist'], stdout=subprocess.PIPE, text=True)
-    check_output = check_result.stdout
-    check_result = subprocess.run(['findstr', str(check_pid)], input=check_output, stdout=subprocess.PIPE, text=True)
-    check_output = check_result.stdout
-    global state_is_recording
-    if "python" in check_output:
-        state_is_recording = True
-        print(f"state_is_recording:{state_is_recording}")
-        return True
-    else:
-        state_is_recording = False
-        print(f"state_is_recording:{state_is_recording}")
-        return False
+        check_result = subprocess.run(['tasklist'], stdout=subprocess.PIPE, text=True)
+        check_output = check_result.stdout
+        check_result = subprocess.run(['findstr', str(check_pid)], input=check_output, stdout=subprocess.PIPE, text=True)
+        check_output = check_result.stdout
+        global state_is_recording
+        if "python" in check_output:
+            state_is_recording = True
+            print(f"state_is_recording:{state_is_recording}")
+            return True
+        else:
+            state_is_recording = False
+            print(f"state_is_recording:{state_is_recording}")
+            return False
+    except:
+        print("录屏服务文件锁不存在")
 
     # 试图使用据说可以自动更新的组件来强制刷新状态
     # (https://towardsdatascience.com/creating-dynamic-dashboards-with-streamlit-747b98a68ab5)
