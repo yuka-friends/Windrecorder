@@ -263,3 +263,16 @@ def is_str_contain_list_word(string, list_items):
         if item in string:
             return True
     return False
+
+
+# 乱码清洗策略
+def clean_dirty_text(text):
+    text = delete_short_lines(text)
+    return text
+
+# 移除少于六个字符的行
+def delete_short_lines(text):
+    lines = text.split('\n')  # 将文本按行分割成列表
+    filtered_lines = [line for line in lines if len(line) >= 6]  # 仅保留长度大于等于6的行
+    adjusted_text = '\n'.join(filtered_lines)  # 将过滤后的行重新连接成字符串
+    return adjusted_text

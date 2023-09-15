@@ -145,6 +145,7 @@ def compare_strings(a, b, threshold=70):
 
 # 计算两张图片的重合率
 def compare_image_similarity(img_path1, img_path2, threshold=0.7):
+    # todo: 将删除操作改为整理为文件列表，降低io开销
     print("——计算两张图片的重合率")
     img1 = cv2.imread(img_path1)
     img2 = cv2.imread(img_path2)
@@ -202,8 +203,77 @@ def rollback_data(video_path,vid_file_name):
     # os.rename(file_path,new_file_path)
 
 
+# 对某个视频进行处理的过程
+def ocr_process_single_video(file_path, iframe_path, vid_file_name):
+    # - 提取i帧
+    extract_iframe(file_path)
 
-# 处理视频的主要流程
+    img1_path_temp = ""
+    img2_path_temp = ""
+    is_first_process_image_similarity = 1
+    # 先清理一波看起来重复的图像
+    for img_file_name in os.listdir(iframe_path):
+        print("processing IMG - compare:" + img_file_name)
+        img = os.path.join(iframe_path, img_file_name)
+        print("img=" + img)
+
+        # 填充slot队列
+        if is_first_process_image_similarity == 1:
+            img1_path_temp = img
+            is_first_process_image_similarity = 2
+        elif is_first_process_image_similarity == 2:
+            img2_path_temp = img
+            is_first_process_image_similarity = 3
+        else:
+            is_img_same = compare_image_similarity(img1_path_temp, img2_path_temp)
+            if is_img_same:
+                img1_path_temp = img1_path_temp
+                img2_path_temp = img
+            else:
+                img1_path_temp = img2_path_temp
+                img2_path_temp = img
+
+    # - OCR所有i帧图像
+    ocr_result_stringA = ""
+    ocr_result_stringB = ""
+    # todo: os.listdir 应该进行正确的数字排序、以确保是按视频顺序索引的
+    for img_file_name in os.listdir(iframe_path):
+        print("_____________________")
+        print("processing IMG - OCR:" + img_file_name)
+
+        img = os.path.join(iframe_path, img_file_name)
+        ocr_result_stringB = ocr_image(img)
+        print(f"ocr_result_stringB:{ocr_result_stringB}")
+
+        is_str_same = compare_strings(ocr_result_stringA, ocr_result_stringB)
+        if is_str_same:
+            print("内容一致，不写入数据库，跳过")
+        else:
+            print("内容不一致")
+            if utils.is_str_contain_list_word(ocr_result_stringB, config.exclude_words):
+                print("内容存在排除列表词汇，不写入数据库")
+            else:
+                print("写入数据库")
+                # 使用os.path.splitext()可以把文件名和文件扩展名分割开来，os.path.splitext(file_name)会返回一个元组,元组的第一个元素是文件名,第二个元素是扩展名
+                calc_to_sec_vidname = os.path.splitext(vid_file_name)[0]
+                calc_to_sec_vidname = calc_to_sec_vidname.replace("-INDEX","")
+                calc_to_sec_picname = round(int(os.path.splitext(img_file_name)[0]) / 2)
+                calc_to_sec_data = date_to_seconds(calc_to_sec_vidname) + calc_to_sec_picname
+                # 计算图片预览图
+                img_thumbnail = resize_imahe_as_base64(img)
+                # 清理ocr数据
+                ocr_result_write = utils.clean_dirty_text(ocr_result_stringB)
+                dbManager.db_update_data(vid_file_name, img_file_name, calc_to_sec_data,
+                                         ocr_result_write, True, False, img_thumbnail)
+                # dbManager.db_print_all_data()
+                ocr_result_stringA = ocr_result_stringB
+
+    # 清理文件
+    empty_directory(iframe_path)
+
+
+
+# 处理文件夹内所有视频的主要流程
 def ocr_process_videos(video_path, iframe_path, db_filepath):
     print("——处理视频的流程")
     vid_file_names = os.listdir(video_path)
@@ -237,71 +307,8 @@ def ocr_process_videos(video_path, iframe_path, db_filepath):
             os.rename(file_path,new_file_path)
             file_path = new_file_path
 
-
-        # 视频文件的处理流程
-        # - 提取i帧
-        extract_iframe(file_path)
-
-        img1_path_temp = ""
-        img2_path_temp = ""
-        is_first_process_image_similarity = 1
-        # 先清理一波看起来重复的图像
-        for img_file_name in os.listdir(iframe_path):
-            print("processing IMG - compare:" + img_file_name)
-            img = os.path.join(iframe_path, img_file_name)
-            print("img=" + img)
-
-            # 填充slot队列
-            if is_first_process_image_similarity == 1:
-                img1_path_temp = img
-                is_first_process_image_similarity = 2
-            elif is_first_process_image_similarity == 2:
-                img2_path_temp = img
-                is_first_process_image_similarity = 3
-            else:
-                is_img_same = compare_image_similarity(img1_path_temp, img2_path_temp)
-                if is_img_same:
-                    img1_path_temp = img1_path_temp
-                    img2_path_temp = img
-                else:
-                    img1_path_temp = img2_path_temp
-                    img2_path_temp = img
-
-        # - OCR所有i帧图像
-        ocr_result_stringA = ""
-        ocr_result_stringB = ""
-        # todo: os.listdir 应该进行正确的数字排序、以确保是按视频顺序索引的
-        for img_file_name in os.listdir(iframe_path):
-            print("_____________________")
-            print("processing IMG - OCR:" + img_file_name)
-
-            img = os.path.join(iframe_path, img_file_name)
-            ocr_result_stringB = ocr_image(img)
-            print(f"ocr_result_stringB:{ocr_result_stringB}")
-
-            is_str_same = compare_strings(ocr_result_stringA, ocr_result_stringB)
-            if is_str_same:
-                print("内容一致，不写入数据库，跳过")
-            else:
-                print("内容不一致")
-                if utils.is_str_contain_list_word(ocr_result_stringB, config.exclude_words):
-                    print("内容存在排除列表词汇，不写入数据库")
-                else:
-                    print("写入数据库")
-                    # 使用os.path.splitext()可以把文件名和文件扩展名分割开来，os.path.splitext(file_name)会返回一个元组,元组的第一个元素是文件名,第二个元素是扩展名
-                    calc_to_sec_vidname = os.path.splitext(vid_file_name)[0]
-                    calc_to_sec_vidname = calc_to_sec_vidname.replace("-INDEX","")
-                    calc_to_sec_picname = round(int(os.path.splitext(img_file_name)[0]) / 2)
-                    calc_to_sec_data = date_to_seconds(calc_to_sec_vidname) + calc_to_sec_picname
-                    # 计算图片预览图
-                    img_thumbnail = resize_imahe_as_base64(img)
-                    dbManager.db_update_data(vid_file_name, img_file_name, calc_to_sec_data,
-                                             ocr_result_stringB, True, False, img_thumbnail)
-                    # dbManager.db_print_all_data()
-                    ocr_result_stringA = ocr_result_stringB
-
-        # 清理文件
-        empty_directory(iframe_path)
+        # ocr该文件
+        ocr_process_single_video(file_path, iframe_path, vid_file_name)
 
         print("重命名标记")
         # new_name = vid_file_name.split('.')[0] + "-OCRED." + vid_file_name.split('.')[1]
@@ -331,7 +338,7 @@ def maintain_manager_main():
 
     # 初始化一下数据库
     dbManager.db_main_initialize()
-    # 对目录下视频进行OCR提取处理
+    # 对目录下所有视频进行OCR提取处理
     ocr_process_videos(record_videos_dir, i_frames_dir, db_filepath)
 
     # 打印结果
