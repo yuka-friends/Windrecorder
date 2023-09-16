@@ -574,8 +574,8 @@ with tab4:
             on_change=record.create_startup_shortcut(is_create=st.session_state.is_create_startup_shortcut))
 
         
-        st.checkbox('当鼠标一段时间没有移动时暂停录制，直到鼠标开始移动', value=False)
-        st.number_input('鼠标停止移动的第几分钟暂停录制', value=5, min_value=1)
+        st.checkbox('当画面一段时间没有变化时暂停录制，直到画面开始改变', value=False)
+        st.number_input('画面没有变化的第几分钟暂停录制', value=5, min_value=1)
 
         if st.button('Save and Apple All Change / 保存并应用所有更改', type="primary",key="SaveBtnRecord"):
             st.toast("已应用更改。", icon="🦝")
