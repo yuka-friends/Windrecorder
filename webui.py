@@ -301,7 +301,7 @@ with tab1:
 
             col1c,col2c,col3c,col4c,col5c = st.columns([1,1.5,1.5,1.5,.5])
             with col1c:
-                if st.checkbox("关键词搜索"):
+                if st.checkbox("关键词搜索",help="不输入任何内容直接回车搜索，可列出当日所有数据。"):
                     st.session_state.day_time_slider_disable = True
                     st.session_state.day_is_search_data = True
                 else:
@@ -313,7 +313,9 @@ with tab1:
                     # 搜索前清除状态
                     st.session_state.day_search_result_index_num = 0
 
-                day_search_keyword = st.text_input(d_lang[config.lang]["tab_search_compname"], 'Keyword',key=2,label_visibility="collapsed",on_change=search_result(),disabled=not st.session_state.day_time_slider_disable)
+                day_search_keyword = st.text_input(d_lang[config.lang]["tab_search_compname"], 'Keyword',
+                                                   key=2,label_visibility="collapsed",on_change=search_result(),
+                                                   disabled=not st.session_state.day_time_slider_disable)
                 # 执行搜索，搜索结果
                 df_day_search_result = OneDay().search_day_data(utils.complete_datetime(st.session_state.day_date_input),search_content=day_search_keyword)
             with col3c:
@@ -440,11 +442,10 @@ with tab1:
 
 # tab：全局关键词搜索
 with tab2:
+    st.markdown(d_lang[config.lang]["tab_search_title"])
     col1, col2 = st.columns([1, 2])
     with col1:
         web_onboarding()
-
-        st.markdown(d_lang[config.lang]["tab_search_title"])
 
         col1a, col2a, col3a = st.columns([3, 2, 1])
         with col1a:
@@ -495,8 +496,21 @@ with tab2:
 
 
 with tab3:
-    st.write("WIP")
-    st.write("数据记忆的时间柱状图表；词云")
+    
+    col1, col2 = st.columns([1,2])
+    with col1:
+        st.markdown("### 当月数据统计")
+        col1a, col2a, col3a = st.columns([.5,.5,1])
+        with col1a:
+            st.number_input(label="Stat_query_Year",min_value=2020,max_value=2024,value=2023,label_visibility="collapsed")
+        with col2a:
+            st.number_input(label="Stat_query_Month",min_value=1,max_value=12,value=9,label_visibility="collapsed")
+        with col3a:
+            st.button("回到本月")
+    with col2:
+        st.markdown("### 记忆摘要")
+        st.button("生成/更新本月词云")
+        st.write("词云")
 
 
 with tab4:
@@ -544,6 +558,7 @@ with tab4:
 
         # st.warning("录制服务已启用。当前暂停录制屏幕。",icon="🦫")
         st.divider()
+        st.markdown("#### 录制选项")
         st.write('WIP')
 
         if 'is_create_startup_shortcut' not in st.session_state:
@@ -635,7 +650,11 @@ with tab5:
                      (list(ocr_strategy_option_dict.keys())),
                      index=config.OCR_index_strategy
                      )
-        config_vid_store_day = st.number_input(d_lang[config.lang]["tab_setting_m_vid_store_time"], min_value=1, value=config.config_vid_store_day)
+        col1c,col2c = st.columns([1,1])
+        with col1c:
+            config_vid_store_day = st.number_input(d_lang[config.lang]["tab_setting_m_vid_store_time"], min_value=1, value=config.config_vid_store_day)
+        with col2c:
+            st.number_input("原视频在保留几天后进行二次压缩（0 为永不压缩）",value=10,min_value=0)
 
         st.divider()
 
