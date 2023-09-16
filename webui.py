@@ -312,7 +312,7 @@ with tab1:
                 def search_result():
                     # 搜索前清除状态
                     st.session_state.day_search_result_index_num = 0
-                    print("AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA")
+
                 day_search_keyword = st.text_input(d_lang[config.lang]["tab_search_compname"], 'Keyword',key=2,label_visibility="collapsed",on_change=search_result(),disabled=not st.session_state.day_time_slider_disable)
                 # 执行搜索，搜索结果
                 df_day_search_result = OneDay().search_day_data(utils.complete_datetime(st.session_state.day_date_input),search_content=day_search_keyword)
@@ -486,27 +486,6 @@ with tab2:
         else:
             # 打表
             draw_dataframe(df,heightIn=800)
-            # st.dataframe(
-            #     df,
-            #     column_config={
-            #         "is_videofile_exist": st.column_config.CheckboxColumn(
-            #             "is_videofile_exist",
-            #             help=d_lang[config.lang]["tab_search_table_help1"],
-            #             default=False,
-            #         ),
-            #         "ocr_text": st.column_config.TextColumn(
-            #             "ocr_text",
-            #             help=d_lang[config.lang]["tab_search_table_help2"],
-            #             width="large"
-            #         ),
-            #         "thumbnail": st.column_config.ImageColumn(
-            #             "thumbnail",
-            #             help=d_lang[config.lang]["tab_search_table_help3"]
-            #         )
-
-            #     },
-            #     height=800
-            # )
 
     with col2:
         # 选择视频

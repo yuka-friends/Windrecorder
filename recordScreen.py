@@ -63,7 +63,7 @@ async def record_screen(
         # 执行命令        
         try:
             # 添加服务监测信息
-            with open("lock_file_record", 'w', encoding='utf-8') as f:
+            with open("LOCK_FILE_RECORD.MD", 'w', encoding='utf-8') as f:
                 f.write(str(getpid()))
             print("---Start Recording via FFmpeg")
             subprocess.run(ffmpeg_cmd, check=True)

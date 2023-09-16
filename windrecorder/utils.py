@@ -199,7 +199,7 @@ def complete_datetime(dt):
 # 结束录屏服务进程
 def kill_recording():
     try:
-        with open("lock_file_record.md", encoding='utf-8') as f:
+        with open("LOCK_FILE_RECORD.MD", encoding='utf-8') as f:
             check_pid = int(f.read())
         check_result = subprocess.run(['taskkill', '/pid', str(check_pid), '-t','-f'], stdout=subprocess.PIPE, text=True)
         # os.kill(check_pid, signal.SIGINT) #通过发送中断信号来停止，但是失败了
