@@ -1,5 +1,11 @@
 import subprocess
+import os
+import shutil
 
+from pyshortcuts import make_shortcut
+
+
+# 检测是否正在录屏
 def is_recording():
     try:
         with open("lock_file_record", encoding='utf-8') as f:
@@ -34,3 +40,37 @@ def is_recording():
 # timer_repeat_check_recording = RepeatingTimer(5, repeat_check_recording)
 # add_script_run_ctx(timer_repeat_check_recording)
 # timer_repeat_check_recording.start()
+
+
+# 检查开机启动项中是否已存在某快捷方式
+def is_file_already_in_startup(filename):
+    startup_folder = os.path.join(os.getenv('APPDATA'), 'Microsoft', 'Windows', 'Start Menu', 'Programs', 'Startup')
+    shortcut_path = os.path.join(startup_folder, filename)
+    if os.path.exists(shortcut_path):
+        return True
+    else:
+        return False
+
+
+# 将录屏服务设置为开机启动
+def create_startup_shortcut(is_create = True):
+    startup_folder = os.path.join(os.getenv('APPDATA'), 'Microsoft', 'Windows', 'Start Menu', 'Programs', 'Startup')
+    shortcut_path = os.path.join(startup_folder, 'start_record.bat.lnk')
+
+    if is_create == True:
+        # 创建快捷方式
+        if not os.path.exists(shortcut_path):
+            current_dir = os.getcwd()
+            bat_path = os.path.join(current_dir, 'start_record.bat')
+            make_shortcut(bat_path,folder=startup_folder)
+            print('快捷方式已创建并添加到开机启动项')
+
+    else:
+        # 移除快捷方式
+        if os.path.exists(shortcut_path):
+            print('快捷方式已存在')
+            os.remove(shortcut_path)
+            print('删除快捷方式')
+
+
+

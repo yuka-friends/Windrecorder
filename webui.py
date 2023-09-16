@@ -393,6 +393,7 @@ with tab1:
                 day_is_video_ondisk,day_video_file_name,shown_timestamp = OneDay().get_result_df_video_time(df_day_search_result,st.session_state.day_search_result_index_num)
                 if day_is_video_ondisk:
                     show_n_locate_video_timestamp_by_filename_n_time(day_video_file_name,shown_timestamp)
+                    st.markdown(f"`正在回溯 {day_video_file_name}`")
                 else:
                     st.info("磁盘上没有找到这个时间的视频文件，不过有文本数据可被检索。", icon="🎐")
                     found_row = df_day_search_result.loc[st.session_state.day_search_result_index_num].to_frame().T
@@ -412,6 +413,7 @@ with tab1:
                     select_timestamp = utils.datetime_to_seconds(day_full_select_datetime)
                     shown_timestamp = select_timestamp - vidfile_timestamp
                     show_n_locate_video_timestamp_by_filename_n_time(day_video_file_name,shown_timestamp)
+                    st.markdown(f"`正在回溯 {day_video_file_name}`")
                 else:
                     # 没有对应的视频，查一下有无索引了的数据
                     is_data_found,found_row =OneDay().find_closest_video_by_database(day_df,utils.datetime_to_seconds(day_full_select_datetime))
@@ -564,9 +566,22 @@ with tab4:
         # st.warning("录制服务已启用。当前暂停录制屏幕。",icon="🦫")
         st.divider()
         st.write('WIP')
-        st.checkbox('开机后自动开始录制', value=False)
+
+        if 'is_create_startup_shortcut' not in st.session_state:
+            st.session_state.is_create_startup_shortcut = record.is_file_already_in_startup('start_record.bat.lnk')
+        st.session_state.is_create_startup_shortcut = st.checkbox(
+            '开机后自动开始录制', value=record.is_file_already_in_startup('start_record.bat.lnk'), 
+            on_change=record.create_startup_shortcut(is_create=st.session_state.is_create_startup_shortcut))
+
+        
         st.checkbox('当鼠标一段时间没有移动时暂停录制，直到鼠标开始移动', value=False)
         st.number_input('鼠标停止移动的第几分钟暂停录制', value=5, min_value=1)
+
+        if st.button('Save and Apple All Change / 保存并应用所有更改', type="primary",key="SaveBtnRecord"):
+            st.toast("已应用更改。", icon="🦝")
+            time.sleep(2)
+            st.experimental_rerun()
+
 
     with col2c:
         st.write("WIP")
@@ -662,7 +677,7 @@ with tab5:
 
         st.divider()
 
-        if st.button('Save and Apple All Change / 保存并应用所有更改', type="primary"):
+        if st.button('Save and Apple All Change / 保存并应用所有更改', type="primary",key="SaveBtnGeneral"):
             config_set_lang(language_option)
             config.set_and_save_config("OCR_index_strategy",ocr_strategy_option_dict[ocr_strategy_option])
             config.set_and_save_config("config_vid_store_day",config_vid_store_day)

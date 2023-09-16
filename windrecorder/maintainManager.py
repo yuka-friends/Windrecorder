@@ -205,6 +205,7 @@ def rollback_data(video_path,vid_file_name):
 
 # 对某个视频进行处理的过程
 def ocr_process_single_video(video_path, vid_file_name, iframe_path):
+    # 整合完整路径
     file_path = os.path.join(video_path, vid_file_name)
 
     # 判断文件是否为上次索引未完成的文件
@@ -285,6 +286,13 @@ def ocr_process_single_video(video_path, vid_file_name, iframe_path):
     # 清理文件
     empty_directory(iframe_path)
 
+    print("重命名标记")
+    new_file_path = file_path.replace("-INDEX","-OCRED")
+    os.rename(file_path,new_file_path)
+
+    # new_name = vid_file_name.split('.')[0] + "-OCRED." + vid_file_name.split('.')[1]
+    # os.rename(file_path, os.path.join(video_path, new_name))
+
 
 
 # 处理文件夹内所有视频的主要流程
@@ -302,21 +310,16 @@ def ocr_process_videos(video_path, iframe_path, db_filepath):
         # 检查视频文件是否已被索引
         if not vid_file_name.endswith('.mp4') or vid_file_name.endswith("-OCRED.mp4"):
             continue
-
-        file_path = os.path.join(video_path, vid_file_name)
+        
         # 判断文件是否正在被占用
+        file_path = os.path.join(video_path, vid_file_name)
         if is_file_in_use(file_path):
             continue
 
         # ocr该文件
         ocr_process_single_video(video_path, vid_file_name, iframe_path)
 
-        print("重命名标记")
-        # new_name = vid_file_name.split('.')[0] + "-OCRED." + vid_file_name.split('.')[1]
-        # os.rename(file_path, os.path.join(video_path, new_name))
 
-        new_file_path = file_path.replace("-INDEX","-OCRED")
-        os.rename(file_path,new_file_path)
 
 
     # _________________________________________________________________
