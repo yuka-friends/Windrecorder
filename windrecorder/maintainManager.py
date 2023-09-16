@@ -204,7 +204,21 @@ def rollback_data(video_path,vid_file_name):
 
 
 # 对某个视频进行处理的过程
-def ocr_process_single_video(file_path, iframe_path, vid_file_name):
+def ocr_process_single_video(video_path, vid_file_name, iframe_path):
+    file_path = os.path.join(video_path, vid_file_name)
+
+    # 判断文件是否为上次索引未完成的文件
+    if "-INDEX" in vid_file_name:
+        # 是-执行回滚操作
+        print("——存在-INDEX标识，执行回滚操作")
+        rollback_data(video_path,vid_file_name)
+    else:
+        # 为正在索引的视频文件改名添加"-INDEX"
+        new_filename = vid_file_name.replace(".","-INDEX.")
+        new_file_path = os.path.join(video_path, new_filename)
+        os.rename(file_path,new_file_path)
+        file_path = new_file_path
+
     # - 提取i帧
     extract_iframe(file_path)
 
@@ -293,22 +307,9 @@ def ocr_process_videos(video_path, iframe_path, db_filepath):
         # 判断文件是否正在被占用
         if is_file_in_use(file_path):
             continue
-        
-
-        # 判断文件是否为上次索引未完成的文件
-        if "-INDEX" in vid_file_name:
-            # 是-执行回滚操作
-            print("——存在-INDEX标识，执行回滚操作")
-            rollback_data(video_path,vid_file_name)
-        else:
-            # 为正在索引的视频文件改名添加"-INDEX"
-            new_filename = vid_file_name.replace(".","-INDEX.")
-            new_file_path = os.path.join(video_path, new_filename)
-            os.rename(file_path,new_file_path)
-            file_path = new_file_path
 
         # ocr该文件
-        ocr_process_single_video(file_path, iframe_path, vid_file_name)
+        ocr_process_single_video(video_path, vid_file_name, iframe_path)
 
         print("重命名标记")
         # new_name = vid_file_name.split('.')[0] + "-OCRED." + vid_file_name.split('.')[1]
