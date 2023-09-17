@@ -3,6 +3,7 @@ import shutil
 import json
 import datetime
 from datetime import timedelta
+import calendar
 import subprocess
 import time
 import threading
@@ -40,14 +41,6 @@ def empty_directory(path):
                 shutil.rmtree(entry.path)
             else:
                 os.remove(entry.path)
-
-
-# 统计文件夹大小
-def get_dir_size(dir):
-    size = 0
-    for root, _, files in os.walk(dir):
-        size += sum([os.path.getsize(os.path.join(root, name)) for name in files])
-    return size
 
 
 # 获得屏幕分辨率
@@ -196,6 +189,13 @@ def complete_datetime(dt):
     return dt
 
 
+# 查询一个月有几天
+def get_days_in_month(year, month):
+    # 函数返回一个元组，其中包含该月的第一天是星期几（0表示星期一，1表示星期二，以此类推）和该月的总天数。
+    _, num_days = calendar.monthrange(year, month)
+    return num_days
+
+
 # 结束录屏服务进程
 def kill_recording():
     try:
@@ -230,20 +230,6 @@ def estimate_indexing_time():
     estimate_time = int(nocred_count) * int(round(record_minutes)) * int(ocr_cost_time)
     estimate_time_str = convert_seconds_to_hhmmss(estimate_time)
     return estimate_time_str
-
-
-# 检查视频文件是否存在
-def check_video_exist_in_videos_dir(video_name):
-  video_path = os.path.join(config.record_videos_dir, video_name) 
-  ocred_video_name = os.path.splitext(video_name)[0] + '-OCRED' + os.path.splitext(video_name)[1]
-  ocred_path = os.path.join(config.record_videos_dir, ocred_video_name)
-
-  if os.path.exists(video_path):
-    return video_name
-  elif os.path.exists(ocred_path):  
-    return ocred_video_name
-  else:
-    return None
   
 
 # 将列表转换为以逗号分隔的字符串

@@ -1,7 +1,8 @@
 import os
 
+from windrecorder.config import config
 
-# 检查目录是否存在
+# 检查目录是否存在，若无则创建
 def check_and_create_folder(folder_name):
     # 获取当前工作目录
     current_directory = os.getcwd()
@@ -45,3 +46,25 @@ def find_filename_in_dir(dir,search_str):
       return True
       
   return False
+
+
+# 检查视频文件是否存在
+def check_video_exist_in_videos_dir(video_name):
+  video_path = os.path.join(config.record_videos_dir, video_name) 
+  ocred_video_name = os.path.splitext(video_name)[0] + '-OCRED' + os.path.splitext(video_name)[1]
+  ocred_path = os.path.join(config.record_videos_dir, ocred_video_name)
+
+  if os.path.exists(video_path):
+    return video_name
+  elif os.path.exists(ocred_path):  
+    return ocred_video_name
+  else:
+    return None
+
+
+# 统计文件夹大小
+def get_dir_size(dir):
+    size = 0
+    for root, _, files in os.walk(dir):
+        size += sum([os.path.getsize(os.path.join(root, name)) for name in files])
+    return size

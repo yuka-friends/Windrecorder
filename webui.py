@@ -211,7 +211,7 @@ def web_footer_state():
 
     latest_db_records = dbManager.db_num_records()
 
-    videos_file_size = round(utils.get_dir_size(config.record_videos_dir) / (1024 * 1024 * 1024), 3)
+    videos_file_size = round(files.get_dir_size(config.record_videos_dir) / (1024 * 1024 * 1024), 3)
 
     # webUI draw
     st.divider()
@@ -499,14 +499,26 @@ with tab3:
     
     col1, col2 = st.columns([1,2])
     with col1:
+        db_earliest_datetime = utils.seconds_to_datetime(dbManager.db_first_earliest_record_time())
+        db_latest_datetime = utils.seconds_to_datetime(dbManager.db_latest_record_time())
+        if db_latest_datetime.year > db_earliest_datetime.year:
+            # 当记录时间超过一年
+            selector_month_min = 1
+            selector_month_max = 12
+        else:
+            selector_month_min = db_earliest_datetime.month
+            selector_month_max = db_latest_datetime.month
+
         st.markdown("### 当月数据统计")
         col1a, col2a, col3a = st.columns([.5,.5,1])
         with col1a:
-            st.number_input(label="Stat_query_Year",min_value=2020,max_value=2024,value=2023,label_visibility="collapsed")
+            st.number_input(label="Stat_query_Year",min_value=db_earliest_datetime.year,max_value=db_latest_datetime.year,value=db_latest_datetime.year,label_visibility="collapsed")
         with col2a:
-            st.number_input(label="Stat_query_Month",min_value=1,max_value=12,value=9,label_visibility="collapsed")
+            st.number_input(label="Stat_query_Month",min_value=selector_month_min,max_value=selector_month_max,value=db_latest_datetime.month,label_visibility="collapsed")
         with col3a:
             st.button("回到本月")
+        
+
     with col2:
         st.markdown("### 记忆摘要")
         st.button("生成/更新本月词云")
@@ -644,7 +656,7 @@ with tab5:
         st.write("WIP")
         ocr_strategy_option_dict = {
             "不自动更新，仅手动更新":0,
-            "视频切片录制完毕时自动索引":1
+            "视频切片录制完毕时自动索引（推荐）":1
         }
         ocr_strategy_option = st.selectbox('OCR 索引策略',
                      (list(ocr_strategy_option_dict.keys())),

@@ -210,7 +210,7 @@ class DBManager:
         c.execute("SELECT MAX(videofile_time) FROM video_text")
         max_time = c.fetchone()[0]
         conn.close()
-        return max_time
+        return max_time #返回时间戳
     
 
     # 获取表内最早的记录时间
@@ -221,7 +221,7 @@ class DBManager:
         c.execute("SELECT MIN(videofile_time) FROM video_text")
         min_time = c.fetchone()[0]
         conn.close()
-        return min_time
+        return min_time #返回时间戳
     
 
     # 回滚操作：删除输入视频文件名相关的所有条目

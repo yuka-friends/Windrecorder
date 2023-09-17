@@ -121,7 +121,7 @@ class OneDay:
     def get_result_df_video_time(self,df,index):
         video_name = df.loc[index, 'videofile_name']
         video_search_result_timestamp = df.loc[index, 'videofile_time']
-        check_on_disk_path = utils.check_video_exist_in_videos_dir(video_name)
+        check_on_disk_path = files.check_video_exist_in_videos_dir(video_name)
         if check_on_disk_path == None:
             # 磁盘上没有文件
             return False,video_name,None
