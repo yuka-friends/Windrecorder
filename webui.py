@@ -12,6 +12,7 @@ import builtins
 import streamlit as st
 from streamlit.runtime.scriptrunner import add_script_run_ctx
 import pandas as pd
+from PIL import Image
 
 from windrecorder.dbManager import dbManager
 from windrecorder.oneday import OneDay
@@ -19,8 +20,8 @@ from windrecorder.config import config
 import windrecorder.maintainManager as maintainManager
 import windrecorder.utils as utils
 import windrecorder.files as files
-import windrecorder.config
 import windrecorder.record as record
+import windrecorder.wordcloud as wordcloud
 
 update_button_key = "update_button"
 reset_button_key = "setting_reset"
@@ -512,17 +513,30 @@ with tab3:
         st.markdown("### 当月数据统计")
         col1a, col2a, col3a = st.columns([.5,.5,1])
         with col1a:
-            st.number_input(label="Stat_query_Year",min_value=db_earliest_datetime.year,max_value=db_latest_datetime.year,value=db_latest_datetime.year,label_visibility="collapsed")
+            st.session_state.stat_Stat_query_Year = st.number_input(label="Stat_query_Year",min_value=db_earliest_datetime.year,max_value=db_latest_datetime.year,value=db_latest_datetime.year,label_visibility="collapsed")
         with col2a:
-            st.number_input(label="Stat_query_Month",min_value=selector_month_min,max_value=selector_month_max,value=db_latest_datetime.month,label_visibility="collapsed")
+            st.session_state.Stat_query_Month = st.number_input(label="Stat_query_Month",min_value=selector_month_min,max_value=selector_month_max,value=db_latest_datetime.month,label_visibility="collapsed")
         with col3a:
             st.button("回到本月")
+        stat_select_month_datetime = datetime.datetime(st.session_state.stat_Stat_query_Year,st.session_state.Stat_query_Month,1,10,0,0)
         
 
     with col2:
         st.markdown("### 记忆摘要")
-        st.button("生成/更新本月词云")
-        st.write("词云")
+        current_month_cloud_img_name = str(st.session_state.stat_Stat_query_Year) + "-" + str(st.session_state.Stat_query_Month)
+        current_month_cloud_img_path = os.path.join(config.wordcloud_result_dir,current_month_cloud_img_name + ".png")
+
+        if st.button("生成/更新本月词云"):
+            with st.spinner("生成中，大概需要 30s……"):
+                print("生成词云")
+                wordcloud.generate_word_cloud_in_month(utils.datetime_to_seconds(stat_select_month_datetime),current_month_cloud_img_name)
+            
+        if os.path.exists(current_month_cloud_img_path):
+            image = Image.open(current_month_cloud_img_path)
+            st.image(image,caption=current_month_cloud_img_name)
+        else:
+            st.info("当月未有词云图片。")
+
 
 
 with tab4:

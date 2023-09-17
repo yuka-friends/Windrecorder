@@ -15,6 +15,7 @@ class Config:
         exclude_words,
         config_vid_store_day,
         OCR_index_strategy,
+        wordcloud_result_dir,
         **other_field
     ) -> None:
         self.db_path = db_path
@@ -29,6 +30,7 @@ class Config:
         self.exclude_words = exclude_words
         self.config_vid_store_day = config_vid_store_day
         self.OCR_index_strategy = OCR_index_strategy # 0=不自动索引，1=每录制完一个切片进行索引
+        self.wordcloud_result_dir = wordcloud_result_dir
     
     def set_and_save_config(self, attr: str, value):
         if not hasattr(self, attr):

@@ -1,4 +1,5 @@
 from datetime import datetime
+import os
 
 from wordcloud import WordCloud
 # doc: https://amueller.github.io/word_cloud/generated/wordcloud.WordCloud.html
@@ -11,6 +12,20 @@ import pandas as pd
 import windrecorder.utils as utils
 from windrecorder.dbManager import dbManager
 import windrecorder.files as files
+
+
+
+# 读取跳过词
+def read_stopwords(filename):
+    stopwords = []
+    with open(filename, 'r', encoding='utf-8') as file:
+        stopwords = file.read().split(',')
+        stopwords = [word.strip() for word in stopwords]
+    return stopwords
+
+
+stopwords = read_stopwords("config/wordcloud_stopword.txt")
+
 
 # 生成词云
 def generate_word_cloud_pic(text_file_path,img_save_path):
@@ -27,15 +42,20 @@ def generate_word_cloud_pic(text_file_path,img_save_path):
     img = Image.open("__assets__/mask_cloud.png") # 打开遮罩图片
     mask = np.array(img) #将图片转换为数组
 
-    stopwords = ["我","你","她","的","是","了","在","也","和","就","都","这"]
     wc = WordCloud(font_path="msyh.ttc",
                    mask=mask,
-                   width = 800,
-                   height = 600,
-                   background_color=None,
+                   width = 1000,
+                   height = 800,
+                   min_font_size = 8,
+                   max_font_size = 150,
                    mode="RGBA",
-                   max_words=200,
-                   stopwords=None).generate(text)
+                   background_color=None,
+                   max_words=300,
+                   stopwords=stopwords,
+                   min_word_length=2,
+                   relative_scaling=0.4,
+                   repeat=False
+                   ).generate(text)
 
     # 显示词云
     plt.imshow(wc, interpolation='bilinear')# 用plt显示图片
@@ -60,7 +80,8 @@ def get_month_ocr_result(timestamp):
                        23,59,59)
     df,_,_ = dbManager.db_search_data("",date_in,date_out,0,is_p_index_used=False)
     # ocr_text_data = df["ocr_text"].to_string(index=False)
-    ocr_text_data = ''.join(df['ocr_text'].tolist()) # 用空格不换行连接的方式实现
+    ocr_text_data = ''.join(df['ocr_text'].tolist())
+    ocr_text_data = utils.delete_short_lines(ocr_text_data,less_than=10)
 
     # 移除换行符
     ocr_text_data = ocr_text_data.replace("\n", "").replace("\r", "")
@@ -77,9 +98,16 @@ def get_month_ocr_result(timestamp):
 
   
 # 根据某时数据生成该月的词云
-def generate_word_cloud_in_month(timestamp):
+def generate_word_cloud_in_month(timestamp,img_save_name="default"):
+    # 取得当月内所有ocr结果
     text_file_path = get_month_ocr_result(timestamp)
-    img_save_path = "wordcloud_result"
-    files.check_and_create_folder(img_save_path)
+
+    img_save_dir = "wordcloud_result"
+    files.check_and_create_folder(img_save_dir)
+    img_save_name = img_save_name + ".png"
+    img_save_path = os.path.join(img_save_dir,img_save_name)
+
+    # 生成词云图片
     generate_word_cloud_pic(text_file_path,img_save_path)
-    
+
+

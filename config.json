@@ -15,5 +15,6 @@
     "捕风记录仪"
   ],
   "config_vid_store_day": 45,
-  "OCR_index_strategy": 1
+  "OCR_index_strategy": 1,
+  "wordcloud_result_dir":"wordcloud_result"
 }
