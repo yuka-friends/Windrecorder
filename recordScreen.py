@@ -11,14 +11,19 @@ import windrecorder.utils as utils
 from windrecorder.config import config
 
 ffmpeg_path = 'ffmpeg'
+video_path = config.record_videos_dir
 
 
-async def index_video_data():
+# 索引文件线程
+async def index_video_data(vid_file_name):
     print("---\n---Indexing OCR data\n---")
-    maintainManager.maintain_manager_main() # 更新数据库
+    full_path = os.path.join(video_path,vid_file_name)
+    if os.path.exists(full_path):
+        print(f"--{full_path} existed.")
+        maintainManager.ocr_process_single_video(video_path, vid_file_name, "i_frames")
 
 
-
+# 录制屏幕线程
 async def record_screen(
         output_dir=config.record_videos_dir,
         target_res=config.target_screen_res,
@@ -30,20 +35,13 @@ async def record_screen(
     while True:
         # 构建输出文件名 
         now = datetime.datetime.now()
-        out_name = now.strftime("%Y-%m-%d_%H-%M-%S") + ".mp4"
-        out_path = os.path.join(output_dir, out_name)
+        video_out_name = now.strftime("%Y-%m-%d_%H-%M-%S") + ".mp4"
+        out_path = os.path.join(output_dir, video_out_name)
 
         if not os.path.exists(output_dir):
             os.mkdir(output_dir)
 
         screen_width, screen_height = utils.get_screen_resolution()
-
-        # ffmpeg_cmd = [ffmpeg_path, '-f', 'gdigrab', '-video_size', '3840x2160',
-        #       '-framerate', '1', '-i', 'desktop', 
-        #       '-vf', 'scale=1920:1080', 
-        #       '-c:v', 'libx265', '-b:v', '300k', '-minrate', '100k', '-bufsize', '800k',
-        #       '-bf','7','-g', '300','-keyint_min', '120',
-        #       '-t', str(gap_time), out_path]
 
         ffmpeg_cmd = [
             ffmpeg_path,
@@ -66,6 +64,7 @@ async def record_screen(
             with open("LOCK_FILE_RECORD.MD", 'w', encoding='utf-8') as f:
                 f.write(str(getpid()))
             print("---Start Recording via FFmpeg")
+            # 运行ffmpeg
             subprocess.run(ffmpeg_cmd, check=True)
         except subprocess.CalledProcessError as ex:
             print(f"{ex.cmd} failed with return code {ex.returncode}")
@@ -75,14 +74,15 @@ async def record_screen(
 
         # 是否在录制完毕后索引
         if config.OCR_index_strategy == 1:
-            print("-asyncio.create_task(index_video_data())")
-            asyncio.create_task(index_video_data())
+            print(f"-asyncio.create_task(index_video_data({video_out_name}))")
+            asyncio.create_task(index_video_data(video_out_name))
             
         # 2 秒后继续
         time.sleep(2)
 
 
 
+# 测试ffmpeg是否存在可用
 def test_ffmpeg():
     try:
         res = subprocess.run('ffmpeg -version')
@@ -96,8 +96,5 @@ if __name__ == '__main__':
     test_ffmpeg()
     print(f"-config.OCR_index_strategy: {config.OCR_index_strategy}")
 
-    loop = asyncio.get_event_loop()
-    try:
-        loop.run_until_complete(record_screen())
-    finally:
-        loop.close()
+    asyncio.run(record_screen())
+

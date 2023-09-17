@@ -474,7 +474,7 @@ with tab2:
         # 获取数据
         df,all_result_counts,st.session_state.max_page_count = dbManager.db_search_data(search_content, search_date_range_in, search_date_range_out,
                                       page_index)
-        df = dbManager.db_refine_search_data(df)
+        df = dbManager.db_refine_search_data(df) # 优化数据显示
         is_df_result_exist = len(df)
         st.markdown(f"`搜索到 {all_result_counts} 条、共 {st.session_state.max_page_count} 页关于 \"{search_content}\" 的结果。`")
 
@@ -601,7 +601,7 @@ with tab5:
             update_db_btn = st.button(d_lang[config.lang]["tab_setting_db_btn"], type="primary", key='update_button_key',
                                       disabled=st.session_state.get("update_button_disabled", False),
                                       on_click=update_database_clicked)
-            is_shutdown_pasocon_after_updatedDB = st.checkbox('更新完毕后关闭计算机', value=False)
+            is_shutdown_pasocon_after_updatedDB = st.checkbox('更新完毕后关闭计算机（更新过程中请勿勾选）', value=False)
         
         with col2:
             # 设置ocr引擎
