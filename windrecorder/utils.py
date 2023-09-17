@@ -89,7 +89,7 @@ def seconds_to_24numfloat(seconds):
     minute = dt.minute
     minute_decimal = minute / 60 
     time_float = hour + minute_decimal
-    return round(time_float, 2)
+    return round(time_float, 4)
 
 
 # 将datetime转为时间戳秒数格式

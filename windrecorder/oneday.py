@@ -1,7 +1,9 @@
-import pandas as pd
 import os
 import datetime
 import re
+
+import pandas as pd
+import numpy as np
 
 import windrecorder.utils as utils
 import windrecorder.files as files
@@ -70,9 +72,12 @@ class OneDay:
       
         # 新建一份表，统计每个时间段中有多少视频
         df_C = pd.DataFrame(columns=['hour', 'data'])
-        for step in range(int(start), int(end)):
-          filtered = df_B[(df_B['videofile_time'] >= step) & (df_B['videofile_time'] < step + 0.5)]
-          df_C.loc[len(df_C)] = [step, len(filtered)]
+        for step in np.arange(float(start), float(end),0.1):
+            filtered = df_B[(df_B['videofile_time'] >= step) & (df_B['videofile_time'] < step + 0.1)]
+            df_C.loc[len(df_C)] = [step, len(filtered)]
+        
+        df_C['hour'] = df_C['hour'].round(1)
+        # df_C['hour'] = df_C['hour'].apply(int)
         
         return df_C
 

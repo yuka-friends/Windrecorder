@@ -520,6 +520,7 @@ with tab3:
             st.button("回到本月")
         stat_select_month_datetime = datetime.datetime(st.session_state.stat_Stat_query_Year,st.session_state.Stat_query_Month,1,10,0,0)
         
+        st.write("WIP")
 
     with col2:
         st.markdown("### 记忆摘要")
@@ -585,7 +586,6 @@ with tab4:
         # st.warning("录制服务已启用。当前暂停录制屏幕。",icon="🦫")
         st.divider()
         st.markdown("#### 录制选项")
-        st.write('WIP')
 
         if 'is_create_startup_shortcut' not in st.session_state:
             st.session_state.is_create_startup_shortcut = record.is_file_already_in_startup('start_record.bat.lnk')
@@ -593,11 +593,11 @@ with tab4:
             '开机后自动开始录制', value=record.is_file_already_in_startup('start_record.bat.lnk'), 
             on_change=record.create_startup_shortcut(is_create=st.session_state.is_create_startup_shortcut))
 
-        
-        st.checkbox('当画面一段时间没有变化时暂停录制，直到画面开始改变', value=False)
-        st.number_input('画面没有变化的第几分钟暂停录制', value=5, min_value=1)
+        screentime_not_change_to_pause_record = st.number_input('当画面几分钟没有变化时，暂停录制下个视频切片（0为永不暂停）（需重新启动录制脚本才能应用该项）', value=config.screentime_not_change_to_pause_record, min_value=1)
+
 
         if st.button('Save and Apple All Change / 保存并应用所有更改', type="primary",key="SaveBtnRecord"):
+            config.set_and_save_config("screentime_not_change_to_pause_record",screentime_not_change_to_pause_record)
             st.toast("已应用更改。", icon="🦝")
             time.sleep(2)
             st.experimental_rerun()

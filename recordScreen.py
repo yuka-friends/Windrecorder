@@ -7,9 +7,13 @@ import os
 from os import getpid
 import json
 
+import pyautogui
+import numpy as np
+
 import windrecorder.maintainManager as maintainManager
 import windrecorder.utils as utils
 from windrecorder.config import config
+import windrecorder.files as files
 
 ffmpeg_path = 'ffmpeg'
 video_path = config.record_videos_dir
@@ -70,10 +74,6 @@ def record_screen(
     except subprocess.CalledProcessError as ex:
         print(f"{ex.cmd} failed with return code {ex.returncode}")
 
-    
-    
-
-
 
 # 测试ffmpeg是否存在可用
 def test_ffmpeg():
@@ -84,19 +84,54 @@ def test_ffmpeg():
         exit(1)
 
 
+monitor_change_rank = 0
+last_screenshot = None
+# 每隔一段截图对比是否屏幕内容缺少变化
+def monitor_compare_screenshot():
+    global monitor_change_rank
+    screenshot = pyautogui.screenshot()
+    screenshot_array = np.array(screenshot)
+
+    if last_screenshot_array is not None:
+        similarity = maintainManager.compare_image_similarity_np(last_screenshot_array,screenshot_array)
+
+        if similarity > 0.85:
+            monitor_change_rank += 0.5
+        else:
+            monitor_change_rank = 0
+    
+    last_screenshot_array = screenshot_array.copy()
+    print(f"----monitor_change_rank:{monitor_change_rank},similarity:{similarity}")
+    time.sleep(30)
+
+
 
 if __name__ == '__main__':
     test_ffmpeg()
     print(f"-config.OCR_index_strategy: {config.OCR_index_strategy}")
+    # 维护之前退出没留下的视频
+    thread_maintain_last_time = threading.Thread(target=maintainManager.maintain_manager_main)
+    thread_maintain_last_time.start()
+
+    # 屏幕内容多长时间不变则暂停录制
+    print(f"-config.screentime_not_change_to_pause_record:{config.screentime_not_change_to_pause_record}")
+    if config.screentime_not_change_to_pause_record !=0:
+        thread_monitor_compare_screenshot = threading.Thread(target=monitor_compare_screenshot)
+        thread_monitor_compare_screenshot.start()
+
 
     while(True):
         # 主循环过程
-        video_out_name = record_screen()
-        time.sleep(2)
-        if config.OCR_index_strategy == 1:
-            print(f"-Starting Indexing video data: '{video_out_name}'")
-            thread_index_video_data = threading.Thread(target=index_video_data,args=(video_out_name,))
-            thread_index_video_data.daemon = True  # 设置为守护线程
-            thread_index_video_data.start()
-        time.sleep(2)
+        if monitor_change_rank > 3:
+            print("屏幕内容没有更新，停止录屏中")
+        else:
+            video_out_name = record_screen() # 录制屏幕
+            time.sleep(2) # 歇口气
+            # 自动索引策略
+            if config.OCR_index_strategy == 1:
+                print(f"-Starting Indexing video data: '{video_out_name}'")
+                thread_index_video_data = threading.Thread(target=index_video_data,args=(video_out_name,))
+                thread_index_video_data.daemon = True  # 设置为守护线程
+                thread_index_video_data.start()
+            time.sleep(2) # 再歇
         

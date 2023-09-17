@@ -7,6 +7,7 @@ import cv2
 import numpy as np
 from chineseocr_lite_onnx.model import OcrHandle
 import win32file
+import pyautogui
 
 from windrecorder.utils import empty_directory, date_to_seconds, seconds_to_date
 from windrecorder.dbManager import dbManager
@@ -143,7 +144,7 @@ def compare_strings(a, b, threshold=70):
         return False
 
 
-# 计算两张图片的重合率
+# 计算两张图片的重合率 - 通过本地文件的方式
 def compare_image_similarity(img_path1, img_path2, threshold=0.7):
     # todo: 将删除操作改为整理为文件列表，降低io开销
     print("——计算两张图片的重合率")
@@ -163,11 +164,40 @@ def compare_image_similarity(img_path1, img_path2, threshold=0.7):
 
     if score >= threshold:
         print(f"Images are similar with score {score}, deleting {img_path2}")
-        os.remove(img_path2)
+        # os.remove(img_path2)
         return True
     else:
         print(f"Images are different with score {score}")
         return False
+
+
+# 计算两张图片重合率 - 通过内存内np.array比较的方式
+def compare_image_similarity_np(img1, img2):
+    # 将图片数据转换为灰度图像
+    gray_img1 = cv2.cvtColor(img1, cv2.COLOR_BGR2GRAY)
+    gray_img2 = cv2.cvtColor(img2, cv2.COLOR_BGR2GRAY)
+
+    # 初始化ORB特征检测器
+    orb = cv2.ORB_create()
+
+    # 检测图像的关键点和描述符
+    keypoints1, descriptors1 = orb.detectAndCompute(gray_img1, None)
+    keypoints2, descriptors2 = orb.detectAndCompute(gray_img2, None)
+
+    # 初始化一个暴力匹配器
+    matcher = cv2.BFMatcher(cv2.NORM_HAMMING, crossCheck=True)
+
+    # 对描述符进行匹配
+    matches = matcher.match(descriptors1, descriptors2)
+
+    # 根据匹配结果排序
+    matches = sorted(matches, key=lambda x: x.distance)
+
+    # 计算相似度
+    similarity = len(matches) / max(len(keypoints1), len(keypoints2))
+    print(f"---compare_image_similarity_np:{similarity}")
+
+    return similarity
 
 
 # 将图片缩小到等比例、宽度为70px的thumbnail，并返回base64
@@ -242,6 +272,7 @@ def ocr_process_single_video(video_path, vid_file_name, iframe_path):
         else:
             is_img_same = compare_image_similarity(img1_path_temp, img2_path_temp)
             if is_img_same:
+                os.remove(img2_path_temp)
                 img1_path_temp = img1_path_temp
                 img2_path_temp = img
             else:
