@@ -1,7 +1,7 @@
 from datetime import datetime
 import os
 
-from wordcloud import WordCloud
+from wordcloud import WordCloud, STOPWORDS, ImageColorGenerator
 # doc: https://amueller.github.io/word_cloud/generated/wordcloud.WordCloud.html
 from PIL import Image
 import numpy as np
@@ -39,7 +39,7 @@ def generate_word_cloud_pic(text_file_path,img_save_path):
     text = ' '.join(jieba.cut(s))
 
     # 生成对象
-    img = Image.open("__assets__/mask_cloud.png") # 打开遮罩图片
+    img = Image.open("__assets__/mask_cloud_color.jpg") # 打开遮罩图片
     mask = np.array(img) #将图片转换为数组
 
     wc = WordCloud(font_path="msyh.ttc",
@@ -56,6 +56,17 @@ def generate_word_cloud_pic(text_file_path,img_save_path):
                    relative_scaling=0.4,
                    repeat=False
                    ).generate(text)
+
+    # 着色
+    image_colors = ImageColorGenerator(mask)
+    fig, axes = plt.subplots(1, 3)
+    axes[0].imshow(wc, interpolation="bilinear")
+    # recolor wordcloud and show
+    # we could also give color_func=image_colors directly in the constructor
+    axes[1].imshow(wc.recolor(color_func=image_colors), interpolation="bilinear")
+    axes[2].imshow(img, cmap=plt.cm.gray, interpolation="bilinear")
+    for ax in axes:
+        ax.set_axis_off()
 
     # 显示词云
     plt.imshow(wc, interpolation='bilinear')# 用plt显示图片
