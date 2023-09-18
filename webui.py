@@ -383,7 +383,7 @@ with tab1:
 
         # 可视化数据时间轴
         day_chart_data_overview = OneDay().get_day_statistic_chart_overview(df = day_df, start = day_min_timestamp_dt.hour, end = day_max_timestamp_dt.hour+1)
-        st.bar_chart(day_chart_data_overview,x="hour",y="data",use_container_width=True,height=100)
+        st.bar_chart(day_chart_data_overview,x="hour",y="data",use_container_width=True,height=100,color="#AC79D5")
 
 
         # 视频展示区域
