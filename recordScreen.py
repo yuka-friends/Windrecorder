@@ -85,24 +85,28 @@ def test_ffmpeg():
 
 
 monitor_change_rank = 0
-last_screenshot = None
+last_screenshot_array = None
 # 每隔一段截图对比是否屏幕内容缺少变化
 def monitor_compare_screenshot():
     global monitor_change_rank
-    screenshot = pyautogui.screenshot()
-    screenshot_array = np.array(screenshot)
+    global last_screenshot_array
+    similarity = None
 
-    if last_screenshot_array is not None:
-        similarity = maintainManager.compare_image_similarity_np(last_screenshot_array,screenshot_array)
+    while(True):
+        screenshot = pyautogui.screenshot()
+        screenshot_array = np.array(screenshot)
 
-        if similarity > 0.85:
-            monitor_change_rank += 0.5
-        else:
-            monitor_change_rank = 0
-    
-    last_screenshot_array = screenshot_array.copy()
-    print(f"----monitor_change_rank:{monitor_change_rank},similarity:{similarity}")
-    time.sleep(30)
+        if last_screenshot_array is not None:
+            similarity = maintainManager.compare_image_similarity_np(last_screenshot_array,screenshot_array)
+
+            if similarity > 0.95:
+                monitor_change_rank += 0.5
+            else:
+                monitor_change_rank = 0
+
+        last_screenshot_array = screenshot_array.copy()
+        print(f"----monitor_change_rank:{monitor_change_rank},similarity:{similarity}")
+        time.sleep(30)
 
 
 
@@ -118,12 +122,15 @@ if __name__ == '__main__':
     if config.screentime_not_change_to_pause_record >0:
         thread_monitor_compare_screenshot = threading.Thread(target=monitor_compare_screenshot)
         thread_monitor_compare_screenshot.start()
+    else:
+        monitor_change_rank = 1
 
 
     while(True):
         # 主循环过程
-        if monitor_change_rank > 3:
+        if monitor_change_rank > config.screentime_not_change_to_pause_record:
             print("屏幕内容没有更新，停止录屏中")
+            time.sleep(10)
         else:
             video_out_name = record_screen() # 录制屏幕
             time.sleep(2) # 歇口气
