@@ -366,6 +366,7 @@ with tab1:
             st.empty()
 
 
+
         # 时间滑动控制杆
         start_time = datetime.time(day_min_timestamp_dt.hour, day_min_timestamp_dt.minute)
         end_time = datetime.time(day_max_timestamp_dt.hour, day_max_timestamp_dt.minute)
@@ -426,6 +427,32 @@ with tab1:
                         draw_dataframe(found_row,heightIn=0)
                     else:
                         st.warning("磁盘上没有找到这个时间的视频文件和索引记录。", icon="🦫")
+        
+        with col3a:
+            # 展示当天词云
+            current_day_cloud_img_name = str(st.session_state.day_date_input.year) + "-" + str(st.session_state.day_date_input.month) + "-" + str(st.session_state.day_date_input.day)
+            current_day_cloud_img_path = os.path.join(config.wordcloud_result_dir,current_day_cloud_img_name + ".png")
+            def update_day_word_cloud():
+                with st.spinner("生成当日词云中，请稍后……"):
+                    day_input_datetime_finetune = datetime.datetime(st.session_state.day_date_input.year,st.session_state.day_date_input.month,st.session_state.day_date_input.day,0,0,2)
+                    wordcloud.generate_word_cloud_in_day(utils.datetime_to_seconds(day_input_datetime_finetune),current_day_cloud_img_name)
+            
+            if not os.path.exists(current_day_cloud_img_path):
+                update_day_word_cloud()
+            image = Image.open(current_day_cloud_img_path)
+            st.image(image)
+
+            def update_wordcloud_btn_clicked():
+                st.session_state.update_wordcloud_button_disabled = True
+
+            if st.button("更新词云 ⟳",key="refresh_day_cloud",use_container_width=True,disabled=st.session_state.get("update_wordcloud_button_disabled", False),on_click=update_wordcloud_btn_clicked):
+                try:
+                    update_day_word_cloud()
+                except Exception as ex:
+                    st.exception(ex)
+                finally:
+                    st.session_state.update_wordcloud_button_disabled = False
+                    st.experimental_rerun()
 
 
     else:
@@ -563,7 +590,7 @@ with tab4:
             st.session_state.update_btn_dis_record = False
 
         
-        btn_refresh = st.button("刷新服务状态 ⟳",on_click=update_record_btn_state)
+        btn_refresh = st.button("查询录制状态 ⟳",on_click=update_record_btn_state)
 
         if st.session_state.update_btn_refresh_press:
 
@@ -593,7 +620,7 @@ with tab4:
             '开机后自动开始录制', value=record.is_file_already_in_startup('start_record.bat.lnk'), 
             on_change=record.create_startup_shortcut(is_create=st.session_state.is_create_startup_shortcut))
 
-        screentime_not_change_to_pause_record = st.number_input('当画面几分钟没有变化时，暂停录制下个视频切片（0为永不暂停）（需重新启动录制脚本才能应用该项）', value=config.screentime_not_change_to_pause_record, min_value=1)
+        screentime_not_change_to_pause_record = st.number_input('当画面几分钟没有变化时，暂停录制下个视频切片（0为永不暂停）（需重新启动录制脚本才能应用该项）', value=config.screentime_not_change_to_pause_record, min_value=0)
 
 
         if st.button('Save and Apple All Change / 保存并应用所有更改', type="primary",key="SaveBtnRecord"):

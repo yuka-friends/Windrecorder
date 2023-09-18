@@ -115,7 +115,7 @@ if __name__ == '__main__':
 
     # 屏幕内容多长时间不变则暂停录制
     print(f"-config.screentime_not_change_to_pause_record:{config.screentime_not_change_to_pause_record}")
-    if config.screentime_not_change_to_pause_record !=0:
+    if config.screentime_not_change_to_pause_record >0:
         thread_monitor_compare_screenshot = threading.Thread(target=monitor_compare_screenshot)
         thread_monitor_compare_screenshot.start()
 

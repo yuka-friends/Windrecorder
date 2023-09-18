@@ -51,7 +51,7 @@
         "tab_setting_db_state1":"有 {nocred_count} 个视频等待索引，预计用时 <{timeCostStr}。 (磁盘上有 {count} 个文件。)",
         "tab_setting_db_state2":"暂时没有新视频需要索引啦。  (磁盘上有 {count} 个文件。)",
         "tab_setting_db_state3":"有 1 个视频正在录制中，暂时没有新视频需要索引啦。  (磁盘上有 {count} 个文件。)",
-        "tab_setting_db_btn": "✦ 更新数据库",
+        "tab_setting_db_btn": "✦ 手动更新数据库",
         "tab_setting_db_tip1": "更新数据库中，请不要操作或刷新页面。您可以在后台命令行界面看到更新过程。预估所需时间：{estimate_time_str}",
         "tab_setting_db_tip2": "哎呀出错了…… 错误信息: {ex}",
         "tab_setting_db_tip3": "数据库更新成功！用时： {timeCostStr}",
