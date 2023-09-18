@@ -82,9 +82,9 @@ def generate_word_cloud_pic(text_file_path,img_save_path,mask_img="month"):
         ax.set_axis_off()
 
     # 显示词云
-    plt.imshow(wc, interpolation='bilinear')# 用plt显示图片
-    plt.axis("off")  # 不显示坐标轴
-    plt.show() # 显示图片
+    # plt.imshow(wc, interpolation='bilinear')# 用plt显示图片
+    # plt.axis("off")  # 不显示坐标轴
+    # plt.show() # 显示图片
 
     # 保存到文件
     wc.to_file(img_save_path)
@@ -155,7 +155,7 @@ def generate_word_cloud_in_month(timestamp,img_save_name="default"):
 
     img_save_dir = "wordcloud_result"
     files.check_and_create_folder(img_save_dir)
-    img_save_name = img_save_name + ".png"
+    img_save_name = img_save_name
     img_save_path = os.path.join(img_save_dir,img_save_name)
 
     # 生成词云图片
@@ -169,7 +169,7 @@ def generate_word_cloud_in_day(timestamp,img_save_name="default"):
 
     img_save_dir = "wordcloud_result"
     files.check_and_create_folder(img_save_dir)
-    img_save_name = img_save_name + ".png"
+    img_save_name = img_save_name
     img_save_path = os.path.join(img_save_dir,img_save_name)
 
     # 生成词云图片

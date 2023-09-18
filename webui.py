@@ -438,15 +438,33 @@ with tab1:
         
         with col3a:
             # 展示当天词云
-            current_day_cloud_img_name = str(st.session_state.day_date_input.year) + "-" + str(st.session_state.day_date_input.month) + "-" + str(st.session_state.day_date_input.day)
-            current_day_cloud_img_path = os.path.join(config.wordcloud_result_dir,current_day_cloud_img_name + ".png")
+            real_today_day_cloud_img_name = str(datetime.datetime.today().date().year) + "-" + str(datetime.datetime.today().date().month) + "-" + str(datetime.datetime.today().date().day) + "-today-.png"
+            if st.session_state.day_date_input == datetime.datetime.today().date():
+                # 如果是今天的结果，以-today结尾，以使次日回溯时词云能被自动更新
+                current_day_cloud_img_name = str(st.session_state.day_date_input.year) + "-" + str(st.session_state.day_date_input.month) + "-" + str(st.session_state.day_date_input.day) + "-today-" + ".png"
+                # 太邪门了，.png前不能是字符，否则词云的.to_file会莫名其妙自己多添加一个.png
+                current_day_cloud_img_path = os.path.join(config.wordcloud_result_dir,current_day_cloud_img_name)
+            else:
+                current_day_cloud_img_name = str(st.session_state.day_date_input.year) + "-" + str(st.session_state.day_date_input.month) + "-" + str(st.session_state.day_date_input.day) + ".png"
+                current_day_cloud_img_path = os.path.join(config.wordcloud_result_dir,current_day_cloud_img_name)
+
             def update_day_word_cloud():
                 with st.spinner("生成当日词云中，请稍后……"):
                     day_input_datetime_finetune = datetime.datetime(st.session_state.day_date_input.year,st.session_state.day_date_input.month,st.session_state.day_date_input.day,0,0,2)
-                    wordcloud.generate_word_cloud_in_day(utils.datetime_to_seconds(day_input_datetime_finetune),current_day_cloud_img_name)
+                    wordcloud.generate_word_cloud_in_day(utils.datetime_to_seconds(day_input_datetime_finetune),img_save_name=current_day_cloud_img_name)
             
             if not os.path.exists(current_day_cloud_img_path):
+                # 如果词云不存在，创建之
                 update_day_word_cloud()
+                # 移除非今日的-today.png
+                for filename in os.listdir(config.wordcloud_result_dir):
+                    # print(f"-----------------filename：{filename}，real_today_day_cloud_img_name:{real_today_day_cloud_img_name}")
+                    if filename.endswith("-today-.png") and filename != real_today_day_cloud_img_name:
+                        file_path = os.path.join(config.wordcloud_result_dir, filename)
+                        os.remove(file_path)
+                        print(f"Deleted file: {file_path}")
+            
+            # 展示词云
             image = Image.open(current_day_cloud_img_path)
             st.image(image)
 
@@ -559,8 +577,8 @@ with tab3:
 
     with col2:
         st.markdown("### 记忆摘要")
-        current_month_cloud_img_name = str(st.session_state.stat_Stat_query_Year) + "-" + str(st.session_state.Stat_query_Month)
-        current_month_cloud_img_path = os.path.join(config.wordcloud_result_dir,current_month_cloud_img_name + ".png")
+        current_month_cloud_img_name = str(st.session_state.stat_Stat_query_Year) + "-" + str(st.session_state.Stat_query_Month) + ".png"
+        current_month_cloud_img_path = os.path.join(config.wordcloud_result_dir,current_month_cloud_img_name)
 
         if st.button("生成/更新本月词云"):
             with st.spinner("生成中，大概需要 30s……"):
