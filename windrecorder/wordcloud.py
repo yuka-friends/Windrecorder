@@ -160,6 +160,7 @@ def generate_word_cloud_in_month(timestamp,img_save_name="default"):
 
     # 生成词云图片
     generate_word_cloud_pic(text_file_path,img_save_path,mask_img="month")
+    os.remove(text_file_path)
 
 
 # 根据某时数据生成当天的词云
@@ -174,4 +175,5 @@ def generate_word_cloud_in_day(timestamp,img_save_name="default"):
 
     # 生成词云图片
     generate_word_cloud_pic(text_file_path,img_save_path,mask_img="day")
+    os.remove(text_file_path)
 
