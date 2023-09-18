@@ -99,7 +99,7 @@ def monitor_compare_screenshot():
         if last_screenshot_array is not None:
             similarity = maintainManager.compare_image_similarity_np(last_screenshot_array,screenshot_array)
 
-            if similarity > 0.95:
+            if similarity > 0.93:
                 monitor_change_rank += 0.5
             else:
                 monitor_change_rank = 0
@@ -123,7 +123,7 @@ if __name__ == '__main__':
         thread_monitor_compare_screenshot = threading.Thread(target=monitor_compare_screenshot)
         thread_monitor_compare_screenshot.start()
     else:
-        monitor_change_rank = 1
+        monitor_change_rank = -1
 
 
     while(True):
