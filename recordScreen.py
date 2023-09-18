@@ -129,7 +129,7 @@ if __name__ == '__main__':
     while(True):
         # 主循环过程
         if monitor_change_rank > config.screentime_not_change_to_pause_record:
-            print("屏幕内容没有更新，停止录屏中")
+            print("屏幕内容没有更新，停止录屏中。进入闲时维护")
             time.sleep(10)
         else:
             video_out_name = record_screen() # 录制屏幕

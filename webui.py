@@ -207,6 +207,9 @@ def config_set_lang(lang_name):
 
 # footer状态信息
 def web_footer_state():
+    first_record_time_int = dbManager.db_first_earliest_record_time()
+    first_record_time_str = utils.seconds_to_date(first_record_time_int)
+
     latest_record_time_int = dbManager.db_latest_record_time()
     latest_record_time_str = utils.seconds_to_date(latest_record_time_int)
 
@@ -216,10 +219,15 @@ def web_footer_state():
 
     # webUI draw
     st.divider()
-    # st.markdown(f'Database latest record time: **{latest_record_time_str}**, Database records: **{latest_db_records}**, Video Files on disk: **{videos_file_size} GB**')
-    st.markdown(d_lang[config.lang]["footer_info"].format(latest_record_time_str=latest_record_time_str,
-                                                   latest_db_records=latest_db_records,
-                                                   videos_file_size=videos_file_size))
+    col1, col2 = st.columns([1,.3])
+    with col1:
+        # st.markdown(f'Database latest record time: **{latest_record_time_str}**, Database records: **{latest_db_records}**, Video Files on disk: **{videos_file_size} GB**')
+        st.markdown(d_lang[config.lang]["footer_info"].format(first_record_time_str=first_record_time_str,
+                                                          latest_record_time_str=latest_record_time_str,
+                                                        latest_db_records=latest_db_records,
+                                                        videos_file_size=videos_file_size))
+    with col2:
+        st.markdown(f"<p align='right' style='color:(0,0,0,.5)'> Windrecorder </p>", unsafe_allow_html=True)
 
 
 
@@ -651,7 +659,7 @@ with tab5:
 
         col1, col2 = st.columns([1, 1])
         with col1:
-            update_db_btn = st.button(d_lang[config.lang]["tab_setting_db_btn"], type="primary", key='update_button_key',
+            update_db_btn = st.button(d_lang[config.lang]["tab_setting_db_btn"], type="secondary", key='update_button_key',
                                       disabled=st.session_state.get("update_button_disabled", False),
                                       on_click=update_database_clicked)
             is_shutdown_pasocon_after_updatedDB = st.checkbox('更新完毕后关闭计算机（更新过程中请勿勾选）', value=False)
