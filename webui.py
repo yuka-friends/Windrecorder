@@ -644,7 +644,8 @@ with tab4:
             st.session_state.is_create_startup_shortcut = record.is_file_already_in_startup('start_record.bat.lnk')
         st.session_state.is_create_startup_shortcut = st.checkbox(
             '开机后自动开始录制', value=record.is_file_already_in_startup('start_record.bat.lnk'), 
-            on_change=record.create_startup_shortcut(is_create=st.session_state.is_create_startup_shortcut))
+            on_change=record.create_startup_shortcut(is_create=st.session_state.is_create_startup_shortcut),
+            help="此项勾选后会为'start_record.bat'创建快捷方式，并放到系统开机自启动的目录下。此项行为可能会被部分安全软件误判为病毒行为，导致'start_webui.bat'被移除，如有拦截，请将其移出隔离区并标记为可信任软件。或手动为'start_record.bat'创建快捷方式、并放到系统的开机启动目录下。")
 
         screentime_not_change_to_pause_record = st.number_input('当画面几分钟没有变化时，暂停录制下个视频切片（0为永不暂停）（需重新启动录制脚本才能应用该项）', value=config.screentime_not_change_to_pause_record, min_value=0)
 

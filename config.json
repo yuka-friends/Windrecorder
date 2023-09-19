@@ -12,7 +12,9 @@
   "ocr_engine": "Windows.Media.Ocr.Cli",
   "exclude_words": [
     "Windrecorder",
-    "捕风记录仪"
+    "捕风记录仪",
+    "一天之时",
+    "OneDay"
   ],
   "config_vid_store_day": 45,
   "OCR_index_strategy": 1,
