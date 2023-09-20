@@ -87,26 +87,32 @@ def test_ffmpeg():
 monitor_change_rank = 0
 last_screenshot_array = None
 # 每隔一段截图对比是否屏幕内容缺少变化
-def monitor_compare_screenshot():
-    global monitor_change_rank
-    global last_screenshot_array
-    similarity = None
+def monitor_compare_screenshot(screentime_detect_stop_event):
+    while not screentime_detect_stop_event.is_set():
+        try:
+            global monitor_change_rank
+            global last_screenshot_array
+            similarity = None
 
-    while(True):
-        screenshot = pyautogui.screenshot()
-        screenshot_array = np.array(screenshot)
+            while(True):
+                screenshot = pyautogui.screenshot()
+                screenshot_array = np.array(screenshot)
 
-        if last_screenshot_array is not None:
-            similarity = maintainManager.compare_image_similarity_np(last_screenshot_array,screenshot_array)
+                if last_screenshot_array is not None:
+                    similarity = maintainManager.compare_image_similarity_np(last_screenshot_array,screenshot_array)
 
-            if similarity > 0.93:
-                monitor_change_rank += 0.5
-            else:
-                monitor_change_rank = 0
+                    if similarity > 0.93: #对比检测阈值
+                        monitor_change_rank += 0.5
+                    else:
+                        monitor_change_rank = 0
 
-        last_screenshot_array = screenshot_array.copy()
-        print(f"----monitor_change_rank:{monitor_change_rank},similarity:{similarity}")
-        time.sleep(30)
+                last_screenshot_array = screenshot_array.copy()
+                print(f"----monitor_change_rank:{monitor_change_rank},similarity:{similarity}")
+                time.sleep(30)
+        except Exception as e:
+            print("--Error occurred:",str(e))
+        
+        screentime_detect_stop_event.wait(5)
 
 
 
@@ -119,8 +125,9 @@ if __name__ == '__main__':
 
     # 屏幕内容多长时间不变则暂停录制
     print(f"-config.screentime_not_change_to_pause_record:{config.screentime_not_change_to_pause_record}")
+    screentime_detect_stop_event = threading.Event() # 使用事件对象来检测检测函数是否意外被终止
     if config.screentime_not_change_to_pause_record >0:
-        thread_monitor_compare_screenshot = threading.Thread(target=monitor_compare_screenshot)
+        thread_monitor_compare_screenshot = threading.Thread(target=monitor_compare_screenshot,args=(screentime_detect_stop_event,))
         thread_monitor_compare_screenshot.start()
     else:
         monitor_change_rank = -1
@@ -141,4 +148,9 @@ if __name__ == '__main__':
                 thread_index_video_data.daemon = True  # 设置为守护线程
                 thread_index_video_data.start()
             time.sleep(2) # 再歇
+        
+        # 如果屏幕检测线程意外出错，重启它
+        if not thread_monitor_compare_screenshot.is_alive() and config.screentime_not_change_to_pause_record >0:
+            thread_monitor_compare_screenshot = threading.Thread(target=monitor_compare_screenshot)
+            thread_monitor_compare_screenshot.start()
         
