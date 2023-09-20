@@ -1,3 +1,4 @@
+![Windrecorder](https://github.com/Antonoko/Windrecorder/blob/main/__assets__/product-header-cn.jpg)
 <h1 align="center"> 🦝 Windrecorder | 捕风记录仪</h1>
 <p align="center"> A Rewind’s alternative for Windows. | 一款运行在 Windows 平台上的 Rewind 替代工具</p>
 
@@ -11,7 +12,7 @@ It runs entirely locally, stored your private data locally, without any need of 
 
 
 ![Windrecorder](https://github.com/Antonoko/Windrecorder/blob/main/__assets__/preview.png)
-
+> this preview img has been outdated, need to update
 
 **NOTE: This project is still under early development and the availability of many features are not guaranteed.**
 
@@ -29,6 +30,7 @@ Project Status: have very basic functions, under intensity development
 - [x] Continuously record screen with smaller file size.
 - [x] Extract unchanging frames in video file and save OCR result in database.
 - [x] Provide basic webui for querying and updating database.
+- [x] Word Cloud summarize
 - [ ] Full functional webui dashboard & control center
 - [ ] Automated operation
 - [ ] Fully i18n support
@@ -44,18 +46,16 @@ Project Status: have very basic functions, under intensity development
 
 - Install dependencies: `pip install -r requirements.txt`
 
-- Starting recording screen: run `start_record.bat` (send "ctrl C" to stop recording)
+- Starting recording screen: run `start_record.bat` (send "ctrl C" or close console window to stop recording)
 
-  - **NOTE:** This function is crude and can only be run and terminated manually at present.
+- Query, Rewind or update database through webui: run  `start_webui.bat`
 
-- Query and update database through webui: run  `start_webui.bat`
-
-- We recommend using Windows.Media.Ocr.Cli method to OCR Video data, so make sure your Windows computer has installed the corresponding OCR language module (it should have been installed with IME by default). For more information: https://learn.microsoft.com/en-us/windows/powertoys/text-extractor
+- We recommend using Windows.Media.Ocr.Cli method to OCR Video data, which is faster and using less system resources. Make sure your Windows computer has installed the corresponding OCR language module (it should have been installed with IME by default, and used to identify the corresponding language content). For more information: https://learn.microsoft.com/en-us/windows/powertoys/text-extractor
 
 
 # 🧡
-If you like this project, feel free to check [長瀬有花 / YUKA NAGASE](https://www.youtube.com/channel/UCf-PcSHzYAtfcoiBr5C9DZA) 's healing music on YouTube and Stream music platform <3
+Like this project? Feel free to check [長瀬有花 / YUKA NAGASE](https://www.youtube.com/channel/UCf-PcSHzYAtfcoiBr5C9DZA) 's healing music on YouTube and Stream music platform <3
 
-如果你喜欢这个工具，欢迎在 Youtube 与流媒体音乐平台上支持**长濑有花**温柔的音乐，谢谢！
+如果你喜欢这个工具，欢迎在 Youtube 与流媒体音乐平台上支持 **长濑有花** 温柔的音乐，谢谢！
 
 > "Your tools suck, check out my girl Yuka Nagase, she's amazing, I code 10 times faster when listening to her." -- @jpswing
