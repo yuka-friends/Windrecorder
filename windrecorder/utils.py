@@ -51,7 +51,7 @@ def get_screen_resolution():
 # 将输入的文件（ %Y-%m-%d_%H-%M-%S str）时间转为时间戳秒数
 def date_to_seconds(date_str):
     print("——将输入的文件时间转为时间戳秒数")
-    # 这里我们先定义了时间格式,然后设置一个epoch基准时间为2000年1月1日。使用strptime()将输入的字符串解析为datetime对象,然后计算这个时间和epoch时间的时间差,转换为秒数返回。
+    # 这里我们先定义了时间格式,然后设置一个epoch基准时间为1970年1月1日。使用strptime()将输入的字符串解析为datetime对象,然后计算这个时间和epoch时间的时间差,转换为秒数返回。
     format = "%Y-%m-%d_%H-%M-%S"
     # epoch = datetime.datetime(2000, 1, 1)
     epoch = datetime.datetime(1970, 1, 1)

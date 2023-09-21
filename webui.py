@@ -248,6 +248,7 @@ def web_footer_state():
 # 主界面_________________________________________________________
 st.markdown(d_lang[config.lang]["main_title"])
 
+
 tab1, tab2, tab3, tab4, tab5 = st.tabs(["一天之时", d_lang[config.lang]["tab_name_search"], "记忆摘要", d_lang[config.lang]["tab_name_recording"],
                                   d_lang[config.lang]["tab_name_setting"]])
 
@@ -322,10 +323,10 @@ with tab1:
             if st.session_state.day_is_search_data:
                 # 启用了搜索功能
                 if df_day_search_result.empty:
-                    st.markdown(f"<p align='right' style='line-height:2.3;'> 没有找到结果 </p>", unsafe_allow_html=True)
+                    st.markdown(f"<p align='right' style='line-height:2.3;'> ⚠ 没有找到结果 </p>", unsafe_allow_html=True)
                 else:
                     result_num = df_day_search_result.shape[0]
-                    st.markdown(f"<p align='right' style='line-height:2.3;'> 共 {result_num} 条结果：</p>", unsafe_allow_html=True)
+                    st.markdown(f"<p align='right' style='line-height:2.3;'> → 共 {result_num} 条结果：</p>", unsafe_allow_html=True)
             else:
                 st.empty()
         with col4c:
@@ -373,7 +374,14 @@ with tab1:
 
         # 可视化数据时间轴
         day_chart_data_overview = OneDay().get_day_statistic_chart_overview(df = day_df, start = day_min_timestamp_dt.hour, end = day_max_timestamp_dt.hour+1)
-        st.bar_chart(day_chart_data_overview,x="hour",y="data",use_container_width=True,height=100,color="#AC79D5")
+        st.area_chart(day_chart_data_overview,x="hour",y="data",use_container_width=True,height=100,color="#AC79D5")
+
+
+        # 测试playground______________________________________
+        if st.button("test_generate_img"):
+            OneDay().generate_preview_timeline_img(st.session_state.day_date_input,img_saved_name=str(st.session_state.day_date_input)+".png")
+            image_thumbnail = Image.open("catch/" + str(st.session_state.day_date_input)+".png")
+            st.image(image_thumbnail,use_column_width="always") 
 
 
         # 视频展示区域
@@ -732,10 +740,11 @@ with tab5:
         # 界面设置组
         st.markdown(d_lang[config.lang]["tab_setting_ui_title"])
 
+        option_show_oneday_wordcloud = st.checkbox("在「一天之时」下展示每日词云",value=config.show_oneday_wordcloud)
+
         # 每页结果最大数量
         config_max_search_result_num = st.number_input(d_lang[config.lang]["tab_setting_ui_result_num"], min_value=1,
                                                        max_value=500, value=config.max_page_result)
-
         # 选择语言
         lang_choice = OrderedDict((k, '' + v) for k, v in lang_map.items())   #根据读入列表排下序
         language_option = st.selectbox(
@@ -752,6 +761,7 @@ with tab5:
             config.set_and_save_config("max_page_result", config_max_search_result_num)
             config.set_and_save_config("ocr_engine", config_ocr_engine)
             config.set_and_save_config("exclude_words",utils.string_to_list(exclude_words))
+            config.set_and_save_config("show_oneday_wordcloud",option_show_oneday_wordcloud)
             st.toast("已应用更改。", icon="🦝")
             time.sleep(2)
             st.experimental_rerun()

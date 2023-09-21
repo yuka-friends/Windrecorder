@@ -1,9 +1,12 @@
 import os
 import datetime
 import re
+import base64
+from io import BytesIO
 
 import pandas as pd
 import numpy as np
+from PIL import Image
 
 import windrecorder.utils as utils
 import windrecorder.files as files
@@ -135,7 +138,53 @@ class OneDay:
             video_name_timestamp = utils.calc_vid_name_to_timestamp(video_name)
             local_video_timestamp = video_search_result_timestamp - video_name_timestamp
             return True,check_on_disk_path,local_video_timestamp
+        
 
+    # 生成当天时间线预览图
+    def generate_preview_timeline_img(self,day_datetime,img_saved_name="default.png",img_saved_folder="catch"):
+
+        date_in = datetime.datetime(day_datetime.year,day_datetime.month,day_datetime.day,0,0,1)
+        date_out = datetime.datetime(day_datetime.year,day_datetime.month,day_datetime.day,23,23,59)
+        image_list = dbManager.db_get_day_thumbnail(date_in,date_out,50)
+
+        # image_list: 按绘制顺序存储图片base64
+        # 原始图像大小
+        original_width = 70
+        original_height = 39
+
+        # 目标图像大小（缩小到50%）
+        target_width = int(original_width * 1)
+        target_height = int(original_height * 1)
+
+        # 创建一个新的空白图像，用于拼贴图片
+        result_width = target_width * len(image_list) + (len(image_list) - 1)  # 考虑到间隔像素
+        result_height = target_height
+        result = Image.new('RGBA', (result_width, result_height), (0, 0, 0, 0))  # 透明色为 (0, 0, 0, 0)
+
+        # 按顺序拼贴图片
+        x_offset = 0
+        for image_data in image_list:
+            # 将base64编码的图像数据解码为图像
+            image = Image.open(BytesIO(base64.b64decode(image_data)))
+
+            # 创建一个与图像大小相同的纯白色图像作为透明度掩码
+            mask = Image.new('L', image.size, 255)  # 'L' 表示灰度图像，255 表示完全不透明
+
+            # 将图像粘贴到结果图像上，并手动指定透明度掩码
+            result.paste(image, (x_offset, 0), mask)
+
+            # 缩放图像到目标大小
+            # image = image.resize((target_width, target_height), Image.ANTIALIAS)
+
+            # 将图像粘贴到结果图像上
+            # result.paste(image, (x_offset, 0), image)
+
+            # 更新下一个图像的横向偏移量（考虑到间隔像素）
+            x_offset += target_width + 1
+
+        # 保存结果图像
+        img_saved_path = os.path.join(img_saved_folder,img_saved_name)
+        result.save(img_saved_path, format='PNG')
 
 
 

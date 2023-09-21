@@ -6,7 +6,7 @@ import math
 
 import pandas as pd
 
-from windrecorder.utils import date_to_seconds, seconds_to_date
+import windrecorder.utils as utils
 from windrecorder.config import config
 
 class DBManager:
@@ -37,7 +37,7 @@ class DBManager:
             self.db_create_table()
             now = datetime.datetime.now()
             now_name = now.strftime("%Y-%m-%d_%H-%M-%S")
-            now_time = int(date_to_seconds(now_name))
+            now_time = int(utils.date_to_seconds(now_name))
             self.db_update_data(
                 now_name + ".mp4",
                 '0.jpg',
@@ -114,8 +114,10 @@ class DBManager:
         # 初始化查询数据
         # date_in/date_out : 类型为datetime.datetime
         self.db_update_read_config(config)
-        date_in_ts = int(date_to_seconds(date_in.strftime("%Y-%m-%d_00-00-00")))
-        date_out_ts = int(date_to_seconds(date_out.strftime("%Y-%m-%d_23-59-59")))
+        # date_in_ts = int(utils.datetime_to_seconds(date_in))
+        # date_out_ts = int(utils.datetime_to_seconds(date_out)) # todo: 技术债代优雅排错实现
+        date_in_ts = int(utils.date_to_seconds(date_in.strftime("%Y-%m-%d_00-00-00")))
+        date_out_ts = int(utils.date_to_seconds(date_out.strftime("%Y-%m-%d_23-59-59")))
         start_from = 0 + page_index * self.db_max_page_result
         end_from = self.db_max_page_result + page_index * self.db_max_page_result
         limit = end_from - start_from + 1
@@ -161,7 +163,7 @@ class DBManager:
         df.drop('picturefile_name', axis=1, inplace=True)
         df.drop('is_picturefile_exist', axis=1, inplace=True)
 
-        df.insert(1, 'time_stamp', df['videofile_time'].apply(seconds_to_date))
+        df.insert(1, 'time_stamp', df['videofile_time'].apply(utils.seconds_to_date))
         # df.drop('videofile_time', axis=1, inplace=True)
 
         df.insert(len(df.columns) - 1, 'videofile_name', df.pop('videofile_name'))
@@ -240,7 +242,20 @@ class DBManager:
         conn.commit()
         conn.close()
 
+    
+    # 获取一个时间段内的几张缩略图
+    def db_get_day_thumbnail(self,date_in,date_out,back_pic_num):
+        df,all_result_counts,_ = self.db_search_data("",date_in,date_out,0,is_p_index_used=False)
+        gap_num = int(all_result_counts/back_pic_num)
 
+        img_list = []
+        thumbnails = df['thumbnail'].tolist()
+        rows = len(df)
+
+        for i in range(0,rows,gap_num):
+            img_list.append(thumbnails[i])
+
+        return img_list
 
 
 

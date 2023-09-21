@@ -17,6 +17,7 @@ class Config:
         OCR_index_strategy,
         wordcloud_result_dir,
         screentime_not_change_to_pause_record,
+        show_oneday_wordcloud,
         **other_field
     ) -> None:
         self.db_path = db_path
@@ -33,6 +34,7 @@ class Config:
         self.OCR_index_strategy = OCR_index_strategy # 0=不自动索引，1=每录制完一个切片进行索引
         self.wordcloud_result_dir = wordcloud_result_dir
         self.screentime_not_change_to_pause_record = screentime_not_change_to_pause_record
+        self.show_oneday_wordcloud = show_oneday_wordcloud
     
     def set_and_save_config(self, attr: str, value):
         if not hasattr(self, attr):
