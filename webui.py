@@ -227,7 +227,7 @@ def web_footer_state():
                                                         latest_db_records=latest_db_records,
                                                         videos_file_size=videos_file_size))
     with col2:
-        st.markdown(f"<p align='right' style='color:(0,0,0,.5)'> Windrecorder </p>", unsafe_allow_html=True)
+        st.markdown(f"<p align='right' style='color:rgba(0,0,0,.5)'> Windrecorder </p>", unsafe_allow_html=True)
 
 
 
@@ -435,48 +435,51 @@ with tab1:
                         st.warning("磁盘上没有找到这个时间的视频文件和索引记录。", icon="🦫")
         
         with col3a:
-            # 展示当天词云
-            real_today_day_cloud_img_name = str(datetime.datetime.today().date().year) + "-" + str(datetime.datetime.today().date().month) + "-" + str(datetime.datetime.today().date().day) + "-today-.png"
-            if st.session_state.day_date_input == datetime.datetime.today().date():
-                # 如果是今天的结果，以-today结尾，以使次日回溯时词云能被自动更新
-                current_day_cloud_img_name = str(st.session_state.day_date_input.year) + "-" + str(st.session_state.day_date_input.month) + "-" + str(st.session_state.day_date_input.day) + "-today-" + ".png"
-                # 太邪门了，.png前不能是字符，否则词云的.to_file会莫名其妙自己多添加一个.png
-                current_day_cloud_img_path = os.path.join(config.wordcloud_result_dir,current_day_cloud_img_name)
-            else:
-                current_day_cloud_img_name = str(st.session_state.day_date_input.year) + "-" + str(st.session_state.day_date_input.month) + "-" + str(st.session_state.day_date_input.day) + ".png"
-                current_day_cloud_img_path = os.path.join(config.wordcloud_result_dir,current_day_cloud_img_name)
+            if config.show_oneday_wordcloud:
+                # 是否展示当天词云
+                real_today_day_cloud_img_name = str(datetime.datetime.today().date().year) + "-" + str(datetime.datetime.today().date().month) + "-" + str(datetime.datetime.today().date().day) + "-today-.png"
+                if st.session_state.day_date_input == datetime.datetime.today().date():
+                    # 如果是今天的结果，以-today结尾，以使次日回溯时词云能被自动更新
+                    current_day_cloud_img_name = str(st.session_state.day_date_input.year) + "-" + str(st.session_state.day_date_input.month) + "-" + str(st.session_state.day_date_input.day) + "-today-" + ".png"
+                    # 太邪门了，.png前不能是字符，否则词云的.to_file会莫名其妙自己多添加一个.png
+                    current_day_cloud_img_path = os.path.join(config.wordcloud_result_dir,current_day_cloud_img_name)
+                else:
+                    current_day_cloud_img_name = str(st.session_state.day_date_input.year) + "-" + str(st.session_state.day_date_input.month) + "-" + str(st.session_state.day_date_input.day) + ".png"
+                    current_day_cloud_img_path = os.path.join(config.wordcloud_result_dir,current_day_cloud_img_name)
 
-            def update_day_word_cloud():
-                with st.spinner("生成当日词云中，请稍后……"):
-                    day_input_datetime_finetune = datetime.datetime(st.session_state.day_date_input.year,st.session_state.day_date_input.month,st.session_state.day_date_input.day,0,0,2)
-                    wordcloud.generate_word_cloud_in_day(utils.datetime_to_seconds(day_input_datetime_finetune),img_save_name=current_day_cloud_img_name)
-            
-            if not os.path.exists(current_day_cloud_img_path):
-                # 如果词云不存在，创建之
-                update_day_word_cloud()
-                # 移除非今日的-today.png
-                for filename in os.listdir(config.wordcloud_result_dir):
-                    # print(f"-----------------filename：{filename}，real_today_day_cloud_img_name:{real_today_day_cloud_img_name}")
-                    if filename.endswith("-today-.png") and filename != real_today_day_cloud_img_name:
-                        file_path = os.path.join(config.wordcloud_result_dir, filename)
-                        os.remove(file_path)
-                        print(f"Deleted file: {file_path}")
-            
-            # 展示词云
-            image = Image.open(current_day_cloud_img_path)
-            st.image(image)
+                def update_day_word_cloud():
+                    with st.spinner("生成当日词云中，请稍后……"):
+                        day_input_datetime_finetune = datetime.datetime(st.session_state.day_date_input.year,st.session_state.day_date_input.month,st.session_state.day_date_input.day,0,0,2)
+                        wordcloud.generate_word_cloud_in_day(utils.datetime_to_seconds(day_input_datetime_finetune),img_save_name=current_day_cloud_img_name)
 
-            def update_wordcloud_btn_clicked():
-                st.session_state.update_wordcloud_button_disabled = True
-
-            if st.button("更新词云 ⟳",key="refresh_day_cloud",use_container_width=True,disabled=st.session_state.get("update_wordcloud_button_disabled", False),on_click=update_wordcloud_btn_clicked):
-                try:
+                if not os.path.exists(current_day_cloud_img_path):
+                    # 如果词云不存在，创建之
                     update_day_word_cloud()
-                except Exception as ex:
-                    st.exception(ex)
-                finally:
-                    st.session_state.update_wordcloud_button_disabled = False
-                    st.experimental_rerun()
+                    # 移除非今日的-today.png
+                    for filename in os.listdir(config.wordcloud_result_dir):
+                        # print(f"-----------------filename：{filename}，real_today_day_cloud_img_name:{real_today_day_cloud_img_name}")
+                        if filename.endswith("-today-.png") and filename != real_today_day_cloud_img_name:
+                            file_path = os.path.join(config.wordcloud_result_dir, filename)
+                            os.remove(file_path)
+                            print(f"Deleted file: {file_path}")
+
+                # 展示词云
+                image = Image.open(current_day_cloud_img_path)
+                st.image(image)
+
+                def update_wordcloud_btn_clicked():
+                    st.session_state.update_wordcloud_button_disabled = True
+
+                if st.button("更新词云 ⟳",key="refresh_day_cloud",use_container_width=True,disabled=st.session_state.get("update_wordcloud_button_disabled", False),on_click=update_wordcloud_btn_clicked):
+                    try:
+                        update_day_word_cloud()
+                    except Exception as ex:
+                        st.exception(ex)
+                    finally:
+                        st.session_state.update_wordcloud_button_disabled = False
+                        st.experimental_rerun()
+            else:
+                st.markdown(f"<p align='center' style='color:rgba(0,0,0,.3)'> 每日词云已关闭，可前往设置页开启。 </p>", unsafe_allow_html=True)
 
 
     else:
