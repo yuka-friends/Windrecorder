@@ -267,113 +267,103 @@ with tab1:
     if 'day_date_input' not in st.session_state:
         st.session_state['day_date_input'] = datetime.date.today()
 
-    col1, col2, col3 = st.columns([.8,1,1])
+    col1, col2, col3,col4,col5,col6,col7 = st.columns([.3,.25,.25,.15,.25,.15,1])
     with col1:
         st.markdown("### 一天之时")
     with col2:
-        # 日期切换控件
-        col1, col2, col3 = st.columns([1,1,1])
-        with col1:
-            if st.button("← 前一天",use_container_width=True):
-                st.session_state.day_date_input -= datetime.timedelta(days=1)
-        with col2:
-            if st.button("后一天 →",use_container_width=True):
-               st.session_state.day_date_input += datetime.timedelta(days=1)
-        with col3:
-            st.session_state.day_date_input = st.date_input("当天日期",label_visibility="collapsed",value=st.session_state.day_date_input)
+        if st.button("← 前一天",use_container_width=True):
+            st.session_state.day_date_input -= datetime.timedelta(days=1)
     with col3:
+        if st.button("后一天 →",use_container_width=True):
+            st.session_state.day_date_input += datetime.timedelta(days=1)
+    with col4:
+        if st.button("Today",use_container_width=True):
+            st.session_state.day_date_input = datetime.date.today()
+    with col5:
+        st.session_state.day_date_input = st.date_input("当天日期",label_visibility="collapsed",value=st.session_state.day_date_input)
+        
+        # 获取输入的日期
+        # 清理格式到HMS
+        dt_in = datetime.datetime(st.session_state.day_date_input.year,st.session_state.day_date_input.month,st.session_state.day_date_input.day,0,0,0)
+        # 检查数据库中关于今天的数据
+        day_has_data, day_noocred_count,day_search_result_num,day_min_timestamp_dt,day_max_timestamp_dt,day_df = OneDay().checkout(dt_in)
+    with col6:
         st.empty()
-
-
-    # 获取输入的日期
-    # 清理格式到HMS
-    dt_in = datetime.datetime(st.session_state.day_date_input.year,st.session_state.day_date_input.month,st.session_state.day_date_input.day,0,0,0)
-    # 检查数据库中关于今天的数据
-    day_has_data, day_noocred_count,day_search_result_num,day_min_timestamp_dt,day_max_timestamp_dt,day_df = OneDay().checkout(dt_in)
-
-
-    # 判断数据库中有无今天的数据，有则启用功能：
-    if day_has_data:
-
+    with col7:
         # 初始化滑杆启用状态，这个状态同时用来判断是否启用搜索功能，如果True则启用
         if 'day_time_slider_disable' not in st.session_state:
             st.session_state['day_time_slider_disable'] = False
 
-        # 关键词搜索模块
-        col1b, col2b,col3b = st.columns([.8,1,1])
-        with col1b:
-            st.empty()
-        with col2b:
-            # 搜索组件
-            if 'day_search_query_page_index' not in st.session_state:
-                st.session_state['day_search_query_page_index'] = 0
+        # 搜索组件
+        if 'day_search_query_page_index' not in st.session_state:
+            st.session_state['day_search_query_page_index'] = 0
 
-            col1c,col2c,col3c,col4c,col5c = st.columns([1,1.5,1.5,1.5,.5])
-            with col1c:
-                if st.checkbox("关键词搜索",help="不输入任何内容直接回车搜索，可列出当日所有数据。"):
-                    st.session_state.day_time_slider_disable = True
-                    st.session_state.day_is_search_data = True
-                else:
-                    st.session_state.day_time_slider_disable = False
-                    st.session_state.day_is_search_data = False
-            with col2c:
-                # 搜索框
-                def search_result():
-                    # 搜索前清除状态
-                    st.session_state.day_search_result_index_num = 0
+        col1c,col2c,col3c,col4c,col5c = st.columns([1,1.5,1.5,1.5,.5])
+        with col1c:
+            if st.checkbox("关键词搜索",help="不输入任何内容直接回车搜索，可列出当日所有数据。"):
+                st.session_state.day_time_slider_disable = True
+                st.session_state.day_is_search_data = True
+            else:
+                st.session_state.day_time_slider_disable = False
+                st.session_state.day_is_search_data = False
+        with col2c:
+            # 搜索框
+            def search_result():
+                # 搜索前清除状态
+                st.session_state.day_search_result_index_num = 0
 
-                day_search_keyword = st.text_input(d_lang[config.lang]["tab_search_compname"], 'Keyword',
-                                                   key=2,label_visibility="collapsed",on_change=search_result(),
-                                                   disabled=not st.session_state.day_time_slider_disable)
-                # 执行搜索，搜索结果
-                df_day_search_result = OneDay().search_day_data(utils.complete_datetime(st.session_state.day_date_input),search_content=day_search_keyword)
-            with col3c:
-                # 结果条目数
-                if st.session_state.day_is_search_data:
-                    # 启用了搜索功能
-                    if df_day_search_result.empty:
-                        st.markdown(f"<p align='right' style='line-height:2.3;'> 没有找到结果 </p>", unsafe_allow_html=True)
-                    else:
-                        result_num = df_day_search_result.shape[0]
-                        st.markdown(f"<p align='right' style='line-height:2.3;'> 共找到 {result_num} 条结果：</p>", unsafe_allow_html=True)
-                else:
-                    st.empty()
-            with col4c:
-                # 翻页器
+            day_search_keyword = st.text_input(d_lang[config.lang]["tab_search_compname"], 'Keyword',
+                                               key=2,label_visibility="collapsed",on_change=search_result(),
+                                               disabled=not st.session_state.day_time_slider_disable)
+            # 执行搜索，搜索结果
+            df_day_search_result = OneDay().search_day_data(utils.complete_datetime(st.session_state.day_date_input),search_content=day_search_keyword)
+        with col3c:
+            # 结果条目数
+            if st.session_state.day_is_search_data:
+                # 启用了搜索功能
                 if df_day_search_result.empty:
-                    st.empty()
+                    st.markdown(f"<p align='right' style='line-height:2.3;'> 没有找到结果 </p>", unsafe_allow_html=True)
                 else:
-                    def update_slider(dt):
-                        # 翻页结果时刷新控制时间滑杆的定位；入参：需要被定位的datetime.time
-                        if st.session_state.day_is_search_data:
-                            st.session_state.day_time_select_slider = dt
+                    result_num = df_day_search_result.shape[0]
+                    st.markdown(f"<p align='right' style='line-height:2.3;'> 共 {result_num} 条结果：</p>", unsafe_allow_html=True)
+            else:
+                st.empty()
+        with col4c:
+            # 翻页器
+            if df_day_search_result.empty:
+                st.empty()
+            else:
+                def update_slider(dt):
+                    # 翻页结果时刷新控制时间滑杆的定位；入参：需要被定位的datetime.time
+                    if st.session_state.day_is_search_data:
+                        st.session_state.day_time_select_slider = dt
 
-                    # 初始化值
-                    if 'day_search_result_index_num' not in st.session_state:
-                        st.session_state['day_search_result_index_num'] = 0
-                    # 翻页控件
-                    st.session_state.day_search_result_index_num = st.number_input(
-                        "PageIndex",
-                        value=0,
-                        min_value=0,
-                        max_value=df_day_search_result.shape[0]-1,
-                        label_visibility="collapsed",
-                        disabled=not st.session_state.day_time_slider_disable,
-                        on_change=update_slider(utils.set_full_datetime_to_day_time(utils.seconds_to_datetime(df_day_search_result.loc[st.session_state.day_search_result_index_num, 'videofile_time'])))
-                        )
-            with col5c:
-                if df_day_search_result.empty:
-                    st.empty()
-                else:
-                    st.button(label="⟳",
-                              on_click=update_slider(utils.set_full_datetime_to_day_time(utils.seconds_to_datetime(df_day_search_result.loc[st.session_state.day_search_result_index_num, 'videofile_time']))),
-                              disabled=not st.session_state.day_time_slider_disable,use_container_width=True
-                              )
-
-        with col3b:
-            st.empty()
+                # 初始化值
+                if 'day_search_result_index_num' not in st.session_state:
+                    st.session_state['day_search_result_index_num'] = 0
+                # 翻页控件
+                st.session_state.day_search_result_index_num = st.number_input(
+                    "PageIndex",
+                    value=0,
+                    min_value=0,
+                    max_value=df_day_search_result.shape[0]-1,
+                    label_visibility="collapsed",
+                    disabled=not st.session_state.day_time_slider_disable,
+                    on_change=update_slider(utils.set_full_datetime_to_day_time(utils.seconds_to_datetime(df_day_search_result.loc[st.session_state.day_search_result_index_num, 'videofile_time'])))
+                    )
+        with col5c:
+            if df_day_search_result.empty:
+                st.empty()
+            else:
+                st.button(label="⟳",
+                          on_click=update_slider(utils.set_full_datetime_to_day_time(utils.seconds_to_datetime(df_day_search_result.loc[st.session_state.day_search_result_index_num, 'videofile_time']))),
+                          disabled=not st.session_state.day_time_slider_disable,use_container_width=True
+                          )
 
 
+
+    # 判断数据库中有无今天的数据，有则启用功能：
+    if day_has_data:
 
         # 时间滑动控制杆
         start_time = datetime.time(day_min_timestamp_dt.hour, day_min_timestamp_dt.minute)

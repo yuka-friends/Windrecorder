@@ -111,6 +111,7 @@ def monitor_compare_screenshot(screentime_detect_stop_event):
                 time.sleep(30)
         except Exception as e:
             print("--Error occurred:",str(e))
+            monitor_change_rank = 0
         
         screentime_detect_stop_event.wait(5)
 

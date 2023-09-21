@@ -184,6 +184,9 @@ def compare_image_similarity_np(img1, img2):
     keypoints1, descriptors1 = orb.detectAndCompute(gray_img1, None)
     keypoints2, descriptors2 = orb.detectAndCompute(gray_img2, None)
 
+    print("-----debug:descriptors1.dtype, descriptors1.shape",descriptors1.dtype, descriptors1.shape)
+    print("-----debug:descriptors2.dtype, descriptors2.shape",descriptors2.dtype, descriptors2.shape)
+
     # 初始化一个暴力匹配器
     matcher = cv2.BFMatcher(cv2.NORM_HAMMING, crossCheck=True)
 
