@@ -151,12 +151,19 @@ def db_set_page(btn, page_index):
 def draw_db_status():
     count, nocred_count = files.get_videos_and_ocred_videos_count(config.record_videos_dir)
     timeCostStr = utils.estimate_indexing_time()
-    if nocred_count == 1 and record.is_recording():
-        st.success(d_lang[config.lang]["tab_setting_db_state3"].format(nocred_count=nocred_count, count=count), icon='✅')
-    elif nocred_count >= 1:
-        st.warning(d_lang[config.lang]["tab_setting_db_state1"].format(nocred_count=nocred_count, count=count, timeCostStr=timeCostStr), icon='🧭')
-    else:
-        st.success(d_lang[config.lang]["tab_setting_db_state2"].format(nocred_count=nocred_count, count=count), icon='✅')
+    if config.OCR_index_strategy == 1:
+        # 启用自动索引
+        if nocred_count == 1 and record.is_recording():
+            st.success(d_lang[config.lang]["tab_setting_db_state3"].format(nocred_count=nocred_count, count=count), icon='✅')
+        else:
+            st.success(d_lang[config.lang]["tab_setting_db_state4"].format(nocred_count=nocred_count, count=count), icon='✅')
+    elif config.OCR_index_strategy == 2:
+        if nocred_count == 1 and record.is_recording():
+            st.success(d_lang[config.lang]["tab_setting_db_state3"].format(nocred_count=nocred_count, count=count), icon='✅')
+        elif nocred_count >= 1:
+            st.warning(d_lang[config.lang]["tab_setting_db_state1"].format(nocred_count=nocred_count, count=count, timeCostStr=timeCostStr), icon='🧭')
+        else:
+            st.success(d_lang[config.lang]["tab_setting_db_state2"].format(nocred_count=nocred_count, count=count), icon='✅')
 
 
 # 规范化的打表渲染组件
@@ -684,7 +691,7 @@ with tab5:
             update_db_btn = st.button(d_lang[config.lang]["tab_setting_db_btn"], type="secondary", key='update_button_key',
                                       disabled=st.session_state.get("update_button_disabled", False),
                                       on_click=update_database_clicked)
-            is_shutdown_pasocon_after_updatedDB = st.checkbox('更新完毕后关闭计算机（更新过程中请勿勾选）', value=False)
+            is_shutdown_pasocon_after_updatedDB = st.checkbox('更新完毕后关闭计算机（更新过程中请勿勾选）', value=False,disabled=st.session_state.get("update_button_disabled", False))
         
         with col2:
             # 设置ocr引擎
@@ -724,7 +731,6 @@ with tab5:
 
         # 自动化维护选项 WIP
         st.markdown(d_lang[config.lang]["tab_setting_maintain_title"])
-        st.write("WIP")
         ocr_strategy_option_dict = {
             "不自动更新，仅手动更新":0,
             "视频切片录制完毕时自动索引（推荐）":1
@@ -733,6 +739,8 @@ with tab5:
                      (list(ocr_strategy_option_dict.keys())),
                      index=config.OCR_index_strategy
                      )
+        
+        st.write("WIP")
         col1c,col2c = st.columns([1,1])
         with col1c:
             config_vid_store_day = st.number_input(d_lang[config.lang]["tab_setting_m_vid_store_time"], min_value=1, value=config.config_vid_store_day)
