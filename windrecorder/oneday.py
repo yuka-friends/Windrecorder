@@ -149,7 +149,7 @@ class OneDay:
         image_list = dbManager.db_get_day_thumbnail(date_in,date_out,50)
 
         if image_list is None:
-            return None
+            return False
 
         # image_list: 按绘制顺序存储图片base64
         # 原始图像大小
@@ -196,6 +196,7 @@ class OneDay:
         # 保存结果图像
         img_saved_path = os.path.join(img_saved_folder,img_saved_name)
         result.save(img_saved_path, format='PNG')
+        return True
 
 
 

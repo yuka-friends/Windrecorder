@@ -275,7 +275,7 @@ with tab1:
     if 'day_date_input' not in st.session_state:
         st.session_state['day_date_input'] = datetime.date.today()
 
-    col1, col2, col3,col4,col5,col6,col7 = st.columns([.3,.25,.25,.15,.25,.15,1])
+    col1, col2, col3,col4,col5,col6,col7 = st.columns([.4,.25,.25,.15,.25,.2,1])
     with col1:
         st.markdown("### 一天之时")
     with col2:
@@ -306,7 +306,7 @@ with tab1:
         if 'day_search_query_page_index' not in st.session_state:
             st.session_state['day_search_query_page_index'] = 0
 
-        col1c,col2c,col3c,col4c,col5c = st.columns([1,1.5,1.5,1.5,.5])
+        col1c,col2c,col3c,col4c,col5c = st.columns([1,1.5,1,1,.5])
         with col1c:
             if st.checkbox("关键词搜索",help="不输入任何内容直接回车搜索，可列出当日所有数据。"):
                 st.session_state.day_time_slider_disable = True
@@ -330,10 +330,10 @@ with tab1:
             if st.session_state.day_is_search_data:
                 # 启用了搜索功能
                 if df_day_search_result.empty:
-                    st.markdown(f"<p align='right' style='line-height:2.3;'> ⚠ 没有找到结果 </p>", unsafe_allow_html=True)
+                    st.markdown(f"<p align='center' style='line-height:2.3;'> ⚠ 没有找到结果 </p>", unsafe_allow_html=True)
                 else:
                     result_num = df_day_search_result.shape[0]
-                    st.markdown(f"<p align='right' style='line-height:2.3;'> → 共 {result_num} 条结果：</p>", unsafe_allow_html=True)
+                    st.markdown(f"<p align='center' style='line-height:2.3;'> → 共 {result_num} 条结果：</p>", unsafe_allow_html=True)
             else:
                 st.empty()
         with col4c:
@@ -396,11 +396,15 @@ with tab1:
         # 展示时间轴缩略图
         def update_day_timeline_thumbnail():
             with st.spinner("生成当日时间轴缩略图中，请稍后……"):
-                OneDay().generate_preview_timeline_img(st.session_state.day_date_input,img_saved_name=current_day_cloud_n_TL_img_name)
+                if OneDay().generate_preview_timeline_img(st.session_state.day_date_input,img_saved_name=current_day_cloud_n_TL_img_name):
+                    return True
+                else:
+                    return False
 
+        get_generate_result = True
         if not os.path.exists(current_day_TL_img_path):
             # 如果时间轴缩略图不存在，创建之
-            update_day_timeline_thumbnail()
+            get_generate_result = update_day_timeline_thumbnail()
             # 移除非今日的-today.png
             for filename in os.listdir(config.wordcloud_result_dir):
                 # print(f"-----------------filename：{filename}，real_today_day_cloud_img_name:{real_today_day_cloud_img_name}")
@@ -408,10 +412,13 @@ with tab1:
                     file_path = os.path.join(config.wordcloud_result_dir, filename)
                     os.remove(file_path)
                     print(f"Deleted file: {file_path}")
-        
+
             # 展示时间轴缩略图
-        image_thumbnail = Image.open(current_day_TL_img_path)
-        st.image(image_thumbnail,use_column_width="always") 
+        if get_generate_result:
+            image_thumbnail = Image.open(current_day_TL_img_path)
+            st.image(image_thumbnail,use_column_width="always")
+        else:
+            st.markdown(f"<p align='center' style='color:rgba(0,0,0,.3)'> 当日缩略图数量不足以生成时间轴。 </p>", unsafe_allow_html=True)
 
 
 
