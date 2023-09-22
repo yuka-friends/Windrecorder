@@ -19,6 +19,7 @@
   "config_vid_store_day": 45,
   "OCR_index_strategy": 1,
   "wordcloud_result_dir": "wordcloud_result",
+  "timeline_result_dir": "timeline_result",
   "screentime_not_change_to_pause_record": 5,
   "show_oneday_wordcloud": true
 }

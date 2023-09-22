@@ -141,11 +141,15 @@ class OneDay:
         
 
     # 生成当天时间线预览图
-    def generate_preview_timeline_img(self,day_datetime,img_saved_name="default.png",img_saved_folder="catch"):
+    def generate_preview_timeline_img(self,day_datetime,img_saved_name="default.png",img_saved_folder=config.timeline_result_dir):
+        files.check_and_create_folder(img_saved_folder)
 
         date_in = datetime.datetime(day_datetime.year,day_datetime.month,day_datetime.day,0,0,1)
         date_out = datetime.datetime(day_datetime.year,day_datetime.month,day_datetime.day,23,23,59)
         image_list = dbManager.db_get_day_thumbnail(date_in,date_out,50)
+
+        if image_list is None:
+            return None
 
         # image_list: 按绘制顺序存储图片base64
         # 原始图像大小
@@ -164,20 +168,27 @@ class OneDay:
         # 按顺序拼贴图片
         x_offset = 0
         for image_data in image_list:
-            # 将base64编码的图像数据解码为图像
-            image = Image.open(BytesIO(base64.b64decode(image_data)))
+            if image_data is None:
+                # 创建一个与缩略图大小一致的空图像
+                image = Image.new('RGBA', (target_width, target_height), (0, 0, 0, 0))
 
-            # 创建一个与图像大小相同的纯白色图像作为透明度掩码
-            mask = Image.new('L', image.size, 255)  # 'L' 表示灰度图像，255 表示完全不透明
+                # 将图像粘贴到结果图像上，并手动指定透明度掩码
+                result.paste(image, (x_offset, 0), mask)
+            else:
+                # 将base64编码的图像数据解码为图像
+                image = Image.open(BytesIO(base64.b64decode(image_data)))
 
-            # 将图像粘贴到结果图像上，并手动指定透明度掩码
-            result.paste(image, (x_offset, 0), mask)
+                # 创建一个与图像大小相同的纯白色图像作为透明度掩码
+                mask = Image.new('L', image.size, 255)  # 'L' 表示灰度图像，255 表示完全不透明
 
-            # 缩放图像到目标大小
-            # image = image.resize((target_width, target_height), Image.ANTIALIAS)
+                # 将图像粘贴到结果图像上，并手动指定透明度掩码
+                result.paste(image, (x_offset, 0), mask)
 
-            # 将图像粘贴到结果图像上
-            # result.paste(image, (x_offset, 0), image)
+                # 缩放图像到目标大小
+                # image = image.resize((target_width, target_height), Image.ANTIALIAS)
+
+                # 将图像粘贴到结果图像上
+                # result.paste(image, (x_offset, 0), image)
 
             # 更新下一个图像的横向偏移量（考虑到间隔像素）
             x_offset += target_width + 1

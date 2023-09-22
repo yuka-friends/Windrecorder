@@ -5,6 +5,7 @@ import datetime
 import math
 
 import pandas as pd
+import numpy as np
 
 import windrecorder.utils as utils
 from windrecorder.config import config
@@ -266,17 +267,57 @@ class DBManager:
         conn.close()
 
     
-    # 获取一个时间段内的几张缩略图
+    # 获取一个时间段内，按时间戳等均粉的几张缩略图
     def db_get_day_thumbnail(self,date_in,date_out,back_pic_num):
         df,all_result_counts,_ = self.db_search_data("",date_in,date_out,0,is_p_index_used=False)
         gap_num = int(all_result_counts/back_pic_num)
 
+        if all_result_counts < back_pic_num:
+            print("-all_result_counts < back_pic_num")
+            return None
+
+        # 获取df内最早与最晚记录时间
+        time_min = df['videofile_time'].min()
+        time_max = df['videofile_time'].max()
+
+        # 计算均分时间间隔
+        time_range = time_max - time_min
+        time_gap = int(time_range / back_pic_num)
+
+        # 生成理想的时间间隔表
+        timestamp_list = [time_min + i * time_gap for i in range(back_pic_num + 1)]
+
+        # 寻找最近的时间戳数据
+        closest_timestamp_result = []
+        for timestamp in timestamp_list:
+            closest_timestamp = df[
+                np.abs(df['videofile_time'] - timestamp) <= 300 # 差距阈值:second
+            ]['videofile_time'].max()
+            if closest_timestamp is None:
+                closest_timestamp = 0
+            closest_timestamp_result.append(closest_timestamp)
+
+        # 返回对应的缩略图数据
+        thumbnails_result = []
+        for timestamp in closest_timestamp_result:
+            if timestamp == 0:
+                thumbnails_result.append(None)
+            else:
+                thumbnail = df[df['videofile_time'] == timestamp]['thumbnail'].values
+                if len(thumbnail) > 0:
+                    thumbnails_result.append(thumbnail[0])
+                else:
+                    thumbnails_result.append(None)
+
+        return thumbnails_result
+
+        # 平均地获取结果图片，而不是平均地按时间分
         img_list = []
-        thumbnails = df['thumbnail'].tolist()
+        thumbnails_result = df['thumbnail'].tolist()
         rows = len(df)
 
         for i in range(0,rows,gap_num):
-            img_list.append(thumbnails[i])
+            img_list.append(thumbnails_result[i])
 
         return img_list
 

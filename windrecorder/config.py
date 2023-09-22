@@ -18,6 +18,7 @@ class Config:
         wordcloud_result_dir,
         screentime_not_change_to_pause_record,
         show_oneday_wordcloud,
+        timeline_result_dir,
         **other_field
     ) -> None:
         self.db_path = db_path
@@ -35,6 +36,7 @@ class Config:
         self.wordcloud_result_dir = wordcloud_result_dir
         self.screentime_not_change_to_pause_record = screentime_not_change_to_pause_record
         self.show_oneday_wordcloud = show_oneday_wordcloud
+        self.timeline_result_dir = timeline_result_dir
     
     def set_and_save_config(self, attr: str, value):
         if not hasattr(self, attr):
