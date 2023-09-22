@@ -502,10 +502,12 @@ with tab2:
     with col1:
         web_onboarding()
 
-        col1a, col2a, col3a = st.columns([3, 2, 1])
+        col1a, col2a, col3a, col4a = st.columns([2, 1, 2, 1])
         with col1a:
             search_content = st.text_input(d_lang[config.lang]["tab_search_compname"], 'Hello')
         with col2a:
+            search_content_exclude = st.text_input("排除", '',help="排除哪些关键词的内容，留空为不排除。")
+        with col3a:
             # 时间搜索范围组件
             latest_record_time_int = dbManager.db_latest_record_time()
             earlist_record_time_int = dbManager.db_first_earliest_record_time()
@@ -520,7 +522,7 @@ with tab2:
                 ),
                 format="YYYY-MM-DD"
             )
-        with col3a:
+        with col4a:
             # 翻页
             if 'max_page_count' not in st.session_state:
                 st.session_state.max_page_count = 1
@@ -528,7 +530,7 @@ with tab2:
 
         # 获取数据
         df,all_result_counts,st.session_state.max_page_count = dbManager.db_search_data(search_content, search_date_range_in, search_date_range_out,
-                                      page_index)
+                                      page_index,keyword_input_exclude=search_content_exclude)
         df = dbManager.db_refine_search_data(df) # 优化数据显示
         is_df_result_exist = len(df)
         st.markdown(f"`搜索到 {all_result_counts} 条、共 {st.session_state.max_page_count} 页关于 \"{search_content}\" 的结果。`")

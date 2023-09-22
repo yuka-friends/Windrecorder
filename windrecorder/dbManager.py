@@ -108,7 +108,7 @@ class DBManager:
 
 
     # 查询关键词数据
-    def db_search_data(self, keyword_input, date_in, date_out, page_index,is_p_index_used=True):
+    def db_search_data(self, keyword_input, date_in, date_out, page_index,is_p_index_used=True,keyword_input_exclude=""):
         # 返回值：df，所有结果的总行数，最大分几页
         print("——查询关键词数据")
         # 初始化查询数据
@@ -128,9 +128,15 @@ class DBManager:
 
         # 查询总结果数量，获得页数
         c = conn.cursor()
-        c.execute(f"""SELECT COUNT(*) FROM video_text 
-                    WHERE ocr_text LIKE '%{keyword_input}%' 
-                    AND videofile_time BETWEEN {date_in_ts} AND {date_out_ts} """)
+        if keyword_input_exclude:
+            c.execute(f"""SELECT COUNT(*) FROM video_text 
+                        WHERE ocr_text LIKE '%{keyword_input}%' 
+                        AND ocr_text NOT LIKE '%{keyword_input_exclude}%'
+                        AND videofile_time BETWEEN {date_in_ts} AND {date_out_ts} """)
+        else:
+            c.execute(f"""SELECT COUNT(*) FROM video_text 
+                        WHERE ocr_text LIKE '%{keyword_input}%' 
+                        AND videofile_time BETWEEN {date_in_ts} AND {date_out_ts} """)
         all_result_counts = c.fetchone()[0]
         max_page = int(math.ceil(int(all_result_counts)/int(self.db_max_page_result)))
         if max_page <= 0:
@@ -139,19 +145,36 @@ class DBManager:
         # 是否限制页数的搜索范围; 以pd方式返回
         if is_p_index_used:
             # 查询对应页数的结果
-            df = pd.read_sql_query(f"""
-                                  SELECT * FROM video_text 
-                                  WHERE ocr_text LIKE '%{keyword_input}%' 
-                                  AND videofile_time BETWEEN {date_in_ts} AND {date_out_ts} 
-                                  LIMIT {limit} OFFSET {offset}"""
-                                   , conn)
+            if keyword_input_exclude:
+                df = pd.read_sql_query(f"""
+                                      SELECT * FROM video_text 
+                                      WHERE ocr_text LIKE '%{keyword_input}%' 
+                                      AND ocr_text NOT LIKE '%{keyword_input_exclude}%'
+                                      AND videofile_time BETWEEN {date_in_ts} AND {date_out_ts} 
+                                      LIMIT {limit} OFFSET {offset}"""
+                                       , conn)
+            else:
+                df = pd.read_sql_query(f"""
+                                      SELECT * FROM video_text 
+                                      WHERE ocr_text LIKE '%{keyword_input}%' 
+                                      AND videofile_time BETWEEN {date_in_ts} AND {date_out_ts} 
+                                      LIMIT {limit} OFFSET {offset}"""
+                                       , conn)
         else:
             # 查询所有关键词和时间段下的结果
-            df = pd.read_sql_query(f"""
-                                  SELECT * FROM video_text 
-                                  WHERE ocr_text LIKE '%{keyword_input}%' 
-                                  AND videofile_time BETWEEN {date_in_ts} AND {date_out_ts} """
-                                   , conn)
+            if keyword_input_exclude:
+                df = pd.read_sql_query(f"""
+                                      SELECT * FROM video_text 
+                                      WHERE ocr_text LIKE '%{keyword_input}%' 
+                                      AND ocr_text NOT LIKE '%{keyword_input_exclude}%'
+                                      AND videofile_time BETWEEN {date_in_ts} AND {date_out_ts} """
+                                       , conn)
+            else:
+                df = pd.read_sql_query(f"""
+                                      SELECT * FROM video_text 
+                                      WHERE ocr_text LIKE '%{keyword_input}%' 
+                                      AND videofile_time BETWEEN {date_in_ts} AND {date_out_ts} """
+                                       , conn)
 
         conn.close()
         return df,all_result_counts,max_page
