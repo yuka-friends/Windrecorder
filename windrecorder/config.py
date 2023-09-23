@@ -1,5 +1,6 @@
 import json
 import os
+import shutil
 
 class Config:
     def __init__(
@@ -63,12 +64,25 @@ class Config:
     
 
 
+def initialize_config():
+    if not os.path.exists(config_path):
+        print(f"-未找到用户配置文件，将进行创建。")
+        default_config_path = os.path.join(config_dir,config_name_default)
+        shutil.copyfile(default_config_path,config_path)
+
+
+
 
 def get_config_json():
-    with open('config.json', 'r', encoding='utf-8') as f:
+    initialize_config()
+    with open(config_path, 'r', encoding='utf-8') as f:
         config_json = json.load(f)
     return config_json
 
     
+config_name = 'config_user.json'
+config_name_default = 'config_default.json'
+config_dir = 'config'
+config_path = os.path.join(config_dir,config_name)
 
 config = Config(**get_config_json())

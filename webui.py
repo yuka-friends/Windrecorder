@@ -369,7 +369,7 @@ with tab1:
             else:
                 st.button(label="⟳",
                           on_click=update_slider(utils.set_full_datetime_to_day_time(utils.seconds_to_datetime(df_day_search_result.loc[st.session_state.day_search_result_index_num, 'videofile_time']))),
-                          disabled=not st.session_state.day_time_slider_disable,use_container_width=True
+                          use_container_width=True
                           )
 
 
