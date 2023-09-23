@@ -416,6 +416,11 @@ with tab1:
                     file_path = os.path.join(config.wordcloud_result_dir, filename)
                     os.remove(file_path)
                     print(f"Deleted file: {file_path}")
+        elif current_day_TL_img_path.endswith("-today-.png"):
+            # 如果已存在今日的，重新生成覆盖更新
+            if files.is_file_modified_recently(current_day_TL_img_path):
+                # 如果修改日期超过30分钟则更新
+                get_generate_result = update_day_timeline_thumbnail()
 
         # 展示时间轴缩略图
         if get_generate_result:

@@ -1,4 +1,5 @@
 import os
+import time
 
 from windrecorder.config import config
 import windrecorder.files as files
@@ -78,3 +79,22 @@ def get_dir_size(dir):
     for root, _, files in os.walk(dir):
         size += sum([os.path.getsize(os.path.join(root, name)) for name in files])
     return size
+
+
+# 查询文件的修改时间是否超过一定间隔
+def is_file_modified_recently(file_path,time_gap=30):
+    # time_gap 为 minutes
+    # 获取文件的修改时间戳
+    modified_timestamp = os.path.getmtime(file_path)
+    
+    # 获取当前时间戳
+    current_timestamp = time.time()
+    
+    # 计算时间差（以分钟为单位）
+    time_diff_minutes = (current_timestamp - modified_timestamp) / 60
+    
+    # 判断时间差是否超过30分钟
+    if time_diff_minutes > time_gap:
+        return False
+    else:
+        return True
