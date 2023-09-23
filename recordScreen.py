@@ -20,12 +20,12 @@ video_path = config.record_videos_dir
 
 
 # 索引文件
-def index_video_data(vid_file_name):
+def index_video_data(video_saved_dir,vid_file_name):
     print("---\n---Indexing OCR data\n---")
-    full_path = os.path.join(video_path,vid_file_name)
+    full_path = os.path.join(video_saved_dir,vid_file_name)
     if os.path.exists(full_path):
         print(f"--{full_path} existed. Start ocr processing.")
-        maintainManager.ocr_process_single_video(video_path, vid_file_name, "i_frames")
+        maintainManager.ocr_process_single_video(video_saved_dir, vid_file_name, "i_frames")
 
 
 # 录制屏幕
@@ -40,7 +40,10 @@ def record_screen(
     # 构建输出文件名 
     now = datetime.datetime.now()
     video_out_name = now.strftime("%Y-%m-%d_%H-%M-%S") + ".mp4"
-    out_path = os.path.join(output_dir, video_out_name)
+    output_dir_with_date = now.strftime("%Y-%m") # 将视频存储在日期月份子目录下
+    video_saved_dir = os.path.join(output_dir,output_dir_with_date)
+    files.check_and_create_folder(video_saved_dir)
+    out_path = os.path.join(video_saved_dir, video_out_name)
 
     if not os.path.exists(output_dir):
         os.mkdir(output_dir)
@@ -70,7 +73,7 @@ def record_screen(
         print("---Start Recording via FFmpeg")
         # 运行ffmpeg
         subprocess.run(ffmpeg_cmd, check=True)
-        return video_out_name
+        return video_saved_dir, video_out_name
     except subprocess.CalledProcessError as ex:
         print(f"{ex.cmd} failed with return code {ex.returncode}")
 
@@ -140,12 +143,12 @@ if __name__ == '__main__':
             print("屏幕内容没有更新，停止录屏中。进入闲时维护")
             time.sleep(10)
         else:
-            video_out_name = record_screen() # 录制屏幕
+            video_saved_dir, video_out_name = record_screen() # 录制屏幕
             time.sleep(2) # 歇口气
             # 自动索引策略
             if config.OCR_index_strategy == 1:
                 print(f"-Starting Indexing video data: '{video_out_name}'")
-                thread_index_video_data = threading.Thread(target=index_video_data,args=(video_out_name,))
+                thread_index_video_data = threading.Thread(target=index_video_data,args=(video_saved_dir,video_out_name,))
                 thread_index_video_data.daemon = True  # 设置为守护线程
                 thread_index_video_data.start()
             time.sleep(2) # 再歇

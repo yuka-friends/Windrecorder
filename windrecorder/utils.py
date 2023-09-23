@@ -61,6 +61,13 @@ def date_to_seconds(date_str):
     return int(time_delta.total_seconds())
 
 
+# 将输入的文件（ %Y-%m-%d_%H-%M-%S str）时间转为datetime
+def date_to_datetime(date_str):
+    datetime_obj = datetime.datetime.strptime(date_str, '%Y-%m-%d_%H-%M-%S')
+    return datetime_obj
+
+
+
 # 将时间戳秒数格式化为时间 %Y-%m-%d_%H-%M-%S
 def seconds_to_date(seconds):
     # start_time = 946684800

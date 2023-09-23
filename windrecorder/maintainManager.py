@@ -331,27 +331,25 @@ def ocr_process_single_video(video_path, vid_file_name, iframe_path):
 
 # 处理文件夹内所有视频的主要流程
 def ocr_process_videos(video_path, iframe_path, db_filepath):
-    print("——处理视频的流程")
-    vid_file_names = os.listdir(video_path)
-    print("video file listdir:")
-    print(vid_file_names)
+    print("——处理所有视频的流程")
 
-    for vid_file_name in vid_file_names:
-        print("processing VID:" + vid_file_name)
-        # 清理文件
-        empty_directory(iframe_path)
+    for root,dirs,files in os.walk(video_path):
+        for file in files:
+            full_file_path = os.path.join(root, file)
+            print("processing VID:" + full_file_path)
 
-        # 检查视频文件是否已被索引
-        if not vid_file_name.endswith('.mp4') or vid_file_name.endswith("-OCRED.mp4"):
-            continue
-        
-        # 判断文件是否正在被占用
-        file_path = os.path.join(video_path, vid_file_name)
-        if is_file_in_use(file_path):
-            continue
+            # 检查视频文件是否已被索引
+            if not file.endswith('.mp4') or file.endswith("-OCRED.mp4"):
+                continue
 
-        # ocr该文件
-        ocr_process_single_video(video_path, vid_file_name, iframe_path)
+            # 判断文件是否正在被占用
+            if is_file_in_use(full_file_path):
+                continue
+            
+            # 清理文件
+            empty_directory(iframe_path)
+            # ocr该文件
+            ocr_process_single_video(root, file, iframe_path)
 
 
 
@@ -379,5 +377,3 @@ def maintain_manager_main():
     # 对目录下所有视频进行OCR提取处理
     ocr_process_videos(record_videos_dir, i_frames_dir, db_filepath)
 
-    # 打印结果
-    # dbManager.db_print_all_data(db_filepath)

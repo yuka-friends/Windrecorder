@@ -89,16 +89,17 @@ class OneDay:
     # 以寻找视频文件的方式
     def find_closest_video_by_filesys(self,target_datetime):
         # 获取视频文件名列表 
-        video_files = os.listdir(config.record_videos_dir)
+        # video_files = os.listdir(config.record_videos_dir)
 
         # 提取视频文件名中的时间信息
         file_times = []
-        for f in video_files:
-            match = re.match(r'(\d{4}-\d{2}-\d{2}_\d{2}-\d{2}-\d{2})', f)
-            if match:
-                file_dt = datetime.datetime.strptime(match.group(1), '%Y-%m-%d_%H-%M-%S')
-                if file_dt < target_datetime: 
-                    file_times.append((f, file_dt))
+        for root,dirs,files in os.walk(config.record_videos_dir):
+            for file in files:
+                match = re.match(r'(\d{4}-\d{2}-\d{2}_\d{2}-\d{2}-\d{2})', file)
+                if match:
+                    file_dt = datetime.datetime.strptime(match.group(1), '%Y-%m-%d_%H-%M-%S')
+                    if file_dt < target_datetime: 
+                        file_times.append((file, file_dt))
 
         # 寻找时间距离target_datetime最近的先前时间的视频文件
         closest_file = max(file_times, key=lambda x: x[1]) 
@@ -186,7 +187,6 @@ class OneDay:
 
                 # 缩放图像到目标大小
                 # image = image.resize((target_width, target_height), Image.ANTIALIAS)
-
                 # 将图像粘贴到结果图像上
                 # result.paste(image, (x_offset, 0), image)
 

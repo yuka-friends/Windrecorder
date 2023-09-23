@@ -1,6 +1,7 @@
 import os
 
 from windrecorder.config import config
+import windrecorder.files as files
 
 # 检查目录是否存在，若无则创建
 def check_and_create_folder(folder_name):
@@ -25,14 +26,22 @@ def add_OCRED_suffix(video_name):
     return vidname
 
 
+# 输入一个视频文件名，返回其%Y-%m的年月信息作为子文件夹
+def convert_vid_filename_as_YYYY_MM(vid_filename):
+  return vid_filename[:7]
+      
+
 # 查询videos文件夹下的文件数量、未被ocr的文件数量
 def get_videos_and_ocred_videos_count(folder_path):
     count = 0
     nocred_count = 0
-    for filename in os.listdir(folder_path):
-        count += 1
-        if not filename.split('.')[0].endswith("-OCRED"):
+
+    for root,dirs,files in os.walk(folder_path):
+        for file in files:
+          count += 1
+          if not file.split('.')[0].endswith("-OCRED"):
             nocred_count += 1
+
     return count, nocred_count
 
 
@@ -50,9 +59,10 @@ def find_filename_in_dir(dir,search_str):
 
 # 检查视频文件是否存在
 def check_video_exist_in_videos_dir(video_name):
-  video_path = os.path.join(config.record_videos_dir, video_name) 
+  videofile_path_month_dir = files.convert_vid_filename_as_YYYY_MM(video_name)
+  video_path = os.path.join(config.record_videos_dir,videofile_path_month_dir, video_name) 
   ocred_video_name = os.path.splitext(video_name)[0] + '-OCRED' + os.path.splitext(video_name)[1]
-  ocred_path = os.path.join(config.record_videos_dir, ocred_video_name)
+  ocred_path = os.path.join(config.record_videos_dir,videofile_path_month_dir, ocred_video_name)
 
   if os.path.exists(video_path):
     return video_name

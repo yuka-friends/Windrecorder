@@ -55,7 +55,8 @@ def show_n_locate_video_timestamp_by_df(df, num):
     # 入参：df，滑杆选择到表中的第几项
     if is_df_result_exist:
         # todo 获取有多少行结果 对num进行合法性判断
-        videofile_path = os.path.join(config.record_videos_dir, files.add_OCRED_suffix(df.iloc[num]['videofile_name']))
+        videofile_path_month_dir = files.convert_vid_filename_as_YYYY_MM(df.iloc[num]['videofile_name']) # 获取对应的日期目录
+        videofile_path = os.path.join(config.record_videos_dir,videofile_path_month_dir, files.add_OCRED_suffix(df.iloc[num]['videofile_name']))
         print("videofile_path: " + videofile_path)
         vid_timestamp = utils.calc_vid_inside_time(df, num)
         print("vid_timestamp: " + str(vid_timestamp))
@@ -75,10 +76,11 @@ def show_n_locate_video_timestamp_by_df(df, num):
 
 
 # 直接定位视频时间码、展示视频
-def show_n_locate_video_timestamp_by_filename_n_time(video,timestamp):
+def show_n_locate_video_timestamp_by_filename_n_time(video_file_name,timestamp):
     st.session_state.day_timestamp = int(timestamp)
     # 合并视频文件路径
-    videofile_path = os.path.join(config.record_videos_dir, video)
+    videofile_path_month_dir = files.convert_vid_filename_as_YYYY_MM(video_file_name) # 获取对应的日期目录
+    videofile_path = os.path.join(config.record_videos_dir,videofile_path_month_dir, video_file_name)
     print("videofile_path: " + videofile_path)
     # 打开并展示定位视频文件
     video_file = open(videofile_path, 'rb')
@@ -168,6 +170,9 @@ def draw_db_status():
 
 # 规范化的打表渲染组件
 def draw_dataframe(df,heightIn=800):
+    # is_videofile_exist 渲染为可选框
+    # ocr_text 更大的展示空间
+    # thumbnail 渲染为图像
     st.dataframe(
         df,
         column_config={
@@ -220,7 +225,7 @@ def web_footer_state():
     latest_record_time_int = dbManager.db_latest_record_time()
     latest_record_time_str = utils.seconds_to_date(latest_record_time_int)
 
-    latest_db_records = dbManager.db_num_records()
+    latest_db_records = dbManager.db_num_records() # todo 这里在数据库按月分离后需要修改
 
     videos_file_size = round(files.get_dir_size(config.record_videos_dir) / (1024 * 1024 * 1024), 3)
 
@@ -228,13 +233,12 @@ def web_footer_state():
     st.divider()
     col1, col2 = st.columns([1,.3])
     with col1:
-        # st.markdown(f'Database latest record time: **{latest_record_time_str}**, Database records: **{latest_db_records}**, Video Files on disk: **{videos_file_size} GB**')
         st.markdown(d_lang[config.lang]["footer_info"].format(first_record_time_str=first_record_time_str,
                                                           latest_record_time_str=latest_record_time_str,
                                                         latest_db_records=latest_db_records,
                                                         videos_file_size=videos_file_size))
     with col2:
-        st.markdown(f"<p align='right' style='color:rgba(0,0,0,.5)'> Windrecorder </p>", unsafe_allow_html=True)
+        st.markdown(f"<p align='right' style='color:rgba(0,0,0,.5)'> Windrecorder v0.0 | Powered Powered by 🦝 </p>", unsafe_allow_html=True)
 
 
 
@@ -271,7 +275,7 @@ with tab1:
 
     # 标题 # todo:添加今天是星期几以增强时间观念
     
-    # 日期选择器们
+    # 日期选择器
     if 'day_date_input' not in st.session_state:
         st.session_state['day_date_input'] = datetime.date.today()
 
@@ -294,15 +298,15 @@ with tab1:
         # 清理格式到HMS
         dt_in = datetime.datetime(st.session_state.day_date_input.year,st.session_state.day_date_input.month,st.session_state.day_date_input.day,0,0,0)
         # 检查数据库中关于今天的数据
-        day_has_data, day_noocred_count,day_search_result_num,day_min_timestamp_dt,day_max_timestamp_dt,day_df = OneDay().checkout(dt_in)
+        day_has_data, day_noocred_count, day_search_result_num, day_min_timestamp_dt, day_max_timestamp_dt, day_df = OneDay().checkout(dt_in)
     with col6:
         st.empty()
     with col7:
-        # 初始化滑杆启用状态，这个状态同时用来判断是否启用搜索功能，如果True则启用
+        # 初始化时间线滑杆启用状态，这个状态同时用来判断是否启用搜索功能，如果True则启用
         if 'day_time_slider_disable' not in st.session_state:
             st.session_state['day_time_slider_disable'] = False
 
-        # 搜索组件
+        # 关键词搜索组件
         if 'day_search_query_page_index' not in st.session_state:
             st.session_state['day_search_query_page_index'] = 0
 
@@ -378,7 +382,7 @@ with tab1:
         if st.session_state.day_date_input == datetime.datetime.today().date():
             # 如果是今天的结果，以-today结尾，以使次日回溯时词云能被自动更新
             current_day_cloud_n_TL_img_name = str(st.session_state.day_date_input.year) + "-" + str(st.session_state.day_date_input.month) + "-" + str(st.session_state.day_date_input.day) + "-today-" + ".png"
-            # 太邪门了，.png前不能是字符，否则词云的.to_file会莫名其妙自己多添加一个.png
+            # 太邪门了，.png前不能是alphabet/数字字符，否则词云的.to_file会莫名其妙自己多添加一个.png
             current_day_cloud_img_path = os.path.join(config.wordcloud_result_dir,current_day_cloud_n_TL_img_name)
             current_day_TL_img_path = os.path.join(config.timeline_result_dir,current_day_cloud_n_TL_img_name)
         else:
@@ -413,7 +417,7 @@ with tab1:
                     os.remove(file_path)
                     print(f"Deleted file: {file_path}")
 
-            # 展示时间轴缩略图
+        # 展示时间轴缩略图
         if get_generate_result:
             image_thumbnail = Image.open(current_day_TL_img_path)
             st.image(image_thumbnail,use_column_width="always")
@@ -460,7 +464,7 @@ with tab1:
             else:
                 # 【时间线速查功能】
                 # 获取选择的时间，查询对应时间下有无视频，有则换算与定位
-                day_full_select_datetime = utils.merge_date_day_datetime_together(st.session_state.day_date_input,st.session_state.day_time_select_24h) #合并时间为dt
+                day_full_select_datetime = utils.merge_date_day_datetime_together(st.session_state.day_date_input,st.session_state.day_time_select_24h) #合并时间为datetime
                 day_is_result_exist, day_video_file_name = OneDay().find_closest_video_by_filesys(day_full_select_datetime) #通过文件查询
                 # 计算换算用于播放视频的时间
 
