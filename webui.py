@@ -429,7 +429,8 @@ with tab1:
 
 
         # 可视化数据时间轴
-        day_chart_data_overview = OneDay().get_day_statistic_chart_overview(df = day_df, start = day_min_timestamp_dt.hour, end = day_max_timestamp_dt.hour+1)
+        # day_chart_data_overview = OneDay().get_day_statistic_chart_overview(df = day_df, start = day_min_timestamp_dt.hour, end = day_max_timestamp_dt.hour+1)
+        day_chart_data_overview = OneDay().get_day_statistic_chart_overview(df = day_df, start_dt = day_min_timestamp_dt, end_dt = day_max_timestamp_dt)
         st.area_chart(day_chart_data_overview,x="hour",y="data",use_container_width=True,height=100,color="#AC79D5")
 
 
@@ -571,9 +572,9 @@ with tab2:
 
         col1a, col2a, col3a, col4a = st.columns([2, 1, 2, 1])
         with col1a:
-            st.session_state.search_content = st.text_input(d_lang[config.lang]["tab_search_compname"], 'Hello', on_change=do_global_keyword_search())
+            st.session_state.search_content = st.text_input(d_lang[config.lang]["tab_search_compname"], 'Hello', on_change=do_global_keyword_search(),help="可使用空格分隔多个关键词。")
         with col2a:
-            st.session_state.search_content_exclude = st.text_input("排除", '',help="排除哪些关键词的内容，留空为不排除。", on_change=do_global_keyword_search())
+            st.session_state.search_content_exclude = st.text_input("排除", '',help="排除哪些关键词的内容，留空为不排除。可使用空格分隔多个关键词。", on_change=do_global_keyword_search())
         with col3a:
             # 时间搜索范围组件
             latest_record_time_int = DBManager().db_latest_record_time()

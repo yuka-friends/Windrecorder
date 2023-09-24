@@ -166,25 +166,48 @@ class DBManager:
             # 查询总结果数量，获得页数
             c = conn.cursor()
 
-            # 查询所有关键词和时间段下的结果
-            if keyword_input_exclude:
-                df = pd.read_sql_query(f"""
-                                      SELECT * FROM video_text 
-                                      WHERE ocr_text LIKE '%{keyword_input}%' 
-                                      AND ocr_text NOT LIKE '%{keyword_input_exclude}%'
-                                      AND videofile_time BETWEEN {date_in_ts} AND {date_out_ts} """
-                                       , conn)
+            # 构建sql
+            keywords = keyword_input.split()
+            query = f"SELECT * FROM video_text WHERE "
+            if keyword_input:   # 不为空时
+                conditions = []
+                for keyword in keywords:
+                    conditions.append(f"ocr_text LIKE '%{keyword}%'")
+                query += " AND ".join(conditions)
             else:
-                df = pd.read_sql_query(f"""
-                                      SELECT * FROM video_text 
-                                      WHERE ocr_text LIKE '%{keyword_input}%' 
-                                      AND videofile_time BETWEEN {date_in_ts} AND {date_out_ts} """
-                                       , conn)
+                query += f"ocr_text LIKE '%{keyword_input}%'"
+            
+            if keyword_input_exclude:
+                query += " AND "
+                keywords_exclude = keyword_input_exclude.split()
+                conditions = []
+                for keyword_exclude in keywords_exclude:
+                    conditions.append(f"ocr_text NOT LIKE '%{keyword_exclude}%'")
+                query += " AND ".join(conditions)
+
+            query += f" AND videofile_time BETWEEN {date_in_ts} AND {date_out_ts}"
+
+            df = pd.read_sql_query(query, conn)
+
+            # 查询所有关键词和时间段下的结果
+            # if keyword_input_exclude:
+            #     df = pd.read_sql_query(f"""
+            #                           SELECT * FROM video_text 
+            #                           WHERE ocr_text LIKE '%{keyword_input}%' 
+            #                           AND ocr_text NOT LIKE '%{keyword_input_exclude}%'
+            #                           AND videofile_time BETWEEN {date_in_ts} AND {date_out_ts} """
+            #                            , conn)
+            # else:
+            #     df = pd.read_sql_query(f"""
+            #                           SELECT * FROM video_text 
+            #                           WHERE ocr_text LIKE '%{keyword_input}%' 
+            #                           AND videofile_time BETWEEN {date_in_ts} AND {date_out_ts} """
+            #                            , conn)
                 
             df_all = pd.concat([df_all, df], ignore_index=True)
             row_count = row_count + len(df_all)
             conn.close()
-            
+
         page_count_all = int(math.ceil(int(row_count)/int(self.db_max_page_result)))
 
         return df_all, row_count, page_count_all

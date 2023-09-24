@@ -66,12 +66,16 @@ class OneDay:
     
 
     # 获得当天表中的时间轴统计数据
-    def get_day_statistic_chart_overview(self,df,start,end):
+    def get_day_statistic_chart_overview(self,df,start_dt,end_dt):
         # 入参：df、开始小时数、结束小时数
+        start = utils.datetime_to_24numfloat(start_dt)
+        end = utils.datetime_to_24numfloat(end_dt)
+        # print(f"-------------------------------start:{start}, end:{end}")
+
         if start == end:
             end += 1
         
-        # 复制一份表，然后把视频文件名的时间都转成x.x的格式用于统计
+        # 复制一份表，然后把视频文件名对应时间戳都转成x.x的格式用于统计
         df_B = df.copy()
         df_B['videofile_time'] = df_B['videofile_time'].apply(utils.seconds_to_24numfloat)
       
