@@ -14,7 +14,7 @@ from streamlit.runtime.scriptrunner import add_script_run_ctx
 import pandas as pd
 from PIL import Image
 
-from windrecorder.dbManager import dbManager
+from windrecorder.dbManager import DBManager
 from windrecorder.oneday import OneDay
 from windrecorder.config import config
 import windrecorder.maintainManager as maintainManager
@@ -91,11 +91,12 @@ def show_n_locate_video_timestamp_by_filename_n_time(video_file_name,timestamp):
 
 # 检测是否初次使用工具，如果不存在数据库/数据库中只有一条数据，则判定为是
 def check_is_onboarding():
-    is_db_existed = dbManager.db_main_initialize()
+    is_db_existed = DBManager().db_main_initialize()
+    db_file_count = len(files.get_db_file_path_dict())
     if not is_db_existed:
         return True
-    latest_db_records = dbManager.db_num_records()
-    if latest_db_records == 1:
+    latest_db_records = DBManager().db_num_records()
+    if latest_db_records == 1 and db_file_count == 1:
         return True
     return False
 
@@ -219,13 +220,13 @@ def config_set_lang(lang_name):
 
 # footer状态信息
 def web_footer_state():
-    first_record_time_int = dbManager.db_first_earliest_record_time()
+    first_record_time_int = DBManager().db_first_earliest_record_time()
     first_record_time_str = utils.seconds_to_date(first_record_time_int)
 
-    latest_record_time_int = dbManager.db_latest_record_time()
+    latest_record_time_int = DBManager().db_latest_record_time()
     latest_record_time_str = utils.seconds_to_date(latest_record_time_int)
 
-    latest_db_records = dbManager.db_num_records() # todo 这里在数据库按月分离后需要修改
+    latest_db_records = DBManager().db_num_records()
 
     videos_file_size = round(files.get_dir_size(config.record_videos_dir) / (1024 * 1024 * 1024), 3)
 
@@ -238,7 +239,7 @@ def web_footer_state():
                                                         latest_db_records=latest_db_records,
                                                         videos_file_size=videos_file_size))
     with col2:
-        st.markdown(f"<p align='right' style='color:rgba(0,0,0,.5)'> Windrecorder v0.0 | Powered Powered by 🦝 </p>", unsafe_allow_html=True)
+        st.markdown(f"<p align='right' style='color:rgba(0,0,0,.5)'>  Windrecorder 🦝 </p>", unsafe_allow_html=True)
 
 
 
@@ -446,7 +447,7 @@ with tab1:
             # 居左部分
             if st.session_state.day_is_search_data and not df_day_search_result.empty:
                 # 如果是搜索视图，这里展示全部的搜索结果
-                df_day_search_result_refine = dbManager.db_refine_search_data(df_day_search_result) # 优化下数据展示
+                df_day_search_result_refine = DBManager().db_refine_search_data(df_day_search_result) # 优化下数据展示
                 draw_dataframe(df_day_search_result_refine)
             else:
                 st.empty()
@@ -463,7 +464,7 @@ with tab1:
                 else:
                     st.info("磁盘上没有找到这个时间的视频文件，不过有文本数据可被检索。", icon="🎐")
                     found_row = df_day_search_result.loc[st.session_state.day_search_result_index_num].to_frame().T
-                    found_row = dbManager.db_refine_search_data(found_row) # 优化下数据展示
+                    found_row = DBManager().db_refine_search_data(found_row) # 优化下数据展示
                     draw_dataframe(found_row,heightIn=0)
 
             else:
@@ -485,7 +486,7 @@ with tab1:
                     is_data_found,found_row =OneDay().find_closest_video_by_database(day_df,utils.datetime_to_seconds(day_full_select_datetime))
                     if is_data_found:
                         st.info("磁盘上没有找到这个时间的视频文件，不过这个时间附近有以下数据可以检索。", icon="🎐")
-                        found_row = dbManager.db_refine_search_data(found_row) # 优化下数据展示
+                        found_row = DBManager().db_refine_search_data(found_row) # 优化下数据展示
                         draw_dataframe(found_row,heightIn=0)
                     else:
                         st.warning("磁盘上没有找到这个时间的视频文件和索引记录。", icon="🦫")
@@ -542,22 +543,46 @@ with tab1:
 
 
 # tab：全局关键词搜索
+db_global_search_result = pd.DataFrame()
 with tab2:
     st.markdown(d_lang[config.lang]["tab_search_title"])
     col1, col2 = st.columns([1, 2])
     with col1:
         web_onboarding()
 
+        # 初始化一些全局状态
+        if 'max_page_count' not in st.session_state:
+            st.session_state.max_page_count = 1
+        if 'all_result_counts' not in st.session_state:
+            st.session_state.all_result_counts = 1
+        if 'search_content' not in st.session_state:
+            st.session_state.search_content = "hello"
+        if 'search_content_exclude' not in st.session_state:
+            st.session_state.search_content_exclude = ""
+        if 'search_date_range_in' not in st.session_state:
+            st.session_state.search_date_range_in = datetime.datetime.today() - datetime.timedelta(seconds=86400)
+        if 'search_date_range_out' not in st.session_state:
+            st.session_state.search_date_range_out = datetime.datetime.today()
+
+
+        def do_global_keyword_search():
+            global db_global_search_result
+            db_global_search_result, st.session_state.all_result_counts, st.session_state.max_page_count = DBManager().db_search_data(st.session_state.search_content, 
+                                                                                                                                      st.session_state.search_date_range_in, 
+                                                                                                                                      st.session_state.search_date_range_out,
+                                                                                                                                      keyword_input_exclude=st.session_state.search_content_exclude)
+        
+
         col1a, col2a, col3a, col4a = st.columns([2, 1, 2, 1])
         with col1a:
-            search_content = st.text_input(d_lang[config.lang]["tab_search_compname"], 'Hello')
+            st.session_state.search_content = st.text_input(d_lang[config.lang]["tab_search_compname"], 'Hello', on_change=do_global_keyword_search())
         with col2a:
-            search_content_exclude = st.text_input("排除", '',help="排除哪些关键词的内容，留空为不排除。")
+            st.session_state.search_content_exclude = st.text_input("排除", '',help="排除哪些关键词的内容，留空为不排除。", on_change=do_global_keyword_search())
         with col3a:
             # 时间搜索范围组件
-            latest_record_time_int = dbManager.db_latest_record_time()
-            earlist_record_time_int = dbManager.db_first_earliest_record_time()
-            search_date_range_in, search_date_range_out = st.date_input(
+            latest_record_time_int = DBManager().db_latest_record_time()
+            earlist_record_time_int = DBManager().db_first_earliest_record_time()
+            st.session_state.search_date_range_in, st.session_state.search_date_range_out = st.date_input(
                 d_lang[config.lang]["tab_search_daterange"],
                 (datetime.datetime(1970, 1, 2)
                     + datetime.timedelta(seconds=earlist_record_time_int)
@@ -566,27 +591,28 @@ with tab2:
                     + datetime.timedelta(seconds=latest_record_time_int)
                     - datetime.timedelta(seconds=86400)
                 ),
-                format="YYYY-MM-DD"
+                format="YYYY-MM-DD",
+                on_change=do_global_keyword_search()
             )
         with col4a:
             # 翻页
-            if 'max_page_count' not in st.session_state:
-                st.session_state.max_page_count = 1
-            page_index = st.number_input("搜索结果页数", min_value=1, step=1,max_value=st.session_state.max_page_count+1) - 1
+            page_index = st.number_input("搜索结果页数", min_value=1, step=1,max_value=st.session_state.max_page_count+1)
 
         # 获取数据
-        df,all_result_counts,st.session_state.max_page_count = dbManager.db_search_data(search_content, search_date_range_in, search_date_range_out,
-                                      page_index,keyword_input_exclude=search_content_exclude)
-        df = dbManager.db_refine_search_data(df) # 优化数据显示
+        # df_all_result ,st.session_state.all_result_counts,st.session_state.max_page_count = DBManager().db_search_data(search_content, search_date_range_in, search_date_range_out,
+        #                               keyword_input_exclude=search_content_exclude)
+
+        df = DBManager().db_search_data_page_turner(db_global_search_result, page_index)
+        df = DBManager().db_refine_search_data(df) # 优化数据显示
         is_df_result_exist = len(df)
-        st.markdown(f"`搜索到 {all_result_counts} 条、共 {st.session_state.max_page_count} 页关于 \"{search_content}\" 的结果。`")
+        st.markdown(f"`搜索到 {st.session_state.all_result_counts} 条、共 {st.session_state.max_page_count} 页关于 \"{st.session_state.search_content}\" 的结果。`")
 
         # 滑杆选择
         result_choose_num = choose_search_result_num(df, is_df_result_exist)
 
-        if len(df) == 0:
-            st.info(d_lang[config.lang]["tab_search_word_no"].format(search_content=search_content), icon="🎐")
 
+        if len(df) == 0:
+            st.info(d_lang[config.lang]["tab_search_word_no"].format(search_content=st.session_state.search_content), icon="🎐")
         else:
             # 打表
             draw_dataframe(df,heightIn=800)
@@ -602,8 +628,8 @@ with tab3:
     
     col1, col2 = st.columns([1,2])
     with col1:
-        db_earliest_datetime = utils.seconds_to_datetime(dbManager.db_first_earliest_record_time())
-        db_latest_datetime = utils.seconds_to_datetime(dbManager.db_latest_record_time())
+        db_earliest_datetime = utils.seconds_to_datetime(DBManager().db_first_earliest_record_time())
+        db_latest_datetime = utils.seconds_to_datetime(DBManager().db_latest_record_time())
         if db_latest_datetime.year > db_earliest_datetime.year:
             # 当记录时间超过一年
             selector_month_min = 1

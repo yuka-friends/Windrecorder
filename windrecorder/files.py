@@ -1,8 +1,10 @@
 import os
 import time
+import datetime
 
 from windrecorder.config import config
 import windrecorder.files as files
+import windrecorder.utils as utils
 
 # 检查目录是否存在，若无则创建
 def check_and_create_folder(folder_name):
@@ -98,3 +100,86 @@ def is_file_modified_recently(file_path,time_gap=30):
         return False
     else:
         return True
+
+
+
+# 从db文件名提取YYYY-MM
+def extract_date_from_db_filename(db_file_name, user_name = config.user_name):
+  prefix = user_name + "_"
+  suffix = "_wind.db"
+
+  if db_file_name.startswith(prefix):
+     db_file_name = db_file_name[len(prefix):]
+
+  if db_file_name.endswith(suffix):
+     db_file_name = db_file_name[:-(len(suffix))]
+
+  db_file_name_datetime = datetime.datetime.strptime(db_file_name,"%Y-%m")
+  db_file_name_datetime = utils.set_full_datetime_to_YYYY_MM_DD(db_file_name_datetime)
+  return db_file_name_datetime
+
+
+# 取得db文件夹下的完整数据库路径列表
+def get_db_file_path_dict(db_dir=config.db_path, user_name = config.user_name):
+  check_and_create_folder(db_dir)
+
+  db_list = os.listdir(db_dir)
+  if len(db_list) == 0:
+     # 目录为空
+     return None
+  else:
+    # 去除非当前用户的内容
+    for file in db_list:
+       if not file.startswith(user_name):
+          db_list.remove(file)
+
+    db_list_datetime = [extract_date_from_db_filename(file) for file in db_list]
+
+    db_list, db_list_datetime = zip(*sorted(zip(db_list, db_list_datetime),key=lambda x:x[1]))
+
+    items = zip(db_list, db_list_datetime)   # 使用zip将两个列表打包成元组的列表
+    db_dict = dict(items)   # 将zip结果转换为字典
+    # return list(db_list),list(db_list_datetime)
+    return db_dict
+
+
+# 查找db字典中最晚一项的key值
+def get_lastest_datetime_key(dictionary):
+  if not dictionary:
+      return None
+
+  latest_datetime = None
+  latest_key = None
+
+  for key, value in dictionary.items():
+      if isinstance(value, datetime.datetime):
+          if latest_datetime is None or value > latest_datetime:
+              latest_datetime = value
+              latest_key = key
+
+  return latest_key
+
+
+# 查找db字典中最早一项的key值
+def get_earliest_datetime_key(dictionary):
+  if not dictionary:
+      return None
+
+  earliest_datetime = None
+  earliest_key = None
+
+  for key, value in dictionary.items():
+      if isinstance(value, datetime.datetime):
+          if earliest_datetime is None or value < earliest_datetime:
+              earliest_datetime = value
+              earliest_key = key
+
+  return earliest_key
+
+
+# 根据datetime生成数据库带db路径的文件名
+def get_db_filepath_by_datetime(dt, db_dir=config.db_path, user_name = config.user_name):
+   filename = user_name + "_" + dt.strftime("%Y-%m") + "_wind.db"
+   filepath = os.path.join(db_dir,filename)
+   return filepath
+

@@ -175,6 +175,11 @@ def set_full_datetime_to_day_time(dt):
     # datetime.timetz()方法保留时分秒保留时区信息(如果原datetime包含时区信息), 返回一个只包含时分秒的datetime.time对象。
 
 
+# 将完整的datetime只保留年月日的datetime
+def set_full_datetime_to_YYYY_MM_DD(dt):
+    return dt.replace(day=1, hour=0, minute=0, second=0, microsecond=0)
+
+
 # 将输入的不完整的datetime补齐为默认年月日时分秒的datetime
 def complete_datetime(dt):
     if isinstance(dt, datetime.date): 

@@ -10,7 +10,7 @@ import jieba
 import pandas as pd
 
 import windrecorder.utils as utils
-from windrecorder.dbManager import dbManager
+from windrecorder.dbManager import DBManager
 import windrecorder.files as files
 
 
@@ -102,7 +102,7 @@ def get_month_ocr_result(timestamp):
                        timestamp_datetime.month,
                        utils.get_days_in_month(timestamp_datetime.year,timestamp_datetime.month),
                        23,59,59)
-    df,_,_ = dbManager.db_search_data("",date_in,date_out,0,is_p_index_used=False)
+    df,_,_ = DBManager().db_search_data("",date_in,date_out)
     # ocr_text_data = df["ocr_text"].to_string(index=False)
     ocr_text_data = ''.join(df['ocr_text'].tolist())
     ocr_text_data = utils.delete_short_lines(ocr_text_data,less_than=10)
@@ -133,7 +133,7 @@ def get_day_ocr_result(timestamp):
                        timestamp_datetime.month,
                        timestamp_datetime.day,
                        23,59,59)
-    df,_,_ = dbManager.db_search_data("",date_in,date_out,0,is_p_index_used=False)
+    df,_,_ = DBManager().db_search_data("",date_in,date_out)
     ocr_text_data = ''.join(df['ocr_text'].tolist())
     ocr_text_data = utils.delete_short_lines(ocr_text_data,less_than=10)
 

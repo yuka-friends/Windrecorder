@@ -10,7 +10,7 @@ import win32file
 import pyautogui
 
 from windrecorder.utils import empty_directory, date_to_seconds, seconds_to_date
-from windrecorder.dbManager import dbManager
+from windrecorder.dbManager import DBManager
 from windrecorder.config import config
 import windrecorder.utils as utils
 
@@ -228,7 +228,7 @@ def rollback_data(video_path,vid_file_name):
     # 擦除db中没索引完全的数据
     vid_file_name_db = vid_file_name.replace("-INDEX","")
     print(f"——回滚操作:{vid_file_name}")
-    dbManager.db_rollback_delete_video_refer_record(vid_file_name_db)
+    DBManager().db_rollback_delete_video_refer_record(vid_file_name_db)
 
     # 回滚完毕，将命名调整回来
     # file_path = os.path.join(video_path, vid_file_name)
@@ -312,9 +312,8 @@ def ocr_process_single_video(video_path, vid_file_name, iframe_path):
                 img_thumbnail = resize_imahe_as_base64(img)
                 # 清理ocr数据
                 ocr_result_write = utils.clean_dirty_text(ocr_result_stringB)
-                dbManager.db_update_data(vid_file_name, img_file_name, calc_to_sec_data,
+                DBManager().db_update_data(vid_file_name, img_file_name, calc_to_sec_data,
                                          ocr_result_write, True, False, img_thumbnail)
-                # dbManager.db_print_all_data()
                 ocr_result_stringA = ocr_result_stringB
 
     # 清理文件
@@ -373,7 +372,7 @@ def maintain_manager_main():
         os.mkdir(record_videos_dir)
 
     # 初始化一下数据库
-    dbManager.db_main_initialize()
+    DBManager().db_main_initialize()
     # 对目录下所有视频进行OCR提取处理
     ocr_process_videos(record_videos_dir, i_frames_dir, db_filepath)
 

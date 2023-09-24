@@ -10,7 +10,7 @@ from PIL import Image
 
 import windrecorder.utils as utils
 import windrecorder.files as files
-from windrecorder.dbManager import dbManager
+from windrecorder.dbManager import DBManager
 from windrecorder.config import config
 
 
@@ -26,7 +26,9 @@ class OneDay:
         search_date_range_in = dt_in.replace(hour=0, minute=0, second=0, microsecond=0)
         search_date_range_out = dt_in.replace(hour=23, minute=59, second=59, microsecond=0)
         page_index = 0
-        df,_,_ = dbManager.db_search_data(search_content, search_date_range_in, search_date_range_out,page_index,is_p_index_used=False) # 不启用页数限制，以返回所有结果
+        df,_,_ = DBManager().db_search_data(search_content, 
+                                            search_date_range_in, 
+                                            search_date_range_out)
         return df
 
 
@@ -147,7 +149,7 @@ class OneDay:
 
         date_in = datetime.datetime(day_datetime.year,day_datetime.month,day_datetime.day,0,0,1)
         date_out = datetime.datetime(day_datetime.year,day_datetime.month,day_datetime.day,23,23,59)
-        image_list = dbManager.db_get_day_thumbnail(date_in,date_out,50)
+        image_list = DBManager().db_get_day_thumbnail(date_in,date_out,50)
 
         if image_list is None:
             return False
