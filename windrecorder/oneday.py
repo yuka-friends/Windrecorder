@@ -141,10 +141,28 @@ class OneDay:
             video_name_timestamp = utils.calc_vid_name_to_timestamp(video_name)
             local_video_timestamp = video_search_result_timestamp - video_name_timestamp
             return True,check_on_disk_path,local_video_timestamp
-        
+
+
+    # 获得base64输入图片的宽高
+    def get_image_dimensions(base64_image):
+        # 解码Base64图像数据
+        image_data = base64.b64decode(base64_image)
+
+        # 将图像数据加载到PIL图像对象中
+        image = Image.open(BytesIO(image_data))
+
+        # 获取图像的宽度和高度
+        width, height = image.size
+
+        # 返回宽度和高度
+        return width, height
+
 
     # 生成当天时间线预览图
-    def generate_preview_timeline_img(self,day_datetime,img_saved_name="default.png",img_saved_folder=config.timeline_result_dir):
+    def generate_preview_timeline_img(
+            self,day_datetime,
+            img_saved_name="default.png",img_saved_folder=config.timeline_result_dir):
+        
         files.check_and_create_folder(img_saved_folder)
 
         date_in = datetime.datetime(day_datetime.year,day_datetime.month,day_datetime.day,0,0,1)
@@ -156,10 +174,9 @@ class OneDay:
 
         # image_list: 按绘制顺序存储图片base64
         # 原始图像大小
-        original_width = 70
-        original_height = 39
+        original_width, original_height = self.get_image_dimensions(image_list[0])
 
-        # 目标图像大小（缩小到50%）
+        # 目标图像大小（缩小到50%）?
         target_width = int(original_width * 1)
         target_height = int(original_height * 1)
 
