@@ -22,6 +22,7 @@ import windrecorder.utils as utils
 import windrecorder.files as files
 import windrecorder.record as record
 import windrecorder.wordcloud as wordcloud
+import windrecorder.state as state
 
 update_button_key = "update_button"
 reset_button_key = "setting_reset"
@@ -645,6 +646,16 @@ with tab3:
             st.button("回到本月")
         stat_select_month_datetime = datetime.datetime(st.session_state.stat_Stat_query_Year,st.session_state.Stat_query_Month,1,10,0,0)
         
+
+        if 'df_month_stat' not in st.session_state:
+            st.session_state.df_month_stat = pd.DataFrame()
+
+        if st.session_state.df_month_stat.empty:
+            with st.spinner("生成本月统计中……"):
+                st.session_state.df_month_stat = state.get_month_data_overview(stat_select_month_datetime)
+        
+        st.bar_chart(st.session_state.df_month_stat,x="day",y="data_count",color="#AC79D5")
+
         st.write("WIP")
 
     with col2:
