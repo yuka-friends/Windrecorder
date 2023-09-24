@@ -407,15 +407,15 @@ with tab1:
             # 如果时间轴缩略图不存在，创建之
             get_generate_result = update_day_timeline_thumbnail()
             # 移除非今日的-today.png
-            for filename in os.listdir(config.wordcloud_result_dir):
+            for filename in os.listdir(config.timeline_result_dir):
                 # print(f"-----------------filename：{filename}，real_today_day_cloud_img_name:{real_today_day_cloud_img_name}")
                 if filename.endswith("-today-.png") and filename != real_today_day_cloud_n_TL_img_name:
-                    file_path = os.path.join(config.wordcloud_result_dir, filename)
+                    file_path = os.path.join(config.timeline_result_dir, filename)
                     os.remove(file_path)
                     print(f"Deleted file: {file_path}")
         elif current_day_TL_img_path.endswith("-today-.png"):
             # 如果已存在今日的，重新生成覆盖更新
-            if files.is_file_modified_recently(current_day_TL_img_path):
+            if not files.is_file_modified_recently(current_day_TL_img_path):
                 # 如果修改日期超过30分钟则更新
                 get_generate_result = update_day_timeline_thumbnail()
 
@@ -804,7 +804,7 @@ with tab5:
         st.write("WIP")
         col1c,col2c = st.columns([1,1])
         with col1c:
-            config_vid_store_day = st.number_input(d_lang[config.lang]["tab_setting_m_vid_store_time"], min_value=1, value=config.config_vid_store_day)
+            vid_store_day = st.number_input(d_lang[config.lang]["tab_setting_m_vid_store_time"], min_value=1, value=config.vid_store_day)
         with col2c:
             st.number_input("原视频在保留几天后进行二次压缩（0 为永不压缩）",value=10,min_value=0)
 
@@ -831,7 +831,7 @@ with tab5:
         if st.button('Save and Apple All Change / 保存并应用所有更改', type="primary",key="SaveBtnGeneral"):
             config_set_lang(language_option)
             config.set_and_save_config("OCR_index_strategy",ocr_strategy_option_dict[ocr_strategy_option])
-            config.set_and_save_config("config_vid_store_day",config_vid_store_day)
+            config.set_and_save_config("vid_store_day",vid_store_day)
             config.set_and_save_config("max_page_result", config_max_search_result_num)
             config.set_and_save_config("ocr_engine", config_ocr_engine)
             config.set_and_save_config("exclude_words",utils.string_to_list(exclude_words))
