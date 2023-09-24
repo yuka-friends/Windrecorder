@@ -14,7 +14,8 @@ class Config:
         max_page_result,
         target_screen_res,
         exclude_words,
-        config_vid_store_day,
+        vid_store_day,
+        vid_compress_day,
         OCR_index_strategy,
         wordcloud_result_dir,
         screentime_not_change_to_pause_record,
@@ -33,7 +34,8 @@ class Config:
         self.max_page_result = max_page_result
         self.target_screen_res = target_screen_res
         self.exclude_words = exclude_words
-        self.config_vid_store_day = config_vid_store_day
+        self.vid_store_day = vid_store_day
+        self.vid_compress_day = vid_compress_day
         self.OCR_index_strategy = OCR_index_strategy # 0=不自动索引，1=每录制完一个切片进行索引
         self.wordcloud_result_dir = wordcloud_result_dir
         self.screentime_not_change_to_pause_record = screentime_not_change_to_pause_record

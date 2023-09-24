@@ -144,7 +144,7 @@ class OneDay:
 
 
     # 获得base64输入图片的宽高
-    def get_image_dimensions(base64_image):
+    def get_image_dimensions(self, base64_image):
         # 解码Base64图像数据
         image_data = base64.b64decode(base64_image)
 
@@ -174,6 +174,8 @@ class OneDay:
 
         # image_list: 按绘制顺序存储图片base64
         # 原始图像大小
+        print("-----------------------------------------image_list[0]")
+        print(image_list[0])
         original_width, original_height = self.get_image_dimensions(image_list[0])
 
         # 目标图像大小（缩小到50%）?

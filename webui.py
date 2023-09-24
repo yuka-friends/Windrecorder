@@ -365,11 +365,7 @@ with tab1:
                     on_change=update_slider(utils.set_full_datetime_to_day_time(utils.seconds_to_datetime(df_day_search_result.loc[st.session_state.day_search_result_index_num, 'videofile_time'])))
                     )
         with col5c:
-            if df_day_search_result.empty:
-                st.empty()
-            else:
-                st.button(label="⟳",
-                          on_click=update_slider(utils.set_full_datetime_to_day_time(utils.seconds_to_datetime(df_day_search_result.loc[st.session_state.day_search_result_index_num, 'videofile_time']))),
+            st.button(label="⟳",
                           use_container_width=True
                           )
 
