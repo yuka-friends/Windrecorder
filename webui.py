@@ -724,7 +724,7 @@ with tab3:
         if st.button("生成/更新本月词云"):
             with st.spinner("生成中，大概需要 30s……"):
                 print("生成词云")
-                wordcloud.generate_word_cloud_in_month(utils.datetime_to_seconds(stat_select_month_datetime),current_month_cloud_img_name)
+                wordcloud.generate_word_cloud_in_month(utils.datetime_to_seconds(st.session_state.stat_select_month_datetime),current_month_cloud_img_name)
             
         if os.path.exists(current_month_cloud_img_path):
             image = Image.open(current_month_cloud_img_path)
