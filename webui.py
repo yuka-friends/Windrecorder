@@ -294,6 +294,7 @@ def web_footer_state():
     latest_db_records = DBManager().db_num_records()
 
     videos_file_size = round(files.get_dir_size(config.record_videos_dir) / (1024 * 1024 * 1024), 3)
+    videos_files_count,_ = files.get_videos_and_ocred_videos_count(config.record_videos_dir)
 
     # webUI draw
     st.divider()
@@ -302,7 +303,8 @@ def web_footer_state():
         st.markdown(d_lang[config.lang]["footer_info"].format(first_record_time_str=first_record_time_str,
                                                           latest_record_time_str=latest_record_time_str,
                                                         latest_db_records=latest_db_records,
-                                                        videos_file_size=videos_file_size))
+                                                        videos_file_size=videos_file_size,
+                                                        videos_files_count=videos_files_count))
     with col2:
         st.markdown(f"<p align='right' style='color:rgba(0,0,0,.5)'>  Windrecorder 🦝 </p>", unsafe_allow_html=True)
 

@@ -26,7 +26,7 @@
         "tab_setting_ui_title": "#### Interface\n",
         "tab_setting_ui_result_num": "Maximum display results pre page",
         "def_search_slider": "Rewind Video",
-        "footer_info": "Database earliest record time:**{first_record_time_str}**, Database latest record time: **{latest_record_time_str}**, Database records: **{latest_db_records}**, Video Files on disk: **{videos_file_size} GB**",
+        "footer_info": "Database earliest record time:**{first_record_time_str}**, Database latest record time: **{latest_record_time_str}**, Database records: **{latest_db_records}**, Video Files on disk: **{videos_file_size} GB**  ({videos_files_count} 个视频文件)",
         "tab_setting_maintain_title":"#### Automated Maintainer",
         "tab_setting_m_vid_store_time":"Video files retention time (days)",
         "tab_setting_m_enable_vd":"OCR: Enable Graphic Card Acceleration"
@@ -61,7 +61,7 @@
         "tab_setting_ui_title": "#### 界面\n",
         "tab_setting_ui_result_num": "全局搜索中，每页显示结果的最大数量",
         "def_search_slider": "拖动回溯搜索结果",
-        "footer_info": "最早的数据时间：**{first_record_time_str}**，最新的数据时间： **{latest_record_time_str}**， 数据库记录了行数： **{latest_db_records}**，视频文件占用空间： **{videos_file_size} GB**",
+        "footer_info": "最早的数据时间：**{first_record_time_str}**，最新的数据时间： **{latest_record_time_str}**， 数据库记录了行数： **{latest_db_records}**，视频文件占用空间： **{videos_file_size} GB** ({videos_files_count} 个视频文件)",
         "tab_setting_maintain_title": "#### 自动化维护",
         "tab_setting_m_vid_store_time":"视频文件保留时长（天）",
         "tab_setting_m_enable_vd":"OCR 识别：启用显卡加速"

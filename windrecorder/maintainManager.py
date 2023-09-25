@@ -2,17 +2,20 @@ import os
 import base64
 import subprocess
 import json
+import datetime
 
 import cv2
 import numpy as np
 from chineseocr_lite_onnx.model import OcrHandle
 import win32file
 import pyautogui
+from send2trash import send2trash
 
 from windrecorder.utils import empty_directory, date_to_seconds, seconds_to_date
 from windrecorder.dbManager import DBManager
 from windrecorder.config import config
 import windrecorder.utils as utils
+import windrecorder.files as files
 
 
 
@@ -350,6 +353,38 @@ def ocr_process_videos(video_path, iframe_path, db_filepath):
             # ocr该文件
             ocr_process_single_video(root, file, iframe_path)
 
+
+# 检查视频文件夹中所有文件的日期，对超出储存时限的文件进行删除操作
+def remove_outdated_videofiles():
+    today_datetime = datetime.datetime.today()
+    days_to_subtract = config.vid_store_day
+    start_datetime = datetime.datetime(2000,1,1,0,0,1)
+    end_datetime = today_datetime - datetime.timedelta(days=days_to_subtract)
+
+    video_filepath_list = files.get_file_path_list(config.record_videos_dir)
+    video_filepath_list_outdate = files.get_videofile_path_list_by_time_range(video_filepath_list, start_datetime, end_datetime)
+    print(f"file to remove: {video_filepath_list_outdate}")
+
+    if len(video_filepath_list_outdate) >0:
+        for item in video_filepath_list_outdate:
+            print(f"removing {item}")
+            send2trash(item)
+
+
+# 检查视频文件夹中所有文件的日期，对超出储存时限的文件进行压缩操作
+def compress_outdated_videofiles():
+    today_datetime = datetime.datetime.today()
+    days_to_subtract = config.vid_compress_day
+    start_datetime = datetime.datetime(2000,1,1,0,0,1)
+    end_datetime = today_datetime - datetime.timedelta(days=days_to_subtract)
+
+    video_filepath_list = files.get_file_path_list(config.record_videos_dir)
+    video_filepath_list_outdate = files.get_videofile_path_list_by_time_range(video_filepath_list, start_datetime, end_datetime)
+    print(f"file to compress {video_filepath_list_outdate}")
+
+    if len(video_filepath_list_outdate) >0:
+        for item in video_filepath_list_outdate:
+            print(f"compressing {item}")
 
 
 
