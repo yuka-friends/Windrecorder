@@ -2,6 +2,8 @@ import os
 import time
 import datetime
 
+import pandas as pd
+
 from windrecorder.config import config
 import windrecorder.files as files
 import windrecorder.utils as utils
@@ -183,3 +185,32 @@ def get_db_filepath_by_datetime(dt, db_dir=config.db_path, user_name = config.us
    filepath = os.path.join(db_dir,filename)
    return filepath
 
+
+
+def save_dataframe_to_path(dataframe, file_path="catch/temp.csv"):
+    """
+    将DataFrame数据保存到指定路径
+    
+    参数:
+    dataframe (pandas.DataFrame): 要保存的DataFrame数据
+    file_path (str): 要保存到的文件路径（默认为catch）
+    
+    返回:
+    无
+    """
+    dataframe.to_csv(file_path, index=False)  # 使用to_csv()方法将DataFrame保存为CSV文件（可根据需要选择其他文件格式）
+    print("DataFrame数据已保存到路径：", file_path)
+
+
+def read_dataframe_from_path( file_path="catch/temp.csv"):
+    """
+    从指定路径读取数据到DataFrame
+    
+    参数:
+    file_path (str): 要读取数据的文件路径（默认为catch）
+    
+    返回:
+    pandas.DataFrame: 读取到的DataFrame数据
+    """
+    dataframe = pd.read_csv(file_path)  # 使用read_csv()方法读取CSV文件（可根据文件格式选择对应的读取方法）
+    return dataframe

@@ -27,4 +27,19 @@ def get_month_data_overview(dt:datetime.datetime):
     return df_month_data
 
 
+# 统计全年数据概览
+def get_year_data_overview(dt:datetime.datetime):
+    months_count = 12
 
+    df_year_data = pd.DataFrame(columns=['month', 'data_count'])
+    for month in range(1, months_count+1):
+        month_days = calendar.monthrange(dt.year, month)[1]
+        dt_month_start = datetime.datetime(dt.year,month,1,0,0,1)
+        dt_month_end = datetime.datetime(dt.year,month,month_days,23,23,59)
+
+        df,_,_ = DBManager().db_search_data("",dt_month_start,dt_month_end)
+
+        row_count = len(df)
+        df_year_data.loc[month-1] = [month, row_count]
+    
+    return df_year_data
