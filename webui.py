@@ -888,6 +888,9 @@ with tab5:
 
         option_show_oneday_wordcloud = st.checkbox("在「一天之时」下展示每日词云",value=config.show_oneday_wordcloud)
 
+        # 使用中文形近字进行搜索
+        config_use_similar_ch_char_to_search = st.checkbox("使用中文形近字进行搜索",value=config.use_similar_ch_char_to_search)
+
         # 每页结果最大数量
         config_max_search_result_num = st.number_input(d_lang[config.lang]["tab_setting_ui_result_num"], min_value=1,
                                                        max_value=500, value=config.max_page_result)
@@ -908,6 +911,7 @@ with tab5:
             config.set_and_save_config("ocr_engine", config_ocr_engine)
             config.set_and_save_config("exclude_words",utils.string_to_list(exclude_words))
             config.set_and_save_config("show_oneday_wordcloud",option_show_oneday_wordcloud)
+            config.set_and_save_config("use_similar_ch_char_to_search",config_use_similar_ch_char_to_search)
             st.toast("已应用更改。", icon="🦝")
             time.sleep(2)
             st.experimental_rerun()

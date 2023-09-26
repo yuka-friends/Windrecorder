@@ -23,5 +23,6 @@
   "timeline_result_dir": "timeline_result",
   "screentime_not_change_to_pause_record": 5,
   "show_oneday_wordcloud": true,
-  "user_name": "default"
+  "user_name": "default",
+  "use_similar_ch_char_to_search": true
 }

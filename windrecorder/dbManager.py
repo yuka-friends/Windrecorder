@@ -161,23 +161,44 @@ class DBManager:
             db_filepath = os.path.join(self.db_path, key)   # 构建完整路径
             print(f"- Querying {db_filepath}")
 
-            # 连接数据库
-            conn = sqlite3.connect(db_filepath)
-
-            # 查询总结果数量，获得页数
-            c = conn.cursor()
+            conn = sqlite3.connect(db_filepath)   # 连接数据库
+            c = conn.cursor()   # 查询总结果数量，获得页数
 
             # 构建sql
-            keywords = keyword_input.split()
+            keywords = keyword_input.split()   # 用空格分割所有的关键词，存为list
             query = f"SELECT * FROM video_text WHERE "
-            if keyword_input:   # 不为空时
-                conditions = []
-                for keyword in keywords:
-                    conditions.append(f"ocr_text LIKE '%{keyword}%'")
-                query += " AND ".join(conditions)
-            else:
+
+            if keyword_input:   # 关键词不为空时
+
+                # 每个关键词执行相近字形匹配（配置项开）
+                if config.use_similar_ch_char_to_search:
+                    # 查询每个关键词的相近字形结果，获得总共需要搜索的条目
+                    similar_strings_list = []
+                    for keyword in keywords:
+                        similar_strings = self.generate_similar_ch_strings(keyword) 
+                        similar_strings_list.append(similar_strings) 
+
+                    # 构建所有关键词的sql
+                    conditions = []
+                    for keywords in similar_strings_list:
+                        group_condition = " OR ".join(f"ocr_text LIKE '%{keyword}%'" for keyword in keywords)
+                        conditions.append(f"({group_condition})")
+
+                    query = query + " AND ".join(conditions)
+                    # 输出参考：(ocr_text LIKE '%a1%' AND ocr_text LIKE '%a2%' AND ocr_text LIKE '%a3%') OR (ocr_text LIKE '%b1%' AND ocr_text LIKE '%b2%') OR (ocr_text LIKE '%c%');
+
+                else:
+                    # 不适用相近字形搜索：直接遍历所有空格区分开的关键词
+                    conditions = []
+                    for keyword in keywords:
+                        conditions.append(f"ocr_text LIKE '%{keyword}%'")
+                    query += " AND ".join(conditions)
+
+            else:   # 关键词为空
                 query += f"ocr_text LIKE '%{keyword_input}%'"
             
+
+            # 是否排除关键词
             if keyword_input_exclude:
                 query += " AND "
                 keywords_exclude = keyword_input_exclude.split()
@@ -186,8 +207,11 @@ class DBManager:
                     conditions.append(f"ocr_text NOT LIKE '%{keyword_exclude}%'")
                 query += " AND ".join(conditions)
 
-            query += f" AND videofile_time BETWEEN {date_in_ts} AND {date_out_ts}"
 
+            # 限定查询的时间范围
+            query += f" AND (videofile_time BETWEEN {date_in_ts} AND {date_out_ts})"
+
+            print(f"-SQL query:\n {query}")
             df = pd.read_sql_query(query, conn)
 
             # 查询所有关键词和时间段下的结果
@@ -416,6 +440,10 @@ class DBManager:
         words = list(input_str)
         similar_words_list = [self.find_similar_ch_characters(word) for word in words]
         result = [''.join(similar_words) for similar_words in product(*similar_words_list)]
+
+        if len(result) > 100:
+            print("查询复杂度过高，不使用模糊查询。")
+            result = [input_str]
 
         return result
 

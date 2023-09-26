@@ -22,6 +22,7 @@ class Config:
         show_oneday_wordcloud,
         timeline_result_dir,
         user_name,
+        use_similar_ch_char_to_search,
         **other_field
     ) -> None:
         self.db_path = db_path
@@ -42,6 +43,7 @@ class Config:
         self.show_oneday_wordcloud = show_oneday_wordcloud
         self.timeline_result_dir = timeline_result_dir
         self.user_name = user_name
+        self.use_similar_ch_char_to_search = use_similar_ch_char_to_search
     
     def set_and_save_config(self, attr: str, value):
         if not hasattr(self, attr):
@@ -59,7 +61,7 @@ class Config:
         # 去除不必要的字段
         self.filter_unwanted_field(config_json)
         # 写入 config.json 文件
-        with open('config.json', 'w', encoding='utf-8') as f:
+        with open(config_path, 'w', encoding='utf-8') as f:
             json.dump(config_json, f, indent=2, ensure_ascii=False)
     
     def filter_unwanted_field(self, config_json):
@@ -73,8 +75,6 @@ def initialize_config():
         print(f"-未找到用户配置文件，将进行创建。")
         default_config_path = os.path.join(config_dir,config_name_default)
         shutil.copyfile(default_config_path,config_path)
-
-
 
 
 def get_config_json():

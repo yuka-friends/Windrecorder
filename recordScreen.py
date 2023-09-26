@@ -104,7 +104,7 @@ def monitor_compare_screenshot(screentime_detect_stop_event):
                 if last_screenshot_array is not None:
                     similarity = maintainManager.compare_image_similarity_np(last_screenshot_array,screenshot_array)
 
-                    if similarity > 0.93: #对比检测阈值
+                    if similarity > 0.9: #对比检测阈值
                         monitor_change_rank += 0.5
                     else:
                         monitor_change_rank = 0
