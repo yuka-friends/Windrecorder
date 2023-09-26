@@ -3,6 +3,7 @@ import os
 import json
 import datetime
 import math
+from itertools import product
 
 import pandas as pd
 import numpy as np
@@ -389,6 +390,38 @@ class DBManager:
             img_list.append(thumbnails_result[i])
 
         return img_list
+    
+    
+
+    # 相似的单个中文字符查找
+    def find_similar_ch_characters(self, input_str, file_path="config/similar_CN_characters.txt"):
+        similar_chars = []
+
+        with open(file_path, 'r', encoding='utf-8') as file:
+            lines = file.readlines()
+            for line in lines:
+                line = line.strip()
+                characters = line.split('，')
+                if input_str in characters:
+                    similar_chars.extend(characters)
+
+        similar_chars = list(set(similar_chars))
+        if len(similar_chars) == 0:
+            similar_chars.append(input_str)
+        return similar_chars
+
+
+    # 遍历得到每种可能性
+    def generate_similar_ch_strings(self, input_str):
+        words = list(input_str)
+        similar_words_list = [self.find_similar_ch_characters(word) for word in words]
+        result = [''.join(similar_words) for similar_words in product(*similar_words_list)]
+
+        return result
+
+    
+
+
 
 
 # dbManager = DBManager(

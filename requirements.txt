@@ -4,8 +4,7 @@ numpy==1.24.2
 onnxruntime==1.15.1
 opencv_python==4.5.5.64
 pandas==2.0.3
-Pillow==9.5.0
-Pillow==10.0.1
+Pillow
 PyAutoGUI==0.9.54
 pyclipper==1.3.0.post4
 pyshortcuts==1.9.0
