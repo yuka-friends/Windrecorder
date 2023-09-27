@@ -6,6 +6,7 @@ import threading
 import os
 from os import getpid
 import json
+import ctypes
 
 import pyautogui
 import numpy as np
@@ -17,6 +18,18 @@ import windrecorder.files as files
 
 ffmpeg_path = 'ffmpeg'
 video_path = config.record_videos_dir
+user32 = ctypes.windll.User32
+
+# 判断是否已锁屏
+def is_screen_locked():
+    return user32.GetForegroundWindow() == 0
+
+# 判断是否正在休眠
+def is_system_awake():
+    try:
+        return user32.GetLastInputInfo() == 0
+    except Exception:
+        return True
 
 
 # 索引文件
@@ -92,29 +105,32 @@ last_screenshot_array = None
 # 每隔一段截图对比是否屏幕内容缺少变化
 def monitor_compare_screenshot(screentime_detect_stop_event):
     while not screentime_detect_stop_event.is_set():
-        try:
-            global monitor_change_rank
-            global last_screenshot_array
-            similarity = None
+        if is_screen_locked() or not is_system_awake():
+            print("Screen locked / System not awaked")
+        else:
+            try:
+                global monitor_change_rank
+                global last_screenshot_array
+                similarity = None
 
-            while(True):
-                screenshot = pyautogui.screenshot()
-                screenshot_array = np.array(screenshot)
+                while(True):
+                    screenshot = pyautogui.screenshot()
+                    screenshot_array = np.array(screenshot)
 
-                if last_screenshot_array is not None:
-                    similarity = maintainManager.compare_image_similarity_np(last_screenshot_array,screenshot_array)
+                    if last_screenshot_array is not None:
+                        similarity = maintainManager.compare_image_similarity_np(last_screenshot_array,screenshot_array)
 
-                    if similarity > 0.9: #对比检测阈值
-                        monitor_change_rank += 0.5
-                    else:
-                        monitor_change_rank = 0
+                        if similarity > 0.9: #对比检测阈值
+                            monitor_change_rank += 0.5
+                        else:
+                            monitor_change_rank = 0
 
-                last_screenshot_array = screenshot_array.copy()
-                print(f"----monitor_change_rank:{monitor_change_rank},similarity:{similarity}")
-                time.sleep(30)
-        except Exception as e:
-            print("--Error occurred:",str(e))
-            monitor_change_rank = 0
+                    last_screenshot_array = screenshot_array.copy()
+                    print(f"----monitor_change_rank:{monitor_change_rank},similarity:{similarity}")
+                    time.sleep(30)
+            except Exception as e:
+                print("--Error occurred:",str(e))
+                monitor_change_rank = 0
         
         screentime_detect_stop_event.wait(5)
 
