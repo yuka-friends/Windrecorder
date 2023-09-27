@@ -224,13 +224,13 @@ def save_dataframe_to_path(dataframe, file_path="catch/temp.csv"):
 
     参数:
     dataframe (pandas.DataFrame): 要保存的DataFrame数据
-    file_path (str): 要保存到的文件路径（默认为catch）
+    file_path (str): 要保存到的文件路径 默认为catch
 
     返回:
     无
     """
     dataframe.to_csv(file_path, index=False)  # 使用to_csv()方法将DataFrame保存为CSV文件（可根据需要选择其他文件格式）
-    print("DataFrame数据已保存到路径：", file_path)
+    print("DataFrame数据已保存到路径 ", file_path)
 
 
 # 从csv文件读取dataframe
@@ -239,7 +239,7 @@ def read_dataframe_from_path(file_path="catch/temp.csv"):
     从指定路径读取数据到DataFrame
 
     参数:
-    file_path (str): 要读取数据的文件路径（默认为catch）
+    file_path (str): 要读取数据的文件路径 默认为catch
 
     返回:
     pandas.DataFrame: 读取到的DataFrame数据
