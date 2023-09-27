@@ -211,8 +211,8 @@ def get_show_month_data_state(stat_select_month_datetime:datetime.datetime):
 
     # 检查磁盘上有无统计缓存，然后检查是否过时
         if os.path.exists(df_filepath):   # 存在
-            if df_file_name[:7] == datetime.datetime.today().strftime("%Y-%m"):   # 如果未当下的数据
-                if files.is_file_modified_recently(df_filepath, time_gap=120):   # 超过120分钟未更新，过时 重新生成
+            if df_file_name[:7] == datetime.datetime.today().strftime("%Y-%m"):   # 如果是当下月的数据
+                if not files.is_file_modified_recently(df_filepath, time_gap=120):   # 超过120分钟未更新，过时 重新生成
                     # 更新操作
                     with st.spinner("更新本月统计中……"):
                         st.session_state.df_month_stat = state.get_month_data_overview(stat_select_month_datetime)
@@ -242,7 +242,7 @@ def get_show_year_data_state(stat_select_year_datetime:datetime.datetime):
 
     # 检查磁盘上有无统计缓存，然后检查是否过时
         if os.path.exists(df_filepath):   # 存在
-            if files.is_file_modified_recently(df_filepath, time_gap=3000):   # 超过3000分钟未更新，过时 重新生成
+            if not files.is_file_modified_recently(df_filepath, time_gap=3000):   # 超过3000分钟未更新，过时 重新生成
                 # 更新操作
                 with st.spinner("更新本年统计中……"):
                     st.session_state.df_year_stat = state.get_year_data_overview(stat_select_year_datetime)
