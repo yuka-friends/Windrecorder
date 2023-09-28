@@ -110,6 +110,23 @@ def is_file_modified_recently(file_path, time_gap=30):
         return True
 
 
+# 对比A文件是否比B文件新（新的文件时间戳大 -> 结果为正）
+def is_fileA_modified_newer_than_fileB(file_path_A, file_path_B):
+    # time_gap 为 minutes
+    # 获取文件的修改时间戳
+    modified_timestamp_A = os.path.getmtime(file_path_A)
+    modified_timestamp_B = os.path.getmtime(file_path_B)
+
+    # 计算时间差
+    time_diff_minutes = (modified_timestamp_A - modified_timestamp_B)/60
+    print(time_diff_minutes)
+
+    if time_diff_minutes > 0:
+        return True, time_diff_minutes
+    else:
+        return False, time_diff_minutes
+
+
 # 取得文件夹下所有文件名并返回文件名列表、完整文件目录列表
 def get_file_path_list(dir):
     if os.path.exists(dir):
@@ -161,9 +178,9 @@ def get_db_file_path_dict(db_dir=config.db_path, user_name=config.user_name):
         # 目录为空
         return None
     else:
-        # 去除非当前用户的内容
+        # 去除非当前用户且临时使用的内容
         for file in db_list:
-            if not file.startswith(user_name):
+            if not file.startswith(user_name) or file.endswith("_TEMP_READ.db"):
                 db_list.remove(file)
 
         db_list_datetime = [extract_date_from_db_filename(file) for file in db_list]
@@ -172,7 +189,6 @@ def get_db_file_path_dict(db_dir=config.db_path, user_name=config.user_name):
 
         items = zip(db_list, db_list_datetime)   # 使用zip将两个列表打包成元组的列表
         db_dict = dict(items)   # 将zip结果转换为字典
-        # return list(db_list),list(db_list_datetime)
         return db_dict
 
 

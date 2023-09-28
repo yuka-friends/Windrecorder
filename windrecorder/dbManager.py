@@ -4,6 +4,7 @@ import json
 import datetime
 import math
 from itertools import product
+import shutil
 
 import pandas as pd
 import numpy as np
@@ -158,7 +159,8 @@ class DBManager:
         df_all = pd.DataFrame()
         row_count = 0
         for key in query_db_name_list:
-            db_filepath = os.path.join(self.db_path, key)   # 构建完整路径
+            db_filepath_origin = os.path.join(self.db_path, key)   # 构建完整路径
+            db_filepath = self.get_temp_dbfilepath(db_filepath_origin)   # 检查/创建临时查询用的数据库
             print(f"- Querying {db_filepath}")
 
             conn = sqlite3.connect(db_filepath)   # 连接数据库
@@ -283,7 +285,8 @@ class DBManager:
         # 遍历结果行,打印出每一行
         full_db_name_ondisk_dict = files.get_db_file_path_dict()
         for key, value in full_db_name_ondisk_dict.items():
-            db_filepath = os.path.join(self.db_path, key)
+            db_filepath_origin = os.path.join(self.db_path, key)
+            db_filepath = self.get_temp_dbfilepath(db_filepath_origin)
 
             conn = sqlite3.connect(db_filepath)
             c = conn.cursor()
@@ -300,7 +303,8 @@ class DBManager:
         full_db_name_ondisk_dict = files.get_db_file_path_dict()
         rows_count_all = 0
         for key, value in full_db_name_ondisk_dict.items():
-            db_filepath = os.path.join(self.db_path, key)
+            db_filepath_origin = os.path.join(self.db_path, key)
+            db_filepath = self.get_temp_dbfilepath(db_filepath_origin)
             conn = sqlite3.connect(db_filepath)
             c = conn.cursor()
             c.execute("SELECT COUNT(*) FROM video_text")
@@ -316,7 +320,8 @@ class DBManager:
     def db_latest_record_time(self):
         full_db_name_ondisk_dict = files.get_db_file_path_dict()
         db_name_ondisk_lastest = files.get_lastest_datetime_key(full_db_name_ondisk_dict)
-        db_filepath = os.path.join(self.db_path, db_name_ondisk_lastest)
+        db_filepath_origin = os.path.join(self.db_path, db_name_ondisk_lastest)
+        db_filepath = self.get_temp_dbfilepath(db_filepath_origin)
 
         conn = sqlite3.connect(db_filepath)
         c = conn.cursor()
@@ -331,7 +336,8 @@ class DBManager:
     def db_first_earliest_record_time(self):
         full_db_name_ondisk_dict = files.get_db_file_path_dict()
         db_name_ondisk_lastest = files.get_earliest_datetime_key(full_db_name_ondisk_dict)
-        db_filepath = os.path.join(self.db_path, db_name_ondisk_lastest)
+        db_filepath_origin = os.path.join(self.db_path, db_name_ondisk_lastest)
+        db_filepath = self.get_temp_dbfilepath(db_filepath_origin)
 
         conn = sqlite3.connect(db_filepath)
         c = conn.cursor()
@@ -446,6 +452,28 @@ class DBManager:
             result = [input_str]
 
         return result
+    
+
+    # 所有读的操作都访问已复制的临时数据库，不与原有数据库冲突
+    def get_temp_dbfilepath(self, db_filepath):
+        db_filename = os.path.basename(db_filepath)
+        if not db_filename.endswith("_TEMP_READ.db"):
+            db_filename_temp = os.path.splitext(db_filename)[0] + "_TEMP_READ.db"   # 创建临时文件名
+            filepath_temp_read = os.path.join(self.db_path, db_filename_temp)   # 读取的临时路径
+            if os.path.exists(filepath_temp_read):   # 检测是否已存在临时数据库
+                # 是，检查同根数据库是否更新，阈值为大于5分钟
+                db_origin_newer,db_timestamp_diff = files.is_fileA_modified_newer_than_fileB(db_filepath, filepath_temp_read)
+                if db_origin_newer and db_timestamp_diff > 5:
+                    # 过时了，复制创建一份
+                    shutil.copy2(db_filepath, filepath_temp_read)   # 保留原始文件的修改时间以更好地对比策略
+            else:
+                # 不存在临时数据库，复制创建一份
+                shutil.copy2(db_filepath, filepath_temp_read)
+            return filepath_temp_read   # 返回临时路径
+        else:
+            return db_filepath
+
+
 
     
 
