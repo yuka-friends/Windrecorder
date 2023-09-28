@@ -8,7 +8,7 @@ from pyshortcuts import make_shortcut
 # 检测是否正在录屏
 def is_recording():
     try:
-        with open("LOCK_FILE_RECORD.MD", encoding='utf-8') as f:
+        with open("catch\\LOCK_FILE_RECORD.MD", encoding='utf-8') as f:
             check_pid = int(f.read())
 
         check_result = subprocess.run(['tasklist'], stdout=subprocess.PIPE, text=True)

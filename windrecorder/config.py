@@ -75,7 +75,7 @@ class Config:
 
 
 config_name = 'config_user.json'
-config_name_default = 'config_default.json'
+config_name_default = 'src\\config_default.json'
 config_dir = 'config'
 config_path = os.path.join(config_dir,config_name)
 

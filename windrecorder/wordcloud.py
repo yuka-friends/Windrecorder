@@ -24,7 +24,7 @@ def read_stopwords(filename):
     return stopwords
 
 
-stopwords = read_stopwords("config/wordcloud_stopword.txt")
+stopwords = read_stopwords("config\\src\\wordcloud_stopword.txt")
 
 
 # 生成词云

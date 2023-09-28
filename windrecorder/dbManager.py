@@ -424,7 +424,7 @@ class DBManager:
     
 
     # 相似的单个中文字符查找
-    def find_similar_ch_characters(self, input_str, file_path="config/similar_CN_characters.txt"):
+    def find_similar_ch_characters(self, input_str, file_path="config\\src\\similar_CN_characters.txt"):
         similar_chars = []
 
         with open(file_path, 'r', encoding='utf-8') as file:

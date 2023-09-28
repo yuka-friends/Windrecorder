@@ -38,7 +38,7 @@ def index_video_data(video_saved_dir,vid_file_name):
     full_path = os.path.join(video_saved_dir,vid_file_name)
     if os.path.exists(full_path):
         print(f"--{full_path} existed. Start ocr processing.")
-        maintainManager.ocr_process_single_video(video_saved_dir, vid_file_name, "i_frames")
+        maintainManager.ocr_process_single_video(video_saved_dir, vid_file_name, "catch\\i_frames")
 
 
 # 录制屏幕
@@ -81,7 +81,7 @@ def record_screen(
     # 执行命令        
     try:
         # 添加服务监测信息
-        with open("LOCK_FILE_RECORD.MD", 'w', encoding='utf-8') as f:
+        with open("catch\\LOCK_FILE_RECORD.MD", 'w', encoding='utf-8') as f:
             f.write(str(getpid()))
         print("---Start Recording via FFmpeg")
         # 运行ffmpeg

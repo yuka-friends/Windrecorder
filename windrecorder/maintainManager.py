@@ -6,7 +6,7 @@ import datetime
 
 import cv2
 import numpy as np
-from chineseocr_lite_onnx.model import OcrHandle
+from ocr_lib.chineseocr_lite_onnx.model import OcrHandle
 import win32file
 import pyautogui
 from send2trash import send2trash
@@ -61,7 +61,7 @@ def extract_iframe(video_file, iframe_interval=4000):
 
         if frame_cnt % frame_step == 0:
             print("frame_cnt:" + str(frame_cnt))
-            cv2.imwrite('i_frames/%d.jpg' % frame_cnt, frame)
+            cv2.imwrite('catch\\i_frames\\%d.jpg' % frame_cnt, frame)
 
         frame_cnt += 1
 
@@ -106,7 +106,7 @@ def ocr_image_ms(img_input):
     print("——OCR文本.MS")
     text = ""
     # 调用Windows.Media.Ocr.Cli.exe,参数为图片路径
-    command = ['Windows.Media.Ocr.Cli.exe', img_input]
+    command = ['ocr_lib\\Windows.Media.Ocr.Cli.exe', img_input]
 
     proc = subprocess.run(command, capture_output=True)
     encodings_try = ['gbk', 'utf-8']  # 强制兼容
@@ -187,8 +187,8 @@ def compare_image_similarity_np(img1, img2):
     keypoints1, descriptors1 = orb.detectAndCompute(gray_img1, None)
     keypoints2, descriptors2 = orb.detectAndCompute(gray_img2, None)
 
-    print("-----debug:descriptors1.dtype, descriptors1.shape",descriptors1.dtype, descriptors1.shape)
-    print("-----debug:descriptors2.dtype, descriptors2.shape",descriptors2.dtype, descriptors2.shape)
+    # print("-----debug:descriptors1.dtype, descriptors1.shape",descriptors1.dtype, descriptors1.shape)
+    # print("-----debug:descriptors2.dtype, descriptors2.shape",descriptors2.dtype, descriptors2.shape)
 
     # 初始化一个暴力匹配器
     matcher = cv2.BFMatcher(cv2.NORM_HAMMING, crossCheck=True)
@@ -399,7 +399,7 @@ def maintain_manager_main():
     db_filename = config.db_filename
     db_filepath = os.path.join(db_path, db_filename)
     record_videos_dir = config.record_videos_dir
-    i_frames_dir = 'i_frames'
+    i_frames_dir = 'catch\\i_frames'
 
     if not os.path.exists(i_frames_dir):
         os.mkdir(i_frames_dir)

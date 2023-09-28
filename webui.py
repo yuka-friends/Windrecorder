@@ -30,7 +30,7 @@ reset_button_key = "setting_reset"
 # python -m streamlit run webui.py
 
 # 获取i18n表，调用方式为 d_lang[config.lang]["key"].format(var=var, var=var)
-with open("languages.json", encoding='utf-8') as f:
+with open("config\\src\\languages.json", encoding='utf-8') as f:
     d_lang = json.load(f)
 lang_map = d_lang['lang_map']
 
