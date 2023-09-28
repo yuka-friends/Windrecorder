@@ -70,6 +70,44 @@ class Config:
     
 
 
+
+
+
+
+config_name = 'config_user.json'
+config_name_default = 'config_default.json'
+config_dir = 'config'
+config_path = os.path.join(config_dir,config_name)
+
+
+
+
+
+
+# 从default config中更新user config（升级用）
+def update_config_files_from_default_to_user(
+        a_path = os.path.join(config_dir, config_name_default), 
+        b_path =  os.path.join(config_dir, config_name)
+        ):
+    # 读取A.json文件
+    with open(a_path, 'r', encoding='utf-8') as a_file:
+        a_data = json.load(a_file)
+    # 读取B.json文件
+    with open(b_path, 'r', encoding='utf-8') as b_file:
+        b_data = json.load(b_file)
+    # 将A中有的、B中没有的属性从A写入B中
+    for key, value in a_data.items():
+        if key not in b_data:
+            b_data[key] = value
+    # 将A中没有的、B中有的属性从B中删除
+    keys_to_remove = [key for key in b_data.keys() if key not in a_data]
+    for key in keys_to_remove:
+        del b_data[key]
+    # 将更新后的B数据写入B.json文件
+    with open(b_path, 'w', encoding='utf-8') as b_file:
+        json.dump(b_data, b_file, indent=2, ensure_ascii=False)
+    
+
 def initialize_config():
     if not os.path.exists(config_path):
         print(f"-未找到用户配置文件，将进行创建。")
@@ -78,15 +116,15 @@ def initialize_config():
 
 
 def get_config_json():
+    update_config_files_from_default_to_user()
     initialize_config()
     with open(config_path, 'r', encoding='utf-8') as f:
         config_json = json.load(f)
     return config_json
 
+
+
     
-config_name = 'config_user.json'
-config_name_default = 'config_default.json'
-config_dir = 'config'
-config_path = os.path.join(config_dir,config_name)
+
 
 config = Config(**get_config_json())
