@@ -201,7 +201,7 @@ class DBManager:
             
 
             # 是否排除关键词
-            if keyword_input_exclude:
+            if keyword_input_exclude and not keyword_input_exclude.isspace():
                 query += " AND "
                 keywords_exclude = keyword_input_exclude.split()
                 conditions = []
