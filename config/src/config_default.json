@@ -16,6 +16,7 @@
     "一天之时",
     "OneDay"
   ],
+  "ocr_image_crop_URBL": [6,6,6,3],
   "vid_store_day": 90,
   "vid_compress_day": 30,
   "OCR_index_strategy": 1,

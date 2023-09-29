@@ -10,6 +10,7 @@ from ocr_lib.chineseocr_lite_onnx.model import OcrHandle
 import win32file
 import pyautogui
 from send2trash import send2trash
+from PIL import Image
 
 from windrecorder.utils import empty_directory, date_to_seconds, seconds_to_date
 from windrecorder.dbManager import DBManager
@@ -66,6 +67,49 @@ def extract_iframe(video_file, iframe_interval=4000):
         frame_cnt += 1
 
     cap.release()
+
+
+# 根据config配置裁剪图片
+def crop_iframe(directory):
+    # 检查目录是否存在
+    files.check_and_create_folder(directory)
+    top_percent = config.ocr_image_crop_URBL[0] * 0.01
+    bottom_percent = config.ocr_image_crop_URBL[1] * 0.01
+    left_percent = config.ocr_image_crop_URBL[2] * 0.01
+    right_percent = config.ocr_image_crop_URBL[3] * 0.01
+
+    # 获取目录下所有图片文件
+    image_files = [f for f in os.listdir(directory) if f.endswith(('.jpg', '.jpeg', '.png'))]
+
+    # 循环处理每个图片文件
+    for file_name in image_files:
+        # 构建图片文件的完整路径
+        file_path = os.path.join(directory, file_name)
+
+        # 打开图片文件
+        image = Image.open(file_path)
+
+        # 获取图片的原始尺寸
+        width, height = image.size
+
+        # 计算裁剪区域的像素值
+        top = int(height * top_percent)
+        bottom = int(height * (1 - bottom_percent))
+        left = int(width * left_percent)
+        right = int(width * (1 - right_percent))
+
+        # 裁剪图片
+        cropped_image = image.crop((left, top, right, bottom))
+
+        # 保存裁剪后的图片
+        # cropped_file_path = os.path.splitext(file_path)[0] + '_cropped' + os.path.splitext(file_path)[1]
+        cropped_file_path = file_path
+        cropped_image.save(cropped_file_path)
+
+        # 关闭图片文件
+        image.close()
+
+        print(f"已保存裁剪后的图片: {cropped_file_path}")
 
 
 # OCR 分流器
@@ -258,6 +302,8 @@ def ocr_process_single_video(video_path, vid_file_name, iframe_path):
 
     # - 提取i帧
     extract_iframe(file_path)
+    # 裁剪图片
+    crop_iframe('catch\\i_frames')
 
     img1_path_temp = ""
     img2_path_temp = ""

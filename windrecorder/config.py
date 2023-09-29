@@ -23,6 +23,7 @@ class Config:
         timeline_result_dir,
         user_name,
         use_similar_ch_char_to_search,
+        ocr_image_crop_URBL,
         **other_field
     ) -> None:
         self.db_path = db_path
@@ -44,6 +45,7 @@ class Config:
         self.timeline_result_dir = timeline_result_dir
         self.user_name = user_name
         self.use_similar_ch_char_to_search = use_similar_ch_char_to_search
+        self.ocr_image_crop_URBL = ocr_image_crop_URBL
     
     def set_and_save_config(self, attr: str, value):
         if not hasattr(self, attr):

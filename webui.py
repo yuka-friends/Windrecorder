@@ -13,6 +13,7 @@ import streamlit as st
 from streamlit.runtime.scriptrunner import add_script_run_ctx
 import pandas as pd
 from PIL import Image
+import pyautogui
 
 from windrecorder.dbManager import DBManager
 from windrecorder.oneday import OneDay
@@ -276,6 +277,37 @@ def check_ocr_engine():
         config_ocr_engine_choice_index = 0
     elif config.ocr_engine == "ChineseOCR_lite_onnx":
         config_ocr_engine_choice_index = 1
+
+
+# 调整屏幕忽略范围的设置可视化
+def screen_ignore_padding(topP,rightP,bottomP,leftP,use_screenshot = False):
+    image_padding_refer = Image.open("__assets__\\setting-crop-refer-pure.png")
+
+    if use_screenshot:
+        image_padding_refer = pyautogui.screenshot()
+        image_padding_refer_width, image_padding_refer_height = image_padding_refer.size
+        image_padding_refer_height = int(350 * image_padding_refer_height / image_padding_refer_width)
+        image_padding_refer = image_padding_refer.resize((350,image_padding_refer_height))
+        image_padding_refer_fade = Image.new('RGBA', (350, 200), (235, 235, 235, 150))
+        image_padding_refer.paste(image_padding_refer_fade, (0,0), image_padding_refer_fade)
+
+    image_padding_refer_width, image_padding_refer_height = image_padding_refer.size
+    topP_height = round(image_padding_refer_height * topP * 0.01)
+    bottomP_height = round(image_padding_refer_height * bottomP * 0.01)
+    leftP_width = round(image_padding_refer_width * leftP * 0.01)
+    rightP_width = round(image_padding_refer_width * rightP * 0.01)
+
+    image_color_area = Image.new('RGBA', (image_padding_refer_width, topP_height), (100, 0, 255, 80))
+    image_padding_refer.paste(image_color_area, (0, 0),image_color_area)
+    image_color_area = Image.new('RGBA', (image_padding_refer_width, bottomP_height), (100, 0, 255, 80))
+    image_padding_refer.paste(image_color_area, (0, image_padding_refer_height-bottomP_height),image_color_area)
+    image_color_area = Image.new('RGBA', (leftP_width, image_padding_refer_height), (100, 0, 255, 80))
+    image_padding_refer.paste(image_color_area, (0, 0),image_color_area)
+    image_color_area = Image.new('RGBA', (rightP_width, image_padding_refer_height), (100, 0, 255, 80))
+    image_padding_refer.paste(image_color_area, (image_padding_refer_width-rightP_width, 0),image_color_area)
+
+    return image_padding_refer
+
 
 
 # 更改语言
@@ -900,29 +932,42 @@ with tab5:
                 st.session_state.update_button_disabled = False
                 st.button(d_lang[config.lang]["tab_setting_db_btn_gotit"], key=reset_button_key)
 
+        st.divider()
+        col1pb, col2pb = st.columns([1,1])
+        with col1pb:
+            st.markdown("**OCR 时忽略屏幕四边的区域范围**",help="填入数字为百分比，比如'6' == 6%")
+        with col2pb:
+            st.session_state.ocr_screenshot_refer_used = st.checkbox("using screenshot as refer",False)
+
+        if 'ocr_padding_top' not in st.session_state:
+            st.session_state.ocr_padding_top = config.ocr_image_crop_URBL[0]
+        if 'ocr_padding_right' not in st.session_state:
+            st.session_state.ocr_padding_right = config.ocr_image_crop_URBL[1]
+        if 'ocr_padding_bottom' not in st.session_state:
+            st.session_state.ocr_padding_bottom = config.ocr_image_crop_URBL[2]
+        if 'ocr_padding_left' not in st.session_state:
+            st.session_state.ocr_padding_left = config.ocr_image_crop_URBL[3]
+
+        col1pa, col2pa, col3pa = st.columns([.5,.5,1])
+        with col1pa:
+            st.session_state.ocr_padding_top = st.number_input("Up Padding",value=st.session_state.ocr_padding_top,min_value=0,max_value=40)
+            st.session_state.ocr_padding_bottom = st.number_input("Down Padding",value=st.session_state.ocr_padding_bottom,min_value=0,max_value=40)
+            
+        with col2pa:
+            st.session_state.ocr_padding_left = st.number_input("Left Padding",value=st.session_state.ocr_padding_left,min_value=0,max_value=40)
+            st.session_state.ocr_padding_right = st.number_input("Right Padding",value=st.session_state.ocr_padding_right,min_value=0,max_value=40)
+        with col3pa:
+            image_setting_crop_refer = screen_ignore_padding(
+                st.session_state.ocr_padding_top, 
+                st.session_state.ocr_padding_right, 
+                st.session_state.ocr_padding_bottom, 
+                st.session_state.ocr_padding_left,
+                use_screenshot=st.session_state.ocr_screenshot_refer_used)
+            st.image(image_setting_crop_refer)
+            
+
 
         st.divider()
-
-        # # 自动化维护选项 WIP
-        # st.markdown(d_lang[config.lang]["tab_setting_maintain_title"])
-        # ocr_strategy_option_dict = {
-        #     "不自动更新，仅手动更新":0,
-        #     "视频切片录制完毕时自动索引（推荐）":1
-        # }
-        # ocr_strategy_option = st.selectbox('OCR 索引策略',
-        #              (list(ocr_strategy_option_dict.keys())),
-        #              index=config.OCR_index_strategy
-        #              )
-        
-        # st.write("WIP")
-        # col1c,col2c = st.columns([1,1])
-        # with col1c:
-        #     vid_store_day = st.number_input(d_lang[config.lang]["tab_setting_m_vid_store_time"], min_value=1, value=config.vid_store_day)
-        # with col2c:
-        #     st.number_input("原视频在保留几天后进行二次压缩（0 为永不压缩）",value=10,min_value=0)
-
-        # st.divider()
-
 
         # 界面设置组
         st.markdown(d_lang[config.lang]["tab_setting_ui_title"])
@@ -951,6 +996,7 @@ with tab5:
             config.set_and_save_config("exclude_words",utils.string_to_list(exclude_words))
             config.set_and_save_config("show_oneday_wordcloud",option_show_oneday_wordcloud)
             config.set_and_save_config("use_similar_ch_char_to_search",config_use_similar_ch_char_to_search)
+            config.set_and_save_config("ocr_image_crop_URBL",[st.session_state.ocr_padding_top, st.session_state.ocr_padding_right, st.session_state.ocr_padding_bottom, st.session_state.ocr_padding_left])
             st.toast("已应用更改。", icon="🦝")
             time.sleep(2)
             st.experimental_rerun()
