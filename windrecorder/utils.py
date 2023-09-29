@@ -265,7 +265,9 @@ def is_str_contain_list_word(string, list_items):
 
 # 乱码清洗策略
 def clean_dirty_text(text):
-    text = delete_short_lines(text)
+    text = wrap_text_by_symbol(text)
+    text = merge_short_lines(text)
+
     return text
 
 # 移除少于数个字符的行
@@ -274,5 +276,39 @@ def delete_short_lines(text,less_than = 6):
     filtered_lines = [line for line in lines if len(line) >= less_than]  # 仅保留长度大于等于6的行
     adjusted_text = '\n'.join(filtered_lines)  # 将过滤后的行重新连接成字符串
     return adjusted_text
+
+# 合并少于数个字符的行
+def merge_short_lines(text,less_than = 20):
+    lines = re.split(r'[\n\r]+', text)
+    # lines = text.split('\n')
+    merged_lines = [lines[0]]
+
+    for line in lines[1:]:
+        if len(line) <= less_than:
+            merged_lines[-1] += line
+        else:
+            merged_lines.append(line)
+
+    merged_text = '\n'.join(merged_lines)
+    return merged_text
+
+# 根据符号进行换行
+def wrap_text_by_symbol(text):
+    symbol_list = ["。","！","？","）","，","．"]
+    text = text.replace('\n', ' ')
+    text = text.replace('\r', ' ')
+    for symbol in symbol_list:
+        text = text.replace(symbol, symbol + '\n')  # 将符号替换为换行符+符号
+
+    # 使用正则表达式匹配中文字符之间的空格，并移除
+    pattern = re.compile(r'([\u4e00-\u9fa5]+)\s+([\u4e00-\u9fa5]+)')
+    result = re.sub(pattern, r'\1\2', text)
+
+    return text
+
+
+
+
+
 
 

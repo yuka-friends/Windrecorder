@@ -809,9 +809,32 @@ with tab4:
 
         screentime_not_change_to_pause_record = st.number_input('当画面几分钟没有变化时，暂停录制下个视频切片（0为永不暂停）（需重新启动录制脚本才能应用该项）', value=config.screentime_not_change_to_pause_record, min_value=0)
 
+        st.divider()
+
+        # 自动化维护选项 WIP
+        st.markdown(d_lang[config.lang]["tab_setting_maintain_title"])
+        ocr_strategy_option_dict = {
+            "不自动更新，仅手动更新":0,
+            "视频切片录制完毕时自动索引（推荐）":1
+        }
+        ocr_strategy_option = st.selectbox('OCR 索引策略',
+                     (list(ocr_strategy_option_dict.keys())),
+                     index=config.OCR_index_strategy
+                     )
+        
+        st.write("WIP")
+        col1d,col2d = st.columns([1,1])
+        with col1d:
+            vid_store_day = st.number_input(d_lang[config.lang]["tab_setting_m_vid_store_time"], min_value=1, value=config.vid_store_day)
+        with col2d:
+            st.number_input("原视频在保留几天后进行二次压缩（0 为永不压缩）",value=10,min_value=0)
+
+        st.divider()
 
         if st.button('Save and Apple All Change / 保存并应用所有更改', type="primary",key="SaveBtnRecord"):
             config.set_and_save_config("screentime_not_change_to_pause_record",screentime_not_change_to_pause_record)
+            config.set_and_save_config("OCR_index_strategy",ocr_strategy_option_dict[ocr_strategy_option])
+            config.set_and_save_config("vid_store_day",vid_store_day)
             st.toast("已应用更改。", icon="🦝")
             time.sleep(2)
             st.experimental_rerun()
@@ -825,6 +848,7 @@ def update_database_clicked():
     st.session_state.update_button_disabled = True
 
 
+# 设置页
 with tab5:
     st.markdown(d_lang[config.lang]["tab_setting_title"])
 
@@ -879,25 +903,25 @@ with tab5:
 
         st.divider()
 
-        # 自动化维护选项 WIP
-        st.markdown(d_lang[config.lang]["tab_setting_maintain_title"])
-        ocr_strategy_option_dict = {
-            "不自动更新，仅手动更新":0,
-            "视频切片录制完毕时自动索引（推荐）":1
-        }
-        ocr_strategy_option = st.selectbox('OCR 索引策略',
-                     (list(ocr_strategy_option_dict.keys())),
-                     index=config.OCR_index_strategy
-                     )
+        # # 自动化维护选项 WIP
+        # st.markdown(d_lang[config.lang]["tab_setting_maintain_title"])
+        # ocr_strategy_option_dict = {
+        #     "不自动更新，仅手动更新":0,
+        #     "视频切片录制完毕时自动索引（推荐）":1
+        # }
+        # ocr_strategy_option = st.selectbox('OCR 索引策略',
+        #              (list(ocr_strategy_option_dict.keys())),
+        #              index=config.OCR_index_strategy
+        #              )
         
-        st.write("WIP")
-        col1c,col2c = st.columns([1,1])
-        with col1c:
-            vid_store_day = st.number_input(d_lang[config.lang]["tab_setting_m_vid_store_time"], min_value=1, value=config.vid_store_day)
-        with col2c:
-            st.number_input("原视频在保留几天后进行二次压缩（0 为永不压缩）",value=10,min_value=0)
+        # st.write("WIP")
+        # col1c,col2c = st.columns([1,1])
+        # with col1c:
+        #     vid_store_day = st.number_input(d_lang[config.lang]["tab_setting_m_vid_store_time"], min_value=1, value=config.vid_store_day)
+        # with col2c:
+        #     st.number_input("原视频在保留几天后进行二次压缩（0 为永不压缩）",value=10,min_value=0)
 
-        st.divider()
+        # st.divider()
 
 
         # 界面设置组
@@ -922,8 +946,6 @@ with tab5:
 
         if st.button('Save and Apple All Change / 保存并应用所有更改', type="primary",key="SaveBtnGeneral"):
             config_set_lang(language_option)
-            config.set_and_save_config("OCR_index_strategy",ocr_strategy_option_dict[ocr_strategy_option])
-            config.set_and_save_config("vid_store_day",vid_store_day)
             config.set_and_save_config("max_page_result", config_max_search_result_num)
             config.set_and_save_config("ocr_engine", config_ocr_engine)
             config.set_and_save_config("exclude_words",utils.string_to_list(exclude_words))
