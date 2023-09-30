@@ -8,7 +8,10 @@ import subprocess
 import threading
 from pathlib import Path
 import builtins
+import base64
+from io import BytesIO
 
+import cv2
 import streamlit as st
 from streamlit.runtime.scriptrunner import add_script_run_ctx
 import pandas as pd
@@ -204,6 +207,12 @@ def draw_dataframe(df,heightIn=800):
         },
         height=heightIn
     )
+
+
+# 显示时间轴
+def render_daily_timeline_html(image_b64):
+    st.markdown(f"<img style='max-width: 95%;max-height: 100%;margin: 0 0px 5px 50px' src='data:image/png;base64, {image_b64}'/>", unsafe_allow_html=True)
+
 
 
 # 生成并显示每月数据量概览
@@ -534,7 +543,8 @@ with tab1:
         # 展示时间轴缩略图
         if get_generate_result:
             image_thumbnail = Image.open(current_day_TL_img_path)
-            st.image(image_thumbnail,use_column_width="always")
+            render_daily_timeline_html(utils.image_to_base64(current_day_TL_img_path))
+            # st.image(image_thumbnail,use_column_width="always")
         else:
             st.markdown(f"<p align='center' style='color:rgba(0,0,0,.3)'> 当日缩略图数量不足以生成时间轴。 </p>", unsafe_allow_html=True)
 
