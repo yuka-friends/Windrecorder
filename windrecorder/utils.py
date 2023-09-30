@@ -253,7 +253,10 @@ def list_to_string(lst):
 
 # 将字符串转换为列表  
 def string_to_list(string):
-  return string.split(", ")
+  string = string.replace("，", ",")
+  string = string.replace("、", ",")
+  split_list = [item.strip() for item in string.split(',')]
+  return split_list
 
 
 # 判断字符串是否包含列表内的元素

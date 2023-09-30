@@ -25,8 +25,7 @@ def read_stopwords(filename):
     return stopwords
 
 
-stopwords = read_stopwords("config\\src\\wordcloud_stopword.txt")
-
+stopwords = read_stopwords("config\\src\\wordcloud_stopword.txt") + config.wordcloud_user_stop_words
 
 # 生成词云
 def generate_word_cloud_pic(text_file_path,img_save_path,mask_img="month"):
@@ -55,7 +54,7 @@ def generate_word_cloud_pic(text_file_path,img_save_path,mask_img="month"):
         max_font_size = 150
         max_words = 200
     mask = np.array(img) #将图片转换为数组
-
+    
     wc = WordCloud(font_path="msyh.ttc",
                    mask=mask,
                    width = img_width,

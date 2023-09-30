@@ -351,7 +351,7 @@ def web_footer_state():
                                                         videos_file_size = st.session_state.footer_videos_file_size,
                                                         videos_files_count = st.session_state.footer_videos_files_count))
     with col2:
-        st.markdown(f"<p align='right' style='color:rgba(0,0,0,.5)'>  Windrecorder 🦝 </p>", unsafe_allow_html=True)
+        st.markdown(f"<h2 align='right' style='color:rgba(0,0,0,.3)'> Windrecorder 🦝</h2>", unsafe_allow_html=True)
 
 
 
@@ -991,12 +991,14 @@ with tab5:
         st.divider()
 
         # 界面设置组
-        st.markdown(d_lang[config.lang]["tab_setting_ui_title"])
-
-        option_show_oneday_wordcloud = st.checkbox("在「一天之时」下展示每日词云",value=config.show_oneday_wordcloud)
-
-        # 使用中文形近字进行搜索
-        config_use_similar_ch_char_to_search = st.checkbox("使用中文形近字进行搜索",value=config.use_similar_ch_char_to_search)
+        col1_ui, col2_ui = st.columns([1,1])
+        with col1_ui:
+            st.markdown(d_lang[config.lang]["tab_setting_ui_title"])
+            option_show_oneday_wordcloud = st.checkbox("在「一天之时」下展示每日词云",value=config.show_oneday_wordcloud)
+            # 使用中文形近字进行搜索
+            config_use_similar_ch_char_to_search = st.checkbox("使用中文形近字进行搜索",value=config.use_similar_ch_char_to_search)
+        with col2_ui:
+            config_wordcloud_user_stop_words = st.text_area("在词云生成中过滤以下词语：", help="待补充", value=utils.list_to_string(config.wordcloud_user_stop_words))
 
         # 每页结果最大数量
         config_max_search_result_num = st.number_input(d_lang[config.lang]["tab_setting_ui_result_num"], min_value=1,
@@ -1014,10 +1016,11 @@ with tab5:
             config_set_lang(language_option)
             config.set_and_save_config("max_page_result", config_max_search_result_num)
             config.set_and_save_config("ocr_engine", config_ocr_engine)
-            config.set_and_save_config("exclude_words",utils.string_to_list(exclude_words))
+            config.set_and_save_config("exclude_words", utils.string_to_list(exclude_words))
             config.set_and_save_config("show_oneday_wordcloud",option_show_oneday_wordcloud)
             config.set_and_save_config("use_similar_ch_char_to_search",config_use_similar_ch_char_to_search)
             config.set_and_save_config("ocr_image_crop_URBL",[st.session_state.ocr_padding_top, st.session_state.ocr_padding_right, st.session_state.ocr_padding_bottom, st.session_state.ocr_padding_left])
+            config.set_and_save_config("wordcloud_user_stop_words", utils.string_to_list(config_wordcloud_user_stop_words))
             st.toast("已应用更改。", icon="🦝")
             time.sleep(2)
             st.experimental_rerun()

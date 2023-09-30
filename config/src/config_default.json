@@ -16,6 +16,9 @@
     "一天之时",
     "OneDay"
   ],
+  "wordcloud_user_stop_words": [
+    "请","替换","为","不想","统计","在","词云","中","的","词语"
+  ],
   "ocr_image_crop_URBL": [6,6,6,3],
   "vid_store_day": 90,
   "vid_compress_day": 30,
