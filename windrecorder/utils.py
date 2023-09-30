@@ -9,8 +9,11 @@ import time
 import threading
 import re
 import signal
+import base64
+from io import BytesIO
 
 import pyautogui
+from PIL import Image
 
 import windrecorder.files as files
 from windrecorder.config import config
@@ -307,6 +310,19 @@ def wrap_text_by_symbol(text):
     return text
 
 
+# 获得base64输入图片的宽高
+def get_image_dimensions(base64_image):
+    # 解码Base64图像数据
+    image_data = base64.b64decode(base64_image)
+
+    # 将图像数据加载到PIL图像对象中
+    image = Image.open(BytesIO(image_data))
+
+    # 获取图像的宽度和高度
+    width, height = image.size
+
+    # 返回宽度和高度
+    return width, height
 
 
 

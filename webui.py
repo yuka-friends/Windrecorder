@@ -769,19 +769,40 @@ with tab3:
 
     with col2:
         st.markdown("### 记忆摘要")
-        current_month_cloud_img_name = str(st.session_state.stat_Stat_query_Year) + "-" + str(st.session_state.Stat_query_Month) + ".png"
-        current_month_cloud_img_path = os.path.join(config.wordcloud_result_dir,current_month_cloud_img_name)
 
-        if st.button("生成/更新本月词云"):
-            with st.spinner("生成中，大概需要 30s……"):
-                print("生成词云")
-                wordcloud.generate_word_cloud_in_month(utils.datetime_to_seconds(st.session_state.stat_select_month_datetime),current_month_cloud_img_name)
+        col1_mem, col2_mem = st.columns([1,1])
+        with col1_mem:
+            current_month_cloud_img_name = str(st.session_state.stat_Stat_query_Year) + "-" + str(st.session_state.Stat_query_Month) + ".png"
+            current_month_cloud_img_path = os.path.join(config.wordcloud_result_dir,current_month_cloud_img_name)
+
+            if st.button("生成/更新本月词云"):
+                with st.spinner("生成中，大概需要 30s……"):
+                    print("生成词云")
+                    wordcloud.generate_word_cloud_in_month(utils.datetime_to_seconds(st.session_state.stat_select_month_datetime),current_month_cloud_img_name)
+
+            if os.path.exists(current_month_cloud_img_path):
+                image = Image.open(current_month_cloud_img_path)
+                st.image(image,caption=current_month_cloud_img_path)
+            else:
+                st.info("当月未有词云图片。")
+
+        with col2_mem:
+            current_month_lightbox_img_name = str(st.session_state.stat_Stat_query_Year) + "-" + str(st.session_state.Stat_query_Month) + ".png"
+            current_month_lightbox_img_path = os.path.join(config.lightbox_result_dir,current_month_lightbox_img_name)
+
+            if st.button("生成/更新本月的光箱"):
+                with st.spinner("生成中，大概需要 5s……"):
+                    print("生成光箱")
+                    state.generate_month_lightbox(st.session_state.stat_select_month_datetime,img_saved_name=current_month_lightbox_img_name)
             
-        if os.path.exists(current_month_cloud_img_path):
-            image = Image.open(current_month_cloud_img_path)
-            st.image(image,caption=current_month_cloud_img_name)
-        else:
-            st.info("当月未有词云图片。")
+            if os.path.exists(current_month_lightbox_img_path):
+                image = Image.open(current_month_lightbox_img_path)
+                st.image(image,caption=current_month_lightbox_img_path)
+            else:
+                st.info("当月未有光箱图片。")
+                
+
+    
 
 
 

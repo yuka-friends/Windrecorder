@@ -190,7 +190,7 @@ class DBManager:
                     # 输出参考：(ocr_text LIKE '%a1%' AND ocr_text LIKE '%a2%' AND ocr_text LIKE '%a3%') OR (ocr_text LIKE '%b1%' AND ocr_text LIKE '%b2%') OR (ocr_text LIKE '%c%');
 
                 else:
-                    # 不适用相近字形搜索：直接遍历所有空格区分开的关键词
+                    # 不使用相近字形搜索：直接遍历所有空格区分开的关键词
                     conditions = []
                     for keyword in keywords:
                         conditions.append(f"ocr_text LIKE '%{keyword}%'")
@@ -367,10 +367,8 @@ class DBManager:
 
     
     # 获取一个时间段内，按时间戳等均分的几张缩略图
-    def db_get_day_thumbnail(self,date_in,date_out,back_pic_num):
+    def db_get_day_thumbnail_by_timeavg(self,date_in,date_out,back_pic_num):
         df,all_result_counts,_ = self.db_search_data("",date_in,date_out)
-
-        gap_num = int(all_result_counts/back_pic_num)
 
         if all_result_counts < back_pic_num:
             print("-all_result_counts < back_pic_num")
@@ -411,16 +409,22 @@ class DBManager:
 
         return thumbnails_result
 
+
+    # 获取一个时间段内，按数据分布等均分的几张缩略图
+    def db_get_day_thumbnail_by_distributeavg(self,date_in,date_out,back_pic_num):
+        df,all_result_counts,_ = self.db_search_data("",date_in,date_out)
+
+        gap_num = int(all_result_counts/(back_pic_num-1))
+    
         # 平均地获取结果图片，而不是平均地按时间分
         img_list = []
         thumbnails_result = df['thumbnail'].tolist()
         rows = len(df)
 
-        for i in range(0,rows,gap_num):
+        for i in range(1,rows,gap_num):
             img_list.append(thumbnails_result[i])
 
         return img_list
-    
     
 
     # 相似的单个中文字符查找

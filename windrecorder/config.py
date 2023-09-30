@@ -24,6 +24,7 @@ class Config:
         user_name,
         use_similar_ch_char_to_search,
         ocr_image_crop_URBL,
+        lightbox_result_dir,
         **other_field
     ) -> None:
         self.db_path = db_path
@@ -40,9 +41,10 @@ class Config:
         self.vid_compress_day = vid_compress_day
         self.OCR_index_strategy = OCR_index_strategy # 0=不自动索引，1=每录制完一个切片进行索引
         self.wordcloud_result_dir = wordcloud_result_dir
+        self.timeline_result_dir = timeline_result_dir
+        self.lightbox_result_dir = lightbox_result_dir
         self.screentime_not_change_to_pause_record = screentime_not_change_to_pause_record
         self.show_oneday_wordcloud = show_oneday_wordcloud
-        self.timeline_result_dir = timeline_result_dir
         self.user_name = user_name
         self.use_similar_ch_char_to_search = use_similar_ch_char_to_search
         self.ocr_image_crop_URBL = ocr_image_crop_URBL

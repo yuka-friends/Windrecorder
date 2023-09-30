@@ -12,6 +12,7 @@ import pandas as pd
 import windrecorder.utils as utils
 from windrecorder.dbManager import DBManager
 import windrecorder.files as files
+from windrecorder.config import config
 
 
 
@@ -153,7 +154,7 @@ def generate_word_cloud_in_month(timestamp,img_save_name="default"):
     # 取得当月内所有ocr结果
     text_file_path = get_month_ocr_result(timestamp)
 
-    img_save_dir = "wordcloud_result"
+    img_save_dir = config.wordcloud_result_dir
     files.check_and_create_folder(img_save_dir)
     img_save_name = img_save_name
     img_save_path = os.path.join(img_save_dir,img_save_name)
@@ -168,7 +169,7 @@ def generate_word_cloud_in_day(timestamp,img_save_name="default"):
     # 取得当天内所有ocr结果
     text_file_path = get_day_ocr_result(timestamp)
 
-    img_save_dir = "wordcloud_result"
+    img_save_dir = config.wordcloud_result_dir
     files.check_and_create_folder(img_save_dir)
     img_save_name = img_save_name
     img_save_path = os.path.join(img_save_dir,img_save_name)
@@ -176,4 +177,3 @@ def generate_word_cloud_in_day(timestamp,img_save_name="default"):
     # 生成词云图片
     generate_word_cloud_pic(text_file_path,img_save_path,mask_img="day")
     os.remove(text_file_path)
-

@@ -147,21 +147,6 @@ class OneDay:
             return True,check_on_disk_path,local_video_timestamp
 
 
-    # 获得base64输入图片的宽高
-    def get_image_dimensions(self, base64_image):
-        # 解码Base64图像数据
-        image_data = base64.b64decode(base64_image)
-
-        # 将图像数据加载到PIL图像对象中
-        image = Image.open(BytesIO(image_data))
-
-        # 获取图像的宽度和高度
-        width, height = image.size
-
-        # 返回宽度和高度
-        return width, height
-
-
     # 生成当天时间线预览图
     def generate_preview_timeline_img(
             self,day_datetime,
@@ -171,16 +156,16 @@ class OneDay:
 
         date_in = datetime.datetime(day_datetime.year,day_datetime.month,day_datetime.day,0,0,1)
         date_out = datetime.datetime(day_datetime.year,day_datetime.month,day_datetime.day,23,23,59)
-        image_list = DBManager().db_get_day_thumbnail(date_in,date_out,50)
+        image_list = DBManager().db_get_day_thumbnail_by_timeavg(date_in,date_out,50)
 
         if image_list is None:
             return False
 
         # image_list: 按绘制顺序存储图片base64
         # 原始图像大小
-        print("-----------------------------------------image_list[0]")
-        print(image_list[0])
-        original_width, original_height = self.get_image_dimensions(image_list[0])
+        print("-----------------------------------------image_list[1]")
+        print(image_list[1])
+        original_width, original_height = utils.get_image_dimensions(image_list[1])
 
         # 目标图像大小（缩小到50%）?
         target_width = int(original_width * 1)
@@ -199,10 +184,11 @@ class OneDay:
                 image = Image.new('RGBA', (target_width, target_height), (0, 0, 0, 0))
 
                 # 将图像粘贴到结果图像上，并手动指定透明度掩码
-                result.paste(image, (x_offset, 0), mask)
+                result.paste(image, (x_offset, 0), image)
             else:
                 # 将base64编码的图像数据解码为图像
                 image = Image.open(BytesIO(base64.b64decode(image_data)))
+                image = image.resize((target_width, target_height))
 
                 # 创建一个与图像大小相同的纯白色图像作为透明度掩码
                 mask = Image.new('L', image.size, 255)  # 'L' 表示灰度图像，255 表示完全不透明
