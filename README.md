@@ -14,15 +14,15 @@ It runs **entirely locally, stored your private data locally, without any need o
 ![Windrecorder](https://github.com/Antonoko/Windrecorder/blob/main/__assets__/preview.png)
 
 
-**NOTE: This project is still under early development and the availability of many features are not guaranteed.**
+**NOTE: This project is still under early development and the availability of many features are not guaranteed.** English and i18n GUI support will be added after the alpha version is released.
 
 **注意：这个项目仍然在开发早期阶段，部分能力和特性不保证可以正常运行。**
 
 ----
 
-Project Status: have very basic functions, under intensity development
+💡 Project Status: have very basic functions, under intensity development
 
-项目状态：初级阶段，具有基本的功能。仍在持续开发中。
+💡 项目状态：初级阶段，具有基本的功能。仍在持续开发中。
 
 ---
 
@@ -42,7 +42,7 @@ Project Status: have very basic functions, under intensity development
 # 🦝 QuickStart ｜ 快速开始
 
 
-- Ensure ffmpeg is installed and can be accessed from PATH.
+- Ensure [ffmpeg](https://ffmpeg.org/) is installed and can be accessed from PATH.
 
 - Install dependencies: `pip install -r requirements.txt`
 
