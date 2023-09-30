@@ -1,18 +1,18 @@
 ![Windrecorder](https://github.com/Antonoko/Windrecorder/blob/main/__assets__/product-header-cn.jpg)
 <h1 align="center"> 🦝 Windrecorder | 捕风记录仪</h1>
-<p align="center"> A Rewind’s alternative for Windows. | 一款运行在 Windows 平台上的 Rewind 替代工具</p>
+<p align="center"> An Open Source Rewind’s alternative for Windows. | 一款运行在 Windows 平台上的 Rewind 替代工具</p>
 
 ---
 > What's Rewind ｜ Rewind 是什么？: https://www.rewind.ai/
 
 This tool can continuously record and OCR your desktop screen, and search to retrieve the picture at that moment at any time.
-It runs entirely locally, stored your private data locally, without any need of Internet connection. 
+It runs **entirely locally, stored your private data locally, without any need of Internet connection.**
 
-这是一款可以持续录制并识别你的屏幕内容、通过搜索等手段随时找回相关记忆的工具。它完全运行在本地、在本地存储数据、无需联网、不会外泄你任何数据。
+这是一款可以持续录制并识别你的屏幕内容、通过搜索等手段随时找回相关记忆的工具。**它的所有服务（录制、识别处理等）完全运行在本地，在本地存储数据，无需联网，不会外泄你任何数据。**
 
 
 ![Windrecorder](https://github.com/Antonoko/Windrecorder/blob/main/__assets__/preview.png)
-> this preview img has been outdated, need to update
+
 
 **NOTE: This project is still under early development and the availability of many features are not guaranteed.**
 
@@ -30,12 +30,12 @@ Project Status: have very basic functions, under intensity development
 - [x] Continuously record screen with smaller file size.
 - [x] Extract unchanging frames in video file and save OCR result in database.
 - [x] Provide basic webui for querying and updating database.
-- [x] Word Cloud summarize
+- [x] Word Cloud and Timeline/Lightbox summarize
 - [ ] Full functional webui dashboard & control center
 - [ ] Automated operation
 - [ ] Fully i18n support
 - [ ] Setup an easier to use Onboarding/installer
-- [ ] Polishing details
+- [ ] Polishing details, improving stability
 - [ ] 🤔
 
 
@@ -48,13 +48,13 @@ Project Status: have very basic functions, under intensity development
 
 - Starting recording screen: run `start_record.bat` (send "ctrl C" or close console window to stop recording)
 
-- Query, Rewind or update database through webui: run  `start_webui.bat`
+- Query, Rewind or update database manually through webui: run  `start_webui.bat`
 
-- We recommend using Windows.Media.Ocr.Cli method to OCR Video data, which is faster and using less system resources. Make sure your Windows computer has installed the corresponding OCR language module (it should have been installed with IME by default, and used to identify the corresponding language content). For more information: https://learn.microsoft.com/en-us/windows/powertoys/text-extractor
+    - We recommend using Windows.Media.Ocr.Cli method to OCR Video data, which is faster and using less system resources. Make sure your Windows computer has installed the corresponding OCR language module (it should have been installed with IME by default, and used to identify the corresponding language content). For more information: https://learn.microsoft.com/en-us/windows/powertoys/text-extractor
 
 
 # 🧡
-Like this project? Feel free to check [長瀬有花 / YUKA NAGASE](https://www.youtube.com/channel/UCf-PcSHzYAtfcoiBr5C9DZA) 's healing music on YouTube and Stream music platform <3
+Like this project? Also check out [長瀬有花 / YUKA NAGASE](https://www.youtube.com/channel/UCf-PcSHzYAtfcoiBr5C9DZA) 's healing music on YouTube and Stream music platform <3
 
 如果你喜欢这个工具，欢迎在 Youtube 与流媒体音乐平台上支持 **长濑有花** 温柔的音乐，谢谢！
 
