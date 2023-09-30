@@ -211,7 +211,7 @@ def draw_dataframe(df,heightIn=800):
 
 # 显示时间轴
 def render_daily_timeline_html(image_b64):
-    st.markdown(f"<img style='max-width: 95%;max-height: 100%;margin: 0 0px 5px 50px' src='data:image/png;base64, {image_b64}'/>", unsafe_allow_html=True)
+    st.markdown(f"<img style='max-width: 97%;max-height: 100%;margin: 0 0px 5px 50px' src='data:image/png;base64, {image_b64}'/>", unsafe_allow_html=True)
 
 
 
@@ -496,15 +496,18 @@ with tab1:
     if day_has_data:
 
         # 准备词云与时间轴（timeline）所需要的文件命名规范与变量，文件名用同一种命名方式，但放到不同的路径下
-        real_today_day_cloud_n_TL_img_name = str(datetime.datetime.today().date().year) + "-" + str(datetime.datetime.today().date().month) + "-" + str(datetime.datetime.today().date().day) + "-today-.png"
+        real_today_day_cloud_n_TL_img_name = str(datetime.datetime.today().strftime("%Y-%m-%d")) + "-today-.png"
+        # real_today_day_cloud_n_TL_img_name = str(datetime.datetime.today().date().year) + "-" + str(datetime.datetime.today().date().month) + "-" + str(datetime.datetime.today().date().day) + "-today-.png"
         if st.session_state.day_date_input == datetime.datetime.today().date():
             # 如果是今天的结果，以-today结尾，以使次日回溯时词云能被自动更新
-            current_day_cloud_n_TL_img_name = str(st.session_state.day_date_input.year) + "-" + str(st.session_state.day_date_input.month) + "-" + str(st.session_state.day_date_input.day) + "-today-" + ".png"
+            # current_day_cloud_n_TL_img_name = str(st.session_state.day_date_input.year) + "-" + str(st.session_state.day_date_input.month) + "-" + str(st.session_state.day_date_input.day) + "-today-" + ".png"
+            current_day_cloud_n_TL_img_name = str(st.session_state.day_date_input.strftime("%Y-%m-%d")) + "-today-.png"
             # 太邪门了，.png前不能是alphabet/数字字符，否则词云的.to_file会莫名其妙自己多添加一个.png
             current_day_cloud_img_path = os.path.join(config.wordcloud_result_dir,current_day_cloud_n_TL_img_name)
             current_day_TL_img_path = os.path.join(config.timeline_result_dir,current_day_cloud_n_TL_img_name)
         else:
-            current_day_cloud_n_TL_img_name = str(st.session_state.day_date_input.year) + "-" + str(st.session_state.day_date_input.month) + "-" + str(st.session_state.day_date_input.day) + ".png"
+            # current_day_cloud_n_TL_img_name = str(st.session_state.day_date_input.year) + "-" + str(st.session_state.day_date_input.month) + "-" + str(st.session_state.day_date_input.day) + ".png"
+            current_day_cloud_n_TL_img_name = str(st.session_state.day_date_input.strftime("%Y-%m-%d")) + ".png"
             current_day_cloud_img_path = os.path.join(config.wordcloud_result_dir,current_day_cloud_n_TL_img_name)
             current_day_TL_img_path = os.path.join(config.timeline_result_dir,current_day_cloud_n_TL_img_name)
 

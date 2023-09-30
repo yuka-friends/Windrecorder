@@ -1,5 +1,5 @@
 @echo off
-color 0B
+color 2f
 title Windrecorder - Recording Screening
 echo Starting Recording Screen...
 cd /d %~dp0

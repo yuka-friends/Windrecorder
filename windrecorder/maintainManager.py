@@ -448,6 +448,12 @@ def maintain_manager_main():
     """
     数据库主维护方式
     """
+
+    # 添加维护标识
+    lock_filepath = "catch\\LOCK_MAINTAIN.MD"
+    with open(lock_filepath, 'w', encoding='utf-8') as f:
+        f.write(datetime.datetime.now())
+
     db_path = config.db_path
     db_filename = config.db_filename
     db_filepath = os.path.join(db_path, db_filename)
@@ -463,4 +469,7 @@ def maintain_manager_main():
     DBManager().db_main_initialize()
     # 对目录下所有视频进行OCR提取处理
     ocr_process_videos(record_videos_dir, i_frames_dir, db_filepath)
+
+    # 移除维护标识
+    send2trash(lock_filepath)
 
