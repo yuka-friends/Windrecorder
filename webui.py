@@ -219,31 +219,35 @@ def render_daily_timeline_html(image_b64):
 def get_show_month_data_state(stat_select_month_datetime:datetime.datetime):
     if 'df_month_stat' not in st.session_state:   # 初始化显示的表状态
         st.session_state.df_month_stat = pd.DataFrame()
-
+    if 'df_month_stat_dt' not in st.session_state:   # 初始化当前显示表的日期
+        st.session_state.df_month_stat_dt = stat_select_month_datetime
     
     df_file_name = stat_select_month_datetime.strftime("%Y-%m") + "_month_data_state.csv"
     df_catch_dir = "catch"
     df_filepath = os.path.join(df_catch_dir, df_file_name)
 
-    if st.session_state.df_month_stat.empty:   # 页面内无缓存
+    update_condition = False
+    if not st.session_state.df_month_stat.empty and utils.set_full_datetime_to_YYYY_MM(st.session_state.df_month_stat_dt) <= utils.set_full_datetime_to_YYYY_MM(st.session_state.stat_select_month_datetime):
+        update_condition = True
+
+    if st.session_state.df_month_stat.empty or update_condition or utils.set_full_datetime_to_YYYY_MM(st.session_state.df_month_stat_dt) != utils.set_full_datetime_to_YYYY_MM(st.session_state.stat_select_month_datetime):   # 页面内无缓存，或不是当月日期
 
     # 检查磁盘上有无统计缓存，然后检查是否过时
         if os.path.exists(df_filepath):   # 存在
-            if df_file_name[:7] == datetime.datetime.today().strftime("%Y-%m"):   # 如果是当下月的数据
+            if df_file_name[:7] == datetime.datetime.today().strftime("%Y-%m"):   # 如果是需要时效性的当下月数据
                 if not files.is_file_modified_recently(df_filepath, time_gap=120):   # 超过120分钟未更新，过时 重新生成
                     # 更新操作
                     with st.spinner("更新本月统计中……"):
                         st.session_state.df_month_stat = state.get_month_data_overview(stat_select_month_datetime)
                         files.save_dataframe_to_path(st.session_state.df_month_stat,file_path=df_filepath)
-                else:
-                    # 未过时，进行读取操作
-                    st.session_state.df_month_stat = files.read_dataframe_from_path(file_path=df_filepath)
+            # 进行读取操作
+            st.session_state.df_month_stat = files.read_dataframe_from_path(file_path=df_filepath)
 
         else:   # 磁盘上不存在缓存
             with st.spinner("生成本月统计中……"):
                 st.session_state.df_month_stat = state.get_month_data_overview(stat_select_month_datetime)
-                files.save_dataframe_to_path(st.session_state.df_month_stat,file_path=df_filepath)
-    
+                files.save_dataframe_to_path(st.session_state.df_month_stat,file_path=df_filepath)    
+
     st.bar_chart(st.session_state.df_month_stat,x="day",y="data_count",color="#AC79D5")
 
 
@@ -775,6 +779,7 @@ with tab3:
         
         st.session_state.stat_select_month_datetime = datetime.datetime(st.session_state.stat_Stat_query_Year,st.session_state.Stat_query_Month,1,10,0,0)
         get_show_month_data_state(st.session_state.stat_select_month_datetime) # 显示当月概览
+
         stat_year_title = st.session_state.stat_select_month_datetime.year
         st.markdown(f"### {stat_year_title} 记录")
         get_show_year_data_state(st.session_state.stat_select_month_datetime) # 显示当年概览

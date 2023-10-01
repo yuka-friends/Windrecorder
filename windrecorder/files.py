@@ -165,7 +165,7 @@ def extract_date_from_db_filename(db_file_name, user_name=config.user_name):
         # db_file_name = db_file_name[:-(len(suffix))]
 
     db_file_name_datetime = datetime.datetime.strptime(db_file_name, "%Y-%m")
-    db_file_name_datetime = utils.set_full_datetime_to_YYYY_MM_DD(db_file_name_datetime)
+    db_file_name_datetime = utils.set_full_datetime_to_YYYY_MM(db_file_name_datetime)
     return db_file_name_datetime
 
 

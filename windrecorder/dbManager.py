@@ -28,8 +28,8 @@ class DBManager:
 
     # 根据传入的时间段取得对应数据库的文件名词典
     def db_get_dbfilename_by_datetime(self, db_query_datetime_start, db_query_datetime_end):
-        db_query_datetime_start_YMD = utils.set_full_datetime_to_YYYY_MM_DD(db_query_datetime_start)
-        db_query_datetime_end_YMD = utils.set_full_datetime_to_YYYY_MM_DD(db_query_datetime_end)
+        db_query_datetime_start_YMD = utils.set_full_datetime_to_YYYY_MM(db_query_datetime_start)
+        db_query_datetime_end_YMD = utils.set_full_datetime_to_YYYY_MM(db_query_datetime_end)
 
         result = []
         for key, value in self.db_filename_dict.items():
@@ -65,6 +65,7 @@ class DBManager:
             now = datetime.datetime.now()
             now_name = now.strftime("%Y-%m-%d_%H-%M-%S")
             now_time = int(utils.date_to_seconds(now_name))
+            default_base64 = "iVBORw0KGgoAAAANSUhEUgAAAEYAAAAnCAYAAACyhj57AAAAoUlEQVRoBe3BAQEAAAwBMCrpp6RCHkCFb7RSvEErxRu0UrxBK8UbtFK8QSvFG7RSvEErxRu0UrxBK8UbtFK8QSvFG7RSvEErxRu0UrxBK8UbtFK8QSvFG7RSvEErxRu0UrxBK8UbtFK8QSvFG7RSvEErxRu0UrxBK8UbtFK8QSvFG7RSvEErxRu0UrxBK8UbtFK8QSvFG7RSvEErxRu0UrxxUOdhqPjngTYAAAAASUVORK5CYII="
             self.db_update_data(
                 now_name + ".mp4",
                 '0.jpg',
@@ -72,7 +73,7 @@ class DBManager:
                 'Welcome! Go to Setting and Update your screen recording files.',
                 False,
                 False,
-                'base64'
+                None
             )
         else:
             print("db existed and not empty")
@@ -126,7 +127,7 @@ class DBManager:
         # 使用方法：db_update_data(db_filepath,'video1.mp4','iframe_0.jpg', 120, 'text from ocr', True, False)
 
         # 获取插入时间，取得对应的数据库      
-        insert_db_datetime = utils.set_full_datetime_to_YYYY_MM_DD(utils.seconds_to_datetime(videofile_time))
+        insert_db_datetime = utils.set_full_datetime_to_YYYY_MM(utils.seconds_to_datetime(videofile_time))
         db_filepath = files.get_db_filepath_by_datetime(insert_db_datetime)   # 直接获取对应时间的数据库路径
 
         conn = sqlite3.connect(db_filepath)
@@ -352,7 +353,7 @@ class DBManager:
     def db_rollback_delete_video_refer_record(self,videofile_name):
         print(f"移除{videofile_name}相关条目")
         # 根据文件名定位数据库文件地址
-        db_filepath = files.get_db_filepath_by_datetime(utils.set_full_datetime_to_YYYY_MM_DD(utils.date_to_datetime(os.path.splitext(videofile_name)[0])))
+        db_filepath = files.get_db_filepath_by_datetime(utils.set_full_datetime_to_YYYY_MM(utils.date_to_datetime(os.path.splitext(videofile_name)[0])))
 
         conn = sqlite3.connect(db_filepath)
         c = conn.cursor()
@@ -463,12 +464,11 @@ class DBManager:
         db_filename = os.path.basename(db_filepath)
 
         try:
-            with open("catch\\LOCK_FILE_RECORD.MD", encoding='utf-8') as f:
+            with open("catch\\LOCK_MAINTAIN.MD", encoding='utf-8') as f:
                 dt_maintain = f.read()
             sign_maintain = True
         except:
             sign_maintain = False
-
         # if sign_maintain:   # 正在维护写入数据库的话，跳过本次检查与复制
         #     return db_filepath
         # else:   # 没有维护写入数据库
@@ -491,7 +491,7 @@ class DBManager:
         
         if not db_filename.endswith("_TEMP_READ.db"):
             db_filename_temp = os.path.splitext(db_filename)[0] + "_TEMP_READ.db"   # 创建临时文件名
-            filepath_temp_read = os.path.join(self.db_path, db_filename_temp)   # 读取的临时路径
+            filepath_temp_read = os.path.join(self.db_path, db_filename_temp)   # 创建读取的临时路径
             if os.path.exists(filepath_temp_read):   # 检测是否已存在临时数据库
                 # 是，检查同根数据库是否更新，阈值为大于5分钟
                 db_origin_newer,db_timestamp_diff = files.is_fileA_modified_newer_than_fileB(db_filepath, filepath_temp_read)
@@ -499,10 +499,12 @@ class DBManager:
                     # 过时了，复制创建一份
                     if not sign_maintain:
                         shutil.copy2(db_filepath, filepath_temp_read)   # 保留原始文件的修改时间以更好地对比策略
-        else:
-            # 不存在临时数据库，复制创建一份
-            shutil.copy2(db_filepath, filepath_temp_read)
+            else:
+                # 不存在临时数据库，复制创建一份
+                shutil.copy2(db_filepath, filepath_temp_read)
             return filepath_temp_read   # 返回临时路径
+        else:
+            return filepath_temp_read
 
 
 

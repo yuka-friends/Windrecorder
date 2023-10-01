@@ -61,7 +61,7 @@ def extract_iframe(video_file, iframe_interval=4000):
             break
 
         if frame_cnt % frame_step == 0:
-            print("frame_cnt:" + str(frame_cnt))
+            print("extract frame cnt:" + str(frame_cnt))
             cv2.imwrite('catch\\i_frames\\%d.jpg' % frame_cnt, frame)
 
         frame_cnt += 1
@@ -387,7 +387,7 @@ def ocr_process_videos(video_path, iframe_path, db_filepath):
             print("processing VID:" + full_file_path)
 
             # 检查视频文件是否已被索引
-            if not file.endswith('.mp4') or file.endswith("-OCRED.mp4"):
+            if not file.endswith('.mp4') or file.endswith("-OCRED.mp4") or file.endswith("-ERROR.mp4"):
                 continue
 
             # 判断文件是否正在被占用
@@ -397,7 +397,14 @@ def ocr_process_videos(video_path, iframe_path, db_filepath):
             # 清理文件
             empty_directory(iframe_path)
             # ocr该文件
-            ocr_process_single_video(root, file, iframe_path)
+            try:
+                ocr_process_single_video(root, file, iframe_path)
+            except Exception as e:
+                print("Error occurred while processing :",full_file_path,e)
+                video_filename = os.path.basename(full_file_path)
+                new_name = video_filename.split('.')[0] + "-ERROR." + video_filename.split('.')[1]
+                new_name_dir = os.path.dirname(full_file_path)
+                os.rename(full_file_path, os.path.join(new_name_dir, new_name))
 
 
 # 检查视频文件夹中所有文件的日期，对超出储存时限的文件进行删除操作
@@ -452,7 +459,7 @@ def maintain_manager_main():
     # 添加维护标识
     lock_filepath = "catch\\LOCK_MAINTAIN.MD"
     with open(lock_filepath, 'w', encoding='utf-8') as f:
-        f.write(datetime.datetime.now())
+        f.write(str(datetime.datetime.now().strftime("%Y-%m-%d_%H-%M-%S")))
 
     db_path = config.db_path
     db_filename = config.db_filename
