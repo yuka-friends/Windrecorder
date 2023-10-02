@@ -24,6 +24,18 @@ user32 = ctypes.windll.User32
 # 全局状态变量
 monitor_change_rank = 0
 last_screenshot_array = None
+idle_maintain_time_gap = datetime.timedelta(hours=5)   # 与上次闲时维护至少相隔
+
+try:
+    # 读取之前闲时维护的时间
+    with open("catch\\LAST_IDLE_MAINTAIN.MD", 'r', encoding='utf-8') as f:
+        time_read = f.read()
+        last_idle_maintain_time = datetime.datetime.strptime(time_read,"%Y-%m-%d_%H-%M-%S")
+except:
+    with open("catch\\LAST_IDLE_MAINTAIN.MD", 'w', encoding='utf-8') as f:
+        f.write(str(datetime.datetime.now().strftime("%Y-%m-%d_%H-%M-%S")))
+    last_idle_maintain_time = datetime.datetime.now()   # 上次闲时维护时间
+
 
 
 # 判断是否已锁屏
@@ -108,8 +120,17 @@ def continuously_record_screen():
         # 主循环过程
         if monitor_change_rank > config.screentime_not_change_to_pause_record:
             print("屏幕内容没有更新，停止录屏中。进入闲时维护")
+            subprocess.run('color 60', shell=True)
+
+            timegap_between_last_idle_maintain = datetime.datetime.now() - last_idle_maintain_time
+            if timegap_between_last_idle_maintain > idle_maintain_time_gap:
+                thread_idle_maintain = threading.Thread(target=idle_maintain_process)
+                thread_idle_maintain.daemon = True  # 设置为守护线程
+                thread_idle_maintain.start()
+
             time.sleep(10)
         else:
+            subprocess.run('color 2f', shell=True)
             video_saved_dir, video_out_name = record_screen() # 录制屏幕
             screentime_detect_stop_event.wait(2)
 
@@ -122,6 +143,10 @@ def continuously_record_screen():
 
             screentime_detect_stop_event.wait(2)
         
+
+# 闲时维护的操作流程
+def idle_maintain_process():
+    print("idle_maintain")
 
 
 
