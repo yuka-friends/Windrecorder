@@ -26,6 +26,7 @@ def is_recording():
             return False
     except:
         print("录屏服务文件锁不存在")
+        return False
 
     # 试图使用据说可以自动更新的组件来强制刷新状态
     # (https://towardsdatascience.com/creating-dynamic-dashboards-with-streamlit-747b98a68ab5)
@@ -71,6 +72,22 @@ def create_startup_shortcut(is_create = True):
             print('快捷方式已存在')
             os.remove(shortcut_path)
             print('删除快捷方式')
+
+
+
+# 获取目标缩放分辨率策略
+def get_scale_screen_res_strategy(origin_width = 1920, origin_height = 1080):
+    target_scale_width = origin_width
+    target_scale_height = origin_height
+
+    if origin_height > 1500:
+        target_scale_width = origin_width/2
+        target_scale_height = origin_height/2
+    
+    return target_scale_width, target_scale_height
+
+
+
 
 
 

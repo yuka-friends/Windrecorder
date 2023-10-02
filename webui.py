@@ -829,11 +829,9 @@ with tab4:
 
     col1c, col2c = st.columns([1, 2])
     with col1c:
-        # 检查录屏服务有无进行中
-        # todo：持续、自动探测服务状态？
+        # 手动检查录屏服务有无进行中
 
         # 管理刷新服务的按钮状态：手动管理状态，polyfill streamlit只能读按钮是否被按下的问题（一旦有其他按钮按下，其他按钮就会回弹导致持续的逻辑重置、重新加载）
-        # todo：去掉需要双击的操作……
         def update_record_service_btn_clicked():
             st.session_state.update_btn_dis_record = True
 
