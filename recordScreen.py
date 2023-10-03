@@ -147,6 +147,7 @@ def continuously_record_screen():
 # 闲时维护的操作流程
 def idle_maintain_process():
     print("idle_maintain")
+    maintainManager.remove_outdated_videofiles()
 
 
 

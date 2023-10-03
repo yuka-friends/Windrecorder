@@ -61,7 +61,8 @@ def show_n_locate_video_timestamp_by_df(df, num):
     if is_df_result_exist:
         # todo 获取有多少行结果 对num进行合法性判断
         videofile_path_month_dir = files.convert_vid_filename_as_YYYY_MM(df.iloc[num]['videofile_name']) # 获取对应的日期目录
-        videofile_path = os.path.join(config.record_videos_dir,videofile_path_month_dir, files.add_OCRED_suffix(df.iloc[num]['videofile_name']))
+        videofile_path = os.path.join(config.record_videos_dir, videofile_path_month_dir, files.add_OCRED_suffix(df.iloc[num]['videofile_name']))
+        videofile_path_COMPRESS = os.path.join(config.record_videos_dir, videofile_path_month_dir, files.add_COMPRESS_OCRED_suffix(df.iloc[num]['videofile_name']))
         print("videofile_path: " + videofile_path)
         vid_timestamp = utils.calc_vid_inside_time(df, num)
         print("vid_timestamp: " + str(vid_timestamp))
@@ -70,8 +71,13 @@ def show_n_locate_video_timestamp_by_df(df, num):
         st.session_state.vid_vid_timestamp = vid_timestamp
         # st.session_state.vid_vid_timestamp
         # 判断视频文件是否存在
-        if os.path.isfile(videofile_path):
+        if os.path.isfile(videofile_path):   # 是否存在未压缩的
             video_file = open(videofile_path, 'rb')
+            video_bytes = video_file.read()
+            with st.empty():
+                st.video(video_bytes, start_time=st.session_state.vid_vid_timestamp)
+        elif os.path.isfile(videofile_path_COMPRESS):   # 是否存在已压缩的
+            video_file = open(videofile_path_COMPRESS, 'rb')
             video_bytes = video_file.read()
             with st.empty():
                 st.video(video_bytes, start_time=st.session_state.vid_vid_timestamp)

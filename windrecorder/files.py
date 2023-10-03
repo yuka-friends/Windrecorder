@@ -9,8 +9,6 @@ import windrecorder.files as files
 import windrecorder.utils as utils
 
 # 检查目录是否存在，若无则创建
-
-
 def check_and_create_folder(folder_name):
     # 获取当前工作目录
     current_directory = os.getcwd()
@@ -23,13 +21,21 @@ def check_and_create_folder(folder_name):
         # 创建文件夹
         os.makedirs(folder_path)
         print(f"已创建文件夹：{folder_name}")
+        return False
     else:
         print(f"文件夹已存在：{folder_name}")
+        return True
 
 
 # 将数据库的视频名加上-OCRED标志，使之能正常读取到
 def add_OCRED_suffix(video_name):
     vidname = os.path.splitext(video_name)[0] + "-OCRED" + os.path.splitext(video_name)[1]
+    return vidname
+
+
+# 将数据库的视频名加上-COMPRESS-OCRED标志，使之能正常读取到
+def add_COMPRESS_OCRED_suffix(video_name):
+    vidname = os.path.splitext(video_name)[0] + "-COMPRESS-OCRED" + os.path.splitext(video_name)[1]
     return vidname
 
 
@@ -139,11 +145,20 @@ def get_file_path_list(dir):
     return filepath_list
 
 
-# 返回指定时间段的视频文件夹内、已索引了的视频路径
+# 取得文件夹下的一级文件名列表
+def get_file_path_list_first_level(dir):
+    file_names = []
+    for filename in os.listdir(dir):
+        if os.path.isfile(os.path.join(dir, filename)):
+            file_names.append(filename)
+    return file_names
+
+
+# 返回指定时间段的视频文件夹内、已索引了的视频路径列表（包括未压缩的与已压缩的）
 def get_videofile_path_list_by_time_range(filepath_list, start_datetime, end_datetime):
     filepath_list_daterange = []
     for filepath in filepath_list:
-        if filepath.endswith('-OCRED.mp4') and not filepath.endswith('-COMPRESS-OCRED.mp4'):
+        if filepath.endswith('-OCRED.mp4'):
             filename_extract_date = os.path.basename(filepath)[:18]
             file_datetime = utils.date_to_datetime(filename_extract_date)
             if start_datetime <= file_datetime <= end_datetime:
@@ -152,7 +167,7 @@ def get_videofile_path_list_by_time_range(filepath_list, start_datetime, end_dat
     return filepath_list_daterange
 
 
-# 从db文件名提取YYYY-MM
+# 从db文件名提取YYYY-MM的datatime
 def extract_date_from_db_filename(db_file_name, user_name=config.user_name):
     prefix = user_name + "_"
     suffix = "_wind.db"
@@ -167,6 +182,20 @@ def extract_date_from_db_filename(db_file_name, user_name=config.user_name):
     db_file_name_datetime = datetime.datetime.strptime(db_file_name, "%Y-%m")
     db_file_name_datetime = utils.set_full_datetime_to_YYYY_MM(db_file_name_datetime)
     return db_file_name_datetime
+
+
+# 从备份的db文件名提取datetime
+def extract_datetime_from_db_backup_filename(db_file_name, user_name=config.user_name):
+    
+    prefix = user_name + "_"
+    suffix = "_wind.db"
+
+    try:
+        db_file_name_extract = db_file_name[-22:-3]
+        db_file_name_extract_datetime = utils.date_to_datetime(db_file_name_extract)
+        return db_file_name_extract_datetime
+    except:
+        return None
 
 
 # 取得数据库文件夹下的完整数据库路径列表

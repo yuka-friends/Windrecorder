@@ -3,6 +3,7 @@ import base64
 import subprocess
 import json
 import datetime
+import shutil
 
 import cv2
 import numpy as np
@@ -314,7 +315,7 @@ def ocr_process_single_video(video_path, vid_file_name, iframe_path):
         img = os.path.join(iframe_path, img_file_name)
         print("img=" + img)
 
-        # 填充slot队列
+        # 填充用于对比的slot队列
         if is_first_process_image_similarity == 1:
             img1_path_temp = img
             is_first_process_image_similarity = 2
@@ -378,11 +379,15 @@ def ocr_process_single_video(video_path, vid_file_name, iframe_path):
 
 
 # 处理文件夹内所有视频的主要流程
-def ocr_process_videos(video_path, iframe_path, db_filepath):
+def ocr_process_videos(video_path, iframe_path):
     print("——处理所有视频的流程")
 
-    for root,dirs,files in os.walk(video_path):
-        for file in files:
+    # 备份最新的数据库
+    db_filepath_latest = files.get_db_filepath_by_datetime(datetime.datetime.now())   # 直接获取对应时间的数据库路径
+    backup_dbfile(db_filepath_latest)
+
+    for root,dirs,filess in os.walk(video_path):
+        for file in filess:
             full_file_path = os.path.join(root, file)
             print("processing VID:" + full_file_path)
 
@@ -424,7 +429,7 @@ def remove_outdated_videofiles():
             send2trash(item)
 
 
-# 检查视频文件夹中所有文件的日期，对超出储存时限的文件进行压缩操作
+# 检查视频文件夹中所有文件的日期，对超出储存时限的文件进行压缩操作(todo)
 def compress_outdated_videofiles():
     today_datetime = datetime.datetime.today()
     days_to_subtract = config.vid_compress_day
@@ -445,6 +450,48 @@ def compress_outdated_videofiles():
 
 
 # 备份数据库
+def backup_dbfile(db_filepath, keep_items_num = 15, make_new_backup_timegap = datetime.timedelta(hours=8)):
+    if db_filepath.endswith("_TEMP_READ.db"):
+        return False
+
+    db_backup_filepath = "catch\\db_backup"
+    files.check_and_create_folder(db_backup_filepath)
+    db_filelist_name = files.get_file_path_list_first_level(db_backup_filepath)
+    make_new_backup_state = False
+
+    if len(db_filelist_name)>0:
+        # 获取每个备份数据库文件对应的datatime
+        db_date_dict = {}
+        for item in db_filelist_name:
+            result = files.extract_datetime_from_db_backup_filename(item)
+            db_date_dict[item] = result
+
+        # 按照datatime进行排序，并获取最晚的x项
+        sorted_items = sorted(db_date_dict.items(), key=lambda x: x[1])
+        latest_file_time_gap = datetime.datetime.now() - sorted_items[-1][1]
+
+        # 如果最晚一项超过了备份阈值，应当创建备份
+        if latest_file_time_gap > make_new_backup_timegap:
+            make_new_backup_state = True
+
+        # 移除超过x项中较早的项目
+        if len(db_filelist_name)>15:
+            lastest_items = sorted_items[-keep_items_num:]
+            # 从词典中移除最晚的x项
+            for item in lastest_items:
+                del db_date_dict[item[0]]
+            # 将最晚x项以外的都删除
+            for item in db_date_dict:
+                item_filepath = os.path.join(db_backup_filepath, item)
+                send2trash(item_filepath)
+    else:
+        # 没有新的备份文件，应当创建备份
+        make_new_backup_state = True
+    
+    if make_new_backup_state:
+        # 创建备份
+        db_filepath_backup = db_backup_filepath + "\\" + os.path.splitext(os.path.basename(db_filepath))[0] + "_BACKUP_" + datetime.datetime.now().strftime("%Y-%m-%d_%H-%M-%S") + ".db"
+        shutil.copy2(db_filepath, db_filepath_backup)
 
 
 
@@ -461,9 +508,6 @@ def maintain_manager_main():
     with open(lock_filepath, 'w', encoding='utf-8') as f:
         f.write(str(datetime.datetime.now().strftime("%Y-%m-%d_%H-%M-%S")))
 
-    db_path = config.db_path
-    db_filename = config.db_filename
-    db_filepath = os.path.join(db_path, db_filename)
     record_videos_dir = config.record_videos_dir
     i_frames_dir = 'catch\\i_frames'
 
@@ -475,7 +519,7 @@ def maintain_manager_main():
     # 初始化一下数据库
     DBManager().db_main_initialize()
     # 对目录下所有视频进行OCR提取处理
-    ocr_process_videos(record_videos_dir, i_frames_dir, db_filepath)
+    ocr_process_videos(record_videos_dir, i_frames_dir)
 
     # 移除维护标识
     send2trash(lock_filepath)
