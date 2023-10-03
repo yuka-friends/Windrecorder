@@ -1,5 +1,5 @@
 @echo off
-color 5E
+color 7D
 title Windrecorder - Webui Dashboard: http://localhost:8501
 echo Starting webui...
 cd /d %~dp0

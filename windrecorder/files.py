@@ -186,7 +186,6 @@ def extract_date_from_db_filename(db_file_name, user_name=config.user_name):
 
 # 从备份的db文件名提取datetime
 def extract_datetime_from_db_backup_filename(db_file_name, user_name=config.user_name):
-    
     prefix = user_name + "_"
     suffix = "_wind.db"
 

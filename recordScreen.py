@@ -24,7 +24,7 @@ user32 = ctypes.windll.User32
 # 全局状态变量
 monitor_change_rank = 0
 last_screenshot_array = None
-idle_maintain_time_gap = datetime.timedelta(hours=5)   # 与上次闲时维护至少相隔
+idle_maintain_time_gap = datetime.timedelta(hours=8)   # 与上次闲时维护至少相隔
 
 try:
     # 读取之前闲时维护的时间
@@ -122,6 +122,7 @@ def continuously_record_screen():
             print("屏幕内容没有更新，停止录屏中。进入闲时维护")
             subprocess.run('color 60', shell=True)
 
+            # 算算是否该进入维护了（与上次维护时间相比）
             timegap_between_last_idle_maintain = datetime.datetime.now() - last_idle_maintain_time
             if timegap_between_last_idle_maintain > idle_maintain_time_gap:
                 thread_idle_maintain = threading.Thread(target=idle_maintain_process)

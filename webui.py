@@ -545,8 +545,11 @@ with tab1:
                 # print(f"-----------------filename：{filename}，real_today_day_cloud_img_name:{real_today_day_cloud_img_name}")
                 if filename.endswith("-today-.png") and filename != real_today_day_cloud_n_TL_img_name:
                     file_path = os.path.join(config.timeline_result_dir, filename)
-                    os.remove(file_path)
-                    print(f"Deleted file: {file_path}")
+                    try:
+                        os.remove(file_path)
+                        print(f"Deleted file: {file_path}")
+                    except Exception as e:
+                        print(e)
         elif current_day_TL_img_path.endswith("-today-.png"):
             # 如果已存在今日的，重新生成覆盖更新
             if not files.is_file_modified_recently(current_day_TL_img_path):
@@ -927,7 +930,7 @@ def update_database_clicked():
 with tab5:
     st.markdown(d_lang[config.lang]["tab_setting_title"])
 
-    col1b, col2b = st.columns([1, 2])
+    col1b, col2b, col3b = st.columns([1, .5, 1.5])
     with col1b:
         # 更新数据库
         st.markdown(d_lang[config.lang]["tab_setting_db_title"])
@@ -1048,7 +1051,10 @@ with tab5:
             st.experimental_rerun()
 
     with col2b:
-        st.markdown(
-            "关注 [長瀬有花 / YUKA NAGASE](https://www.youtube.com/channel/UCf-PcSHzYAtfcoiBr5C9DZA) on Youtube")
+        st.empty()
+
+    with col3b:
+        about_markdown = Path("config\\src\\about_" + config.lang + ".md").read_text(encoding='utf-8')
+        st.markdown(about_markdown)
 
 web_footer_state()

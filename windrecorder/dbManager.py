@@ -151,6 +151,9 @@ class DBManager:
         date_in_ts = int(utils.date_to_seconds(date_in.strftime("%Y-%m-%d_00-00-00")))
         date_out_ts = int(utils.date_to_seconds(date_out.strftime("%Y-%m-%d_23-59-59")))
 
+        if date_in_ts == date_out_ts:
+            date_out_ts += 1
+
         # 获得对应时间段下涉及的所有数据库
         datetime_start = utils.seconds_to_datetime(date_in_ts)
         datetime_end = utils.seconds_to_datetime(date_out_ts)
@@ -378,6 +381,8 @@ class DBManager:
         # 获取df内最早与最晚记录时间
         time_min = df['videofile_time'].min()
         time_max = df['videofile_time'].max()
+        if time_min == time_max:
+            return None
 
         # 计算均分时间间隔
         time_range = time_max - time_min

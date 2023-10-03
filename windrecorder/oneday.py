@@ -156,6 +156,7 @@ class OneDay:
 
         date_in = datetime.datetime(day_datetime.year,day_datetime.month,day_datetime.day,0,0,1)
         date_out = datetime.datetime(day_datetime.year,day_datetime.month,day_datetime.day,23,23,59)
+
         image_list = DBManager().db_get_day_thumbnail_by_timeavg(date_in,date_out,50)
 
         if image_list is None:
@@ -164,8 +165,12 @@ class OneDay:
         # image_list: 按绘制顺序存储图片base64
         # 原始图像大小
         print("-----------------------------------------image_list[1]")
-        print(image_list[1])
-        original_width, original_height = utils.get_image_dimensions(image_list[1])
+        print(image_list[2])
+        try:   # 尝试获取缩略图大小，失败则fallback
+            original_width, original_height = utils.get_image_dimensions(image_list[2])
+        except:
+            original_width = 70
+            original_height = 39
 
         # 目标图像大小（缩小到50%）?
         target_width = int(original_width * 1)
