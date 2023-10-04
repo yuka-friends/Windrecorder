@@ -10,6 +10,7 @@ import ctypes
 
 import pyautogui
 import numpy as np
+from send2trash import send2trash
 
 import windrecorder.maintainManager as maintainManager
 import windrecorder.utils as utils
@@ -26,6 +27,8 @@ monitor_change_rank = 0
 last_screenshot_array = None
 idle_maintain_time_gap = datetime.timedelta(hours=8)   # 与上次闲时维护至少相隔
 
+last_idle_maintain_time = datetime.datetime.now()
+
 try:
     # 读取之前闲时维护的时间
     with open("catch\\LAST_IDLE_MAINTAIN.MD", 'r', encoding='utf-8') as f:
@@ -35,7 +38,6 @@ except:
     with open("catch\\LAST_IDLE_MAINTAIN.MD", 'w', encoding='utf-8') as f:
         f.write(str(datetime.datetime.now().strftime("%Y-%m-%d_%H-%M-%S")))
     last_idle_maintain_time = datetime.datetime.now()   # 上次闲时维护时间
-
 
 
 # 判断是否已锁屏
@@ -50,13 +52,21 @@ def is_system_awake():
         return True
 
 
-# 索引文件
+# 录制完成后索引单个刚录制好的视频文件
 def index_video_data(video_saved_dir,vid_file_name):
     print("---\n---Indexing OCR data\n---")
     full_path = os.path.join(video_saved_dir,vid_file_name)
     if os.path.exists(full_path):
         print(f"--{full_path} existed. Start ocr processing.")
+        # 添加维护标识
+        lock_filepath = "catch\\LOCK_MAINTAIN.MD"
+        with open(lock_filepath, 'w', encoding='utf-8') as f:
+            f.write(str(datetime.datetime.now().strftime("%Y-%m-%d_%H-%M-%S")))
+        
         maintainManager.ocr_process_single_video(video_saved_dir, vid_file_name, "catch\\i_frames")
+        
+        # 移除维护标识
+        send2trash(lock_filepath)
 
 
 # 录制屏幕
@@ -115,6 +125,7 @@ def record_screen(
 # 持续录制屏幕的主要线程
 def continuously_record_screen():
     global monitor_change_rank
+    global last_idle_maintain_time
     
     while not continuously_stop_event.is_set():
         # 主循环过程
@@ -128,7 +139,12 @@ def continuously_record_screen():
                 thread_idle_maintain = threading.Thread(target=idle_maintain_process)
                 thread_idle_maintain.daemon = True  # 设置为守护线程
                 thread_idle_maintain.start()
-
+                
+                # 更新维护时间
+                last_idle_maintain_time = datetime.datetime.now()   # 本次闲时维护时间
+                with open("catch\\LAST_IDLE_MAINTAIN.MD", 'w', encoding='utf-8') as f:
+                    f.write(str(last_idle_maintain_time.strftime("%Y-%m-%d_%H-%M-%S")))
+                
             time.sleep(10)
         else:
             subprocess.run('color 2f', shell=True)

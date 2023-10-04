@@ -177,6 +177,8 @@ def draw_db_status():
         # 启用自动索引
         if nocred_count == 1 and record.is_recording():
             st.success(d_lang[config.lang]["tab_setting_db_state3"].format(nocred_count=nocred_count, count=count), icon='✅')
+        elif nocred_count == 0:
+            st.success(d_lang[config.lang]["tab_setting_db_state2"].format(nocred_count=nocred_count, count=count), icon='✅')
         else:
             st.success(d_lang[config.lang]["tab_setting_db_state4"].format(nocred_count=nocred_count, count=count), icon='✅')
     elif config.OCR_index_strategy == 2:
@@ -410,6 +412,9 @@ with tab1:
     # 日期选择器
     if 'day_date_input' not in st.session_state:
         st.session_state['day_date_input'] = datetime.date.today()
+    # if 'day_time_select_slider' not in st.session_state:
+    #     temp_dt_now = time = datetime.datetime.now() - datetime.timedelta(seconds=5)
+    #     st.session_state.day_time_select_slider =temp_dt_now.time()
 
     col1, col2, col3,col4,col5,col6,col7 = st.columns([.4,.25,.25,.15,.25,.2,1])
     with col1:
@@ -444,7 +449,7 @@ with tab1:
 
         col1c,col2c,col3c,col4c,col5c = st.columns([1,1.5,1,1,.5])
         with col1c:
-            if st.checkbox("关键词搜索",help="不输入任何内容直接回车搜索，可列出当日所有数据。"):
+            if st.toggle("搜索",help="支持通过空格分开多个关键词进行检索。不输入任何内容直接回车搜索，可列出当日所有数据。"):
                 st.session_state.day_time_slider_disable = True
                 st.session_state.day_is_search_data = True
             else:
@@ -720,21 +725,25 @@ with tab2:
             if 'search_earlist_record_time_int' not in st.session_state:
                 st.session_state['search_earlist_record_time_int'] = DBManager().db_first_earliest_record_time()
 
-            st.session_state.search_date_range_in, st.session_state.search_date_range_out = st.date_input(
-                d_lang[config.lang]["tab_search_daterange"],
-                (datetime.datetime(1970, 1, 2)
-                    + datetime.timedelta(seconds=st.session_state.search_earlist_record_time_int)
-                    - datetime.timedelta(seconds=86400),
-                datetime.datetime(1970, 1, 2)
-                    + datetime.timedelta(seconds=st.session_state.search_latest_record_time_int)
-                    - datetime.timedelta(seconds=86400)
-                ),
-                format="YYYY-MM-DD",
-                on_change=do_global_keyword_search()
-            )
+            try:
+                st.session_state.search_date_range_in, st.session_state.search_date_range_out = st.date_input(
+                    d_lang[config.lang]["tab_search_daterange"],
+                    (datetime.datetime(1970, 1, 2)
+                        + datetime.timedelta(seconds=st.session_state.search_earlist_record_time_int)
+                        - datetime.timedelta(seconds=86400),
+                    datetime.datetime(1970, 1, 2)
+                        + datetime.timedelta(seconds=st.session_state.search_latest_record_time_int)
+                        - datetime.timedelta(seconds=86400)
+                    ),
+                    format="YYYY-MM-DD",
+                    on_change=do_global_keyword_search()
+                )
+            except:
+                st.warning("请选择完整的时间范围")
+
         with col4a:
             # 翻页
-            page_index = st.number_input("搜索结果页数", min_value=1, step=1,max_value=st.session_state.max_page_count+1)
+            page_index = st.number_input("结果页数", min_value=1, step=1,max_value=st.session_state.max_page_count+1)
 
         df = DBManager().db_search_data_page_turner(st.session_state.db_global_search_result, page_index)
         df = DBManager().db_refine_search_data(df) # 优化数据显示
@@ -836,8 +845,10 @@ with tab3:
 with tab4:
     st.markdown(d_lang[config.lang]["tab_record_title"])
 
-    col1c, col2c = st.columns([1, 2])
+    col1c, col2c, col3c = st.columns([1, .5, 1.5])
     with col1c:
+        st.info("本页的设置在保存后，需重启 start_record.bat 才能生效。")
+
         # 手动检查录屏服务有无进行中
 
         # 管理刷新服务的按钮状态：手动管理状态，polyfill streamlit只能读按钮是否被按下的问题（一旦有其他按钮按下，其他按钮就会回弹导致持续的逻辑重置、重新加载）
@@ -878,14 +889,23 @@ with tab4:
         st.divider()
         st.markdown("#### 录制选项")
 
-        if 'is_create_startup_shortcut' not in st.session_state:
-            st.session_state.is_create_startup_shortcut = record.is_file_already_in_startup('start_record.bat.lnk')
-        st.session_state.is_create_startup_shortcut = st.checkbox(
-            '开机后自动开始录制', value=record.is_file_already_in_startup('start_record.bat.lnk'), 
-            on_change=record.create_startup_shortcut(is_create=st.session_state.is_create_startup_shortcut),
-            help="此项勾选后会为'start_record.bat'创建快捷方式，并放到系统开机自启动的目录下。此项行为可能会被部分安全软件误判为病毒行为，导致'start_webui.bat'被移除，如有拦截，请将其移出隔离区并标记为可信任软件。或手动为'start_record.bat'创建快捷方式、并放到系统的开机启动目录下。")
+        col1_record, col2_record = st.columns([1,1])
+        with col1_record:
+            if 'is_create_startup_shortcut' not in st.session_state:
+                st.session_state.is_create_startup_shortcut = record.is_file_already_in_startup('start_record.bat.lnk')
+            st.session_state.is_create_startup_shortcut = st.checkbox(
+                '开机后自动开始录制', value=record.is_file_already_in_startup('start_record.bat.lnk'), 
+                on_change=record.create_startup_shortcut(is_create=st.session_state.is_create_startup_shortcut),
+                help="此项勾选后会为'start_record.bat'创建快捷方式，并放到系统开机自启动的目录下。此项行为可能会被部分安全软件误判为病毒行为，导致'start_webui.bat'被移除，如有拦截，请将其移出隔离区并标记为可信任软件。或手动为'start_record.bat'创建快捷方式、并放到系统的开机启动目录下。")
 
-        screentime_not_change_to_pause_record = st.number_input('当画面几分钟没有变化时，暂停录制下个视频切片（0为永不暂停）（需重新启动录制脚本才能应用该项）', value=config.screentime_not_change_to_pause_record, min_value=0)
+            st.selectbox("录制显示器（WIP）",('显示器1（3840x2160）','显示器2（1920x1080）'))
+
+        with col2_record:
+            st.write("这里放选中显示器的截图？")
+
+
+
+        screentime_not_change_to_pause_record = st.number_input('当画面几分钟没有变化时，暂停录制下个视频切片（0为永不暂停）', value=config.screentime_not_change_to_pause_record, min_value=0)
 
         st.divider()
 
@@ -905,7 +925,7 @@ with tab4:
         with col1d:
             vid_store_day = st.number_input(d_lang[config.lang]["tab_setting_m_vid_store_time"], min_value=1, value=config.vid_store_day)
         with col2d:
-            st.number_input("原视频在保留几天后进行二次压缩（0 为永不压缩）",value=10,min_value=0)
+            st.number_input("原视频在保留几天后进行压缩（0 为永不）",value=10,min_value=0)
 
         st.divider()
 
@@ -917,9 +937,13 @@ with tab4:
             time.sleep(2)
             st.experimental_rerun()
 
-
     with col2c:
-        st.write("WIP")
+        st.empty()
+
+    with col3c:
+        howitwork_markdown = Path("config\\src\\how_it_work_" + config.lang + ".md").read_text(encoding='utf-8')
+        st.markdown(howitwork_markdown,unsafe_allow_html=True)
+
 
 
 def update_database_clicked():
@@ -953,7 +977,7 @@ with tab5:
                                              help="（待补充描述）推荐使用 Windows.Media.Ocr.Cli")
 
             # 设置排除词
-            exclude_words = st.text_area("当 OCR 存在以下词语时跳过索引",value=utils.list_to_string(config.exclude_words),help="当有些画面/应用不想被索引时，可以在此添加它们可能出现的关键词，以半角逗号“, ”分割。比如不想记录在 捕风记录仪 的查询画面，可以添加“, 捕风记录仪”。")
+            exclude_words = st.text_area("当 OCR 存在以下词语之一时跳过索引",value=utils.list_to_string(config.exclude_words),help="当有些画面/应用不想被索引时，可以在此添加它们可能出现的关键词，以半角逗号“, ”分割。比如不想记录在 捕风记录仪 的查询画面，可以添加“, 捕风记录仪”。")
             
 
         # 更新数据库按钮
@@ -983,7 +1007,7 @@ with tab5:
         with col1pb:
             st.markdown("**OCR 时忽略屏幕四边的区域范围**",help="填入数字为百分比，比如'6' == 6%")
         with col2pb:
-            st.session_state.ocr_screenshot_refer_used = st.checkbox("using screenshot as refer",False)
+            st.session_state.ocr_screenshot_refer_used = st.toggle("using screenshot as refer",False)
 
         if 'ocr_padding_top' not in st.session_state:
             st.session_state.ocr_padding_top = config.ocr_image_crop_URBL[0]
@@ -1055,6 +1079,6 @@ with tab5:
 
     with col3b:
         about_markdown = Path("config\\src\\about_" + config.lang + ".md").read_text(encoding='utf-8')
-        st.markdown(about_markdown)
+        st.markdown(about_markdown,unsafe_allow_html=True)
 
 web_footer_state()
