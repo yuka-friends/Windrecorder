@@ -967,7 +967,7 @@ with tab5:
             update_db_btn = st.button(d_lang[config.lang]["tab_setting_db_btn"], type="secondary", key='update_button_key',
                                       disabled=st.session_state.get("update_button_disabled", False),
                                       on_click=update_database_clicked)
-            is_shutdown_pasocon_after_updatedDB = st.checkbox('更新完毕后关闭计算机（更新过程中请勿勾选）', value=False,disabled=st.session_state.get("update_button_disabled", False))
+            is_shutdown_pasocon_after_updatedDB = st.checkbox('更新完毕后关闭计算机', value=False,disabled=st.session_state.get("update_button_disabled", False))
         
         with col2:
             # 设置ocr引擎

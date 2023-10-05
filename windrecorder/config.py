@@ -26,6 +26,7 @@ class Config:
         use_similar_ch_char_to_search,
         ocr_image_crop_URBL,
         lightbox_result_dir,
+        release_ver,
         **other_field
     ) -> None:
         self.db_path = db_path
@@ -50,6 +51,7 @@ class Config:
         self.user_name = user_name
         self.use_similar_ch_char_to_search = use_similar_ch_char_to_search
         self.ocr_image_crop_URBL = ocr_image_crop_URBL
+        self.release_ver = release_ver
     
     def set_and_save_config(self, attr: str, value):
         if not hasattr(self, attr):

@@ -1,0 +1,6 @@
+庞加莱复现定理
+物理学上，庞加莱复现定理（英语：Poincaré recurrence theorem，又译为庞加莱回复定理或庞加莱回归定理）断言，对于某类系统而言，只要经过充分长但有限的时间，一定会到达某个与初始态任意接近的状态（若该系统具连续的状态），或者一定返回初始态本身（若该系统离散）。
+庞加莱复现时间是复现前经过的时长。对于不同的初始态和不同的要求接近的程度，此时间亦不同。定理仅适用于满足某些条件的孤立力学系统，例如所有粒子都必须约束在某个有限体积的范围内。定理可以放在遍历理论、动态系统，或者统计力学的背景中讨论。适用此定理的系统称为守恒系统（与耗散系统相对）。
+定理得名自亨利·庞加莱，其于1890年讨论过此定理1919年，康斯坦丁·卡拉西奥多里利用测度论证明了此定理。
+Semantic satiation
+Semantic satiation is a psychological phenomenon in which repetition causes a word or phrase to temporarily lose meaning for the listener, who then perceives the speech as repeated meaningless sounds. Extended inspection or analysis (staring at the word or phrase for a long time) in place of repetition also produces the same effect.

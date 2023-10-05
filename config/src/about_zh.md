@@ -2,7 +2,7 @@
 
 #### 关于
 
-当前版本：**0.0.1 Alpha** `2023-10-04_21-51-02`
+当前版本：**v0.0.1 Alpha** `2023-10-04_21-51-02`
 
 遇到问题？想建议反馈？欢迎在 [Github](https://github.com/Antonoko/Windrecorder) 提出 Issue 与 Pr 改进。
 

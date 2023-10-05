@@ -18,7 +18,10 @@ from windrecorder.config import config
 import windrecorder.files as files
 import windrecorder.record as record
 
-ffmpeg_path = 'ffmpeg'
+if config.release_ver:
+    ffmpeg_path = 'env\\ffmpeg.exe'
+else:
+    ffmpeg_path = 'ffmpeg'
 video_path = config.record_videos_dir
 user32 = ctypes.windll.User32
 
@@ -172,7 +175,7 @@ def idle_maintain_process():
 # 测试ffmpeg是否存在可用
 def test_ffmpeg():
     try:
-        res = subprocess.run('ffmpeg -version')
+        res = subprocess.run(ffmpeg_path + ' -version')
     except Exception:
         print('Error: ffmpeg is not installed! Please ensure ffmpeg is in the PATH')
         exit(1)

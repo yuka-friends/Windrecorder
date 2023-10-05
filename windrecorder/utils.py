@@ -302,7 +302,7 @@ def merge_short_lines(text,less_than = 20):
 
 # 根据符号进行换行
 def wrap_text_by_symbol(text):
-    symbol_list = ["。","！","？","）","，","．"]
+    symbol_list = ["。","！","？","），","）。","，","．"]
     text = text.replace('\n', ' ')
     text = text.replace('\r', ' ')
     for symbol in symbol_list:
@@ -310,8 +310,17 @@ def wrap_text_by_symbol(text):
 
     # 使用正则表达式匹配中文字符之间的空格，并移除
     pattern = re.compile(r'([\u4e00-\u9fa5]+)\s+([\u4e00-\u9fa5]+)')
-    result = re.sub(pattern, r'\1\2', text)
+    text = re.sub(pattern, r'\1\2', text)
 
+    return text
+
+# 去除所有的换行
+def wrap_text_by_remove_break(text):
+    text = text.replace('\n', ' ')
+    text = text.replace('\r', ' ')
+    # 使用正则表达式匹配中文字符之间的空格，并移除
+    pattern = re.compile(r'([\u4e00-\u9fa5]+)\s+([\u4e00-\u9fa5]+)')
+    text = re.sub(pattern, r'\1\2', text)
     return text
 
 

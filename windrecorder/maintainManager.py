@@ -186,10 +186,10 @@ def compare_strings(a, b, threshold=70):
     # 判断重合率是否超过阈值
     if overlap >= threshold:
         print("重合率超过阈值")
-        return True
+        return True, overlap
     else:
         print("重合率没有超过阈值")
-        return False
+        return False, overlap
 
 
 # 计算两张图片的重合率 - 通过本地文件的方式
@@ -344,7 +344,7 @@ def ocr_process_single_video(video_path, vid_file_name, iframe_path):
         ocr_result_stringB = ocr_image(img)
         print(f"ocr_result_stringB:{ocr_result_stringB}")
 
-        is_str_same = compare_strings(ocr_result_stringA, ocr_result_stringB)
+        is_str_same,_ = compare_strings(ocr_result_stringA, ocr_result_stringB)
         if is_str_same:
             print("内容一致，不写入数据库，跳过")
         else:
