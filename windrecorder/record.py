@@ -81,8 +81,8 @@ def get_scale_screen_res_strategy(origin_width = 1920, origin_height = 1080):
     target_scale_height = origin_height
 
     if origin_height > 1500:
-        target_scale_width = origin_width/2
-        target_scale_height = origin_height/2
+        target_scale_width = int(origin_width/2)
+        target_scale_height = int(origin_height/2)
     
     return target_scale_width, target_scale_height
 
