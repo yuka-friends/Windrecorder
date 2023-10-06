@@ -4,7 +4,7 @@ title Windrecorder - Quick Setup
 cd /d %~dp0
 
 rem 安装与更新requirement.txt依赖
-@REM pip install -r requirements.txt
+pip install -r requirements.txt
 
 rem 更新GitHub仓库
 @REM git pull

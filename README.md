@@ -2,6 +2,8 @@
 <h1 align="center"> 🦝 Windrecorder | 捕风记录仪</h1>
 <p align="center"> An Open Source Rewind’s alternative for Windows. | 一款运行在 Windows 平台上的 Rewind 替代工具</p>
 
+<p align="center"> English  | 简体中文 </p>
+
 ---
 > What's Rewind ｜ Rewind 是什么？: https://www.rewind.ai/
 
@@ -20,41 +22,59 @@ It runs **entirely locally, stored your private data locally, without any need o
 
 ----
 
-💡 Project Status: have very basic functions, under intensity development
+💡 Project Status: Have basically completely functions. Under intensity development
 
-💡 项目状态：初级阶段，具有基本的功能。仍在持续开发中。
+💡 项目状态：具有基本完整可用的功能。仍在持续开发中。
 
 ---
 
-### Todo:
-- [x] Continuously record screen with smaller file size.
-- [x] Extract unchanging frames in video file and save OCR result in database.
-- [x] Provide basic webui for querying and updating database.
+### Roadmap:
+- [x] Continuously record screen with smaller file size
+- [x] Extract unchanging frames in video file and save OCR result in database
 - [x] Word Cloud and Timeline/Lightbox summarize
-- [ ] Full functional webui dashboard & control center
-- [ ] Automated operation
+- [x] Full functional webui dashboard & control center for querying database and set configuration
+- [x] Automated operation: auto compress and remove outdated videos to save space
 - [ ] Fully i18n support
-- [ ] Setup an easier to use Onboarding/installer
+- [x] Setup an easier to use Onboarding/installer
 - [ ] Polishing details, improving stability
+- [ ] Multi-monitors supports (depends on pyautogui's future update)
+- [ ] Add vision understanding based search
+- [ ] Add LLM summarize and vector searching
 - [ ] 🤔
 
 
 # 🦝 QuickStart ｜ 快速开始
 
+There are two ways to setup windrecorder:
+
+## A. Download the integration package in Release Page (not yet created - soon!) (recommended)
+
+- Download the integrated package with complete dependencies in Release Page.
+
+- Run `install_update_setting.bat` to complete basic settings. That's it!
+
+- Starting recording screen content: run `start_record.bat` (Close the console window to stop recording)
+
+- Query, Rewind or update database manually through webui: run  `start_webui.bat`
+
+## B. Manual deployment
 
 - Ensure [ffmpeg](https://ffmpeg.org/) is installed and can be accessed from PATH.
 
-- Install dependencies: `pip install -r requirements.txt`
+- Make sure Python, Pip and Git are installed. Git clone this repository to your computer, then install virtualenv by `pip install virtualenv` and create a virtual environment under Windrecorder directory: `python -m venv env`. 
 
-- Starting recording screen: run `start_record.bat` (send "ctrl C" or close console window to stop recording)
+- Run `install_update_setting.bat` to install dependencies and complete basic settings. That's it!
+
+- Starting recording screen content: run `start_record.bat` (Close the console window to stop recording)
 
 - Query, Rewind or update database manually through webui: run  `start_webui.bat`
 
     - We recommend using Windows.Media.Ocr.Cli method to OCR Video data, which is faster and using less system resources. Make sure your Windows computer has installed the corresponding OCR language module (it should have been installed with IME by default, and used to identify the corresponding language content). For more information: https://learn.microsoft.com/en-us/windows/powertoys/text-extractor
 
 
-# QA
+# 🦝 Q&A | 常见问题
 Q: 在打开webui时提示：FileNotFoundError: [WinError 2] The system cannot find the file specified: './db\\user_2023-10_wind.db-journal'
+
 A: 这种情况通常在初次访问时、start_record.bat 仍正在索引数据时出现。解决方法：在 start_record.bat 后台索引完毕后，删除 db 文件夹下对应后缀为 _TEMP_READ.db 的数据库文件后刷新即可。
 
 
