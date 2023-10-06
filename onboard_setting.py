@@ -5,8 +5,9 @@ import time
 from windrecorder.config import config
 import windrecorder.maintainManager as maintainManager
 import windrecorder.utils as utils
+import windrecorder.record as record
 
-allstep = 5
+allstep = 4
 
 
 # 读取i18n
@@ -37,7 +38,7 @@ while(True):
     print("首先，请设置你的界面语言。（输入数字项后回车确认）")
     divider()
     print("1. English   2. 简体中文")
-    input_lang_num = input('>')
+    input_lang_num = input('> ')
 
     if input_lang_num == '1':
         config.set_and_save_config('lang', 'en')
@@ -47,7 +48,7 @@ while(True):
     if input_lang_num == '2':
         config.set_and_save_config('lang', 'zh')
         lang = 'zh'
-        print("界面语言已被设定为：简体中文")
+        print("界面语言已设定为：简体中文")
         break
     else:
         print("Unrecognized input item, please enter the corresponding numerical option and press Enter to confirm.\n无法识别的输入项，请输入对应的数字选项后回车确认。")
@@ -108,10 +109,10 @@ while(True):
         
 
     divider()
-    print("| 推荐使用系统自带的 Windows.Media.Ocr.Cli，具有更快的速度、更低的性能消耗。\n")
-    print("选择提取屏幕内容时的 OCR 引擎：")
-    print("1. Windows.Media.Ocr.Cli（推荐 & 默认） 2. chineseocr_lite_onnx")
-    input_lang_num = input('>')
+    print("> 推荐使用系统自带的 Windows.Media.Ocr.Cli，具有更快的速度、更低的性能消耗。\n")
+    print("请选择提取屏幕内容时的 OCR 引擎：")
+    print("1. Windows.Media.Ocr.Cli（推荐 & 默认） \n2. chineseocr_lite_onnx")
+    input_lang_num = input('> ')
 
     if input_lang_num == '2':
         config.set_and_save_config("ocr_engine", "chineseocr_lite_onnx")
@@ -122,6 +123,7 @@ while(True):
         print("OCR 引擎使用：Windows.Media.Ocr.Cli")
         break
 
+divider()
 subprocess.run('pause', shell=True)
 
 
@@ -129,9 +131,17 @@ subprocess.run('pause', shell=True)
 # 设置显示器
 while(True):
     print_header(step=3)
-    print("检测到以下显示器")
+    print("注意：由于 pyautogui 暂未官方支持多显示器，捕风记录仪将只记录 Windows 下设置的【主显示器】\n")
+    
+    monitor_width = utils.get_screen_resolution().width
+    monitor_height = utils.get_screen_resolution().height
+    scale_width, scale_height = record.get_scale_screen_res_strategy(origin_width=monitor_width, origin_height=monitor_height)
+    
+    print(f"当前检测到的主显示器分辨率为：{monitor_width}x{monitor_height}，将录制的视频分辨率为：{scale_width}x{scale_height}。")
+    print("此项设定将在每次录屏时自动识别，无需额外选择与设定。")
     break
 
+divider()
 subprocess.run('pause', shell=True)
 
 
@@ -139,7 +149,7 @@ subprocess.run('pause', shell=True)
 
 # 完成初始化设定
 print_header(step=4)
-print("恭喜！我们已完成所有初始设定。别担心，你可以随时打开 start_webui.bat 来更改设置！\n现在，你可以打开目录下的 start_record.bat 来开始记录屏幕内容啦。\n通过打开目录下的 start_webui.bat 来索引你的数据、调整更多个性化选项。\n")
-print("一起捕捉与贮藏风一般掠过的、你的目之所见。\n")
-print("（遇到问题、想反馈建议？欢迎在 https://github.com/Antonoko/Windrecorder 提交 issue 与 PR。）")
+print("恭喜！你已完成所有初始设定。别担心，你可以随时打开 start_webui.bat 来调整设置！\n\n现在，你可以打开目录下的 start_record.bat 来开始记录屏幕内容啦。\n通过打开目录下的 start_webui.bat 来索引你的数据、调整更多个性化选项。\n")
+print("> 一起捕捉贮藏风一般掠过的、你的目之所见。")
+print("> 遇到问题、想反馈建议？欢迎在 https://github.com/Antonoko/Windrecorder 提交 issue 与 PR。")
 divider()

@@ -16,6 +16,7 @@ import cv2
 import pyautogui
 from PIL import Image
 import numpy as np
+from send2trash import send2trash
 
 import windrecorder.files as files
 from windrecorder.config import config
@@ -230,6 +231,8 @@ def calc_vid_inside_time(df, num):
     fulltime = df.iloc[num]['videofile_time']
     vidfilename = os.path.splitext(df.iloc[num]['videofile_name'])[0]
     # 用记录时的总时间减去视频文件时间（开始记录的时间）即可得到相对的时间
+    vidfilename = vidfilename.replace('-INDEX','')
+    vidfilename = vidfilename.replace('-ERROR','')
     vid_timestamp = fulltime - date_to_seconds(vidfilename)
     print("fulltime:" + str(fulltime) + "\n vidfilename:" + str(vidfilename) + "\n vid_timestamp:" + str(vid_timestamp))
     return vid_timestamp
@@ -352,4 +355,32 @@ def image_to_base64(image_path):
 
     return base64_image
 
+
+# 添加维护锁文件标识
+def add_maintain_lock_file(lock="make"):
+    files.check_and_create_folder("catch")
+    lock_filepath = "catch\\LOCK_MAINTAIN.MD"
+    if lock == "make":
+        with open(lock_filepath, 'w', encoding='utf-8') as f:
+            f.write(str(datetime.datetime.now().strftime("%Y-%m-%d_%H-%M-%S")))
+    elif lock == "del":
+        try:
+            send2trash(lock_filepath)
+        except Exception as e:
+            print(e)
+
+
+# 检查db是否是合法的正在维护中的锁（超过一定时间则解锁），否的话可以执行任务，是的话暂时不执行
+def is_maintain_lock_file_valid(gap=datetime.timedelta(minutes=16)):
+    lock_filepath = "catch\\LOCK_MAINTAIN.MD"
+    if os.path.exists(lock_filepath):
+        with open(lock_filepath, 'r', encoding='utf-8') as f:
+            last_maintain_locktime = date_to_datetime(str(f.read()))
+        if datetime.datetime.now() - last_maintain_locktime > gap:
+            return False
+        else:
+            return True
+    else:
+        return False
+    
 

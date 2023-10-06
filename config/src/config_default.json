@@ -20,8 +20,8 @@
     "请","替换","为","不想","统计","在","词云","中","的","词语"
   ],
   "ocr_image_crop_URBL": [6,6,6,3],
-  "vid_store_day": 90,
-  "vid_compress_day": 30,
+  "vid_store_day": 300,
+  "vid_compress_day": 60,
   "OCR_index_strategy": 1,
   "wordcloud_result_dir": "result_wordcloud",
   "timeline_result_dir": "result_timeline",
@@ -30,5 +30,6 @@
   "show_oneday_wordcloud": true,
   "user_name": "default",
   "use_similar_ch_char_to_search": true,
-  "release_ver":false
+  "release_ver":false,
+  "video_compress_rate":"0.75"
 }

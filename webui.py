@@ -156,19 +156,6 @@ def choose_search_result_num(df, is_df_result_exist):
         return 0
 
 
-# 对搜索结果执行翻页查询
-def db_set_page(btn, page_index):
-    if btn == "L":
-        if page_index <= 0:
-            return 0
-        else:
-            page_index -= 1
-            return page_index
-    elif btn == "R":
-        page_index += 1
-        return page_index
-
-
 # 数据库的前置更新索引状态提示
 def draw_db_status():
     count, nocred_count = files.get_videos_and_ocred_videos_count(config.record_videos_dir)
@@ -706,24 +693,43 @@ with tab2:
         if 'search_date_range_out' not in st.session_state:
             st.session_state.search_date_range_out = datetime.datetime.today()
 
+        # 时间搜索范围组件（懒加载）
+        if 'search_latest_record_time_int' not in st.session_state:
+            st.session_state['search_latest_record_time_int'] = DBManager().db_latest_record_time()
+        if 'search_earlist_record_time_int' not in st.session_state:
+            st.session_state['search_earlist_record_time_int'] = DBManager().db_first_earliest_record_time()
+
+        # 优化streamlit强加载机制的索引时间
+        if 'search_content_lazy' not in st.session_state:
+            st.session_state.search_content_lazy = None
+        if 'search_content_exclude_lazy' not in st.session_state:
+            st.session_state.search_content_lazy = None
+        if 'search_date_range_in_lazy' not in st.session_state:
+            st.session_state.search_date_range_in_lazy = datetime.datetime(1970, 1, 2) + datetime.timedelta(seconds=st.session_state.search_earlist_record_time_int) - datetime.timedelta(seconds=86400)
+        if 'search_date_range_out_lazy' not in st.session_state:
+            st.session_state.search_date_range_out = datetime.datetime(1970, 1, 2) + datetime.timedelta(seconds=st.session_state.search_latest_record_time_int) - datetime.timedelta(seconds=86400)
+
+
         def do_global_keyword_search():
-            # global db_global_search_result
-            st.session_state.db_global_search_result, st.session_state.all_result_counts, st.session_state.max_page_count = DBManager().db_search_data(st.session_state.search_content, 
-                                                                                                                                      st.session_state.search_date_range_in, 
-                                                                                                                                      st.session_state.search_date_range_out,
-                                                                                                                                      keyword_input_exclude = st.session_state.search_content_exclude)
-        
+            # 如果搜索入参状态改变了
+            if st.session_state.search_content_lazy != st.session_state.search_content or st.session_state.search_content_exclude_lazy != st.session_state.search_content_exclude or st.session_state.search_date_range_in_lazy != st.session_state.search_date_range_in or st.session_state.search_date_range_out_lazy != st.session_state.search_date_range_out:
+                st.session_state.search_content_lazy = st.session_state.search_content
+                st.session_state.search_content_exclude_lazy = st.session_state.search_content_exclude
+                st.session_state.search_date_range_in_lazy = st.session_state.search_date_range_in
+                st.session_state.search_date_range_out_lazy = st.session_state.search_date_range_out
+
+                st.session_state.db_global_search_result, st.session_state.all_result_counts, st.session_state.max_page_count = DBManager().db_search_data(st.session_state.search_content, 
+                                                                                                                                          st.session_state.search_date_range_in, 
+                                                                                                                                          st.session_state.search_date_range_out,
+                                                                                                                                          keyword_input_exclude = st.session_state.search_content_exclude)
+                        
+
         col1a, col2a, col3a, col4a = st.columns([2, 1, 2, 1])
         with col1a:
-            st.session_state.search_content = st.text_input(d_lang[config.lang]["tab_search_compname"], 'Hello', on_change=do_global_keyword_search(),help="可使用空格分隔多个关键词。")
+            st.session_state.search_content = st.text_input(d_lang[config.lang]["tab_search_compname"], value="", on_change=do_global_keyword_search(),help="可使用空格分隔多个关键词。")
         with col2a:
             st.session_state.search_content_exclude = st.text_input("排除", "",help="排除哪些关键词的内容，留空为不排除。可使用空格分隔多个关键词。", on_change=do_global_keyword_search())
         with col3a:
-            # 时间搜索范围组件（懒加载）
-            if 'search_latest_record_time_int' not in st.session_state:
-                st.session_state['search_latest_record_time_int'] = DBManager().db_latest_record_time()
-            if 'search_earlist_record_time_int' not in st.session_state:
-                st.session_state['search_earlist_record_time_int'] = DBManager().db_first_earliest_record_time()
 
             try:
                 st.session_state.search_date_range_in, st.session_state.search_date_range_out = st.date_input(
@@ -743,27 +749,34 @@ with tab2:
 
         with col4a:
             # 翻页
-            page_index = st.number_input("结果页数", min_value=1, step=1,max_value=st.session_state.max_page_count+1)
+            st.session_state.page_index = st.number_input("结果页数", min_value=1, step=1, max_value=st.session_state.max_page_count+1)
 
-        df = DBManager().db_search_data_page_turner(st.session_state.db_global_search_result, page_index)
-        df = DBManager().db_refine_search_data(df) # 优化数据显示
-        is_df_result_exist = len(df)
+        # 进行搜索
+        if not len(st.session_state.search_content) == 0:
+            df = DBManager().db_search_data_page_turner(st.session_state.db_global_search_result, st.session_state.page_index)
+            df = DBManager().db_refine_search_data(df) # 优化数据显示
+            is_df_result_exist = len(df)
 
-        st.markdown(f"`搜索到 {st.session_state.all_result_counts} 条、共 {st.session_state.max_page_count} 页关于 \"{st.session_state.search_content}\" 的结果。`")
+            st.markdown(f"`搜索到 {st.session_state.all_result_counts} 条、共 {st.session_state.max_page_count} 页关于 \"{st.session_state.search_content}\" 的结果。`")
 
-        # 滑杆选择
-        result_choose_num = choose_search_result_num(df, is_df_result_exist)
+            # 滑杆选择
+            result_choose_num = choose_search_result_num(df, is_df_result_exist)
 
-
-        if len(df) == 0:
-            st.info(d_lang[config.lang]["tab_search_word_no"].format(search_content=st.session_state.search_content), icon="🎐")
+            if len(df) == 0:
+                st.info(d_lang[config.lang]["tab_search_word_no"].format(search_content=st.session_state.search_content), icon="🎐")
+            else:
+                # 打表
+                draw_dataframe(df,heightIn=800)
+        
         else:
-            # 打表
-            draw_dataframe(df,heightIn=800)
+            st.info("这里是全局搜索页，可以搜索到迄今记录的所有内容。输入关键词后回车即可搜索。",icon="🔎")
 
     with col2:
         # 选择视频
-        show_n_locate_video_timestamp_by_df(df, result_choose_num)
+        if not len(st.session_state.search_content) == 0:
+            show_n_locate_video_timestamp_by_df(df, result_choose_num)
+        else:
+            st.empty()
 
 
 
@@ -789,13 +802,13 @@ with tab3:
         st.markdown("### 当月数据统计")
         col1a, col2a, col3a = st.columns([.5,.5,1])
         with col1a:
-            st.session_state.stat_Stat_query_Year = st.number_input(label="Stat_query_Year",min_value=st.session_state.stat_db_earliest_datetime.year,max_value=st.session_state.stat_db_latest_datetime.year,value=st.session_state.stat_db_latest_datetime.year,label_visibility="collapsed")
+            st.session_state.Stat_query_Year = st.number_input(label="Stat_query_Year",min_value=st.session_state.stat_db_earliest_datetime.year,max_value=st.session_state.stat_db_latest_datetime.year,value=st.session_state.stat_db_latest_datetime.year,label_visibility="collapsed")
         with col2a:
             st.session_state.Stat_query_Month = st.number_input(label="Stat_query_Month",min_value=selector_month_min,max_value=selector_month_max,value=st.session_state.stat_db_latest_datetime.month,label_visibility="collapsed")
         with col3a:
-            st.button("回到本月")
+            st.empty()
         
-        st.session_state.stat_select_month_datetime = datetime.datetime(st.session_state.stat_Stat_query_Year,st.session_state.Stat_query_Month,1,10,0,0)
+        st.session_state.stat_select_month_datetime = datetime.datetime(st.session_state.Stat_query_Year,st.session_state.Stat_query_Month,1,10,0,0)
         get_show_month_data_state(st.session_state.stat_select_month_datetime) # 显示当月概览
 
         stat_year_title = st.session_state.stat_select_month_datetime.year
@@ -808,7 +821,7 @@ with tab3:
 
         col1_mem, col2_mem = st.columns([1,1])
         with col1_mem:
-            current_month_cloud_img_name = str(st.session_state.stat_Stat_query_Year) + "-" + str(st.session_state.Stat_query_Month) + ".png"
+            current_month_cloud_img_name = str(st.session_state.Stat_query_Year) + "-" + str(st.session_state.Stat_query_Month) + ".png"
             current_month_cloud_img_path = os.path.join(config.wordcloud_result_dir,current_month_cloud_img_name)
 
             if st.button("生成/更新本月词云"):
@@ -823,7 +836,7 @@ with tab3:
                 st.info("当月未有词云图片。")
 
         with col2_mem:
-            current_month_lightbox_img_name = str(st.session_state.stat_Stat_query_Year) + "-" + str(st.session_state.Stat_query_Month) + ".png"
+            current_month_lightbox_img_name = str(st.session_state.Stat_query_Year) + "-" + str(st.session_state.Stat_query_Month) + ".png"
             current_month_lightbox_img_path = os.path.join(config.lightbox_result_dir,current_month_lightbox_img_name)
 
             if st.button("生成/更新本月的光箱"):
@@ -898,10 +911,8 @@ with tab4:
                 on_change=record.create_startup_shortcut(is_create=st.session_state.is_create_startup_shortcut),
                 help="此项勾选后会为'start_record.bat'创建快捷方式，并放到系统开机自启动的目录下。此项行为可能会被部分安全软件误判为病毒行为，导致'start_webui.bat'被移除，如有拦截，请将其移出隔离区并标记为可信任软件。或手动为'start_record.bat'创建快捷方式、并放到系统的开机启动目录下。")
 
-            st.selectbox("录制显示器（WIP）",('显示器1（3840x2160）','显示器2（1920x1080）'))
-
         with col2_record:
-            st.write("这里放选中显示器的截图？")
+            st.markdown("<p align='right' style='color:rgba(0,0,0,.5)'>当前仅支持录制主显示器画面。</p>",unsafe_allow_html=True)
 
 
 
@@ -920,12 +931,14 @@ with tab4:
                      index=config.OCR_index_strategy
                      )
         
-        st.write("WIP")
-        col1d,col2d = st.columns([1,1])
+        col1d,col2d,col3d = st.columns([1,1,1])
         with col1d:
-            vid_store_day = st.number_input(d_lang[config.lang]["tab_setting_m_vid_store_time"], min_value=1, value=config.vid_store_day)
+            vid_store_day = st.number_input(d_lang[config.lang]["tab_setting_m_vid_store_time"], min_value=0, value=config.vid_store_day)
         with col2d:
-            st.number_input("原视频在保留几天后进行压缩（0 为永不）",value=10,min_value=0)
+            vid_compress_day = st.number_input("原视频在保留几天后进行压缩（0 为永不）",value=config.vid_compress_day,min_value=0)
+        with col3d:
+            video_compress_selectbox_dict = {'0.75':0, '0.5':1, '0.25':2}
+            video_compress_rate_selectbox = st.selectbox("压缩到原先画面尺寸的",list(video_compress_selectbox_dict.keys()),index=video_compress_selectbox_dict[config.video_compress_rate])
 
         st.divider()
 
@@ -933,6 +946,8 @@ with tab4:
             config.set_and_save_config("screentime_not_change_to_pause_record",screentime_not_change_to_pause_record)
             config.set_and_save_config("OCR_index_strategy",ocr_strategy_option_dict[ocr_strategy_option])
             config.set_and_save_config("vid_store_day",vid_store_day)
+            config.set_and_save_config("vid_compress_day",vid_compress_day)
+            config.set_and_save_config("video_compress_rate",video_compress_rate_selectbox)
             st.toast("已应用更改。", icon="🦝")
             time.sleep(2)
             st.experimental_rerun()
@@ -1078,7 +1093,11 @@ with tab5:
         st.empty()
 
     with col3b:
-        about_markdown = Path("config\\src\\about_" + config.lang + ".md").read_text(encoding='utf-8')
+        # 关于
+        about_path = "config\\src\\meta.json"
+        with open(about_path, 'r', encoding='utf-8') as f:
+            about_json = json.load(f)
+        about_markdown = Path("config\\src\\about_" + config.lang + ".md").read_text(encoding='utf-8').format(version=about_json["version"], update_date=about_json["update_date"])
         st.markdown(about_markdown,unsafe_allow_html=True)
 
 web_footer_state()

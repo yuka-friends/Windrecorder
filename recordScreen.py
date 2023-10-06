@@ -29,6 +29,7 @@ user32 = ctypes.windll.User32
 monitor_change_rank = 0
 last_screenshot_array = None
 idle_maintain_time_gap = datetime.timedelta(hours=8)   # 与上次闲时维护至少相隔
+lock_idle_maintaining = False   # 维护中的锁
 
 last_idle_maintain_time = datetime.datetime.now()
 
@@ -58,18 +59,17 @@ def is_system_awake():
 # 录制完成后索引单个刚录制好的视频文件
 def index_video_data(video_saved_dir,vid_file_name):
     print("---\n---Indexing OCR data\n---")
-    full_path = os.path.join(video_saved_dir,vid_file_name)
-    if os.path.exists(full_path):
-        print(f"--{full_path} existed. Start ocr processing.")
-        # 添加维护标识
-        lock_filepath = "catch\\LOCK_MAINTAIN.MD"
-        with open(lock_filepath, 'w', encoding='utf-8') as f:
-            f.write(str(datetime.datetime.now().strftime("%Y-%m-%d_%H-%M-%S")))
-        
-        maintainManager.ocr_process_single_video(video_saved_dir, vid_file_name, "catch\\i_frames")
-        
-        # 移除维护标识
-        send2trash(lock_filepath)
+    if not utils.is_maintain_lock_file_valid():
+        full_path = os.path.join(video_saved_dir,vid_file_name)
+        if os.path.exists(full_path):
+            print(f"--{full_path} existed. Start ocr processing.")
+            # 添加维护标识
+            utils.add_maintain_lock_file(lock="make")
+            
+            maintainManager.ocr_process_single_video(video_saved_dir, vid_file_name, "catch\\i_frames")
+            
+            # 移除维护标识
+            utils.add_maintain_lock_file(lock="del")
 
 
 # 录制屏幕
@@ -94,7 +94,7 @@ def record_screen(
 
     # 获取屏幕分辨率并根据策略决定缩放
     screen_width, screen_height = utils.get_screen_resolution()
-    target_scale_width, target_scale_height = record.get_scale_screen_res_strategy(screen_width, screen_height)
+    target_scale_width, target_scale_height = record.get_scale_screen_res_strategy(origin_width=screen_width, origin_height=screen_height)
     print(f"Origin screen resolution: {screen_width}x{screen_height}, Resized to {target_scale_width}x{target_scale_height}.")
 
     ffmpeg_cmd = [
@@ -129,16 +129,18 @@ def record_screen(
 def continuously_record_screen():
     global monitor_change_rank
     global last_idle_maintain_time
+    global lock_idle_maintaining
     
     while not continuously_stop_event.is_set():
         # 主循环过程
         if monitor_change_rank > config.screentime_not_change_to_pause_record:
-            print("屏幕内容没有更新，停止录屏中。进入闲时维护")
+            print("屏幕内容没有更新，停止录屏中。")
             subprocess.run('color 60', shell=True)
 
             # 算算是否该进入维护了（与上次维护时间相比）
             timegap_between_last_idle_maintain = datetime.datetime.now() - last_idle_maintain_time
-            if timegap_between_last_idle_maintain > idle_maintain_time_gap:
+            if timegap_between_last_idle_maintain > idle_maintain_time_gap and not lock_idle_maintaining:   # 超时且无锁情况下
+                print(f"与上次维护时间相隔{timegap_between_last_idle_maintain}，进入闲时维护")
                 thread_idle_maintain = threading.Thread(target=idle_maintain_process)
                 thread_idle_maintain.daemon = True  # 设置为守护线程
                 thread_idle_maintain.start()
@@ -166,8 +168,18 @@ def continuously_record_screen():
 
 # 闲时维护的操作流程
 def idle_maintain_process():
-    print("idle_maintain")
+    global lock_idle_maintaining
+    lock_idle_maintaining = True
+    # 维护之前退出没留下的视频
+    if not utils.is_maintain_lock_file_valid():
+        thread_maintain_last_time = threading.Thread(target=maintainManager.maintain_manager_main)
+        thread_maintain_last_time.start()
+    # 清理过时视频
     maintainManager.remove_outdated_videofiles()
+    # 压缩过期视频
+    maintainManager.compress_outdated_videofiles()
+    
+    lock_idle_maintaining = False
 
 
 
@@ -225,8 +237,9 @@ if __name__ == '__main__':
     print(f"-config.OCR_index_strategy: {config.OCR_index_strategy}")
 
     # 维护之前退出没留下的视频
-    thread_maintain_last_time = threading.Thread(target=maintainManager.maintain_manager_main)
-    thread_maintain_last_time.start()
+    if not utils.is_maintain_lock_file_valid():
+        thread_maintain_last_time = threading.Thread(target=maintainManager.maintain_manager_main)
+        thread_maintain_last_time.start()
 
     # 屏幕内容多长时间不变则暂停录制
     print(f"-config.screentime_not_change_to_pause_record:{config.screentime_not_change_to_pause_record}")
@@ -259,7 +272,7 @@ if __name__ == '__main__':
         #         thread_index_video_data.start()
         #     time.sleep(2) # 再歇
         
-        # 如果屏幕检测线程意外出错，重启它
+        # 如果屏幕重复画面检测线程意外出错，重启它
         if not thread_monitor_compare_screenshot.is_alive() and config.screentime_not_change_to_pause_record >0:
             thread_monitor_compare_screenshot = threading.Thread(target=monitor_compare_screenshot)
             thread_monitor_compare_screenshot.start()

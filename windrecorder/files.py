@@ -29,6 +29,7 @@ def check_and_create_folder(folder_name):
 
 # 将数据库的视频名加上-OCRED标志，使之能正常读取到
 def add_OCRED_suffix(video_name):
+    video_name = video_name.replace('-INDEX','')
     vidname = os.path.splitext(video_name)[0] + "-OCRED" + os.path.splitext(video_name)[1]
     return vidname
 

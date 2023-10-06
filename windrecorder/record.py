@@ -3,7 +3,9 @@ import os
 import shutil
 
 from pyshortcuts import make_shortcut
-
+import pyautogui
+import subprocess
+from send2trash import send2trash
 
 # 检测是否正在录屏
 def is_recording():
@@ -75,7 +77,7 @@ def create_startup_shortcut(is_create = True):
 
 
 
-# 获取目标缩放分辨率策略
+# 获取录屏时目标缩放分辨率策略
 def get_scale_screen_res_strategy(origin_width = 1920, origin_height = 1080):
     target_scale_width = origin_width
     target_scale_height = origin_height
@@ -87,7 +89,29 @@ def get_scale_screen_res_strategy(origin_width = 1920, origin_height = 1080):
     return target_scale_width, target_scale_height
 
 
+# 压缩视频分辨率到输入倍率
+def compress_video_resolution(video_path, scale_factor):
+    scale_factor = float(scale_factor)
 
+    # 获取视频的原始分辨率
+    cmd = f'ffprobe -v error -select_streams v:0 -show_entries stream=width,height -of csv=p=0 {video_path}'
+    output = subprocess.check_output(cmd, shell=True).decode('utf-8').strip()
+    width, height = map(int, output.split(','))
+
+    # 计算目标分辨率
+    target_width = int(width * scale_factor)
+    target_height = int(height * scale_factor)
+
+    # 压缩视频分辨率
+    # output_path = f'compressed_{target_width}x{target_height}.mp4'
+    output_newname = os.path.basename(video_path).replace('-OCRED','-COMPRESS-OCRED')
+    output_path = os.path.join(os.path.dirname(video_path), output_newname)
+    if os.path.exists(output_path):
+        send2trash(output_path)
+    cmd = f'ffmpeg -i {video_path} -vf scale={target_width}:{target_height} -c:v libx264 -crf 39 {output_path}'
+    subprocess.call(cmd, shell=True)
+
+    return output_path
 
 
 

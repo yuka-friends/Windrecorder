@@ -18,6 +18,7 @@ from windrecorder.dbManager import DBManager
 from windrecorder.config import config
 import windrecorder.utils as utils
 import windrecorder.files as files
+import windrecorder.record as record
 
 
 
@@ -177,7 +178,10 @@ def compare_strings(a, b, threshold=70):
 
     # a 和 b 都不含任何文字
     if len(set(a) | set(b)) == 0:
-        return False
+        return False, 0
+
+    if len(a) or len(b) == 0:
+        return False, 0
 
     # 计算两个字符串的重合率
     overlap = len(set(a) & set(b)) / len(set(a) | set(b)) * 100
@@ -405,15 +409,23 @@ def ocr_process_videos(video_path, iframe_path):
             try:
                 ocr_process_single_video(root, file, iframe_path)
             except Exception as e:
+                # 记录错误日志
                 print("Error occurred while processing :",full_file_path,e)
                 video_filename = os.path.basename(full_file_path)
                 new_name = video_filename.split('.')[0] + "-ERROR." + video_filename.split('.')[1]
                 new_name_dir = os.path.dirname(full_file_path)
                 os.rename(full_file_path, os.path.join(new_name_dir, new_name))
+                
+                files.check_and_create_folder("catch")
+                with open("catch\\LOG_ERROR_" + str(new_name) + ".MD", 'w', encoding='utf-8') as f:
+                    f.write(str(datetime.datetime.now().strftime("%Y-%m-%d_%H-%M-%S")) + '\n' + str(e))
 
 
 # 检查视频文件夹中所有文件的日期，对超出储存时限的文件进行删除操作
 def remove_outdated_videofiles():
+    if config.vid_store_day == 0:
+        return None
+    
     today_datetime = datetime.datetime.today()
     days_to_subtract = config.vid_store_day
     start_datetime = datetime.datetime(2000,1,1,0,0,1)
@@ -431,6 +443,9 @@ def remove_outdated_videofiles():
 
 # 检查视频文件夹中所有文件的日期，对超出储存时限的文件进行压缩操作(todo)
 def compress_outdated_videofiles():
+    if config.vid_compress_day == 0:
+        return None
+    
     today_datetime = datetime.datetime.today()
     days_to_subtract = config.vid_compress_day
     start_datetime = datetime.datetime(2000,1,1,0,0,1)
@@ -442,7 +457,12 @@ def compress_outdated_videofiles():
 
     if len(video_filepath_list_outdate) >0:
         for item in video_filepath_list_outdate:
-            print(f"compressing {item}")
+            if not item.endswith('-COMPRESS-OCRED.mp4') and item.endswith('-OCRED.mp4'):
+                print(f"compressing {item}")
+                record.compress_video_resolution(item,config.video_compress_rate)
+                send2trash(item)
+    print("All tasks done!")
+                
 
 
 # 检查数据库中的条目是否有对应视频
@@ -504,9 +524,7 @@ def maintain_manager_main():
     """
 
     # 添加维护标识
-    lock_filepath = "catch\\LOCK_MAINTAIN.MD"
-    with open(lock_filepath, 'w', encoding='utf-8') as f:
-        f.write(str(datetime.datetime.now().strftime("%Y-%m-%d_%H-%M-%S")))
+    utils.add_maintain_lock_file(lock="make")
 
     record_videos_dir = config.record_videos_dir
     i_frames_dir = 'catch\\i_frames'
@@ -522,5 +540,5 @@ def maintain_manager_main():
     ocr_process_videos(record_videos_dir, i_frames_dir)
 
     # 移除维护标识
-    send2trash(lock_filepath)
+    utils.add_maintain_lock_file(lock="del")
 

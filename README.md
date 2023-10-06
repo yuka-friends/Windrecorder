@@ -53,6 +53,11 @@ It runs **entirely locally, stored your private data locally, without any need o
     - We recommend using Windows.Media.Ocr.Cli method to OCR Video data, which is faster and using less system resources. Make sure your Windows computer has installed the corresponding OCR language module (it should have been installed with IME by default, and used to identify the corresponding language content). For more information: https://learn.microsoft.com/en-us/windows/powertoys/text-extractor
 
 
+# QA
+Q: 在打开webui时提示：FileNotFoundError: [WinError 2] The system cannot find the file specified: './db\\user_2023-10_wind.db-journal'
+A: 这种情况通常在初次访问时、start_record.bat 仍正在索引数据时出现。解决方法：在 start_record.bat 后台索引完毕后，删除 db 文件夹下对应后缀为 _TEMP_READ.db 的数据库文件后刷新即可。
+
+
 # 🧡
 Like this project? Also check out [長瀬有花 / YUKA NAGASE](https://www.youtube.com/channel/UCf-PcSHzYAtfcoiBr5C9DZA) 's healing music on YouTube and Stream music platform <3
 
