@@ -262,22 +262,50 @@ class DBManager:
 
 
     # 优化搜索数据结果的展示
-    def db_refine_search_data(self, df):
-        print("——优化搜索数据结果的展示")
-        df.drop('picturefile_name', axis=1, inplace=True)
-        df.drop('is_picturefile_exist', axis=1, inplace=True)
+    def db_refine_search_data_global(self, df):
+        print("——优化全局搜索数据结果的展示")
+        # df.drop('picturefile_name', axis=1, inplace=True)
+        # df.drop('is_picturefile_exist', axis=1, inplace=True)
 
-        df.insert(1, 'time_stamp', df['videofile_time'].apply(utils.seconds_to_date))
-        # df.drop('videofile_time', axis=1, inplace=True)
+        # df.insert(1, 'time_stamp', df['videofile_time'].apply(utils.seconds_to_date))
+        # # df.drop('videofile_time', axis=1, inplace=True)
 
-        df.insert(len(df.columns) - 1, 'videofile_name', df.pop('videofile_name'))
-        df.insert(len(df.columns) - 1, 'videofile_time', df.pop('videofile_time'))
-        # df['is_videofile_exist'] = df['is_videofile_exist'].astype(str)
+        # df.insert(len(df.columns) - 1, 'videofile_name', df.pop('videofile_name'))
+        # df.insert(len(df.columns) - 1, 'videofile_time', df.pop('videofile_time'))
+        # # df['is_videofile_exist'] = df['is_videofile_exist'].astype(str)
 
+        # df['thumbnail'] = 'data:image/png;base64,' + df['thumbnail']
+        # df.insert(0, 'thumbnail', df.pop('thumbnail'))
+
+        # return df
+
+    # def process_dataframe(df: pd.DataFrame) -> pd.DataFrame:
+        # 1. Add a new column "locate_time"
+        df["locate_time"] = df.apply(lambda row: utils.convert_seconds_to_hhmmss(utils.get_video_timestamp_by_filename_and_abs_timestamp(row["videofile_name"], row["videofile_time"])), axis=1)
+        df["timestamp"] = df.apply(lambda row: utils.seconds_to_date_goodlook_formart(row['videofile_time']), axis=1)
         df['thumbnail'] = 'data:image/png;base64,' + df['thumbnail']
-        df.insert(0, 'thumbnail', df.pop('thumbnail'))
 
+        # 2. Remove specified columns
+        df = df.drop(columns=["picturefile_name", "is_picturefile_exist"])
+        
+        # 3. Rearrange columns and return the processed dataframe
+        df = df[["thumbnail", "timestamp", "ocr_text", "is_videofile_exist", "videofile_name", "locate_time", "videofile_time"]]
         return df
+    
+
+    # 优化一天之时数据结果的展示
+    def db_refine_search_data_day(self,df):
+        df["locate_time"] = df.apply(lambda row: utils.convert_seconds_to_hhmmss(utils.get_video_timestamp_by_filename_and_abs_timestamp(row["videofile_name"], row["videofile_time"])), axis=1)
+        df["timestamp"] = df.apply(lambda row: utils.seconds_to_date_dayHMS(row['videofile_time']), axis=1)
+        df['thumbnail'] = 'data:image/png;base64,' + df['thumbnail']
+        
+        df = df.drop(columns=["picturefile_name", "is_picturefile_exist"])
+        
+        df = df[["thumbnail", "timestamp", "ocr_text", "is_videofile_exist", "videofile_name", "locate_time", "videofile_time"]]
+        
+        return df
+
+    
 
 
     # 列出所有数据

@@ -178,10 +178,10 @@ def compare_strings(a, b, threshold=70):
 
     # a 和 b 都不含任何文字
     if len(set(a) | set(b)) == 0:
-        return False, 0
+        return True, 0
 
     if len(a) or len(b) == 0:
-        return False, 0
+        return True, 0
 
     # 计算两个字符串的重合率
     overlap = len(set(a) & set(b)) / len(set(a) | set(b)) * 100
@@ -351,6 +351,8 @@ def ocr_process_single_video(video_path, vid_file_name, iframe_path):
         is_str_same,_ = compare_strings(ocr_result_stringA, ocr_result_stringB)
         if is_str_same:
             print("内容一致，不写入数据库，跳过")
+        elif len(ocr_result_stringB) < 3:
+            print("内容不足，不写入数据库，跳过")
         else:
             print("内容不一致")
             if utils.is_str_contain_list_word(ocr_result_stringB, config.exclude_words):

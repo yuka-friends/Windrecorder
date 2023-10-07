@@ -87,6 +87,13 @@ def seconds_to_date(seconds):
     # return time.strftime("%Y-%m-%d_%H-%M-%S", time_struct)
 
 
+# 将时间戳秒数格式化为时间 %Y-%m-%d_%H-%M-%S（更容易看些，只能用在展示
+def seconds_to_date_goodlook_formart(seconds):
+    start_time = 0
+    dt = datetime.datetime.utcfromtimestamp(start_time + seconds)
+    return dt.strftime("%Y/%m/%d   %H:%M:%S")
+
+
 # 将时间戳秒数转为datetime格式
 def seconds_to_datetime(seconds):
     # start_time = 946684800
@@ -95,7 +102,14 @@ def seconds_to_datetime(seconds):
     return dt
 
 
-# 将时间戳秒数转为24.格式
+# 将时间戳秒数格式化为时间 %H-%M-%S （当天）
+def seconds_to_date_dayHMS(seconds):
+    start_time = 0
+    dt = datetime.datetime.utcfromtimestamp(start_time + seconds)
+    return dt.strftime("%H:%M:%S")
+
+
+# 将时间戳秒数转为24.小数格式
 def seconds_to_24numfloat(seconds):
     dt = seconds_to_datetime(seconds)
     hour = dt.hour
@@ -133,7 +147,7 @@ def datetime_to_dateDayStr(dt):
     return dt.strftime("%Y-%m-%d")
 
 
-# 将输入的秒数格式化为 HH-MM-SS str
+# 将输入的秒数格式化为 1h2m3s str
 def convert_seconds_to_hhmmss(seconds):
   seconds = int(round(seconds))
   td = timedelta(seconds=seconds)
@@ -205,6 +219,16 @@ def complete_datetime(dt):
                        second=datetime.datetime.now().second)
                        
     return dt
+
+
+# 通过输入dt中视频名与时间戳计算相对的视频定位时间戳，以
+def get_video_timestamp_by_filename_and_abs_timestamp(videofile_name, videofile_time):
+    # videofile_name like 2023-09-08_17-23-50.mp4
+    videofile_name = videofile_name[:19]  # 确保只截取到str时间部分
+    vidfilename = os.path.splitext(videofile_name)[0]
+    vid_timestamp = videofile_time - date_to_seconds(vidfilename)
+    return vid_timestamp
+
 
 
 # 查询一个月有几天

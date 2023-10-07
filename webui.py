@@ -564,9 +564,6 @@ with tab1:
         st.area_chart(day_chart_data_overview,x="hour",y="data",use_container_width=True,height=100,color="#AC79D5")
 
 
-        # 测试playground______________________________________
-
-
 
         # 视频展示区域
         col1a, col2a, col3a = st.columns([1,3,1])
@@ -574,7 +571,7 @@ with tab1:
             # 居左部分
             if st.session_state.day_is_search_data and not df_day_search_result.empty:
                 # 如果是搜索视图，这里展示全部的搜索结果
-                df_day_search_result_refine = DBManager().db_refine_search_data(df_day_search_result) # 优化下数据展示
+                df_day_search_result_refine = DBManager().db_refine_search_data_day(df_day_search_result) # 优化下数据展示
                 draw_dataframe(df_day_search_result_refine)
             else:
                 st.empty()
@@ -591,7 +588,7 @@ with tab1:
                 else:
                     st.info("磁盘上没有找到这个时间的视频文件，不过有文本数据可被检索。", icon="🎐")
                     found_row = df_day_search_result.loc[st.session_state.day_search_result_index_num].to_frame().T
-                    found_row = DBManager().db_refine_search_data(found_row) # 优化下数据展示
+                    found_row = DBManager().db_refine_search_data_day(found_row) # 优化下数据展示
                     draw_dataframe(found_row,heightIn=0)
 
             else:
@@ -613,7 +610,7 @@ with tab1:
                     is_data_found,found_row =OneDay().find_closest_video_by_database(day_df,utils.datetime_to_seconds(day_full_select_datetime))
                     if is_data_found:
                         st.info("磁盘上没有找到这个时间的视频文件，不过这个时间附近有以下数据可以检索。", icon="🎐")
-                        found_row = DBManager().db_refine_search_data(found_row) # 优化下数据展示
+                        found_row = DBManager().db_refine_search_data_day(found_row) # 优化下数据展示
                         draw_dataframe(found_row,heightIn=0)
                     else:
                         st.warning("磁盘上没有找到这个时间的视频文件和索引记录。", icon="🦫")
@@ -753,11 +750,14 @@ with tab2:
 
         # 进行搜索
         if not len(st.session_state.search_content) == 0:
+            timeCost = time.time() # 预埋计算实际时长
+
             df = DBManager().db_search_data_page_turner(st.session_state.db_global_search_result, st.session_state.page_index)
-            df = DBManager().db_refine_search_data(df) # 优化数据显示
+            df = DBManager().db_refine_search_data_global(df) # 优化数据显示
             is_df_result_exist = len(df)
 
-            st.markdown(f"`搜索到 {st.session_state.all_result_counts} 条、共 {st.session_state.max_page_count} 页关于 \"{st.session_state.search_content}\" 的结果。`")
+            timeCost = round(time.time() - timeCost, 5)
+            st.markdown(f"`搜索到 {st.session_state.all_result_counts} 条、共 {st.session_state.max_page_count} 页关于 \"{st.session_state.search_content}\" 的结果。用时：{timeCost}s`")
 
             # 滑杆选择
             result_choose_num = choose_search_result_num(df, is_df_result_exist)
