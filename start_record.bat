@@ -1,4 +1,6 @@
 @echo off
+call env\Scripts\activate.bat
+
 color 2f
 title Windrecorder - Recording Screening
 echo Starting Recording Screen...

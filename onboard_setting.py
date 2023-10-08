@@ -1,13 +1,14 @@
 import subprocess
 import json
 import time
+import getpass
 
 from windrecorder.config import config
 import windrecorder.maintainManager as maintainManager
 import windrecorder.utils as utils
 import windrecorder.record as record
 
-allstep = 4
+allstep = 5
 
 
 # 读取i18n
@@ -21,7 +22,7 @@ def print_header(step = 1, toast=""):
     global allstep
     subprocess.run('cls', shell=True)
     print("Weclome to Windrecorder | 欢迎使用捕风记录仪\n")
-    print("Thanks for downloading! This Quick Wizard will help you set it up. \n感谢下载使用！本向导将协助你完成基础配置项。")
+    print("Thanks for downloading! This Quick Wizard will help you set it up. \n感谢下载使用！本向导将协助你完成基础配置项。不用担心，所有选项之后都可以再次调整。")
     divider()
     print(step, "/", allstep, toast)
     print("\n")
@@ -59,7 +60,33 @@ divider()
 subprocess.run('pause', shell=True)
 
 
+# 设置用户名
+while(True):
+    print_header(step=2)
+    if config.user_name == "default":
+        sys_username = getpass.getuser()
+    else:
+        sys_username = config.user_name
+    print("设定你的用户名，以作为数据库标识。")
+    print(f"回车直接使用当前用户名作为用户标识：{sys_username}，也可以输入自定义用户名（20个字符以内）。")
+    divider()
+    your_username = input('> ')
+    if len(your_username) > 20:
+        print("超出限定长度（20个半角英文字符/10个全角中文字符）")
+        divider()
+        subprocess.run('pause', shell=True)
+    elif len(your_username) == 0:
+        print(f"使用当前用户名：{sys_username}")
+        config.set_and_save_config("user_name", sys_username)
+        break
+    else:
+        print(f"使用自定义用户名：{your_username}")
+        config.set_and_save_config("user_name", your_username)
+        break
+    
 
+divider()
+subprocess.run('pause', shell=True)
 
 
 # 测试与设置 ocr 引擎
@@ -92,20 +119,19 @@ except Exception as e:
 
 
 
-
 while(True):
-    print_header(step=2)
+    print_header(step=3)
     print("OCR 引擎测试情况：\n")
 
     if ocr_result_ms:
         print("- Windows.Media.Ocr.Cli")
-        print("准确率：", ocr_correct_ms, "识别时间：", time_cost_ms, "索引15分钟视频约用时：", utils.convert_seconds_to_hhmmss(int(time_cost_ms*350)))
+        print("准确率：", ocr_correct_ms, "，识别时间：", time_cost_ms, "，索引15分钟视频约用时：", utils.convert_seconds_to_hhmmss(int(time_cost_ms*350)))
 
     print("")
 
     if ocr_result_col:
         print("- chineseocr_lite_onnx")
-        print("准确率：", ocr_correct_col, "识别时间：", time_cost_col, "索引15分钟视频约用时：", utils.convert_seconds_to_hhmmss(int(time_cost_col*350)))
+        print("准确率：", ocr_correct_col, "，识别时间：", time_cost_col, "，索引15分钟视频约用时：", utils.convert_seconds_to_hhmmss(int(time_cost_col*350)))
         
 
     divider()
@@ -130,7 +156,7 @@ subprocess.run('pause', shell=True)
 
 # 设置显示器
 while(True):
-    print_header(step=3)
+    print_header(step=4)
     print("注意：由于 pyautogui 暂未官方支持多显示器，捕风记录仪将只记录 Windows 下设置的【主显示器】\n")
     
     monitor_width = utils.get_screen_resolution().width
@@ -148,8 +174,8 @@ subprocess.run('pause', shell=True)
 
 
 # 完成初始化设定
-print_header(step=4)
-print("恭喜！你已完成所有初始设定。别担心，你可以随时打开 start_webui.bat 来调整设置！\n\n现在，你可以打开目录下的 start_record.bat 来开始记录屏幕内容啦。\n通过打开目录下的 start_webui.bat 来索引你的数据、调整更多个性化选项。\n")
+print_header(step=5)
+print("恭喜！你已完成所有初始设定。别担心，你可以随时打开 【start_webui.bat】 来调整设置！\n\n现在，你可以打开目录下的 【start_record.bat】 来开始记录屏幕内容啦。\n通过打开目录下的 【start_webui.bat】 来索引你的数据、调整更多个性化选项。\n")
 print("> 一起捕捉贮藏风一般掠过的、你的目之所见。")
 print("> 遇到问题、想反馈建议？欢迎在 https://github.com/Antonoko/Windrecorder 提交 issue 与 PR。")
 divider()

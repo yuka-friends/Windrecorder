@@ -79,6 +79,14 @@ A: 这种情况通常在初次访问时、start_record.bat 仍正在索引数据
 
 
 # 🧡
+引入了这些项目的帮助：
+
+- https://github.com/DayBreak-u/chineseocr_lite
+
+- https://github.com/zh-h/Windows.Media.Ocr.Cli
+
+---
+
 Like this project? Also check out [長瀬有花 / YUKA NAGASE](https://www.youtube.com/channel/UCf-PcSHzYAtfcoiBr5C9DZA) 's healing music on YouTube and Stream music platform <3
 
 如果你喜欢这个工具，欢迎在 Youtube 与流媒体音乐平台上支持 **长濑有花** 温柔的音乐，谢谢！

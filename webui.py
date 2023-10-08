@@ -335,10 +335,10 @@ def config_set_lang(lang_name):
 def web_footer_state():
     # 懒加载，只在刷新时第一次获取
     if 'footer_first_record_time_int' not in st.session_state:
-        st.session_state['footer_first_record_time_str'] = utils.seconds_to_date(DBManager().db_first_earliest_record_time())
+        st.session_state['footer_first_record_time_str'] = utils.seconds_to_date_goodlook_formart(DBManager().db_first_earliest_record_time())
 
     if 'footer_latest_record_time_str' not in st.session_state:
-        st.session_state['footer_latest_record_time_str'] = utils.seconds_to_date(DBManager().db_latest_record_time())
+        st.session_state['footer_latest_record_time_str'] = utils.seconds_to_date_goodlook_formart(DBManager().db_latest_record_time())
 
     if 'footer_latest_db_records' not in st.session_state:
         st.session_state['footer_latest_db_records'] = DBManager().db_num_records()

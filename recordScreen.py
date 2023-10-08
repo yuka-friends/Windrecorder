@@ -123,6 +123,7 @@ def record_screen(
         return video_saved_dir, video_out_name
     except subprocess.CalledProcessError as ex:
         print(f"{ex.cmd} failed with return code {ex.returncode}")
+        return video_saved_dir, video_out_name
 
 
 # 持续录制屏幕的主要线程
@@ -222,7 +223,10 @@ def monitor_compare_screenshot(screentime_detect_stop_event):
                     time.sleep(30)
             except Exception as e:
                 print("--Error occurred:",str(e))
-                monitor_change_rank = 0
+                if "batchDistance" in e:   # 如果是抓不到画面导致出错，可以认为是进入了休眠等情况
+                    monitor_change_rank += 0.5
+                else:
+                    monitor_change_rank = 0
         
         screentime_detect_stop_event.wait(5)
 
@@ -252,7 +256,7 @@ if __name__ == '__main__':
 
     #录屏的线程
     continuously_stop_event = threading.Event()
-    thread_continuously_record_screen = threading.Thread(target=continuously_record_screen)
+    thread_continuously_record_screen = threading.Thread(target=continuously_record_screen,args=(screentime_detect_stop_event,))
     thread_continuously_record_screen.start()
 
 

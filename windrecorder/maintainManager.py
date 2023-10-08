@@ -180,8 +180,8 @@ def compare_strings(a, b, threshold=70):
     if len(set(a) | set(b)) == 0:
         return True, 0
 
-    if len(a) or len(b) == 0:
-        return True, 0
+    # if len(a) == 0 or len(b) == 0:
+    #     return True, 0
 
     # 计算两个字符串的重合率
     overlap = len(set(a) & set(b)) / len(set(a) | set(b)) * 100

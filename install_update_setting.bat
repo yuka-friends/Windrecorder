@@ -1,4 +1,9 @@
 @echo off
+REM 判断是否存在 env 文件夹
+if not exist "env" (
+  python -m venv env
+)
+
 call env\Scripts\activate.bat
 title Windrecorder - Quick Setup
 cd /d %~dp0
