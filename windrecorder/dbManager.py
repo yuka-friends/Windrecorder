@@ -236,10 +236,11 @@ class DBManager:
             #                            , conn)
                 
             df_all = pd.concat([df_all, df], ignore_index=True)
-            row_count = row_count + len(df_all)
             conn.close()
 
+        row_count = len(df_all)
         page_count_all = int(math.ceil(int(row_count)/int(self.db_max_page_result)))
+        # print(f"row_count:{row_count}, db_max_page_result:{self.db_max_page_result}, page_count_all:{page_count_all}")
 
         return df_all, row_count, page_count_all
 
@@ -248,11 +249,12 @@ class DBManager:
     def db_search_data_page_turner(self, df, page_index):
         # page_index 从 1 计起
         row_count = len(df)   # 总行数
+
         page_count = int(math.ceil(int(row_count)/int(self.db_max_page_result)))   # 根据结果与用户配置，计算需要多少页读取
         if page_count <= 1:
             page_count = 1
         
-        row_start_index = 0 + (page_index-1)*self.db_max_page_result
+        row_start_index = (page_index - 1) * self.db_max_page_result
         row_end_index = row_start_index + self.db_max_page_result
         
         df_current_page = df[row_start_index:row_end_index]

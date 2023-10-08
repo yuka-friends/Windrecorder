@@ -58,7 +58,7 @@ def is_system_awake():
 
 # 录制完成后索引单个刚录制好的视频文件
 def index_video_data(video_saved_dir,vid_file_name):
-    print("---\n---Indexing OCR data\n---")
+    print("- Windrecorder -\n---Indexing OCR data\n---")
     if not utils.is_maintain_lock_file_valid():
         full_path = os.path.join(video_saved_dir,vid_file_name)
         if os.path.exists(full_path):
@@ -117,12 +117,12 @@ def record_screen(
         # 添加服务监测信息
         with open("catch\\LOCK_FILE_RECORD.MD", 'w', encoding='utf-8') as f:
             f.write(str(getpid()))
-        print("---Start Recording via FFmpeg")
+        print("Windrecorder: Start Recording via FFmpeg")
         # 运行ffmpeg
         subprocess.run(ffmpeg_cmd, check=True)
         return video_saved_dir, video_out_name
     except subprocess.CalledProcessError as ex:
-        print(f"{ex.cmd} failed with return code {ex.returncode}")
+        print(f"Windrecorder: {ex.cmd} failed with return code {ex.returncode}")
         return video_saved_dir, video_out_name
 
 
@@ -135,13 +135,13 @@ def continuously_record_screen():
     while not continuously_stop_event.is_set():
         # 主循环过程
         if monitor_change_rank > config.screentime_not_change_to_pause_record:
-            print("屏幕内容没有更新，停止录屏中。")
+            print("Windrecorder: Screen content not updated, stop recording.")
             subprocess.run('color 60', shell=True)
 
             # 算算是否该进入维护了（与上次维护时间相比）
             timegap_between_last_idle_maintain = datetime.datetime.now() - last_idle_maintain_time
             if timegap_between_last_idle_maintain > idle_maintain_time_gap and not lock_idle_maintaining:   # 超时且无锁情况下
-                print(f"与上次维护时间相隔{timegap_between_last_idle_maintain}，进入闲时维护")
+                print(f"Windrecorder: It is separated by {timegap_between_last_idle_maintain} from the last maintenance, enter idle maintenance.")
                 thread_idle_maintain = threading.Thread(target=idle_maintain_process)
                 thread_idle_maintain.daemon = True  # 设置为守护线程
                 thread_idle_maintain.start()
@@ -159,7 +159,7 @@ def continuously_record_screen():
 
             # 自动索引策略
             if config.OCR_index_strategy == 1:
-                print(f"-Starting Indexing video data: '{video_out_name}'")
+                print(f"Windrecorder: Starting Indexing video data: '{video_out_name}'")
                 thread_index_video_data = threading.Thread(target=index_video_data,args=(video_saved_dir,video_out_name,))
                 thread_index_video_data.daemon = True  # 设置为守护线程
                 thread_index_video_data.start()
@@ -199,7 +199,7 @@ def test_ffmpeg():
 def monitor_compare_screenshot(screentime_detect_stop_event):
     while not screentime_detect_stop_event.is_set():
         if is_screen_locked() or not is_system_awake():
-            print("Screen locked / System not awaked")
+            print("Windrecorder: Screen locked / System not awaked")
         else:
             try:
                 global monitor_change_rank
@@ -219,10 +219,10 @@ def monitor_compare_screenshot(screentime_detect_stop_event):
                             monitor_change_rank = 0
 
                     last_screenshot_array = screenshot_array.copy()
-                    print(f"----monitor_change_rank:{monitor_change_rank},similarity:{similarity}")
+                    print(f"Windrecorder: monitor_change_rank:{monitor_change_rank}, similarity:{similarity}")
                     time.sleep(30)
             except Exception as e:
-                print("--Error occurred:",str(e))
+                print("Windrecorder: Error occurred:",str(e))
                 if "batchDistance" in e:   # 如果是抓不到画面导致出错，可以认为是进入了休眠等情况
                     monitor_change_rank += 0.5
                 else:
@@ -234,11 +234,11 @@ def monitor_compare_screenshot(screentime_detect_stop_event):
 
 if __name__ == '__main__':
     if record.is_recording():
-        print("Another screen record service is running.")
+        print("Windrecorder: Another screen record service is running.")
         exit(1)
 
     test_ffmpeg()
-    print(f"-config.OCR_index_strategy: {config.OCR_index_strategy}")
+    print(f"Windrecorder: config.OCR_index_strategy: {config.OCR_index_strategy}")
 
     # 维护之前退出没留下的视频
     if not utils.is_maintain_lock_file_valid():
@@ -246,7 +246,7 @@ if __name__ == '__main__':
         thread_maintain_last_time.start()
 
     # 屏幕内容多长时间不变则暂停录制
-    print(f"-config.screentime_not_change_to_pause_record:{config.screentime_not_change_to_pause_record}")
+    print(f"Windrecorder: config.screentime_not_change_to_pause_record: {config.screentime_not_change_to_pause_record}")
     screentime_detect_stop_event = threading.Event() # 使用事件对象来检测检测函数是否意外被终止
     if config.screentime_not_change_to_pause_record >0:   # 是否使用屏幕不变检测
         thread_monitor_compare_screenshot = threading.Thread(target=monitor_compare_screenshot,args=(screentime_detect_stop_event,))

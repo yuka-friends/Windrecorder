@@ -2,7 +2,7 @@
 call env\Scripts\activate.bat
 
 color 2f
-title Windrecorder - Recording Screening
+title Windrecorder - Recording Screening      == Windrecorder == Windrecorder == Windrecorder ==
 echo Starting Recording Screen...
 cd /d %~dp0
 python "%~dp0\recordScreen.py"

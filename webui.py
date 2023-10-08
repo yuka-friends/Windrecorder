@@ -706,9 +706,9 @@ with tab2:
         if 'search_date_range_out_lazy' not in st.session_state:
             st.session_state.search_date_range_out = datetime.datetime(1970, 1, 2) + datetime.timedelta(seconds=st.session_state.search_latest_record_time_int) - datetime.timedelta(seconds=86400)
 
-
+        # 获得全局搜索结果
         def do_global_keyword_search():
-            # 如果搜索入参状态改变了
+            # 如果搜索所需入参状态改变了，进行搜索
             if st.session_state.search_content_lazy != st.session_state.search_content or st.session_state.search_content_exclude_lazy != st.session_state.search_content_exclude or st.session_state.search_date_range_in_lazy != st.session_state.search_date_range_in or st.session_state.search_date_range_out_lazy != st.session_state.search_date_range_out:
                 st.session_state.search_content_lazy = st.session_state.search_content
                 st.session_state.search_content_exclude_lazy = st.session_state.search_content_exclude
@@ -745,7 +745,7 @@ with tab2:
                 st.warning("请选择完整的时间范围")
 
         with col4a:
-            # 翻页
+            # 结果翻页器
             st.session_state.page_index = st.number_input("结果页数", min_value=1, step=1, max_value=st.session_state.max_page_count+1)
 
         # 进行搜索
@@ -753,7 +753,7 @@ with tab2:
             timeCost = time.time() # 预埋计算实际时长
 
             df = DBManager().db_search_data_page_turner(st.session_state.db_global_search_result, st.session_state.page_index)
-            df = DBManager().db_refine_search_data_global(df) # 优化数据显示
+            
             is_df_result_exist = len(df)
 
             timeCost = round(time.time() - timeCost, 5)
@@ -766,6 +766,7 @@ with tab2:
                 st.info(d_lang[config.lang]["tab_search_word_no"].format(search_content=st.session_state.search_content), icon="🎐")
             else:
                 # 打表
+                df = DBManager().db_refine_search_data_global(df) # 优化数据显示
                 draw_dataframe(df,heightIn=800)
         
         else:

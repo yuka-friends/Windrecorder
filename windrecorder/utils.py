@@ -222,11 +222,11 @@ def complete_datetime(dt):
 
 
 # 通过输入dt中视频名与时间戳计算相对的视频定位时间戳，以
-def get_video_timestamp_by_filename_and_abs_timestamp(videofile_name, videofile_time):
+def get_video_timestamp_by_filename_and_abs_timestamp(videofile_name:str, videofile_time:int):
     # videofile_name like 2023-09-08_17-23-50.mp4
     videofile_name = videofile_name[:19]  # 确保只截取到str时间部分
-    vidfilename = os.path.splitext(videofile_name)[0]
-    vid_timestamp = videofile_time - date_to_seconds(vidfilename)
+    # vidfilename = os.path.splitext(videofile_name)[0]
+    vid_timestamp = videofile_time - date_to_seconds(videofile_name)
     return vid_timestamp
 
 
