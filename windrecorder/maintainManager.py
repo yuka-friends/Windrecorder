@@ -12,6 +12,7 @@ import win32file
 import pyautogui
 from send2trash import send2trash
 from PIL import Image
+import pandas as pd
 
 from windrecorder.utils import empty_directory, date_to_seconds, seconds_to_date
 from windrecorder.dbManager import DBManager
@@ -339,6 +340,9 @@ def ocr_process_single_video(video_path, vid_file_name, iframe_path):
     # - OCR所有i帧图像
     ocr_result_stringA = ""
     ocr_result_stringB = ""
+    dataframe_column_names = ['videofile_name', 'picturefile_name', 'videofile_time', 'ocr_text', 'is_videofile_exist', 'is_videofile_exist', 'thumbnail']
+    dataframe_all = pd.DataFrame(columns=dataframe_column_names)
+
     # todo: os.listdir 应该进行正确的数字排序、以确保是按视频顺序索引的
     for img_file_name in os.listdir(iframe_path):
         print("_____________________")
@@ -368,9 +372,14 @@ def ocr_process_single_video(video_path, vid_file_name, iframe_path):
                 img_thumbnail = resize_imahe_as_base64(img)
                 # 清理ocr数据
                 ocr_result_write = utils.clean_dirty_text(ocr_result_stringB)
-                DBManager().db_update_data(vid_file_name, img_file_name, calc_to_sec_data,
-                                         ocr_result_write, True, False, img_thumbnail)
+                # 为准备写入数据库dataframe添加记录
+                dataframe_all.loc[len(dataframe_all.index)] = [vid_file_name, img_file_name, calc_to_sec_data, ocr_result_write, True, False, img_thumbnail]
+                # DBManager().db_update_data(vid_file_name, img_file_name, calc_to_sec_data,
+                #                          ocr_result_write, True, False, img_thumbnail)
                 ocr_result_stringA = ocr_result_stringB
+
+    # 将完成的dataframe写入数据库
+    DBManager().db_add_dataframe_to_db_process(dataframe_all)
 
     # 清理文件
     empty_directory(iframe_path)
@@ -465,9 +474,6 @@ def compress_outdated_videofiles():
                 send2trash(item)
     print("All tasks done!")
                 
-
-
-# 检查数据库中的条目是否有对应视频
 
 
 

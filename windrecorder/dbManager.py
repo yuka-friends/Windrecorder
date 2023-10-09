@@ -139,6 +139,75 @@ class DBManager:
              thumbnail))
         conn.commit()
         conn.close()
+    
+
+    # 以df入参形式批量插入新数据，考虑到跨月数据库处理的流程
+    def db_add_dataframe_to_db_process(self, dataframe):
+        # 寻找db中最大最小时间戳，以确定需要插入的数据库
+        # 如果都在同一个月，则插入当月的数据库文件；如果在不同月，则找到分歧点后分开插入
+        max_timestamp, min_timestamp = self.db_get_dataframe_max_min_videotimestamp(dataframe)
+        max_datetime = utils.seconds_to_datetime(max_timestamp)
+        min_datetime = utils.seconds_to_datetime(min_timestamp)
+
+        if max_datetime.month == min_datetime.month:        
+            database_path = files.get_db_filepath_by_datetime(max_datetime)
+            self.db_add_dataframe_to_db(database_path, dataframe)
+        else:
+            # 分流处理
+            neariest_timestamp = utils.datetime_to_seconds(datetime.datetime(max_datetime.year, max_datetime.month, 1,0,0,1))   # 以最大月第一天作为分割线
+            df_before, df_after = self.split_dataframe_by_nearest_timestamp(dataframe, neariest_timestamp)   # 以此时间点分为两部分df
+            database_path_before = files.get_db_filepath_by_datetime(min_datetime)  # 获取两部分的数据库
+            database_path_after = files.get_db_filepath_by_datetime(min_datetime)   # 获取两部分的数据库
+            # 由于出现在新的一月开头，所以得先初始下新月的数据库
+            self.db_check_exist(database_path_after)
+            # 初始化最新的数据库
+            self.db_initialize(database_path_after)
+
+            self.db_add_dataframe_to_db(database_path_before, df_before)
+            self.db_add_dataframe_to_db(database_path_after, df_after)
+
+
+
+    # 将df插入到数据库中
+    def db_add_dataframe_to_db(self, database_path, dataframe):
+        conn = sqlite3.connect(database_path)
+
+        # 设置数据类型映射，确保列的数据类型在写入数据库时不会出错
+        dtypes_dict = {
+            "videofile_name": "VARCHAR(100)",
+            "picturefile_name": "VARCHAR(100)",
+            "videofile_time": "INT",
+            "ocr_text": "TEXT",
+            "is_videofile_exist": "BOOLEAN",
+            "is_picturefile_exist": "BOOLEAN",
+            "thumbnail": "TEXT"
+        }
+
+        # 将dataframe的数据写入数据库的video_text表中
+        dataframe.to_sql("video_text", conn, if_exists="append", index=False, dtype=dtypes_dict)
+
+        # 提交更改并关闭连接
+        conn.commit()
+        conn.close()
+
+
+    # 寻找df中最大最小时间戳
+    def db_get_dataframe_max_min_videotimestamp(self, df: pd.DataFrame) -> tuple:
+        max_timestamp = df['videofile_time'].max()
+        min_timestamp = df['videofile_time'].min()
+        return max_timestamp, min_timestamp
+
+
+    # 找到df中的一个最接近的时间戳并将其划分开来
+    def split_dataframe_by_nearest_timestamp(self, df: pd.DataFrame, nearest_timestamp: int) -> tuple:
+        # 找到最接近的时间戳
+        nearest_index = abs(df['videofile_time'] - nearest_timestamp).idxmin()
+
+        # 将数据帧分为前后两部分
+        df_before = df.loc[:nearest_index]  # 包含与时间戳最接近的行
+        df_after = df.loc[nearest_index + 1:]
+        return df_before, df_after
+
 
 
     # 查询关键词数据，返回完整的结果 dataframe
@@ -543,8 +612,54 @@ class DBManager:
             return filepath_temp_read
 
 
+    # 检查更新数据库中的条目是否有对应视频
+    def db_update_videofile_exist_status(self):
+        db_file_path_dict = files.get_db_file_path_dict()
+        db_file_path_list = []
+        video_file_path_list = files.get_file_path_list(config.record_videos_dir)
 
+        for key in db_file_path_dict.keys():
+            db_filepath = os.path.join(config.db_path, key)
+            db_file_path_list.append(db_filepath)
 
+        # Get only first 19 characters of video files in video_file_path_list
+        video_file_names = {video_file[:19]: True for video_file in video_file_path_list}
+
+        for db_file in db_file_path_list:
+            print(f"db_file:{db_file}")
+            conn = sqlite3.connect(db_file)
+            cursor = conn.cursor()
+
+            # Get all rows from database
+            cursor.execute("SELECT * FROM video_text")
+            rows = cursor.fetchall()
+
+            # Get the index of the "videofile_name" column
+            col_names = [description[0] for description in cursor.description]
+            videofile_name_index = col_names.index("videofile_name")
+
+            # Begin transaction to speed up the update process
+            cursor.execute("BEGIN TRANSACTION")
+
+            all_i = len(rows)
+            i = 0
+
+            for row in rows:
+                videofile_name = row[videofile_name_index]
+
+                # Check if videofile_name exists in video_file_names using dictionary lookup
+                is_videofile_exist = video_file_names.get(videofile_name[:19], False)
+
+                # Update the is_videofile_exist column in the database
+                cursor.execute("UPDATE video_text SET is_videofile_exist = ? WHERE videofile_name = ?",
+                            (is_videofile_exist, videofile_name))
+                
+                i+=1
+                print(i,"/",all_i)
+
+            # Commit the transaction
+            conn.commit()
+            conn.close()
 
 
 

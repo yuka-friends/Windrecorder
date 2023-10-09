@@ -115,6 +115,7 @@ def record_screen(
     # 执行命令        
     try:
         # 添加服务监测信息
+        files.check_and_create_folder("catch")
         with open("catch\\LOCK_FILE_RECORD.MD", 'w', encoding='utf-8') as f:
             f.write(str(getpid()))
         print("Windrecorder: Start Recording via FFmpeg")
@@ -127,7 +128,7 @@ def record_screen(
 
 
 # 持续录制屏幕的主要线程
-def continuously_record_screen():
+def continuously_record_screen(screentime_detect_stop_event):
     global monitor_change_rank
     global last_idle_maintain_time
     global lock_idle_maintaining
@@ -223,7 +224,7 @@ def monitor_compare_screenshot(screentime_detect_stop_event):
                     time.sleep(30)
             except Exception as e:
                 print("Windrecorder: Error occurred:",str(e))
-                if "batchDistance" in e:   # 如果是抓不到画面导致出错，可以认为是进入了休眠等情况
+                if "batchDistance" in str(e):   # 如果是抓不到画面导致出错，可以认为是进入了休眠等情况
                     monitor_change_rank += 0.5
                 else:
                     monitor_change_rank = 0
@@ -278,12 +279,12 @@ if __name__ == '__main__':
         
         # 如果屏幕重复画面检测线程意外出错，重启它
         if not thread_monitor_compare_screenshot.is_alive() and config.screentime_not_change_to_pause_record >0:
-            thread_monitor_compare_screenshot = threading.Thread(target=monitor_compare_screenshot)
+            thread_monitor_compare_screenshot = threading.Thread(target=monitor_compare_screenshot,args=(screentime_detect_stop_event,))
             thread_monitor_compare_screenshot.start()
         
         # 如果屏幕录制线程意外出错，重启它
         if not thread_continuously_record_screen.is_alive():
-            thread_continuously_record_screen = threading.Thread(target=continuously_record_screen)
+            thread_continuously_record_screen = threading.Thread(target=continuously_record_screen,args=(screentime_detect_stop_event,))
             thread_continuously_record_screen.start()
         
         time.sleep(30)
