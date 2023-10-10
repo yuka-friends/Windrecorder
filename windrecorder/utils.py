@@ -200,6 +200,11 @@ def set_full_datetime_to_YYYY_MM(dt):
     return dt.replace(day=1, hour=0, minute=0, second=0, microsecond=0)
 
 
+# 将完整的datetime只保留年月日的datetime
+def set_full_datetime_to_YYYY_MM_DD(dt):
+    return dt.replace(hour=0, minute=0, second=0, microsecond=0)
+
+
 # 将输入的不完整的datetime补齐为默认年月日时分秒的datetime
 def complete_datetime(dt):
     if isinstance(dt, datetime.date): 
@@ -394,7 +399,7 @@ def add_maintain_lock_file(lock="make"):
             print(e)
 
 
-# 检查db是否是合法的正在维护中的锁（超过一定时间则解锁），否的话可以执行任务，是的话暂时不执行
+# 检查db是否是有合法的、正在维护中的锁（超过一定时间则解锁），否的话可以执行任务，是的话暂时不执行
 def is_maintain_lock_file_valid(gap=datetime.timedelta(minutes=16)):
     lock_filepath = "catch\\LOCK_MAINTAIN.MD"
     if os.path.exists(lock_filepath):

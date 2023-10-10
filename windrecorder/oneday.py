@@ -157,7 +157,7 @@ class OneDay:
         date_in = datetime.datetime(day_datetime.year,day_datetime.month,day_datetime.day,0,0,1)
         date_out = datetime.datetime(day_datetime.year,day_datetime.month,day_datetime.day,23,23,59)
 
-        image_list = DBManager().db_get_day_thumbnail_by_timeavg(date_in,date_out,50)
+        image_list = DBManager().db_get_day_thumbnail_by_timeavg(date_in,date_out,config.oneday_timeline_pic_num)
 
         if image_list is None:
             return False

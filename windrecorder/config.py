@@ -28,6 +28,7 @@ class Config:
         lightbox_result_dir,
         release_ver,
         video_compress_rate,
+        oneday_timeline_pic_num,
         **other_field
     ) -> None:
         self.db_path = db_path
@@ -54,6 +55,7 @@ class Config:
         self.ocr_image_crop_URBL = ocr_image_crop_URBL
         self.release_ver = release_ver
         self.video_compress_rate = video_compress_rate
+        self.oneday_timeline_pic_num = oneday_timeline_pic_num
     
     def set_and_save_config(self, attr: str, value):
         if not hasattr(self, attr):

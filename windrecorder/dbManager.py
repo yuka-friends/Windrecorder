@@ -357,10 +357,10 @@ class DBManager:
         df['thumbnail'] = 'data:image/png;base64,' + df['thumbnail']
 
         # 2. Remove specified columns
-        df = df.drop(columns=["picturefile_name", "is_picturefile_exist"])
+        df = df.drop(columns=["picturefile_name", "is_picturefile_exist", "is_videofile_exist"])
         
         # 3. Rearrange columns and return the processed dataframe
-        df = df[["thumbnail", "timestamp", "ocr_text", "is_videofile_exist", "videofile_name", "locate_time", "videofile_time"]]
+        df = df[["thumbnail", "timestamp", "ocr_text", "videofile_name", "locate_time", "videofile_time"]]
         return df
     
 

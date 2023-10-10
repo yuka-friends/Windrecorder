@@ -76,13 +76,14 @@ def show_n_locate_video_timestamp_by_df(df, num):
             video_bytes = video_file.read()
             with st.empty():
                 st.video(video_bytes, start_time=st.session_state.vid_vid_timestamp)
+            st.markdown(f"`{videofile_path}`")
         elif os.path.isfile(videofile_path_COMPRESS):   # 是否存在已压缩的
             video_file = open(videofile_path_COMPRESS, 'rb')
             video_bytes = video_file.read()
             with st.empty():
                 st.video(video_bytes, start_time=st.session_state.vid_vid_timestamp)
+            st.markdown(f"`{videofile_path_COMPRESS}`")
         else:
-            # st.markdown(f"Video File **{videofile_path}** not on disk.")
             st.warning(f"Video File **{videofile_path}** not on disk.", icon="🦫")
 
 
@@ -613,7 +614,11 @@ with tab1:
                         found_row = DBManager().db_refine_search_data_day(found_row) # 优化下数据展示
                         draw_dataframe(found_row,heightIn=0)
                     else:
-                        st.warning("磁盘上没有找到这个时间的视频文件和索引记录。", icon="🦫")
+                        # 如果是当天第一次打开但数据库正在索引因而无法访问
+                        if utils.set_full_datetime_to_YYYY_MM_DD(st.session_state.day_date_input) == utils.set_full_datetime_to_YYYY_MM_DD(datetime.datetime.today()) and utils.is_maintain_lock_file_valid():
+                            st.warning("有数据正在被索引中，请稍等几分钟后刷新查看。", icon="🦫")
+                        else:
+                            st.warning("磁盘上没有找到这个时间的视频文件和索引记录。", icon="🦫")
         
         with col3a:
             if config.show_oneday_wordcloud:
@@ -934,9 +939,9 @@ with tab4:
         
         col1d,col2d,col3d = st.columns([1,1,1])
         with col1d:
-            vid_store_day = st.number_input(d_lang[config.lang]["tab_setting_m_vid_store_time"], min_value=0, value=config.vid_store_day)
+            vid_store_day = st.number_input(d_lang[config.lang]["tab_setting_m_vid_store_time"], min_value=0, value=config.vid_store_day, help="0 为永不删除。")
         with col2d:
-            vid_compress_day = st.number_input("原视频在保留几天后进行压缩（0 为永不）",value=config.vid_compress_day,min_value=0)
+            vid_compress_day = st.number_input("原视频在保留几天后进行压缩",value=config.vid_compress_day,min_value=0,help="0 为永不压缩。")
         with col3d:
             video_compress_selectbox_dict = {'0.75':0, '0.5':1, '0.25':2}
             video_compress_rate_selectbox = st.selectbox("压缩到原先画面尺寸的",list(video_compress_selectbox_dict.keys()),index=video_compress_selectbox_dict[config.video_compress_rate])
@@ -1021,9 +1026,9 @@ with tab5:
         st.divider()
         col1pb, col2pb = st.columns([1,1])
         with col1pb:
-            st.markdown("**OCR 时忽略屏幕四边的区域范围**",help="填入数字为百分比，比如'6' == 6%")
+            st.markdown("**OCR 时忽略屏幕四边的区域范围**",help="填入数字为百分比，比如'6' == 6%。此选项可以在 OCR 时忽略屏幕四边的元素，如浏览器的标签栏、Windows 的开始菜单、网页内的花边广告信息等。")
         with col2pb:
-            st.session_state.ocr_screenshot_refer_used = st.toggle("using screenshot as refer",False)
+            st.session_state.ocr_screenshot_refer_used = st.toggle("用当前屏幕截图参照",False)
 
         if 'ocr_padding_top' not in st.session_state:
             st.session_state.ocr_padding_top = config.ocr_image_crop_URBL[0]
@@ -1036,12 +1041,12 @@ with tab5:
 
         col1pa, col2pa, col3pa = st.columns([.5,.5,1])
         with col1pa:
-            st.session_state.ocr_padding_top = st.number_input("Up Padding",value=st.session_state.ocr_padding_top,min_value=0,max_value=40)
-            st.session_state.ocr_padding_bottom = st.number_input("Down Padding",value=st.session_state.ocr_padding_bottom,min_value=0,max_value=40)
+            st.session_state.ocr_padding_top = st.number_input("上边框",value=st.session_state.ocr_padding_top,min_value=0,max_value=40)
+            st.session_state.ocr_padding_bottom = st.number_input("下边框",value=st.session_state.ocr_padding_bottom,min_value=0,max_value=40)
             
         with col2pa:
-            st.session_state.ocr_padding_left = st.number_input("Left Padding",value=st.session_state.ocr_padding_left,min_value=0,max_value=40)
-            st.session_state.ocr_padding_right = st.number_input("Right Padding",value=st.session_state.ocr_padding_right,min_value=0,max_value=40)
+            st.session_state.ocr_padding_left = st.number_input("左边框",value=st.session_state.ocr_padding_left,min_value=0,max_value=40)
+            st.session_state.ocr_padding_right = st.number_input("右边框",value=st.session_state.ocr_padding_right,min_value=0,max_value=40)
         with col3pa:
             image_setting_crop_refer = screen_ignore_padding(
                 st.session_state.ocr_padding_top, 
@@ -1068,6 +1073,9 @@ with tab5:
         # 每页结果最大数量
         config_max_search_result_num = st.number_input(d_lang[config.lang]["tab_setting_ui_result_num"], min_value=1,
                                                        max_value=500, value=config.max_page_result)
+        
+        config_oneday_timeline_num = st.number_input("「一天之时」时间轴的横向缩略图数量", min_value=50, max_value=100, value=config.oneday_timeline_pic_num)
+
         # 选择语言
         lang_choice = OrderedDict((k, '' + v) for k, v in lang_map.items())   #根据读入列表排下序
         language_option = st.selectbox(
@@ -1086,6 +1094,7 @@ with tab5:
             config.set_and_save_config("use_similar_ch_char_to_search",config_use_similar_ch_char_to_search)
             config.set_and_save_config("ocr_image_crop_URBL",[st.session_state.ocr_padding_top, st.session_state.ocr_padding_right, st.session_state.ocr_padding_bottom, st.session_state.ocr_padding_left])
             config.set_and_save_config("wordcloud_user_stop_words", utils.string_to_list(config_wordcloud_user_stop_words))
+            config.set_and_save_config("oneday_timeline_pic_num", config_oneday_timeline_num)
             st.toast("已应用更改。", icon="🦝")
             time.sleep(2)
             st.experimental_rerun()
