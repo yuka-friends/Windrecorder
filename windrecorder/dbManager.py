@@ -243,7 +243,7 @@ class DBManager:
             keywords = keyword_input.split()   # 用空格分割所有的关键词，存为list
             query = f"SELECT * FROM video_text WHERE "
 
-            if keyword_input:   # 关键词不为空时
+            if not keyword_input.isspace() and keyword_input:   # 关键词不为空时
 
                 # 每个关键词执行相近字形匹配（配置项开）
                 if config.use_similar_ch_char_to_search:
@@ -332,8 +332,8 @@ class DBManager:
         return df_current_page
 
 
-    # 优化搜索数据结果的展示
-    def db_refine_search_data_global(self, df):
+    # 优化全局搜索数据结果的展示
+    def db_refine_search_data_global(self, df, catch_videofile_ondisk_list = None):
         print("——优化全局搜索数据结果的展示")
         # df.drop('picturefile_name', axis=1, inplace=True)
         # df.drop('is_picturefile_exist', axis=1, inplace=True)
@@ -356,11 +356,27 @@ class DBManager:
         df["timestamp"] = df.apply(lambda row: utils.seconds_to_date_goodlook_formart(row['videofile_time']), axis=1)
         df['thumbnail'] = 'data:image/png;base64,' + df['thumbnail']
 
+        # 磁盘上的视频
+        catch_videofile_ondisk_str = ''
+        if catch_videofile_ondisk_list is None:
+            catch_videofile_ondisk_str = catch_videofile_ondisk_str.join(files.get_file_path_list(config.record_videos_dir))
+        else:
+            catch_videofile_ondisk_str = catch_videofile_ondisk_str.join(catch_videofile_ondisk_list)
+        
+
+        def is_videofile_ondisk(filename, video_ondisk_str):
+            if filename[:19] in video_ondisk_str:
+                return True
+            else:
+                return False
+        
+        df['videofile'] = df.apply(lambda row: is_videofile_ondisk(row['videofile_name'], catch_videofile_ondisk_str), axis=1)
+
         # 2. Remove specified columns
         df = df.drop(columns=["picturefile_name", "is_picturefile_exist", "is_videofile_exist"])
         
         # 3. Rearrange columns and return the processed dataframe
-        df = df[["thumbnail", "timestamp", "ocr_text", "videofile_name", "locate_time", "videofile_time"]]
+        df = df[["thumbnail", "timestamp", "ocr_text", "videofile", "videofile_name", "locate_time", "videofile_time"]]
         return df
     
 
@@ -376,7 +392,6 @@ class DBManager:
         
         return df
 
-    
 
 
     # 列出所有数据

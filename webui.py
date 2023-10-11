@@ -186,8 +186,8 @@ def draw_dataframe(df,heightIn=800):
     st.dataframe(
         df,
         column_config={
-            "is_videofile_exist": st.column_config.CheckboxColumn(
-                "is_videofile_exist",
+            "videofile": st.column_config.CheckboxColumn(
+                "videofile",
                 help=d_lang[config.lang]["tab_search_table_help1"],
                 default=False,
             ),
@@ -676,9 +676,16 @@ if 'db_global_search_result' not in st.session_state:
     st.session_state['db_global_search_result'] = pd.DataFrame()
 # db_global_search_result = pd.DataFrame()
 with tab2:
-    st.markdown(d_lang[config.lang]["tab_search_title"])
+
     col1, col2 = st.columns([1, 2])
     with col1:
+        col1_gstype, col2_gstype = st.columns([2,1])
+        with col1_gstype:
+            st.markdown(d_lang[config.lang]["tab_search_title"])
+        with col2_gstype:
+            # st.selectbox("搜索方式", ('关键词匹配','模糊语义搜索 [不可用]','画面内容搜索 [不可用]'),label_visibility="collapsed")
+            st.empty()
+
         web_onboarding()
 
         # 初始化一些全局状态
@@ -694,6 +701,8 @@ with tab2:
             st.session_state.search_date_range_in = datetime.datetime.today() - datetime.timedelta(seconds=86400)
         if 'search_date_range_out' not in st.session_state:
             st.session_state.search_date_range_out = datetime.datetime.today()
+        if 'catch_videofile_ondisk_list' not in st.session_state:   # 减少io读取，预拿视频文件列表供比对是否存在
+            st.session_state.catch_videofile_ondisk_list = files.get_file_path_list(config.record_videos_dir)
 
         # 时间搜索范围组件（懒加载）
         if 'search_latest_record_time_int' not in st.session_state:
@@ -701,7 +710,7 @@ with tab2:
         if 'search_earlist_record_time_int' not in st.session_state:
             st.session_state['search_earlist_record_time_int'] = DBManager().db_first_earliest_record_time()
 
-        # 优化streamlit强加载机制的索引时间
+        # 优化streamlit强加载机制导致的索引时间：改变了再重新搜索，而不是每次提交了更改都进行搜索
         if 'search_content_lazy' not in st.session_state:
             st.session_state.search_content_lazy = None
         if 'search_content_exclude_lazy' not in st.session_state:
@@ -771,8 +780,8 @@ with tab2:
                 st.info(d_lang[config.lang]["tab_search_word_no"].format(search_content=st.session_state.search_content), icon="🎐")
             else:
                 # 打表
-                df = DBManager().db_refine_search_data_global(df) # 优化数据显示
-                draw_dataframe(df,heightIn=800)
+                df = DBManager().db_refine_search_data_global(df, catch_videofile_ondisk_list=st.session_state.catch_videofile_ondisk_list) # 优化数据显示
+                draw_dataframe(df, heightIn=800)
         
         else:
             st.info("这里是全局搜索页，可以搜索到迄今记录的所有内容。输入关键词后回车即可搜索。",icon="🔎")
