@@ -356,7 +356,7 @@ class DBManager:
         df["timestamp"] = df.apply(lambda row: utils.seconds_to_date_goodlook_formart(row['videofile_time']), axis=1)
         df['thumbnail'] = 'data:image/png;base64,' + df['thumbnail']
 
-        # 磁盘上的视频
+        # 磁盘上有无对应视频检测
         catch_videofile_ondisk_str = ''
         if catch_videofile_ondisk_list is None:
             catch_videofile_ondisk_str = catch_videofile_ondisk_str.join(files.get_file_path_list(config.record_videos_dir))

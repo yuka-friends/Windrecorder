@@ -121,8 +121,8 @@ def web_onboarding():
 
     if st.session_state.is_onboarding:
         # 数据库不存在，展示 Onboarding 提示
-        st.success("欢迎使用 Windrecorder！", icon="😺")
-        intro_markdown = Path("onboarding.md").read_text(encoding='utf-8')
+        st.success(d_lang[config.lang]["text_welcome_to_windrecorder"], icon="😺")
+        intro_markdown = Path("config\\src\\onboarding_" + config.lang + ".md").read_text(encoding='utf-8')
         st.markdown(intro_markdown)
         st.divider()
 
@@ -180,7 +180,7 @@ def draw_db_status():
 
 # 规范化的打表渲染组件
 def draw_dataframe(df,heightIn=800):
-    # is_videofile_exist 渲染为可选框
+    # ~~is_videofile_exist~~ videofile 渲染为可选框
     # ocr_text 更大的展示空间
     # thumbnail 渲染为图像
     st.dataframe(
@@ -233,14 +233,14 @@ def get_show_month_data_state(stat_select_month_datetime:datetime.datetime):
             if df_file_name[:7] == datetime.datetime.today().strftime("%Y-%m"):   # 如果是需要时效性的当下月数据
                 if not files.is_file_modified_recently(df_filepath, time_gap=120):   # 超过120分钟未更新，过时 重新生成
                     # 更新操作
-                    with st.spinner("更新本月统计中……"):
+                    with st.spinner(d_lang[config.lang]["text_updating_month_stat"]):
                         st.session_state.df_month_stat = state.get_month_data_overview(stat_select_month_datetime)
                         files.save_dataframe_to_path(st.session_state.df_month_stat,file_path=df_filepath)
             # 进行读取操作
             st.session_state.df_month_stat = files.read_dataframe_from_path(file_path=df_filepath)
 
         else:   # 磁盘上不存在缓存
-            with st.spinner("生成本月统计中……"):
+            with st.spinner(d_lang[config.lang]["text_updating_month_stat"]):
                 st.session_state.df_month_stat = state.get_month_data_overview(stat_select_month_datetime)
                 files.save_dataframe_to_path(st.session_state.df_month_stat,file_path=df_filepath)    
 
@@ -262,7 +262,7 @@ def get_show_year_data_state(stat_select_year_datetime:datetime.datetime):
         if os.path.exists(df_filepath):   # 存在
             if not files.is_file_modified_recently(df_filepath, time_gap=3000):   # 超过3000分钟未更新，过时 重新生成
                 # 更新操作
-                with st.spinner("更新本年统计中……"):
+                with st.spinner(d_lang[config.lang]["text_updating_yearly_stat"]):
                     st.session_state.df_year_stat = state.get_year_data_overview(stat_select_year_datetime)
                     files.save_dataframe_to_path(st.session_state.df_year_stat,file_path=df_filepath)
             else:
@@ -270,7 +270,7 @@ def get_show_year_data_state(stat_select_year_datetime:datetime.datetime):
                 st.session_state.df_year_stat = files.read_dataframe_from_path(file_path=df_filepath)
 
         else:   # 磁盘上不存在缓存
-            with st.spinner("生成本月统计中……"):
+            with st.spinner(d_lang[config.lang]["text_updating_yearly_stat"]):
                 st.session_state.df_year_stat = state.get_year_data_overview(stat_select_year_datetime)
                 files.save_dataframe_to_path(st.session_state.df_year_stat,file_path=df_filepath)
     
@@ -382,8 +382,11 @@ def web_footer_state():
 st.markdown(d_lang[config.lang]["main_title"])
 
 
-tab1, tab2, tab3, tab4, tab5 = st.tabs(["一天之时", d_lang[config.lang]["tab_name_search"], "记忆摘要", d_lang[config.lang]["tab_name_recording"],
-                                  d_lang[config.lang]["tab_name_setting"]])
+tab1, tab2, tab3, tab4, tab5 = st.tabs([d_lang[config.lang]["tab_name_oneday"], 
+                                        d_lang[config.lang]["tab_name_search"], 
+                                        d_lang[config.lang]["tab_name_stat"], 
+                                        d_lang[config.lang]["tab_name_recording"],
+                                        d_lang[config.lang]["tab_name_setting"]])
 
 # TAB：今天也是一天
 with tab1:
@@ -406,18 +409,18 @@ with tab1:
 
     col1, col2, col3,col4,col5,col6,col7 = st.columns([.4,.25,.25,.15,.25,.2,1])
     with col1:
-        st.markdown("### 一天之时")
+        st.markdown(d_lang[config.lang]["oneday_title"])
     with col2:
-        if st.button("← 前一天",use_container_width=True):
+        if st.button(d_lang[config.lang]["oneday_btn_yesterday"],use_container_width=True):
             st.session_state.day_date_input -= datetime.timedelta(days=1)
     with col3:
-        if st.button("后一天 →",use_container_width=True):
+        if st.button(d_lang[config.lang]["oneday_btn_tomorrow"],use_container_width=True):
             st.session_state.day_date_input += datetime.timedelta(days=1)
     with col4:
-        if st.button("Today",use_container_width=True):
+        if st.button(d_lang[config.lang]["oneday_btn_today"],use_container_width=True):
             st.session_state.day_date_input = datetime.date.today()
     with col5:
-        st.session_state.day_date_input = st.date_input("当天日期",label_visibility="collapsed",value=st.session_state.day_date_input)
+        st.session_state.day_date_input = st.date_input("Today Date",label_visibility="collapsed",value=st.session_state.day_date_input)
         
         # 获取输入的日期
         # 清理格式到HMS
@@ -437,7 +440,7 @@ with tab1:
 
         col1c,col2c,col3c,col4c,col5c = st.columns([1,1.5,1,1,.5])
         with col1c:
-            if st.toggle("搜索",help="支持通过空格分开多个关键词进行检索。不输入任何内容直接回车搜索，可列出当日所有数据。"):
+            if st.toggle(d_lang[config.lang]["oneday_toggle_search"], help=d_lang[config.lang]["oneday_toggle_search_help"]):
                 st.session_state.day_time_slider_disable = True
                 st.session_state.day_is_search_data = True
             else:
@@ -459,10 +462,10 @@ with tab1:
             if st.session_state.day_is_search_data:
                 # 启用了搜索功能
                 if df_day_search_result.empty:
-                    st.markdown(f"<p align='center' style='line-height:2.3;'> ⚠ 没有找到结果 </p>", unsafe_allow_html=True)
+                    st.markdown(d_lang[config.lang]["oneday_search_md_none"], unsafe_allow_html=True)
                 else:
                     result_num = df_day_search_result.shape[0]
-                    st.markdown(f"<p align='center' style='line-height:2.3;'> → 共 {result_num} 条结果：</p>", unsafe_allow_html=True)
+                    st.markdown(d_lang[config.lang]["tab_setting_db_tip3"].format(result_num=result_num), unsafe_allow_html=True)
             else:
                 st.empty()
         with col4c:
@@ -523,7 +526,7 @@ with tab1:
 
         # 展示时间轴缩略图
         def update_day_timeline_thumbnail():
-            with st.spinner("生成当日时间轴缩略图中，请稍后……"):
+            with st.spinner(d_lang[config.lang]["oneday_text_generate_timeline_thumbnail"]):
                 if OneDay().generate_preview_timeline_img(st.session_state.day_date_input,img_saved_name=current_day_cloud_n_TL_img_name):
                     return True
                 else:
@@ -535,7 +538,6 @@ with tab1:
             get_generate_result = update_day_timeline_thumbnail()
             # 移除非今日的-today.png
             for filename in os.listdir(config.timeline_result_dir):
-                # print(f"-----------------filename：{filename}，real_today_day_cloud_img_name:{real_today_day_cloud_img_name}")
                 if filename.endswith("-today-.png") and filename != real_today_day_cloud_n_TL_img_name:
                     file_path = os.path.join(config.timeline_result_dir, filename)
                     try:
@@ -555,7 +557,7 @@ with tab1:
             render_daily_timeline_html(utils.image_to_base64(current_day_TL_img_path))
             # st.image(image_thumbnail,use_column_width="always")
         else:
-            st.markdown(f"<p align='center' style='color:rgba(0,0,0,.3)'> 当日缩略图数量不足以生成时间轴。 </p>", unsafe_allow_html=True)
+            st.markdown(d_lang[config.lang]["oneday_md_no_enough_thunmbnail_for_timeline"], unsafe_allow_html=True)
 
 
 
@@ -585,9 +587,9 @@ with tab1:
                 day_is_video_ondisk,day_video_file_name,shown_timestamp = OneDay().get_result_df_video_time(df_day_search_result,st.session_state.day_search_result_index_num)
                 if day_is_video_ondisk:
                     show_n_locate_video_timestamp_by_filename_n_time(day_video_file_name,shown_timestamp)
-                    st.markdown(f"`正在回溯 {day_video_file_name}`")
+                    st.markdown(d_lang[config.lang]["oneday_md_rewinding_video_name"].format(day_video_file_name=day_video_file_name))
                 else:
-                    st.info("磁盘上没有找到这个时间的视频文件，不过有文本数据可被检索。", icon="🎐")
+                    st.info(d_lang[config.lang]["oneday_text_not_found_vid_but_has_data"], icon="🎐")
                     found_row = df_day_search_result.loc[st.session_state.day_search_result_index_num].to_frame().T
                     found_row = DBManager().db_refine_search_data_day(found_row) # 优化下数据展示
                     draw_dataframe(found_row,heightIn=0)
@@ -605,26 +607,26 @@ with tab1:
                     select_timestamp = utils.datetime_to_seconds(day_full_select_datetime)
                     shown_timestamp = select_timestamp - vidfile_timestamp
                     show_n_locate_video_timestamp_by_filename_n_time(day_video_file_name,shown_timestamp)
-                    st.markdown(f"`正在回溯 {day_video_file_name}`")
+                    st.markdown(d_lang[config.lang]["oneday_md_rewinding_video_name"].format(day_video_file_name=day_video_file_name))
                 else:
                     # 没有对应的视频，查一下有无索引了的数据
                     is_data_found,found_row =OneDay().find_closest_video_by_database(day_df,utils.datetime_to_seconds(day_full_select_datetime))
                     if is_data_found:
-                        st.info("磁盘上没有找到这个时间的视频文件，不过这个时间附近有以下数据可以检索。", icon="🎐")
+                        st.info(d_lang[config.lang]["oneday_text_not_found_vid_but_has_data"], icon="🎐")
                         found_row = DBManager().db_refine_search_data_day(found_row) # 优化下数据展示
                         draw_dataframe(found_row,heightIn=0)
                     else:
                         # 如果是当天第一次打开但数据库正在索引因而无法访问
                         if utils.set_full_datetime_to_YYYY_MM_DD(st.session_state.day_date_input) == utils.set_full_datetime_to_YYYY_MM_DD(datetime.datetime.today()) and utils.is_maintain_lock_file_valid():
-                            st.warning("有数据正在被索引中，请稍等几分钟后刷新查看。", icon="🦫")
+                            st.warning(d_lang[config.lang]["oneday_text_data_indexing_wait_and_refresh"], icon="🦫")
                         else:
-                            st.warning("磁盘上没有找到这个时间的视频文件和索引记录。", icon="🦫")
+                            st.warning(d_lang[config.lang]["oneday_text_no_found_record_and_vid_on_disk"], icon="🦫")
         
         with col3a:
             if config.show_oneday_wordcloud:
                 # 是否展示当天词云
                 def update_day_word_cloud():
-                    with st.spinner("生成当日词云中，请稍后……"):
+                    with st.spinner(d_lang[config.lang]["oneday_text_generate_word_cloud"]):
                         day_input_datetime_finetune = datetime.datetime(st.session_state.day_date_input.year,st.session_state.day_date_input.month,st.session_state.day_date_input.day,0,0,2)
                         wordcloud.generate_word_cloud_in_day(utils.datetime_to_seconds(day_input_datetime_finetune),img_save_name=current_day_cloud_n_TL_img_name)
 
@@ -633,7 +635,6 @@ with tab1:
                     update_day_word_cloud()
                     # 移除非今日的-today.png
                     for filename in os.listdir(config.wordcloud_result_dir):
-                        # print(f"-----------------filename：{filename}，real_today_day_cloud_img_name:{real_today_day_cloud_img_name}")
                         if filename.endswith("-today-.png") and filename != real_today_day_cloud_n_TL_img_name:
                             file_path = os.path.join(config.wordcloud_result_dir, filename)
                             os.remove(file_path)
@@ -646,7 +647,7 @@ with tab1:
                 def update_wordcloud_btn_clicked():
                     st.session_state.update_wordcloud_button_disabled = True
 
-                if st.button("更新词云 ⟳",key="refresh_day_cloud",use_container_width=True,disabled=st.session_state.get("update_wordcloud_button_disabled", False),on_click=update_wordcloud_btn_clicked):
+                if st.button(d_lang[config.lang]["oneday_btn_update_word_cloud"],key="refresh_day_cloud",use_container_width=True,disabled=st.session_state.get("update_wordcloud_button_disabled", False),on_click=update_wordcloud_btn_clicked):
                     try:
                         update_day_word_cloud()
                     except Exception as ex:
@@ -655,16 +656,16 @@ with tab1:
                         st.session_state.update_wordcloud_button_disabled = False
                         st.experimental_rerun()
             else:
-                st.markdown(f"<p align='center' style='color:rgba(0,0,0,.3)'> 每日词云已关闭，可前往设置页开启。 </p>", unsafe_allow_html=True)
+                st.markdown(d_lang[config.lang]["oneday_md_word_cloud_turn_off"], unsafe_allow_html=True)
 
 
     else:
         # 数据库中没有今天的记录
         # 判断videos下有无今天的视频文件
         if files.find_filename_in_dir("videos",utils.datetime_to_dateDayStr(dt_in)):
-            st.info("数据库中没有这一天的数据索引。不过，磁盘上有这一天的视频还未索引，请前往「设置」进行索引。→", icon="📎")
+            st.info(d_lang[config.lang]["oneday_text_has_vid_but_not_index"], icon="📎")
         else:
-            st.info("没有找到这一天的数据索引和视频文件。", icon="🎐")
+            st.info(d_lang[config.lang]["oneday_text_vid_and_data_not_found"], icon="🎐")
 
 
 
@@ -701,7 +702,7 @@ with tab2:
             st.session_state.search_date_range_in = datetime.datetime.today() - datetime.timedelta(seconds=86400)
         if 'search_date_range_out' not in st.session_state:
             st.session_state.search_date_range_out = datetime.datetime.today()
-        if 'catch_videofile_ondisk_list' not in st.session_state:   # 减少io读取，预拿视频文件列表供比对是否存在
+        if 'catch_videofile_ondisk_list' not in st.session_state:   # 减少io查询，预拿视频文件列表供比对是否存在
             st.session_state.catch_videofile_ondisk_list = files.get_file_path_list(config.record_videos_dir)
 
         # 时间搜索范围组件（懒加载）
@@ -739,7 +740,7 @@ with tab2:
         with col1a:
             st.session_state.search_content = st.text_input(d_lang[config.lang]["tab_search_compname"], value="", on_change=do_global_keyword_search(),help="可使用空格分隔多个关键词。")
         with col2a:
-            st.session_state.search_content_exclude = st.text_input("排除", "",help="排除哪些关键词的内容，留空为不排除。可使用空格分隔多个关键词。", on_change=do_global_keyword_search())
+            st.session_state.search_content_exclude = st.text_input(d_lang[config.lang]["gs_input_exclude"], "",help=d_lang[config.lang]["gs_input_exclude_help"], on_change=do_global_keyword_search())
         with col3a:
 
             try:
@@ -756,11 +757,11 @@ with tab2:
                     on_change=do_global_keyword_search()
                 )
             except:
-                st.warning("请选择完整的时间范围")
+                st.warning(d_lang[config.lang]["gs_text_pls_choose_full_date_range"])
 
         with col4a:
             # 结果翻页器
-            st.session_state.page_index = st.number_input("结果页数", min_value=1, step=1, max_value=st.session_state.max_page_count+1)
+            st.session_state.page_index = st.number_input(d_lang[config.lang]["gs_input_result_page"], min_value=1, step=1, max_value=st.session_state.max_page_count+1)
 
         # 进行搜索
         if not len(st.session_state.search_content) == 0:
@@ -771,7 +772,7 @@ with tab2:
             is_df_result_exist = len(df)
 
             timeCost = round(time.time() - timeCost, 5)
-            st.markdown(f"`搜索到 {st.session_state.all_result_counts} 条、共 {st.session_state.max_page_count} 页关于 \"{st.session_state.search_content}\" 的结果。用时：{timeCost}s`")
+            st.markdown(d_lang[config.lang]["gs_md_search_result_stat"].format(all_result_counts=st.session_state.all_result_counts, max_page_count=st.session_state.max_page_count, search_content=st.session_state.search_content, timeCost=timeCost))
 
             # 滑杆选择
             result_choose_num = choose_search_result_num(df, is_df_result_exist)
@@ -784,7 +785,7 @@ with tab2:
                 draw_dataframe(df, heightIn=800)
         
         else:
-            st.info("这里是全局搜索页，可以搜索到迄今记录的所有内容。输入关键词后回车即可搜索。",icon="🔎")
+            st.info(d_lang[config.lang]["gs_text_intro"],icon="🔎")
 
     with col2:
         # 选择视频
@@ -814,7 +815,7 @@ with tab3:
             selector_month_min = st.session_state.stat_db_earliest_datetime.month
             selector_month_max = st.session_state.stat_db_latest_datetime.month
 
-        st.markdown("### 当月数据统计")
+        st.markdown(d_lang[config.lang]["stat_md_month_title"])
         col1a, col2a, col3a = st.columns([.5,.5,1])
         with col1a:
             st.session_state.Stat_query_Year = st.number_input(label="Stat_query_Year",min_value=st.session_state.stat_db_earliest_datetime.year,max_value=st.session_state.stat_db_latest_datetime.year,value=st.session_state.stat_db_latest_datetime.year,label_visibility="collapsed")
@@ -827,43 +828,41 @@ with tab3:
         get_show_month_data_state(st.session_state.stat_select_month_datetime) # 显示当月概览
 
         stat_year_title = st.session_state.stat_select_month_datetime.year
-        st.markdown(f"### {stat_year_title} 记录")
+        st.markdown(d_lang[config.lang]["stat_md_year_title"].format(stat_year_title=stat_year_title))
         get_show_year_data_state(st.session_state.stat_select_month_datetime) # 显示当年概览
 
 
     with col2:
-        st.markdown("### 记忆摘要")
+        st.markdown(d_lang[config.lang]["stat_md_memory_title"])
 
         col1_mem, col2_mem = st.columns([1,1])
         with col1_mem:
             current_month_cloud_img_name = str(st.session_state.Stat_query_Year) + "-" + str(st.session_state.Stat_query_Month) + ".png"
             current_month_cloud_img_path = os.path.join(config.wordcloud_result_dir,current_month_cloud_img_name)
 
-            if st.button("生成/更新本月词云"):
-                with st.spinner("生成中，大概需要 30s……"):
-                    print("生成词云")
+            if st.button(d_lang[config.lang]["stat_btn_generate_update_word_cloud"]):
+                with st.spinner(d_lang[config.lang]["stat_text_generating_word_cloud"]):
                     wordcloud.generate_word_cloud_in_month(utils.datetime_to_seconds(st.session_state.stat_select_month_datetime),current_month_cloud_img_name)
 
             if os.path.exists(current_month_cloud_img_path):
                 image = Image.open(current_month_cloud_img_path)
                 st.image(image,caption=current_month_cloud_img_path)
             else:
-                st.info("当月未有词云图片。")
+                st.info(d_lang[config.lang]["stat_text_no_month_word_cloud_pic"])
 
         with col2_mem:
             current_month_lightbox_img_name = str(st.session_state.Stat_query_Year) + "-" + str(st.session_state.Stat_query_Month) + ".png"
             current_month_lightbox_img_path = os.path.join(config.lightbox_result_dir,current_month_lightbox_img_name)
 
-            if st.button("生成/更新本月的光箱"):
-                with st.spinner("生成中，大概需要 5s……"):
-                    print("生成光箱")
+            if st.button(d_lang[config.lang]["stat_btn_generate_lightbox"]):
+                with st.spinner(d_lang[config.lang]["stat_text_generating_lightbox"]):
                     state.generate_month_lightbox(st.session_state.stat_select_month_datetime,img_saved_name=current_month_lightbox_img_name)
             
             if os.path.exists(current_month_lightbox_img_path):
                 image = Image.open(current_month_lightbox_img_path)
                 st.image(image,caption=current_month_lightbox_img_path)
             else:
-                st.info("当月未有光箱图片。")
+                st.info(d_lang[config.lang]["stat_text_no_month_lightbox"])
                 
 
     
@@ -875,11 +874,11 @@ with tab4:
 
     col1c, col2c, col3c = st.columns([1, .5, 1.5])
     with col1c:
-        st.info("本页的设置在保存后，需重启 start_record.bat 才能生效。")
+        st.info(d_lang[config.lang]["rs_text_need_to_restart_after_save_setting"])
 
         # 手动检查录屏服务有无进行中
 
-        # 管理刷新服务的按钮状态：手动管理状态，polyfill streamlit只能读按钮是否被按下的问题（一旦有其他按钮按下，其他按钮就会回弹导致持续的逻辑重置、重新加载）
+        # 管理刷新服务的按钮状态：手动管理状态，cover fix streamlit只能读按钮是否被按下的问题（一旦有其他按钮按下，其他按钮就会回弹导致持续的逻辑重置、重新加载）
         def update_record_service_btn_clicked():
             st.session_state.update_btn_dis_record = True
 
@@ -893,67 +892,67 @@ with tab4:
             st.session_state.update_btn_dis_record = False
 
         
-        btn_refresh = st.button("查询录制状态 ⟳",on_click=update_record_btn_state)
+        btn_refresh = st.button(d_lang[config.lang]["rs_btn_check_record_stat"],on_click=update_record_btn_state)
 
         if st.session_state.update_btn_refresh_press:
 
             if record.is_recording():
-                st.success("正在持续录制屏幕，刷新以查询最新运行状态。若想停止录制屏幕，请手动关闭后台的 “Windrecorder - Recording Screening” 终端窗口。", icon="🦚")
+                st.success(d_lang[config.lang]["rs_text_recording_screen_now"], icon="🦚")
                 # stop_record_btn = st.button('停止录制屏幕', type="secondary",disabled=st.session_state.get("update_btn_dis_record",False),on_click=update_record_service_btn_clicked)
                 # if stop_record_btn:
                 #     st.toast("正在结束录屏进程……")
                 #     utils.kill_recording()
                     
             else:
-                st.error("当前未在录制屏幕。  请刷新查看最新运行状态。", icon="🦫")
-                start_record_btn = st.button('开始持续录制', type="primary",disabled=st.session_state.get("update_btn_dis_record",False),on_click=update_record_service_btn_clicked)
+                st.error(d_lang[config.lang]["rs_text_not_recording_screen"], icon="🦫")
+                start_record_btn = st.button(d_lang[config.lang]["rs_btn_start_record"], type="primary",disabled=st.session_state.get("update_btn_dis_record",False),on_click=update_record_service_btn_clicked)
                 if start_record_btn:
                     os.startfile('start_record.bat', 'open')
-                    st.toast("启动录屏中……")
+                    st.toast(d_lang[config.lang]["rs_text_starting_record"])
                     st.session_state.update_btn_refresh_press = False
 
 
         # st.warning("录制服务已启用。当前暂停录制屏幕。",icon="🦫")
         st.divider()
-        st.markdown("#### 录制选项")
+        st.markdown(d_lang[config.lang]["rs_md_record_setting_title"])
 
         col1_record, col2_record = st.columns([1,1])
         with col1_record:
             if 'is_create_startup_shortcut' not in st.session_state:
                 st.session_state.is_create_startup_shortcut = record.is_file_already_in_startup('start_record.bat.lnk')
             st.session_state.is_create_startup_shortcut = st.checkbox(
-                '开机后自动开始录制', value=record.is_file_already_in_startup('start_record.bat.lnk'), 
+                d_lang[config.lang]["rs_checkbox_start_record_when_startup"], value=record.is_file_already_in_startup('start_record.bat.lnk'), 
                 on_change=record.create_startup_shortcut(is_create=st.session_state.is_create_startup_shortcut),
-                help="此项勾选后会为'start_record.bat'创建快捷方式，并放到系统开机自启动的目录下。此项行为可能会被部分安全软件误判为病毒行为，导致'start_webui.bat'被移除，如有拦截，请将其移出隔离区并标记为可信任软件。或手动为'start_record.bat'创建快捷方式、并放到系统的开机启动目录下。")
+                help=d_lang[config.lang]["rs_checkbox_start_record_when_startup_help"])
 
         with col2_record:
-            st.markdown("<p align='right' style='color:rgba(0,0,0,.5)'>当前仅支持录制主显示器画面。</p>",unsafe_allow_html=True)
+            st.markdown(d_lang[config.lang]["rs_md_only_support_main_monitor"],unsafe_allow_html=True)
 
 
 
-        screentime_not_change_to_pause_record = st.number_input('当画面几分钟没有变化时，暂停录制下个视频切片（0为永不暂停）', value=config.screentime_not_change_to_pause_record, min_value=0)
+        screentime_not_change_to_pause_record = st.number_input(d_lang[config.lang]["rs_input_stop_recording_when_screen_freeze"], value=config.screentime_not_change_to_pause_record, min_value=0)
 
         st.divider()
 
         # 自动化维护选项 WIP
         st.markdown(d_lang[config.lang]["tab_setting_maintain_title"])
         ocr_strategy_option_dict = {
-            "不自动更新，仅手动更新":0,
-            "视频切片录制完毕时自动索引（推荐）":1
+            d_lang[config.lang]["rs_text_ocr_manual_update"]:0,
+            d_lang[config.lang]["rs_text_ocr_auto_update"]:1
         }
-        ocr_strategy_option = st.selectbox('OCR 索引策略',
+        ocr_strategy_option = st.selectbox(d_lang[config.lang]["rs_selectbox_ocr_strategy"],
                      (list(ocr_strategy_option_dict.keys())),
                      index=config.OCR_index_strategy
                      )
         
         col1d,col2d,col3d = st.columns([1,1,1])
         with col1d:
-            vid_store_day = st.number_input(d_lang[config.lang]["tab_setting_m_vid_store_time"], min_value=0, value=config.vid_store_day, help="0 为永不删除。")
+            vid_store_day = st.number_input(d_lang[config.lang]["tab_setting_m_vid_store_time"], min_value=0, value=config.vid_store_day, help=d_lang[config.lang]["rs_input_vid_store_time_help"])
         with col2d:
-            vid_compress_day = st.number_input("原视频在保留几天后进行压缩",value=config.vid_compress_day,min_value=0,help="0 为永不压缩。")
+            vid_compress_day = st.number_input(d_lang[config.lang]["rs_input_vid_compress_time"],value=config.vid_compress_day,min_value=0,help=d_lang[config.lang]["rs_input_vid_compress_time_help"])
         with col3d:
             video_compress_selectbox_dict = {'0.75':0, '0.5':1, '0.25':2}
-            video_compress_rate_selectbox = st.selectbox("压缩到原先画面尺寸的",list(video_compress_selectbox_dict.keys()),index=video_compress_selectbox_dict[config.video_compress_rate])
+            video_compress_rate_selectbox = st.selectbox(d_lang[config.lang]["rs_selectbox_compress_ratio"], list(video_compress_selectbox_dict.keys()),index=video_compress_selectbox_dict[config.video_compress_rate], help=d_lang[config.lang]["rs_selectbox_compress_ratio_help"])
 
         st.divider()
 
@@ -963,7 +962,7 @@ with tab4:
             config.set_and_save_config("vid_store_day",vid_store_day)
             config.set_and_save_config("vid_compress_day",vid_compress_day)
             config.set_and_save_config("video_compress_rate",video_compress_rate_selectbox)
-            st.toast("已应用更改。", icon="🦝")
+            st.toast(d_lang[config.lang]["utils_toast_setting_saved"], icon="🦝")
             time.sleep(2)
             st.experimental_rerun()
 
@@ -997,17 +996,17 @@ with tab5:
             update_db_btn = st.button(d_lang[config.lang]["tab_setting_db_btn"], type="secondary", key='update_button_key',
                                       disabled=st.session_state.get("update_button_disabled", False),
                                       on_click=update_database_clicked)
-            is_shutdown_pasocon_after_updatedDB = st.checkbox('更新完毕后关闭计算机', value=False,disabled=st.session_state.get("update_button_disabled", False))
+            is_shutdown_pasocon_after_updatedDB = st.checkbox(d_lang[config.lang]["set_checkbox_shutdown_after_updated"], value=False,disabled=st.session_state.get("update_button_disabled", False))
         
         with col2:
             # 设置ocr引擎
             check_ocr_engine()
-            config_ocr_engine = st.selectbox('本地 OCR 引擎', ('Windows.Media.Ocr.Cli', 'ChineseOCR_lite_onnx'),
+            config_ocr_engine = st.selectbox(d_lang[config.lang]["set_selectbox_local_ocr_engine"], ('Windows.Media.Ocr.Cli', 'ChineseOCR_lite_onnx'),
                                              index=config_ocr_engine_choice_index,
-                                             help="（待补充描述）推荐使用 Windows.Media.Ocr.Cli")
+                                             help=d_lang[config.lang]["set_selectbox_local_ocr_engine_help"])
 
             # 设置排除词
-            exclude_words = st.text_area("当 OCR 存在以下词语之一时跳过索引",value=utils.list_to_string(config.exclude_words),help="当有些画面/应用不想被索引时，可以在此添加它们可能出现的关键词，以半角逗号“, ”分割。比如不想记录在 捕风记录仪 的查询画面，可以添加“, 捕风记录仪”。")
+            exclude_words = st.text_area(d_lang[config.lang]["set_input_exclude_word"],value=utils.list_to_string(config.exclude_words),help=d_lang[config.lang]["set_input_exclude_word_help"])
             
 
         # 更新数据库按钮
@@ -1035,9 +1034,9 @@ with tab5:
         st.divider()
         col1pb, col2pb = st.columns([1,1])
         with col1pb:
-            st.markdown("**OCR 时忽略屏幕四边的区域范围**",help="填入数字为百分比，比如'6' == 6%。此选项可以在 OCR 时忽略屏幕四边的元素，如浏览器的标签栏、Windows 的开始菜单、网页内的花边广告信息等。")
+            st.markdown(d_lang[config.lang]["set_md_ocr_ignore_area"], help=d_lang[config.lang]["set_md_ocr_ignore_area_help"])
         with col2pb:
-            st.session_state.ocr_screenshot_refer_used = st.toggle("用当前屏幕截图参照",False)
+            st.session_state.ocr_screenshot_refer_used = st.toggle(d_lang[config.lang]["set_toggle_use_screenshot_as_refer"],False)
 
         if 'ocr_padding_top' not in st.session_state:
             st.session_state.ocr_padding_top = config.ocr_image_crop_URBL[0]
@@ -1050,12 +1049,12 @@ with tab5:
 
         col1pa, col2pa, col3pa = st.columns([.5,.5,1])
         with col1pa:
-            st.session_state.ocr_padding_top = st.number_input("上边框",value=st.session_state.ocr_padding_top,min_value=0,max_value=40)
-            st.session_state.ocr_padding_bottom = st.number_input("下边框",value=st.session_state.ocr_padding_bottom,min_value=0,max_value=40)
+            st.session_state.ocr_padding_top = st.number_input(d_lang[config.lang]["set_text_top_padding"],value=st.session_state.ocr_padding_top,min_value=0,max_value=40)
+            st.session_state.ocr_padding_bottom = st.number_input(d_lang[config.lang]["set_text_bottom_padding"],value=st.session_state.ocr_padding_bottom,min_value=0,max_value=40)
             
         with col2pa:
-            st.session_state.ocr_padding_left = st.number_input("左边框",value=st.session_state.ocr_padding_left,min_value=0,max_value=40)
-            st.session_state.ocr_padding_right = st.number_input("右边框",value=st.session_state.ocr_padding_right,min_value=0,max_value=40)
+            st.session_state.ocr_padding_left = st.number_input(d_lang[config.lang]["set_text_left_padding"],value=st.session_state.ocr_padding_left,min_value=0,max_value=40)
+            st.session_state.ocr_padding_right = st.number_input(d_lang[config.lang]["set_text_right_padding"],value=st.session_state.ocr_padding_right,min_value=0,max_value=40)
         with col3pa:
             image_setting_crop_refer = screen_ignore_padding(
                 st.session_state.ocr_padding_top, 
@@ -1073,17 +1072,19 @@ with tab5:
         col1_ui, col2_ui = st.columns([1,1])
         with col1_ui:
             st.markdown(d_lang[config.lang]["tab_setting_ui_title"])
-            option_show_oneday_wordcloud = st.checkbox("在「一天之时」下展示每日词云",value=config.show_oneday_wordcloud)
+            option_show_oneday_wordcloud = st.checkbox(d_lang[config.lang]["set_checkbox_show_wordcloud_under_oneday"], value=config.show_oneday_wordcloud)
             # 使用中文形近字进行搜索
-            config_use_similar_ch_char_to_search = st.checkbox("使用中文形近字进行搜索",value=config.use_similar_ch_char_to_search)
+            config_use_similar_ch_char_to_search = st.checkbox(d_lang[config.lang]["set_checkbox_use_similar_zh_char_to_search"],value=config.use_similar_ch_char_to_search,help=d_lang[config.lang]["set_checkbox_use_similar_zh_char_to_search_help"])
         with col2_ui:
-            config_wordcloud_user_stop_words = st.text_area("在词云生成中过滤以下词语：", help="待补充", value=utils.list_to_string(config.wordcloud_user_stop_words))
+            config_wordcloud_user_stop_words = st.text_area(d_lang[config.lang]["set_input_wordcloud_filter"], help=d_lang[config.lang]["set_input_wordcloud_filter_help"], value=utils.list_to_string(config.wordcloud_user_stop_words))
 
         # 每页结果最大数量
-        config_max_search_result_num = st.number_input(d_lang[config.lang]["tab_setting_ui_result_num"], min_value=1,
-                                                       max_value=500, value=config.max_page_result)
-        
-        config_oneday_timeline_num = st.number_input("「一天之时」时间轴的横向缩略图数量", min_value=50, max_value=100, value=config.oneday_timeline_pic_num)
+        col1_ui2, col2_ui2 = st.columns([1,1])
+        with col1_ui2:
+            config_max_search_result_num = st.number_input(d_lang[config.lang]["tab_setting_ui_result_num"], min_value=1,
+                                                           max_value=500, value=config.max_page_result)
+        with col2_ui2:
+            config_oneday_timeline_num = st.number_input(d_lang[config.lang]["set_input_oneday_timeline_thumbnail_num"], min_value=50, max_value=100, value=config.oneday_timeline_pic_num, help=d_lang[config.lang]["set_input_oneday_timeline_thumbnail_num_help"])
 
         # 选择语言
         lang_choice = OrderedDict((k, '' + v) for k, v in lang_map.items())   #根据读入列表排下序
@@ -1104,7 +1105,7 @@ with tab5:
             config.set_and_save_config("ocr_image_crop_URBL",[st.session_state.ocr_padding_top, st.session_state.ocr_padding_right, st.session_state.ocr_padding_bottom, st.session_state.ocr_padding_left])
             config.set_and_save_config("wordcloud_user_stop_words", utils.string_to_list(config_wordcloud_user_stop_words))
             config.set_and_save_config("oneday_timeline_pic_num", config_oneday_timeline_num)
-            st.toast("已应用更改。", icon="🦝")
+            st.toast(d_lang[config.lang]["utils_toast_setting_saved"], icon="🦝")
             time.sleep(2)
             st.experimental_rerun()
 

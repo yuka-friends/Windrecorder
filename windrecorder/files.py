@@ -54,7 +54,8 @@ def get_videos_and_ocred_videos_count(folder_path):
         for file in files:
             count += 1
             if not file.split('.')[0].endswith("-OCRED"):
-                nocred_count += 1
+                if not file.split('.')[0].endswith("-ERROR"):
+                    nocred_count += 1
 
     return count, nocred_count
 

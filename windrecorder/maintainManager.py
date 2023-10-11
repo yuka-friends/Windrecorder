@@ -64,7 +64,7 @@ def extract_iframe(video_file, iframe_interval=4000):
             break
 
         if frame_cnt % frame_step == 0:
-            print("extract frame cnt:" + str(frame_cnt))
+            print("extract frame cut:" + str(frame_cnt))
             cv2.imwrite('catch\\i_frames\\%d.jpg' % frame_cnt, frame)
 
         frame_cnt += 1
@@ -183,6 +183,9 @@ def compare_strings(a, b, threshold=70):
 
     # if len(a) == 0 or len(b) == 0:
     #     return True, 0
+    
+    if a.isspace() and b.isspace():
+        return True, 0
 
     # 计算两个字符串的重合率
     overlap = len(set(a) & set(b)) / len(set(a) | set(b)) * 100
