@@ -16,7 +16,7 @@ It runs **entirely locally, stored your private data locally, without any need o
 ![Windrecorder](https://github.com/Antonoko/Windrecorder/blob/main/__assets__/preview.png)
 
 
-**NOTE: This project is still under early development and the availability of many features are not guaranteed.** English and i18n GUI support will be added after the alpha version is released.
+**NOTE: This project is still under early development and the availability of many features are not guaranteed.** 
 
 **注意：这个项目仍然在开发早期阶段，部分能力和特性不保证可以正常运行。**
 
@@ -34,9 +34,9 @@ It runs **entirely locally, stored your private data locally, without any need o
 - [x] Word Cloud and Timeline/Lightbox summarize
 - [x] Full functional webui dashboard & control center for querying database and set configuration
 - [x] Automated operation: auto compress and remove outdated videos to save space
-- [ ] Fully i18n support
+- [x] Fully i18n support with English, Simple Chinese, Japanese
 - [x] Setup an easier to use Onboarding/installer
-- [ ] Polishing details, improving stability
+- [ ] Polishing details, improving stability and code quality
 - [ ] Multi-monitors supports (depends on pyautogui's future update)
 - [ ] Add vision understanding based search
 - [ ] Add LLM summarize and vector searching
@@ -76,6 +76,14 @@ There are two ways to setup windrecorder:
 Q: 在打开webui时提示：FileNotFoundError: [WinError 2] The system cannot find the file specified: './db\\user_2023-10_wind.db-journal'
 
 A: 这种情况通常在初次访问时、start_record.bat 仍正在索引数据时出现。解决方法：在 start_record.bat 后台索引完毕后，删除 db 文件夹下对应后缀为 _TEMP_READ.db 的数据库文件后刷新即可。
+
+Q: 录制过程中鼠标闪烁
+
+A：
+
+Q：结果在同一个视频中时，拖动滑杆不自动跳转时间
+
+A：
 
 
 # 🧡

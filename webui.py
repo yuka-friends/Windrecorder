@@ -294,7 +294,7 @@ def screen_ignore_padding(topP,rightP,bottomP,leftP,use_screenshot = False):
         image_padding_refer_width, image_padding_refer_height = image_padding_refer.size
         image_padding_refer_height = int(350 * image_padding_refer_height / image_padding_refer_width)
         image_padding_refer = image_padding_refer.resize((350,image_padding_refer_height))
-        image_padding_refer_fade = Image.new('RGBA', (350, 200), (235, 235, 235, 150))
+        image_padding_refer_fade = Image.new('RGBA', (350, 200), (255, 233, 216, 100))   # 添加背景色蒙层
         image_padding_refer.paste(image_padding_refer_fade, (0,0), image_padding_refer_fade)
 
     image_padding_refer_width, image_padding_refer_height = image_padding_refer.size
@@ -782,7 +782,7 @@ with tab2:
                 draw_dataframe(df, heightIn=800)
         
         else:
-            st.info(d_lang[config.lang]["gs_text_intro"],icon="🔎")
+            st.info(d_lang[config.lang]["gs_text_intro"])
 
     with col2:
         # 选择视频
@@ -1086,7 +1086,7 @@ with tab5:
         # 选择语言
         lang_choice = OrderedDict((k, '' + v) for k, v in lang_map.items())   #根据读入列表排下序
         language_option = st.selectbox(
-            'Interface Language / 更改显示语言',
+            '🌎 Interface Language / 更改显示语言 / 表示言語を変更する',
             (list(lang_choice.values())),
             index=lang_index)
 
@@ -1103,7 +1103,7 @@ with tab5:
             config.set_and_save_config("wordcloud_user_stop_words", utils.string_to_list(config_wordcloud_user_stop_words))
             config.set_and_save_config("oneday_timeline_pic_num", config_oneday_timeline_num)
             st.toast(d_lang[config.lang]["utils_toast_setting_saved"], icon="🦝")
-            time.sleep(2)
+            time.sleep(1)
             st.experimental_rerun()
 
     with col2b:

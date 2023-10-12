@@ -10,7 +10,6 @@ import windrecorder.record as record
 
 allstep = 5
 
-
 # 读取i18n
 with open("config\\src\\languages.json", encoding='utf-8') as f:
     d_lang = json.load(f)
@@ -26,10 +25,10 @@ def print_header(step = 1, toast=""):
     divider()
     print(step, "/", allstep, toast)
     print("\n")
+    
 
 # 欢迎寒暄
 subprocess.run('color 06', shell=True)
-
 
 
 # 设置语言
@@ -38,7 +37,7 @@ while(True):
     print("First, please choose your interface language. (Enter the number option and press Enter to confirm.)")
     print("首先，请设置你的界面语言。（输入数字项后回车确认）")
     divider()
-    print("1. English   2. 简体中文")
+    print("1. English   2. 简体中文   3. 日本語")
     input_lang_num = input('> ')
 
     if input_lang_num == '1':
@@ -47,9 +46,14 @@ while(True):
         print("The interface language is set to English")
         break
     if input_lang_num == '2':
-        config.set_and_save_config('lang', 'zh')
-        lang = 'zh'
+        config.set_and_save_config('lang', 'sc')
+        lang = 'sc'
         print("界面语言已设定为：简体中文")
+        break
+    if input_lang_num == '3':
+        config.set_and_save_config('lang', 'ja')
+        lang = 'ja'
+        print("インターフェース言語は日本語に設定されています。")
         break
     else:
         print("Unrecognized input item, please enter the corresponding numerical option and press Enter to confirm.\n无法识别的输入项，请输入对应的数字选项后回车确认。")
@@ -67,20 +71,20 @@ while(True):
         sys_username = getpass.getuser()
     else:
         sys_username = config.user_name
-    print("设定你的用户名，以作为数据库标识。")
-    print(f"回车直接使用当前用户名作为用户标识：{sys_username}，也可以输入自定义用户名（20个字符以内）。")
+    print(d_lang[config.lang]["qs_un_set_your_username"])
+    print(d_lang[config.lang]["qs_un_describe"].format(sys_username=sys_username))
     divider()
     your_username = input('> ')
     if len(your_username) > 20:
-        print("超出限定长度（20个半角英文字符/10个全角中文字符）")
+        print(d_lang[config.lang]["qs_un_longer_than_expect"])
         divider()
         subprocess.run('pause', shell=True)
     elif len(your_username) == 0:
-        print(f"使用当前用户名：{sys_username}")
+        print(d_lang[config.lang]["qs_un_use_current_name"].format(sys_username=sys_username))
         config.set_and_save_config("user_name", sys_username)
         break
     else:
-        print(f"使用自定义用户名：{your_username}")
+        print(d_lang[config.lang]["qs_un_use_custom_name"].format(your_username=your_username))
         config.set_and_save_config("user_name", your_username)
         break
     
@@ -118,35 +122,35 @@ except Exception as e:
     print(e)
 
 
-
 while(True):
     print_header(step=3)
-    print("OCR 引擎测试情况：\n")
+    print(d_lang[config.lang]["qs_ocr_title"])
 
     if ocr_result_ms:
         print("- Windows.Media.Ocr.Cli")
-        print("准确率：", ocr_correct_ms, "，识别时间：", time_cost_ms, "，索引15分钟视频约用时：", utils.convert_seconds_to_hhmmss(int(time_cost_ms*350)))
+        # print("准确率：", ocr_correct_ms, "，识别时间：", time_cost_ms, "，索引15分钟视频约用时：", utils.convert_seconds_to_hhmmss(int(time_cost_ms*350)))
+        print(d_lang[config.lang]["qs_ocr_result_describe"].format(accuracy=ocr_correct_ms, timecost=time_cost_ms , timecost_15=utils.convert_seconds_to_hhmmss(int(time_cost_ms*350))))
 
     print("")
 
     if ocr_result_col:
         print("- chineseocr_lite_onnx")
-        print("准确率：", ocr_correct_col, "，识别时间：", time_cost_col, "，索引15分钟视频约用时：", utils.convert_seconds_to_hhmmss(int(time_cost_col*350)))
-        
+        # print("准确率：", ocr_correct_col, "，识别时间：", time_cost_col, "，索引15分钟视频约用时：", utils.convert_seconds_to_hhmmss(int(time_cost_col*350)))
+        print(d_lang[config.lang]["qs_ocr_result_describe"].format(accuracy=ocr_correct_col, timecost=time_cost_col , timecost_15=utils.convert_seconds_to_hhmmss(int(time_cost_col*350))))
 
     divider()
-    print("> 推荐使用系统自带的 Windows.Media.Ocr.Cli，具有更快的速度、更低的性能消耗。\n")
-    print("请选择提取屏幕内容时的 OCR 引擎：")
-    print("1. Windows.Media.Ocr.Cli（推荐 & 默认） \n2. chineseocr_lite_onnx")
+    print(d_lang[config.lang]["qs_ocr_describe"])
+    print(d_lang[config.lang]["qs_ocr_cta"])
+    print("1. Windows.Media.Ocr.Cli", d_lang[config.lang]["qs_ocr_option_recommand"], "\n2. chineseocr_lite_onnx")
     input_lang_num = input('> ')
 
     if input_lang_num == '2':
         config.set_and_save_config("ocr_engine", "chineseocr_lite_onnx")
-        print("OCR 引擎使用：chineseocr_lite_onnx")
+        print(d_lang[config.lang]["qs_ocr_option_recommand"], "chineseocr_lite_onnx")
         break
     else:
         config.set_and_save_config("ocr_engine", "Windows.Media.Ocr.Cli")
-        print("OCR 引擎使用：Windows.Media.Ocr.Cli")
+        print(d_lang[config.lang]["qs_ocr_engine_chosen"], "Windows.Media.Ocr.Cli")
         break
 
 divider()
@@ -157,14 +161,14 @@ subprocess.run('pause', shell=True)
 # 设置显示器
 while(True):
     print_header(step=4)
-    print("注意：由于 pyautogui 暂未官方支持多显示器，捕风记录仪将只记录 Windows 下设置的【主显示器】\n")
+    print(d_lang[config.lang]["qs_mo_describe"])
     
     monitor_width = utils.get_screen_resolution().width
     monitor_height = utils.get_screen_resolution().height
     scale_width, scale_height = record.get_scale_screen_res_strategy(origin_width=monitor_width, origin_height=monitor_height)
     
-    print(f"当前检测到的主显示器分辨率为：{monitor_width}x{monitor_height}，将录制的视频分辨率为：{scale_width}x{scale_height}。")
-    print("此项设定将在每次录屏时自动识别，无需额外选择与设定。")
+    print(d_lang[config.lang]["qs_mo_detect"].format(monitor_width=monitor_width, monitor_height=monitor_height, scale_width=scale_width, scale_height=scale_height))
+    print(d_lang[config.lang]["qs_mo_cta"])
     break
 
 divider()
@@ -175,7 +179,7 @@ subprocess.run('pause', shell=True)
 
 # 完成初始化设定
 print_header(step=5)
-print("恭喜！你已完成所有初始设定。别担心，你可以随时打开 【start_webui.bat】 来调整设置！\n\n现在，你可以打开目录下的 【start_record.bat】 来开始记录屏幕内容啦。\n通过打开目录下的 【start_webui.bat】 来索引你的数据、调整更多个性化选项。\n")
-print("> 一起捕捉贮藏风一般掠过的、你的目之所见。")
-print("> 遇到问题、想反馈建议？欢迎在 https://github.com/Antonoko/Windrecorder 提交 issue 与 PR。")
+print(d_lang[config.lang]["qs_end_describe"])
+print(d_lang[config.lang]["qs_end_slogan"])
+print(d_lang[config.lang]["qs_end_feedback"])
 divider()
