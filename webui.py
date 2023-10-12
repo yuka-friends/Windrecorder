@@ -145,9 +145,9 @@ def choose_search_result_num(df, is_df_result_exist):
         # 使用滑杆选择视频
         col1, col2 = st.columns([5, 1])
         with col1:
-            select_num = st.slider(d_lang[config.lang]["def_search_slider"], slider_min_num_display, slider_max_num_display, select_num)
+            select_num = st.slider(d_lang[config.lang]["gs_slider_to_rewind_result"], slider_min_num_display, slider_max_num_display, select_num)
         with col2:
-            select_num = st.number_input(d_lang[config.lang]["def_search_slider"], label_visibility="hidden", min_value=slider_min_num_display,
+            select_num = st.number_input(d_lang[config.lang]["gs_slider_to_rewind_result"], label_visibility="hidden", min_value=slider_min_num_display,
                                          max_value=slider_max_num_display, value=select_num)
 
         select_num_real = select_num - slider_min_num_display   # 将绝对范围转换到从0开始的相对范围
@@ -164,18 +164,18 @@ def draw_db_status():
     if config.OCR_index_strategy == 1:
         # 启用自动索引
         if nocred_count == 1 and record.is_recording():
-            st.success(d_lang[config.lang]["tab_setting_db_state3"].format(nocred_count=nocred_count, count=count), icon='✅')
+            st.success(d_lang[config.lang]["set_text_one_video_to_index"].format(nocred_count=nocred_count, count=count), icon='✅')
         elif nocred_count == 0:
-            st.success(d_lang[config.lang]["tab_setting_db_state2"].format(nocred_count=nocred_count, count=count), icon='✅')
+            st.success(d_lang[config.lang]["set_text_no_video_need_index"].format(nocred_count=nocred_count, count=count), icon='✅')
         else:
-            st.success(d_lang[config.lang]["tab_setting_db_state4"].format(nocred_count=nocred_count, count=count), icon='✅')
+            st.success(d_lang[config.lang]["set_text_some_video_will_be_index"].format(nocred_count=nocred_count, count=count), icon='✅')
     elif config.OCR_index_strategy == 2:
         if nocred_count == 1 and record.is_recording():
-            st.success(d_lang[config.lang]["tab_setting_db_state3"].format(nocred_count=nocred_count, count=count), icon='✅')
+            st.success(d_lang[config.lang]["set_text_one_video_to_index"].format(nocred_count=nocred_count, count=count), icon='✅')
         elif nocred_count >= 1:
-            st.warning(d_lang[config.lang]["tab_setting_db_state1"].format(nocred_count=nocred_count, count=count, timeCostStr=timeCostStr), icon='🧭')
+            st.warning(d_lang[config.lang]["set_text_video_not_index"].format(nocred_count=nocred_count, count=count, timeCostStr=timeCostStr), icon='🧭')
         else:
-            st.success(d_lang[config.lang]["tab_setting_db_state2"].format(nocred_count=nocred_count, count=count), icon='✅')
+            st.success(d_lang[config.lang]["set_text_no_video_need_index"].format(nocred_count=nocred_count, count=count), icon='✅')
 
 
 # 规范化的打表渲染组件
@@ -188,17 +188,14 @@ def draw_dataframe(df,heightIn=800):
         column_config={
             "videofile": st.column_config.CheckboxColumn(
                 "videofile",
-                help=d_lang[config.lang]["tab_search_table_help1"],
                 default=False,
             ),
             "ocr_text": st.column_config.TextColumn(
                 "ocr_text",
-                help=d_lang[config.lang]["tab_search_table_help2"],
                 width="large"
             ),
             "thumbnail": st.column_config.ImageColumn(
                 "thumbnail",
-                help=d_lang[config.lang]["tab_search_table_help3"]
             )
         },
         height=heightIn
@@ -452,7 +449,7 @@ with tab1:
                 # 搜索前清除状态
                 st.session_state.day_search_result_index_num = 0
 
-            day_search_keyword = st.text_input(d_lang[config.lang]["tab_search_compname"], 'Keyword',
+            day_search_keyword = st.text_input(d_lang[config.lang]["text_search_keyword"], 'Keyword',
                                                key=2,label_visibility="collapsed",on_change=search_result(),
                                                disabled=not st.session_state.day_time_slider_disable)
             # 执行搜索，搜索结果
@@ -465,7 +462,7 @@ with tab1:
                     st.markdown(d_lang[config.lang]["oneday_search_md_none"], unsafe_allow_html=True)
                 else:
                     result_num = df_day_search_result.shape[0]
-                    st.markdown(d_lang[config.lang]["tab_setting_db_tip3"].format(result_num=result_num), unsafe_allow_html=True)
+                    st.markdown(d_lang[config.lang]["oneday_search_md_result"].format(result_num=result_num), unsafe_allow_html=True)
             else:
                 st.empty()
         with col4c:
@@ -682,7 +679,7 @@ with tab2:
     with col1:
         col1_gstype, col2_gstype = st.columns([2,1])
         with col1_gstype:
-            st.markdown(d_lang[config.lang]["tab_search_title"])
+            st.markdown(d_lang[config.lang]["gs_md_search_title"])
         with col2_gstype:
             # st.selectbox("搜索方式", ('关键词匹配','模糊语义搜索 [不可用]','画面内容搜索 [不可用]'),label_visibility="collapsed")
             st.empty()
@@ -738,14 +735,14 @@ with tab2:
 
         col1a, col2a, col3a, col4a = st.columns([2, 1, 2, 1])
         with col1a:
-            st.session_state.search_content = st.text_input(d_lang[config.lang]["tab_search_compname"], value="", on_change=do_global_keyword_search(),help="可使用空格分隔多个关键词。")
+            st.session_state.search_content = st.text_input(d_lang[config.lang]["text_search_keyword"], value="", on_change=do_global_keyword_search(),help="可使用空格分隔多个关键词。")
         with col2a:
             st.session_state.search_content_exclude = st.text_input(d_lang[config.lang]["gs_input_exclude"], "",help=d_lang[config.lang]["gs_input_exclude_help"], on_change=do_global_keyword_search())
         with col3a:
 
             try:
                 st.session_state.search_date_range_in, st.session_state.search_date_range_out = st.date_input(
-                    d_lang[config.lang]["tab_search_daterange"],
+                    d_lang[config.lang]["text_search_daterange"],
                     (datetime.datetime(1970, 1, 2)
                         + datetime.timedelta(seconds=st.session_state.search_earlist_record_time_int)
                         - datetime.timedelta(seconds=86400),
@@ -778,7 +775,7 @@ with tab2:
             result_choose_num = choose_search_result_num(df, is_df_result_exist)
 
             if len(df) == 0:
-                st.info(d_lang[config.lang]["tab_search_word_no"].format(search_content=st.session_state.search_content), icon="🎐")
+                st.info(d_lang[config.lang]["text_search_not_found"].format(search_content=st.session_state.search_content), icon="🎐")
             else:
                 # 打表
                 df = DBManager().db_refine_search_data_global(df, catch_videofile_ondisk_list=st.session_state.catch_videofile_ondisk_list) # 优化数据显示
@@ -870,7 +867,7 @@ with tab3:
 
 
 with tab4:
-    st.markdown(d_lang[config.lang]["tab_record_title"])
+    st.markdown(d_lang[config.lang]["rs_md_title"])
 
     col1c, col2c, col3c = st.columns([1, .5, 1.5])
     with col1c:
@@ -935,7 +932,7 @@ with tab4:
         st.divider()
 
         # 自动化维护选项 WIP
-        st.markdown(d_lang[config.lang]["tab_setting_maintain_title"])
+        st.markdown(d_lang[config.lang]["set_md_auto_maintain"])
         ocr_strategy_option_dict = {
             d_lang[config.lang]["rs_text_ocr_manual_update"]:0,
             d_lang[config.lang]["rs_text_ocr_auto_update"]:1
@@ -947,7 +944,7 @@ with tab4:
         
         col1d,col2d,col3d = st.columns([1,1,1])
         with col1d:
-            vid_store_day = st.number_input(d_lang[config.lang]["tab_setting_m_vid_store_time"], min_value=0, value=config.vid_store_day, help=d_lang[config.lang]["rs_input_vid_store_time_help"])
+            vid_store_day = st.number_input(d_lang[config.lang]["set_input_video_hold_days"], min_value=0, value=config.vid_store_day, help=d_lang[config.lang]["rs_input_vid_store_time_help"])
         with col2d:
             vid_compress_day = st.number_input(d_lang[config.lang]["rs_input_vid_compress_time"],value=config.vid_compress_day,min_value=0,help=d_lang[config.lang]["rs_input_vid_compress_time_help"])
         with col3d:
@@ -981,19 +978,19 @@ def update_database_clicked():
 
 # 设置页
 with tab5:
-    st.markdown(d_lang[config.lang]["tab_setting_title"])
+    st.markdown(d_lang[config.lang]["set_md_title"])
 
     col1b, col2b, col3b = st.columns([1, .5, 1.5])
     with col1b:
         # 更新数据库
-        st.markdown(d_lang[config.lang]["tab_setting_db_title"])
+        st.markdown(d_lang[config.lang]["set_md_index_db"])
 
         # 绘制数据库提示横幅
         draw_db_status()
 
         col1, col2 = st.columns([1, 1])
         with col1:
-            update_db_btn = st.button(d_lang[config.lang]["tab_setting_db_btn"], type="secondary", key='update_button_key',
+            update_db_btn = st.button(d_lang[config.lang]["set_btn_update_db_manual"], type="secondary", key='update_button_key',
                                       disabled=st.session_state.get("update_button_disabled", False),
                                       on_click=update_database_clicked)
             is_shutdown_pasocon_after_updatedDB = st.checkbox(d_lang[config.lang]["set_checkbox_shutdown_after_updated"], value=False,disabled=st.session_state.get("update_button_disabled", False))
@@ -1014,7 +1011,7 @@ with tab5:
             try:
                 st.divider()
                 estimate_time_str = utils.estimate_indexing_time() # 预估剩余时间
-                with st.spinner(d_lang[config.lang]["tab_setting_db_tip1"].format(estimate_time_str=estimate_time_str)):
+                with st.spinner(d_lang[config.lang]["set_text_updating_db"].format(estimate_time_str=estimate_time_str)):
                     timeCost = time.time() # 预埋计算实际时长
                     maintainManager.maintain_manager_main() # 更新数据库
 
@@ -1023,13 +1020,13 @@ with tab5:
                 st.exception(ex)
             else:
                 timeCostStr = utils.convert_seconds_to_hhmmss(timeCost)
-                st.success(d_lang[config.lang]["tab_setting_db_tip3"].format(timeCostStr=timeCostStr),icon="🧃")
+                st.success(d_lang[config.lang]["set_text_db_updated_successful"].format(timeCostStr=timeCostStr),icon="🧃")
             finally:
                 if is_shutdown_pasocon_after_updatedDB:
                     subprocess.run(["shutdown", "-s", "-t", "60"], shell=True)
                 st.snow()
                 st.session_state.update_button_disabled = False
-                st.button(d_lang[config.lang]["tab_setting_db_btn_gotit"], key=reset_button_key)
+                st.button(d_lang[config.lang]["set_btn_got_it"], key=reset_button_key)
 
         st.divider()
         col1pb, col2pb = st.columns([1,1])
@@ -1071,7 +1068,7 @@ with tab5:
         # 界面设置组
         col1_ui, col2_ui = st.columns([1,1])
         with col1_ui:
-            st.markdown(d_lang[config.lang]["tab_setting_ui_title"])
+            st.markdown(d_lang[config.lang]["set_md_gui"])
             option_show_oneday_wordcloud = st.checkbox(d_lang[config.lang]["set_checkbox_show_wordcloud_under_oneday"], value=config.show_oneday_wordcloud)
             # 使用中文形近字进行搜索
             config_use_similar_ch_char_to_search = st.checkbox(d_lang[config.lang]["set_checkbox_use_similar_zh_char_to_search"],value=config.use_similar_ch_char_to_search,help=d_lang[config.lang]["set_checkbox_use_similar_zh_char_to_search_help"])
@@ -1081,7 +1078,7 @@ with tab5:
         # 每页结果最大数量
         col1_ui2, col2_ui2 = st.columns([1,1])
         with col1_ui2:
-            config_max_search_result_num = st.number_input(d_lang[config.lang]["tab_setting_ui_result_num"], min_value=1,
+            config_max_search_result_num = st.number_input(d_lang[config.lang]["set_input_max_num_search_page"], min_value=1,
                                                            max_value=500, value=config.max_page_result)
         with col2_ui2:
             config_oneday_timeline_num = st.number_input(d_lang[config.lang]["set_input_oneday_timeline_thumbnail_num"], min_value=50, max_value=100, value=config.oneday_timeline_pic_num, help=d_lang[config.lang]["set_input_oneday_timeline_thumbnail_num_help"])

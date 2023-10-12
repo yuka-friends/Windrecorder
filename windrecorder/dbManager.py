@@ -143,9 +143,12 @@ class DBManager:
 
     # 以df入参形式批量插入新数据，考虑到跨月数据库处理的流程
     def db_add_dataframe_to_db_process(self, dataframe):
+        if len(dataframe) < 2:
+            return
         # 寻找db中最大最小时间戳，以确定需要插入的数据库
         # 如果都在同一个月，则插入当月的数据库文件；如果在不同月，则找到分歧点后分开插入
         max_timestamp, min_timestamp = self.db_get_dataframe_max_min_videotimestamp(dataframe)
+        print(f"-----------------------------max_timestamp:{max_timestamp}, min_timestamp:{min_timestamp}")
         max_datetime = utils.seconds_to_datetime(max_timestamp)
         min_datetime = utils.seconds_to_datetime(min_timestamp)
 
