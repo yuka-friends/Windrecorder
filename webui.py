@@ -970,8 +970,8 @@ with tab4:
         st.empty()
 
     with col3c:
-        howitwork_markdown = Path("config\\src\\how_it_work_" + config.lang + ".md").read_text(encoding='utf-8')
-        st.markdown(howitwork_markdown,unsafe_allow_html=True)
+        howitwork_img = Image.open("__assets__\\workflow-" + config.lang + ".png")
+        st.image(howitwork_img)
 
 
 
@@ -1114,6 +1114,10 @@ with tab5:
 
     with col3b:
         # 关于
+        
+        about_image_b64 = utils.image_to_base64("__assets__\\readme_racoonNagase.png")
+        st.markdown(f"<img align='right' style='max-width: 100%;max-height: 100%;' src='data:image/png;base64, {about_image_b64}'/>", unsafe_allow_html=True)
+
         about_path = "config\\src\\meta.json"
         with open(about_path, 'r', encoding='utf-8') as f:
             about_json = json.load(f)
