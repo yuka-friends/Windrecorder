@@ -14,6 +14,10 @@ allstep = 5
 with open("config\\src\\languages.json", encoding='utf-8') as f:
     d_lang = json.load(f)
 
+# 清理缓存
+utils.empty_directory("catch")
+
+
 def divider():
     print("\n--------------------------------------------------------------------\n")
 
