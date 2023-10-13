@@ -14,7 +14,7 @@ from windrecorder.dbManager import DBManager
 from windrecorder.config import config
 
 
-# 统计当月数据概览
+# 统计当月数据概览：条形图
 def get_month_data_overview(dt:datetime.datetime):
     month_days = calendar.monthrange(dt.year, dt.month)[1]
 
@@ -27,6 +27,27 @@ def get_month_data_overview(dt:datetime.datetime):
 
         row_count = len(df)
         df_month_data.loc[day-1] = [day, row_count]
+    
+    return df_month_data
+
+
+# 统计当月数据概览：散点图
+def get_month_day_overview_scatter(dt:datetime.datetime):
+    month_days = calendar.monthrange(dt.year, dt.month)[1]
+
+    df_month_data = pd.DataFrame(columns=['day', 'hours', 'data_count'])
+
+    query_month_start = datetime.datetime(dt.year, dt.month, 1, 0, 0, 1)
+    query_month_end = datetime.datetime(dt.year, dt.month, month_days, 23, 59, 59)
+    df,_,_ = DBManager().db_search_data("",query_month_start,query_month_end)   # 获取当月所有数据
+
+    for day in range(1, month_days+1):
+        for hour in range(1, 24):
+            timestamp_start = utils.datetime_to_seconds(datetime.datetime(dt.year, dt.month, day, hour-1, 0, 0))
+            timestamp_end = utils.datetime_to_seconds(datetime.datetime(dt.year, dt.month, day, hour, 0, 0))
+            result = df.loc[(df['videofile_time'] >= timestamp_start) & (df['videofile_time'] <= timestamp_end)]   # 获取当小时的所有数据
+            row_count = len(result)
+            df_month_data.loc[len(df_month_data.index)] = [day, hour, row_count]
     
     return df_month_data
 
@@ -45,6 +66,28 @@ def get_year_data_overview(dt:datetime.datetime):
 
         row_count = len(df)
         df_year_data.loc[month-1] = [month, row_count]
+    
+    return df_year_data
+
+
+# 统计全年数据概览：散点图
+def get_year_data_overview_scatter(dt:datetime.datetime):
+    months_count = 12
+
+    df_year_data = pd.DataFrame(columns=['month', 'day', 'data_count'])
+
+    query_year_start = datetime.datetime(dt.year, 1, 1,0,0,1)
+    query_year_end = datetime.datetime(dt.year, 12, 1,23,23,59)
+    df,_,_ = DBManager().db_search_data("",query_year_start,query_year_end)   # 获取全年所有数据
+
+    for month in range(1,13):
+        month_days = calendar.monthrange(dt.year, month)[1]
+        for day in range(1, month_days+1):
+            day_ts_start = utils.datetime_to_seconds(datetime.datetime(dt.year, month, day,0,0,1))
+            day_ts_end = utils.datetime_to_seconds(datetime.datetime(dt.year, month, day,23,23,59))
+            result = df.loc[(df['videofile_time'] >= day_ts_start) & (df['videofile_time'] <= day_ts_end)]   # 获取当小时的所有数据
+            row_count = len(result)
+            df_year_data.loc[len(df_year_data.index)] = [month, day, row_count]
     
     return df_year_data
 

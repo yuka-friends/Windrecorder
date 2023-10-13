@@ -17,6 +17,7 @@
         "text_welcome_to_windrecorder":"Welcome to Wind Recorder!",
         "text_updating_month_stat": "Updating statistics for this month...",
         "text_updating_yearly_stat": "Updating statistics for this year...",
+        "text_cannot_open_img": "The image seems to be damaged, please delete the corresponding image in the result_ folder and try again.",
         
         "oneday_title": "### 🖼️ One Day",
         "oneday_btn_yesterday": "← Prev Day",
@@ -149,6 +150,7 @@
         "text_welcome_to_windrecorder":"欢迎使用 Windrecorder！",
         "text_updating_month_stat": "更新本月统计中……",
         "text_updating_yearly_stat": "更新本年统计中……",
+        "text_cannot_open_img": "图像似乎损坏，请删除result_文件夹下对应图片重试。",
         
         "oneday_title": "### 🖼️ 一天之时",
         "oneday_btn_yesterday": "← 前一天",
@@ -282,6 +284,7 @@
         "text_welcome_to_windrecorder":"Windrecorderへようこそ！",
         "text_updating_month_stat": "今月の統計を更新しています...",
         "text_updating_yearly_stat": "今年の統計を更新しています...",
+        "text_cannot_open_img": "画像が破損しているようです。result_ フォルダー内の該当する画像を削除して、もう一度お試しください。",
         
         "oneday_title": "### 🖼️ 一日",
         "oneday_btn_yesterday": "← 前の日",

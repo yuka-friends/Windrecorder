@@ -231,17 +231,17 @@ def get_show_month_data_state(stat_select_month_datetime:datetime.datetime):
                 if not files.is_file_modified_recently(df_filepath, time_gap=120):   # 超过120分钟未更新，过时 重新生成
                     # 更新操作
                     with st.spinner(d_lang[config.lang]["text_updating_month_stat"]):
-                        st.session_state.df_month_stat = state.get_month_data_overview(stat_select_month_datetime)
+                        st.session_state.df_month_stat = state.get_month_day_overview_scatter(stat_select_month_datetime)
                         files.save_dataframe_to_path(st.session_state.df_month_stat,file_path=df_filepath)
             # 进行读取操作
             st.session_state.df_month_stat = files.read_dataframe_from_path(file_path=df_filepath)
 
         else:   # 磁盘上不存在缓存
             with st.spinner(d_lang[config.lang]["text_updating_month_stat"]):
-                st.session_state.df_month_stat = state.get_month_data_overview(stat_select_month_datetime)
+                st.session_state.df_month_stat = state.get_month_day_overview_scatter(stat_select_month_datetime)
                 files.save_dataframe_to_path(st.session_state.df_month_stat,file_path=df_filepath)    
 
-    st.bar_chart(st.session_state.df_month_stat,x="day",y="data_count",color="#AC79D5")
+    st.scatter_chart(st.session_state.df_month_stat,x="day",y="hours",size="data_count",color="#AC79D5")
 
 
 # 生成并显示每年数据量概览
@@ -260,7 +260,7 @@ def get_show_year_data_state(stat_select_year_datetime:datetime.datetime):
             if not files.is_file_modified_recently(df_filepath, time_gap=3000):   # 超过3000分钟未更新，过时 重新生成
                 # 更新操作
                 with st.spinner(d_lang[config.lang]["text_updating_yearly_stat"]):
-                    st.session_state.df_year_stat = state.get_year_data_overview(stat_select_year_datetime)
+                    st.session_state.df_year_stat = state.get_year_data_overview_scatter(stat_select_year_datetime)
                     files.save_dataframe_to_path(st.session_state.df_year_stat,file_path=df_filepath)
             else:
                 # 未过时，进行读取操作
@@ -268,10 +268,10 @@ def get_show_year_data_state(stat_select_year_datetime:datetime.datetime):
 
         else:   # 磁盘上不存在缓存
             with st.spinner(d_lang[config.lang]["text_updating_yearly_stat"]):
-                st.session_state.df_year_stat = state.get_year_data_overview(stat_select_year_datetime)
+                st.session_state.df_year_stat = state.get_year_data_overview_scatter(stat_select_year_datetime)
                 files.save_dataframe_to_path(st.session_state.df_year_stat,file_path=df_filepath)
     
-    st.bar_chart(st.session_state.df_year_stat,x="month",y="data_count",color="#C873A6",height=200)
+    st.scatter_chart(st.session_state.df_year_stat,x="month",y="day",size="data_count",color="#C873A6",height=350)
 
 
 
@@ -638,8 +638,11 @@ with tab1:
                             print(f"Deleted file: {file_path}")
 
                 # 展示词云
-                image = Image.open(current_day_cloud_img_path)
-                st.image(image)
+                try:
+                    image = Image.open(current_day_cloud_img_path)
+                    st.image(image)
+                except Exception as e:
+                    st.exception(d_lang[config.lang]["text_cannot_open_img"] + e)
 
                 def update_wordcloud_btn_clicked():
                     st.session_state.update_wordcloud_button_disabled = True

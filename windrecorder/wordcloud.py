@@ -32,8 +32,12 @@ def generate_word_cloud_pic(text_file_path,img_save_path,mask_img="month"):
     # 打开文本
     # with open(text_file_path,encoding="utf-8") as f:
     #     s = f.read()
-    with open(text_file_path) as f:
-        s = f.read()
+    try:
+        with open(text_file_path, encoding='utf-8') as f:
+            s = f.read()
+    except:
+        with open(text_file_path) as f:
+            s = f.read()
 
     # 中文分词
     text = ' '.join(jieba.cut(s))
