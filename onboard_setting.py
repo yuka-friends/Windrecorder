@@ -2,6 +2,7 @@ import subprocess
 import json
 import time
 import getpass
+import os
 
 from windrecorder.config import config
 import windrecorder.maintainManager as maintainManager
@@ -15,8 +16,8 @@ with open("config\\src\\languages.json", encoding='utf-8') as f:
     d_lang = json.load(f)
 
 # 清理缓存
-utils.empty_directory("catch")
-
+if os.path.exists("catch"):
+    utils.empty_directory("catch")
 
 def divider():
     print("\n--------------------------------------------------------------------\n")
