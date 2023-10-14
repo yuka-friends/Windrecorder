@@ -128,8 +128,8 @@ def initialize_config():
 
 
 def get_config_json():
-    update_config_files_from_default_to_user()
     initialize_config()
+    update_config_files_from_default_to_user()
     with open(config_path, 'r', encoding='utf-8') as f:
         config_json = json.load(f)
     return config_json
