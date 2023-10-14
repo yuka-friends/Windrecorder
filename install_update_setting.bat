@@ -12,7 +12,7 @@ rem 安装与更新requirement.txt依赖
 pip install -r requirements.txt
 
 rem 更新GitHub仓库
-@REM git pull
+git pull
 
 cls
 color 0e
