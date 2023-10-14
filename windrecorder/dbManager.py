@@ -41,7 +41,7 @@ class DBManager:
     # ___
     # 初始化对应时间的数据库流程
     def db_main_initialize(self):
-        print("——初始化数据库中……")
+        print("dbManager: Initialize the database...")
         # 检查有无最新的数据库
         db_filepath_today = files.get_db_filepath_by_datetime(datetime.datetime.today())
         conn_check = self.db_check_exist(db_filepath_today)
@@ -54,13 +54,12 @@ class DBManager:
 
     # 初始化数据库：如果内容为空，则创建表初始化
     def db_initialize(self,db_filepath):
-        print("——初始化数据库：如果内容为空，则创建表初始化")
         conn = sqlite3.connect(db_filepath)
         c = conn.cursor()
         c.execute("SELECT name FROM sqlite_master WHERE type='table' AND name='video_text'")
 
         if c.fetchone() is None:
-            print("db is empty, write new table.")
+            print("dbManager: db is empty, writing new table.")
             self.db_create_table(db_filepath)
             now = datetime.datetime.now()
             now_name = now.strftime("%Y-%m-%d_%H-%M-%S")
@@ -76,7 +75,7 @@ class DBManager:
                 None
             )
         else:
-            print("db existed and not empty")
+            print("dbManager: db existed and not empty")
 
 
     # 重新读取配置文件
@@ -86,16 +85,15 @@ class DBManager:
 
     # 初始化数据库：检查、创建、连接入参数据库对象
     def db_check_exist(self, db_filepath):
-        print("——初始化数据库：检查、创建、连接最新的数据库对象")
         is_db_exist = False
 
         # 检查数据库是否存在
         if not os.path.exists(db_filepath):
-            print("db not existed")
+            print("dbManager: db not existed")
             is_db_exist = False
             if not os.path.exists(self.db_path):
                 os.mkdir(self.db_path)
-                print("db dir not existed, mkdir")
+                print("dbManager: db dir not existed, mkdir")
         else:
             is_db_exist = True
 
@@ -107,7 +105,7 @@ class DBManager:
 
     # 创建表
     def db_create_table(self, db_filepath):
-        print("——创建表")
+        print("dbManager: Making table")
         conn = sqlite3.connect(db_filepath)
         conn.execute('''CREATE TABLE video_text  
                    (videofile_name VARCHAR(100),
@@ -123,7 +121,7 @@ class DBManager:
     # 插入数据
     def db_update_data(self, videofile_name, picturefile_name, videofile_time, ocr_text, is_videofile_exist,
                        is_picturefile_exist, thumbnail):
-        print("——插入数据")
+        print("dbManager: Inserting data")
         # 使用方法：db_update_data(db_filepath,'video1.mp4','iframe_0.jpg', 120, 'text from ocr', True, False)
 
         # 获取插入时间，取得对应的数据库      
@@ -148,7 +146,6 @@ class DBManager:
         # 寻找db中最大最小时间戳，以确定需要插入的数据库
         # 如果都在同一个月，则插入当月的数据库文件；如果在不同月，则找到分歧点后分开插入
         max_timestamp, min_timestamp = self.db_get_dataframe_max_min_videotimestamp(dataframe)
-        print(f"-----------------------------max_timestamp:{max_timestamp}, min_timestamp:{min_timestamp}")
         max_datetime = utils.seconds_to_datetime(max_timestamp)
         min_datetime = utils.seconds_to_datetime(min_timestamp)
 
@@ -216,7 +213,7 @@ class DBManager:
     # 查询关键词数据，返回完整的结果 dataframe
     def db_search_data(self, keyword_input, date_in, date_out, keyword_input_exclude=""):
         # 返回值：关于结果的所有数据 df，所有结果的总行数
-        print("——查询关键词数据")
+        print("dbManager: Querying keywords")
         # 初始化查询数据
         # date_in/date_out : 类型为datetime.datetime
         self.db_update_read_config(config)
@@ -237,7 +234,7 @@ class DBManager:
         for key in query_db_name_list:
             db_filepath_origin = os.path.join(self.db_path, key)   # 构建完整路径
             db_filepath = self.get_temp_dbfilepath(db_filepath_origin)   # 检查/创建临时查询用的数据库
-            print(f"- Querying {db_filepath}")
+            print(f"dbManager: Querying {db_filepath}")
 
             conn = sqlite3.connect(db_filepath)   # 连接数据库
             c = conn.cursor()   # 查询总结果数量，获得页数
@@ -289,7 +286,7 @@ class DBManager:
             # 限定查询的时间范围
             query += f" AND (videofile_time BETWEEN {date_in_ts} AND {date_out_ts})"
 
-            print(f"-SQL query:\n {query}")
+            print(f"dbManager: SQL query:\n {query}")
             df = pd.read_sql_query(query, conn)
 
             # 查询所有关键词和时间段下的结果
@@ -312,7 +309,6 @@ class DBManager:
 
         row_count = len(df_all)
         page_count_all = int(math.ceil(int(row_count)/int(self.db_max_page_result)))
-        # print(f"row_count:{row_count}, db_max_page_result:{self.db_max_page_result}, page_count_all:{page_count_all}")
 
         return df_all, row_count, page_count_all
 
@@ -337,23 +333,6 @@ class DBManager:
 
     # 优化全局搜索数据结果的展示
     def db_refine_search_data_global(self, df, catch_videofile_ondisk_list = None):
-        print("——优化全局搜索数据结果的展示")
-        # df.drop('picturefile_name', axis=1, inplace=True)
-        # df.drop('is_picturefile_exist', axis=1, inplace=True)
-
-        # df.insert(1, 'time_stamp', df['videofile_time'].apply(utils.seconds_to_date))
-        # # df.drop('videofile_time', axis=1, inplace=True)
-
-        # df.insert(len(df.columns) - 1, 'videofile_name', df.pop('videofile_name'))
-        # df.insert(len(df.columns) - 1, 'videofile_time', df.pop('videofile_time'))
-        # # df['is_videofile_exist'] = df['is_videofile_exist'].astype(str)
-
-        # df['thumbnail'] = 'data:image/png;base64,' + df['thumbnail']
-        # df.insert(0, 'thumbnail', df.pop('thumbnail'))
-
-        # return df
-
-    # def process_dataframe(df: pd.DataFrame) -> pd.DataFrame:
         # 1. Add a new column "locate_time"
         df["locate_time"] = df.apply(lambda row: utils.convert_seconds_to_hhmmss(utils.get_video_timestamp_by_filename_and_abs_timestamp(row["videofile_name"], row["videofile_time"])), axis=1)
         df["timestamp"] = df.apply(lambda row: utils.seconds_to_date_goodlook_formart(row['videofile_time']), axis=1)
@@ -384,14 +363,29 @@ class DBManager:
     
 
     # 优化一天之时数据结果的展示
-    def db_refine_search_data_day(self,df):
+    def db_refine_search_data_day(self, df, catch_videofile_ondisk_list = None):
         df["locate_time"] = df.apply(lambda row: utils.convert_seconds_to_hhmmss(utils.get_video_timestamp_by_filename_and_abs_timestamp(row["videofile_name"], row["videofile_time"])), axis=1)
         df["timestamp"] = df.apply(lambda row: utils.seconds_to_date_dayHMS(row['videofile_time']), axis=1)
         df['thumbnail'] = 'data:image/png;base64,' + df['thumbnail']
+
+        # 磁盘上有无对应视频检测
+        catch_videofile_ondisk_str = ''
+        if catch_videofile_ondisk_list is None:
+            catch_videofile_ondisk_str = catch_videofile_ondisk_str.join(files.get_file_path_list(config.record_videos_dir))
+        else:
+            catch_videofile_ondisk_str = catch_videofile_ondisk_str.join(catch_videofile_ondisk_list)
         
-        df = df.drop(columns=["picturefile_name", "is_picturefile_exist"])
+
+        def is_videofile_ondisk(filename, video_ondisk_str):
+            if filename[:19] in video_ondisk_str:
+                return True
+            else:
+                return False
         
-        df = df[["thumbnail", "timestamp", "ocr_text", "is_videofile_exist", "videofile_name", "locate_time", "videofile_time"]]
+        df['videofile'] = df.apply(lambda row: is_videofile_ondisk(row['videofile_name'], catch_videofile_ondisk_str), axis=1)
+        df = df.drop(columns=["picturefile_name", "is_picturefile_exist", "is_videofile_exist"])
+        
+        df = df[["thumbnail", "timestamp", "ocr_text", "videofile", "videofile_name", "locate_time", "videofile_time"]]
         
         return df
 
@@ -399,7 +393,7 @@ class DBManager:
 
     # 列出所有数据
     def db_print_all_data(self):
-        print("——列出所有数据库的所有数据")
+        print("dbManager: List all data in all databases")
         # 获取游标
         # 使用SELECT * 从video_text表查询所有列的数据
         # 使用fetchall()获取所有结果行
@@ -420,7 +414,6 @@ class DBManager:
 
     # 查询全部数据库一共有多少行
     def db_num_records(self):
-        print("——查询全部数据库一共有多少行")
         full_db_name_ondisk_dict = files.get_db_file_path_dict()
         rows_count_all = 0
         for key, value in full_db_name_ondisk_dict.items():
@@ -432,8 +425,8 @@ class DBManager:
             rows_count = c.fetchone()[0]
             conn.close()
             rows_count_all += rows_count
-            print(f"db_filepath: {db_filepath}, rows_count: {rows_count}")
-        print(f"rows_count_all: {rows_count_all}")
+            print(f"dbManager: db_filepath: {db_filepath}, rows_count: {rows_count}")
+        print(f"dbManager: rows_count_all: {rows_count_all}")
         return rows_count_all
 
 
@@ -471,7 +464,7 @@ class DBManager:
 
     # 回滚操作：删除输入视频文件名相关的所有条目
     def db_rollback_delete_video_refer_record(self,videofile_name):
-        print(f"移除{videofile_name}相关条目")
+        print(f"dbManager: removing record {videofile_name}")
         # 根据文件名定位数据库文件地址
         db_filepath = files.get_db_filepath_by_datetime(utils.set_full_datetime_to_YYYY_MM(utils.date_to_datetime(os.path.splitext(videofile_name)[0])))
 
@@ -492,7 +485,6 @@ class DBManager:
         df,all_result_counts,_ = self.db_search_data("",date_in,date_out)
 
         if all_result_counts < back_pic_num:
-            print("-all_result_counts < back_pic_num")
             return None
 
         # 获取df内最早与最晚记录时间
@@ -513,7 +505,7 @@ class DBManager:
         for timestamp in timestamp_list:
             closest_timestamp = df[
                 np.abs(df['videofile_time'] - timestamp) <= 300 # 差距阈值:second
-            ]['videofile_time'].max()
+                ]['videofile_time'].max()
             if closest_timestamp is None:
                 closest_timestamp = 0
             closest_timestamp_result.append(closest_timestamp)
@@ -575,7 +567,7 @@ class DBManager:
         result = [''.join(similar_words) for similar_words in product(*similar_words_list)]
 
         if len(result) > 100:
-            print("查询复杂度过高，不使用模糊查询。")
+            print("dbManager: The complexity of similar keyword combinations is too high, so do not use fuzzy queries.")
             result = [input_str]
 
         return result
@@ -644,7 +636,7 @@ class DBManager:
         video_file_names = {video_file[:19]: True for video_file in video_file_path_list}
 
         for db_file in db_file_path_list:
-            print(f"db_file:{db_file}")
+            print(f"dbManager: checking db_file:{db_file}")
             conn = sqlite3.connect(db_file)
             cursor = conn.cursor()
 
@@ -673,7 +665,7 @@ class DBManager:
                             (is_videofile_exist, videofile_name))
                 
                 i+=1
-                print(i,"/",all_i)
+                # print(i,"/",all_i)
 
             # Commit the transaction
             conn.commit()

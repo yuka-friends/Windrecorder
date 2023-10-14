@@ -63,9 +63,9 @@ def show_n_locate_video_timestamp_by_df(df, num):
         videofile_path_month_dir = files.convert_vid_filename_as_YYYY_MM(df.iloc[num]['videofile_name']) # 获取对应的日期目录
         videofile_path = os.path.join(config.record_videos_dir, videofile_path_month_dir, files.add_OCRED_suffix(df.iloc[num]['videofile_name']))
         videofile_path_COMPRESS = os.path.join(config.record_videos_dir, videofile_path_month_dir, files.add_COMPRESS_OCRED_suffix(df.iloc[num]['videofile_name']))
-        print("videofile_path: " + videofile_path)
+        print("webui: videofile_path: " + videofile_path)
         vid_timestamp = utils.calc_vid_inside_time(df, num)
-        print("vid_timestamp: " + str(vid_timestamp))
+        print("webui: vid_timestamp: " + str(vid_timestamp))
 
         st.session_state.vid_vid_timestamp = 0
         st.session_state.vid_vid_timestamp = vid_timestamp
@@ -93,7 +93,7 @@ def show_n_locate_video_timestamp_by_filename_n_time(video_file_name,timestamp):
     # 合并视频文件路径
     videofile_path_month_dir = files.convert_vid_filename_as_YYYY_MM(video_file_name) # 获取对应的日期目录
     videofile_path = os.path.join(config.record_videos_dir,videofile_path_month_dir, video_file_name)
-    print("videofile_path: " + videofile_path)
+    print("webui: videofile_path: " + videofile_path)
     # 打开并展示定位视频文件
     video_file = open(videofile_path, 'rb')
     video_bytes = video_file.read()
@@ -136,7 +136,7 @@ def choose_search_result_num(df, is_df_result_exist):
     elif not is_df_result_exist == 0:
         # shape是一个元组,索引0对应行数,索引1对应列数。
         total_raw = df.shape[0]
-        print("total_raw:" + str(total_raw))
+        # print("webui: total_raw:" + str(total_raw))
 
         slider_min_num_display = df.index.min()
         slider_max_num_display = df.index.max()
@@ -322,7 +322,7 @@ def config_set_lang(lang_name):
     lang_code = INVERTED_LANG_MAP.get(lang_name)
 
     if not lang_code:
-        print(f"Invalid language name: {lang_name}")
+        print(f"webui: Invalid language name: {lang_name}")
         return
 
     config.set_and_save_config('lang', lang_code)
@@ -539,9 +539,9 @@ with tab1:
                     file_path = os.path.join(config.timeline_result_dir, filename)
                     try:
                         os.remove(file_path)
-                        print(f"Deleted file: {file_path}")
+                        print(f"webui: Deleted file: {file_path}")
                     except Exception as e:
-                        print(e)
+                        print(f"webui: {e}")
         elif current_day_TL_img_path.endswith("-today-.png"):
             # 如果已存在今日的，重新生成覆盖更新
             if not files.is_file_modified_recently(current_day_TL_img_path):
@@ -563,6 +563,9 @@ with tab1:
         day_chart_data_overview = OneDay().get_day_statistic_chart_overview(df = day_df, start_dt = day_min_timestamp_dt, end_dt = day_max_timestamp_dt)
         st.area_chart(day_chart_data_overview,x="hour",y="data",use_container_width=True,height=100,color="#AC79D5")
 
+        # 初始化懒加载状态
+        if 'catch_videofile_ondisk_list_oneday' not in st.session_state:   # 减少io查询，预拿视频文件列表供比对是否存在
+            st.session_state.catch_videofile_ondisk_list_oneday = files.get_file_path_list(config.record_videos_dir)
 
 
         # 视频展示区域
@@ -571,7 +574,7 @@ with tab1:
             # 居左部分
             if st.session_state.day_is_search_data and not df_day_search_result.empty:
                 # 如果是搜索视图，这里展示全部的搜索结果
-                df_day_search_result_refine = DBManager().db_refine_search_data_day(df_day_search_result) # 优化下数据展示
+                df_day_search_result_refine = DBManager().db_refine_search_data_day(df_day_search_result, catch_videofile_ondisk_list=st.session_state.catch_videofile_ondisk_list_oneday) # 优化下数据展示
                 draw_dataframe(df_day_search_result_refine)
             else:
                 st.empty()
@@ -588,7 +591,7 @@ with tab1:
                 else:
                     st.info(d_lang[config.lang]["oneday_text_not_found_vid_but_has_data"], icon="🎐")
                     found_row = df_day_search_result.loc[st.session_state.day_search_result_index_num].to_frame().T
-                    found_row = DBManager().db_refine_search_data_day(found_row) # 优化下数据展示
+                    found_row = DBManager().db_refine_search_data_day(found_row, catch_videofile_ondisk_list=st.session_state.catch_videofile_ondisk_list_oneday) # 优化下数据展示
                     draw_dataframe(found_row,heightIn=0)
 
             else:
@@ -610,11 +613,11 @@ with tab1:
                     is_data_found,found_row =OneDay().find_closest_video_by_database(day_df,utils.datetime_to_seconds(day_full_select_datetime))
                     if is_data_found:
                         st.info(d_lang[config.lang]["oneday_text_not_found_vid_but_has_data"], icon="🎐")
-                        found_row = DBManager().db_refine_search_data_day(found_row) # 优化下数据展示
+                        found_row = DBManager().db_refine_search_data_day(found_row, catch_videofile_ondisk_list=st.session_state.catch_videofile_ondisk_list_oneday) # 优化下数据展示
                         draw_dataframe(found_row,heightIn=0)
                     else:
                         # 如果是当天第一次打开但数据库正在索引因而无法访问
-                        if utils.set_full_datetime_to_YYYY_MM_DD(st.session_state.day_date_input) == utils.set_full_datetime_to_YYYY_MM_DD(datetime.datetime.today()) and utils.is_maintain_lock_file_valid():
+                        if st.session_state.day_date_input == utils.set_full_datetime_to_YYYY_MM_DD(datetime.datetime.today()) and utils.is_maintain_lock_file_valid():
                             st.warning(d_lang[config.lang]["oneday_text_data_indexing_wait_and_refresh"], icon="🦫")
                         else:
                             st.warning(d_lang[config.lang]["oneday_text_no_found_record_and_vid_on_disk"], icon="🦫")
@@ -635,7 +638,7 @@ with tab1:
                         if filename.endswith("-today-.png") and filename != real_today_day_cloud_n_TL_img_name:
                             file_path = os.path.join(config.wordcloud_result_dir, filename)
                             os.remove(file_path)
-                            print(f"Deleted file: {file_path}")
+                            print(f"webui: Deleted file: {file_path}")
 
                 # 展示词云
                 try:

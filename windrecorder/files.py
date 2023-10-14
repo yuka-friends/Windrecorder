@@ -21,10 +21,10 @@ def check_and_create_folder(folder_name):
     if not os.path.exists(folder_path):
         # 创建文件夹
         os.makedirs(folder_path)
-        print(f"已创建文件夹：{folder_name}")
+        print(f"files: created folder {folder_name}")
         return False
     else:
-        print(f"文件夹已存在：{folder_name}")
+        print(f"files: folder existed:{folder_name}")
         return True
 
 
@@ -128,7 +128,6 @@ def is_fileA_modified_newer_than_fileB(file_path_A, file_path_B):
 
     # 计算时间差
     time_diff_minutes = (modified_timestamp_A - modified_timestamp_B)/60
-    print(time_diff_minutes)
 
     if time_diff_minutes > 0:
         return True, time_diff_minutes
@@ -277,7 +276,7 @@ def save_dataframe_to_path(dataframe, file_path="catch/temp.csv"):
     无
     """
     dataframe.to_csv(file_path, index=False)  # 使用to_csv()方法将DataFrame保存为CSV文件（可根据需要选择其他文件格式）
-    print("DataFrame数据已保存到路径 ", file_path)
+    print("files: DataFrame has been saved at ", file_path)
 
 
 # 从csv文件读取dataframe

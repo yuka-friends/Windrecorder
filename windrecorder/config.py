@@ -122,7 +122,7 @@ def update_config_files_from_default_to_user(
 
 def initialize_config():
     if not os.path.exists(config_path):
-        print(f"-未找到用户配置文件，将进行创建。")
+        print(f"-User config not found, will be created.")
         default_config_path = os.path.join(config_dir,config_name_default)
         shutil.copyfile(default_config_path,config_path)
 

@@ -19,7 +19,7 @@ import windrecorder.files as files
 import windrecorder.record as record
 
 if config.release_ver:
-    ffmpeg_path = 'env\\ffmpeg.exe'
+    ffmpeg_path = 'env\\ffmpeg\\ffmpeg.exe'
 else:
     ffmpeg_path = 'ffmpeg'
 video_path = config.record_videos_dir
@@ -191,7 +191,7 @@ def test_ffmpeg():
     try:
         res = subprocess.run(ffmpeg_path + ' -version')
     except Exception:
-        print('Error: ffmpeg is not installed! Please ensure ffmpeg is in the PATH')
+        print('Error: ffmpeg is not installed! Please ensure ffmpeg is in the PATH.')
         exit(1)
 
 

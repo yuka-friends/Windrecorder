@@ -51,7 +51,6 @@ class OneDay:
 
         if search_result_num < 2:
             # 没有结果的处理
-            print("none")
             _, noocred_count = files.get_videos_and_ocred_videos_count(config.record_videos_dir)
             return False,noocred_count,0,None,None,None
         else:
@@ -70,7 +69,6 @@ class OneDay:
         # 入参：df、开始小时数、结束小时数
         start = utils.datetime_to_24numfloat(start_dt)
         end = utils.datetime_to_24numfloat(end_dt)
-        # print(f"-------------------------------start:{start}, end:{end}")
 
         if start == end:
             end += 1
@@ -164,8 +162,6 @@ class OneDay:
 
         # image_list: 按绘制顺序存储图片base64
         # 原始图像大小
-        print("-----------------------------------------image_list[1]")
-        print(image_list[2])
         try:   # 尝试获取缩略图大小，失败则fallback
             original_width, original_height = utils.get_image_dimensions(image_list[2])
         except:

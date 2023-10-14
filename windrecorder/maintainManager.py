@@ -51,7 +51,7 @@ def is_file_in_use(file_path):
 # 提取视频i帧
 # todo - 加入检测视频是否为合法视频?
 def extract_iframe(video_file, iframe_interval=4000):
-    print("——提取视频i帧")
+    print("maintainManager: extracting video i-frame")
     print(video_file)
     cap = cv2.VideoCapture(video_file)
     fps = cap.get(cv2.CAP_PROP_FPS)
@@ -64,7 +64,7 @@ def extract_iframe(video_file, iframe_interval=4000):
             break
 
         if frame_cnt % frame_step == 0:
-            print("extract frame cut:" + str(frame_cnt))
+            print("maintainManager: extract frame cut:" + str(frame_cnt))
             cv2.imwrite('catch\\i_frames\\%d.jpg' % frame_cnt, frame)
 
         frame_cnt += 1
@@ -112,13 +112,13 @@ def crop_iframe(directory):
         # 关闭图片文件
         image.close()
 
-        print(f"已保存裁剪后的图片: {cropped_file_path}")
+        print(f"maintainManager: saved croped img {cropped_file_path}")
 
 
 # OCR 分流器
 def ocr_image(img_input):
     ocr_engine = config.ocr_engine
-    print(f"ocr_engine:{ocr_engine}")
+    # print(f"maintainManager: ocr_engine:{ocr_engine}")
     if ocr_engine == "Windows.Media.Ocr.Cli":
         return ocr_image_ms(img_input)
     elif ocr_engine == "ChineseOCR_lite_onnx":
@@ -127,7 +127,7 @@ def ocr_image(img_input):
 
 # OCR文本-chineseOCRlite
 def ocr_image_col(img_input):
-    print("——OCR文本")
+    print("maintainManager: OCR text by chineseOCRlite")
     # 输入图片路径，like 'test.jpg'
     # 实例化OcrHandle对象
     ocr_handle = OcrHandle()
@@ -143,14 +143,14 @@ def ocr_image_col(img_input):
         # print(box,text,score)
         ocr_sentence_result = ocr_sentence_result + "," + text
 
-    print("ocr_sentence_result:")
+    print("maintainManager: ocr_sentence_result:")
     print(ocr_sentence_result)
     return ocr_sentence_result
 
 
 # OCR文本-MS自带方式
 def ocr_image_ms(img_input):
-    print("——OCR文本.MS")
+    print("maintainManager: OCR text by Windows.Media.Ocr.Cli")
     text = ""
     # 调用Windows.Media.Ocr.Cli.exe,参数为图片路径
     command = ['ocr_lib\\Windows.Media.Ocr.Cli.exe', img_input]
@@ -173,9 +173,9 @@ def ocr_image_ms(img_input):
 
 # 计算两次结果的重合率
 def compare_strings(a, b, threshold=70):
-    print("——计算两次结果的重合率")
-    print(f"a:{a}")
-    print(f"b:{b}")
+    print("maintainManager: Calculate the coincidence rate of two results")
+    # print(f"a:{a}")
+    # print(f"b:{b}")
 
     # a 和 b 都不含任何文字
     if len(set(a) | set(b)) == 0:
@@ -193,17 +193,17 @@ def compare_strings(a, b, threshold=70):
 
     # 判断重合率是否超过阈值
     if overlap >= threshold:
-        print("重合率超过阈值")
+        print("The coincidence rate exceeds the threshold.")
         return True, overlap
     else:
-        print("重合率没有超过阈值")
+        print("The coincidence rate does not exceed the threshold.")
         return False, overlap
 
 
 # 计算两张图片的重合率 - 通过本地文件的方式
 def compare_image_similarity(img_path1, img_path2, threshold=0.7):
     # todo: 将删除操作改为整理为文件列表，降低io开销
-    print("——计算两张图片的重合率")
+    print("maintainManager: Calculate the coincidence rate of two pictures.")
     img1 = cv2.imread(img_path1)
     img2 = cv2.imread(img_path2)
 
@@ -254,7 +254,7 @@ def compare_image_similarity_np(img1, img2):
 
     # 计算相似度
     similarity = len(matches) / max(len(keypoints1), len(keypoints2))
-    print(f"---compare_image_similarity_np:{similarity}")
+    print(f"maintainManager: compare_image_similarity_np:{similarity}")
 
     return similarity
 
@@ -283,7 +283,7 @@ def resize_imahe_as_base64(img_path):
 def rollback_data(video_path,vid_file_name):
     # 擦除db中没索引完全的数据
     vid_file_name_db = vid_file_name.replace("-INDEX","")
-    print(f"——回滚操作:{vid_file_name}")
+    print(f"maintainManager: rollback {vid_file_name}")
     DBManager().db_rollback_delete_video_refer_record(vid_file_name_db)
 
     # 回滚完毕，将命名调整回来
@@ -300,7 +300,7 @@ def ocr_process_single_video(video_path, vid_file_name, iframe_path):
     # 判断文件是否为上次索引未完成的文件
     if "-INDEX" in vid_file_name:
         # 是-执行回滚操作
-        print("——存在-INDEX标识，执行回滚操作")
+        print("maintainManager: INDEX flag exists, perform rollback operation.")
         rollback_data(video_path,vid_file_name)
     else:
         # 为正在索引的视频文件改名添加"-INDEX"
@@ -353,19 +353,19 @@ def ocr_process_single_video(video_path, vid_file_name, iframe_path):
 
         img = os.path.join(iframe_path, img_file_name)
         ocr_result_stringB = ocr_image(img)
-        print(f"ocr_result_stringB:{ocr_result_stringB}")
+        # print(f"ocr_result_stringB:{ocr_result_stringB}")
 
         is_str_same,_ = compare_strings(ocr_result_stringA, ocr_result_stringB)
         if is_str_same:
-            print("内容一致，不写入数据库，跳过")
+            print("[Skip] The content is consistent, not written to the database, skipped.")
         elif len(ocr_result_stringB) < 3:
-            print("内容不足，不写入数据库，跳过")
+            print("[Skip] Insufficient content, not written to the database, skipped.")
         else:
-            print("内容不一致")
+            print("Inconsistent content")
             if utils.is_str_contain_list_word(ocr_result_stringB, config.exclude_words):
-                print("内容存在排除列表词汇，不写入数据库")
+                print("[Skip] The content contains exclusion list words and is not written to the database.")
             else:
-                print("写入数据库")
+                print("Writing to database.")
                 # 使用os.path.splitext()可以把文件名和文件扩展名分割开来，os.path.splitext(file_name)会返回一个元组,元组的第一个元素是文件名,第二个元素是扩展名
                 calc_to_sec_vidname = os.path.splitext(vid_file_name)[0]
                 calc_to_sec_vidname = calc_to_sec_vidname.replace("-INDEX","")
@@ -387,9 +387,10 @@ def ocr_process_single_video(video_path, vid_file_name, iframe_path):
     # 清理文件
     empty_directory(iframe_path)
 
-    print("重命名标记")
+    print("Add tags to video file")
     new_file_path = file_path.replace("-INDEX","-OCRED")
     os.rename(file_path,new_file_path)
+    print(f"maintainManager: --------- {file_path} Finished! ---------")
 
     # new_name = vid_file_name.split('.')[0] + "-OCRED." + vid_file_name.split('.')[1]
     # os.rename(file_path, os.path.join(video_path, new_name))
@@ -398,7 +399,7 @@ def ocr_process_single_video(video_path, vid_file_name, iframe_path):
 
 # 处理文件夹内所有视频的主要流程
 def ocr_process_videos(video_path, iframe_path):
-    print("——处理所有视频的流程")
+    print("maintainManager: Processing all video files under path.")
 
     # 备份最新的数据库
     db_filepath_latest = files.get_db_filepath_by_datetime(datetime.datetime.now())   # 直接获取对应时间的数据库路径
@@ -424,7 +425,7 @@ def ocr_process_videos(video_path, iframe_path):
                 ocr_process_single_video(root, file, iframe_path)
             except Exception as e:
                 # 记录错误日志
-                print("Error occurred while processing :",full_file_path,e)
+                print("maintainManager: Error occurred while processing :",full_file_path,e)
                 video_filename = os.path.basename(full_file_path)
                 new_name = video_filename.split('.')[0] + "-ERROR." + video_filename.split('.')[1]
                 new_name_dir = os.path.dirname(full_file_path)
@@ -447,11 +448,11 @@ def remove_outdated_videofiles():
 
     video_filepath_list = files.get_file_path_list(config.record_videos_dir)
     video_filepath_list_outdate = files.get_videofile_path_list_by_time_range(video_filepath_list, start_datetime, end_datetime)
-    print(f"file to remove: {video_filepath_list_outdate}")
+    print(f"maintainManager: outdated file to remove: {video_filepath_list_outdate}")
 
     if len(video_filepath_list_outdate) >0:
         for item in video_filepath_list_outdate:
-            print(f"removing {item}")
+            print(f"maintainManager: removing {item}")
             send2trash(item)
 
 
@@ -467,15 +468,15 @@ def compress_outdated_videofiles():
 
     video_filepath_list = files.get_file_path_list(config.record_videos_dir)
     video_filepath_list_outdate = files.get_videofile_path_list_by_time_range(video_filepath_list, start_datetime, end_datetime)
-    print(f"file to compress {video_filepath_list_outdate}")
+    print(f"maintainManager: file to compress {video_filepath_list_outdate}")
 
     if len(video_filepath_list_outdate) >0:
         for item in video_filepath_list_outdate:
             if not item.endswith('-COMPRESS-OCRED.mp4') and item.endswith('-OCRED.mp4'):
-                print(f"compressing {item}")
+                print(f"maintainManager: compressing {item}")
                 record.compress_video_resolution(item,config.video_compress_rate)
                 send2trash(item)
-    print("All tasks done!")
+    print("maintainManager: All compress tasks done!")
                 
 
 

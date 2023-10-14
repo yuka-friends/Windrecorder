@@ -20,14 +20,14 @@ def is_recording():
         global state_is_recording
         if "python" in check_output:
             state_is_recording = True
-            print(f"state_is_recording:{state_is_recording}")
+            print(f"record: state_is_recording:{state_is_recording}")
             return True
         else:
             state_is_recording = False
-            print(f"state_is_recording:{state_is_recording}")
+            print(f"record: state_is_recording:{state_is_recording}")
             return False
     except:
-        print("录屏服务文件锁不存在")
+        print("record: Screen recording service file lock does not exist.")
         return False
 
     # 试图使用据说可以自动更新的组件来强制刷新状态
@@ -66,14 +66,14 @@ def create_startup_shortcut(is_create = True):
             current_dir = os.getcwd()
             bat_path = os.path.join(current_dir, 'start_record.bat')
             make_shortcut(bat_path,folder=startup_folder)
-            print('快捷方式已创建并添加到开机启动项')
+            print('record: The shortcut has been created and added to the startup items')
 
     else:
         # 移除快捷方式
         if os.path.exists(shortcut_path):
-            print('快捷方式已存在')
+            print('record: Shortcut already exists')
             os.remove(shortcut_path)
-            print('删除快捷方式')
+            print('record: Delete shortcut')
 
 
 

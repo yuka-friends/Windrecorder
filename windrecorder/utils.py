@@ -56,14 +56,12 @@ def get_screen_resolution():
 
 # 将输入的文件（ %Y-%m-%d_%H-%M-%S str）时间转为时间戳秒数
 def date_to_seconds(date_str):
-    print("——将输入的文件时间转为时间戳秒数")
     # 这里我们先定义了时间格式,然后设置一个epoch基准时间为1970年1月1日。使用strptime()将输入的字符串解析为datetime对象,然后计算这个时间和epoch时间的时间差,转换为秒数返回。
     format = "%Y-%m-%d_%H-%M-%S"
     # epoch = datetime.datetime(2000, 1, 1)
     epoch = datetime.datetime(1970, 1, 1)
     target_date = datetime.datetime.strptime(date_str, format)
     time_delta = target_date - epoch
-    print(time_delta.total_seconds())
     return int(time_delta.total_seconds())
 
 
@@ -250,9 +248,9 @@ def kill_recording():
             check_pid = int(f.read())
         check_result = subprocess.run(['taskkill', '/pid', str(check_pid), '-t','-f'], stdout=subprocess.PIPE, text=True)
         # os.kill(check_pid, signal.SIGINT) #通过发送中断信号来停止，但是失败了
-        print(f"已结束录屏进程，{check_result.stdout}")
+        print(f"utils: The screen recording process has ended. {check_result.stdout}")
     except:
-        print(f"未能找到进程锁")
+        print(f"utils: Unable to find process lock.")
 
 
 # 通过数据库内项目计算视频对应时间戳
@@ -263,7 +261,7 @@ def calc_vid_inside_time(df, num):
     vidfilename = vidfilename.replace('-INDEX','')
     vidfilename = vidfilename.replace('-ERROR','')
     vid_timestamp = fulltime - date_to_seconds(vidfilename)
-    print("fulltime:" + str(fulltime) + "\n vidfilename:" + str(vidfilename) + "\n vid_timestamp:" + str(vid_timestamp))
+    print("utils: video file fulltime:" + str(fulltime) + "\n vidfilename:" + str(vidfilename) + "\n vid_timestamp:" + str(vid_timestamp))
     return vid_timestamp
 
 
@@ -396,7 +394,7 @@ def add_maintain_lock_file(lock="make"):
         try:
             send2trash(lock_filepath)
         except Exception as e:
-            print(e)
+            print(f"utils: {e}")
 
 
 # 检查db是否是有合法的、正在维护中的锁（超过一定时间则解锁），否的话可以执行任务，是的话暂时不执行
