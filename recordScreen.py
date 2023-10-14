@@ -19,7 +19,7 @@ import windrecorder.files as files
 import windrecorder.record as record
 
 if config.release_ver:
-    ffmpeg_path = 'env\\ffmpeg\\ffmpeg.exe'
+    ffmpeg_path = 'env\\ffmpeg.exe'
 else:
     ffmpeg_path = 'ffmpeg'
 video_path = config.record_videos_dir

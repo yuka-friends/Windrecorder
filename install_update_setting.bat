@@ -5,6 +5,9 @@ if not exist "env" (
   python -m venv env
 )
 
+SET folderPath=%~dp0
+SET PATH=%PATH%;%folderPath:~0,-1%\env\Scripts
+
 call env\Scripts\activate.bat
 cd /d %~dp0
 
@@ -12,6 +15,7 @@ rem 安装与更新requirement.txt依赖
 pip install -r requirements.txt
 
 rem 更新GitHub仓库
+echo git: updating repository
 git pull
 
 cls
