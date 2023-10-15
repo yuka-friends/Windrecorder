@@ -445,29 +445,42 @@ with tab1:
                 st.session_state.day_is_search_data = False
         with col2c:
             # 搜索框
-            def search_result():
-                # 搜索前清除状态
-                st.session_state.day_search_result_index_num = 0
 
-            day_search_keyword = st.text_input(d_lang[config.lang]["text_search_keyword"], 'Keyword',
-                                               key=2,label_visibility="collapsed",on_change=search_result(),
+            # 懒加载，输入不变时节省性能
+            if 'df_day_search_result' not in st.session_state:
+                st.session_state.df_day_search_result = pd.DataFrame()
+            if 'day_search_keyword' not in st.session_state:
+                st.session_state.day_search_keyword = None
+            if 'day_search_keyword_lazy' not in st.session_state:
+                st.session_state.day_search_keyword_lazy = None
+            
+            def do_day_keyword_search():
+                # 搜索前清除状态
+                st.session_state.day_search_result_index_num = 0   # 条目检索
+                
+                if st.session_state.day_search_keyword_lazy != st.session_state.day_search_keyword:
+                    st.session_state.day_search_keyword_lazy = st.session_state.day_search_keyword
+                    st.session_state.df_day_search_result = OneDay().search_day_data(utils.complete_datetime(st.session_state.day_date_input),search_content=st.session_state.day_search_keyword)
+
+            st.session_state.day_search_keyword = st.text_input(d_lang[config.lang]["text_search_keyword"], 'Keyword',
+                                               key=2,label_visibility="collapsed",on_change=do_day_keyword_search(),
                                                disabled=not st.session_state.day_time_slider_disable)
             # 执行搜索，搜索结果
-            df_day_search_result = OneDay().search_day_data(utils.complete_datetime(st.session_state.day_date_input),search_content=day_search_keyword)
+            # df_day_search_result = OneDay().search_day_data(utils.complete_datetime(st.session_state.day_date_input),search_content=st.session_state.day_search_keyword)
         with col3c:
             # 结果条目数
             if st.session_state.day_is_search_data:
                 # 启用了搜索功能
-                if df_day_search_result.empty:
+                if st.session_state.df_day_search_result.empty:
                     st.markdown(d_lang[config.lang]["oneday_search_md_none"], unsafe_allow_html=True)
                 else:
-                    result_num = df_day_search_result.shape[0]
+                    result_num = st.session_state.df_day_search_result.shape[0]
                     st.markdown(d_lang[config.lang]["oneday_search_md_result"].format(result_num=result_num), unsafe_allow_html=True)
             else:
                 st.empty()
         with col4c:
             # 翻页器
-            if df_day_search_result.empty:
+            if st.session_state.df_day_search_result.empty:
                 st.empty()
             else:
                 def update_slider(dt):
@@ -483,10 +496,10 @@ with tab1:
                     "PageIndex",
                     value=0,
                     min_value=0,
-                    max_value=df_day_search_result.shape[0]-1,
+                    max_value=st.session_state.df_day_search_result.shape[0]-1,
                     label_visibility="collapsed",
                     disabled=not st.session_state.day_time_slider_disable,
-                    on_change=update_slider(utils.set_full_datetime_to_day_time(utils.seconds_to_datetime(df_day_search_result.loc[st.session_state.day_search_result_index_num, 'videofile_time'])))
+                    on_change=update_slider(utils.set_full_datetime_to_day_time(utils.seconds_to_datetime(st.session_state.df_day_search_result.loc[st.session_state.day_search_result_index_num, 'videofile_time'])))
                     )
         with col5c:
             st.button(label="⟳",
@@ -572,25 +585,25 @@ with tab1:
         col1a, col2a, col3a = st.columns([1,3,1])
         with col1a:
             # 居左部分
-            if st.session_state.day_is_search_data and not df_day_search_result.empty:
+            if st.session_state.day_is_search_data and not st.session_state.df_day_search_result.empty:
                 # 如果是搜索视图，这里展示全部的搜索结果
-                df_day_search_result_refine = DBManager().db_refine_search_data_day(df_day_search_result, catch_videofile_ondisk_list=st.session_state.catch_videofile_ondisk_list_oneday) # 优化下数据展示
+                df_day_search_result_refine = DBManager().db_refine_search_data_day(st.session_state.df_day_search_result, catch_videofile_ondisk_list=st.session_state.catch_videofile_ondisk_list_oneday) # 优化下数据展示
                 draw_dataframe(df_day_search_result_refine)
             else:
                 st.empty()
 
         with col2a:
             # 居中部分：视频结果显示区域
-            if st.session_state.day_is_search_data and not df_day_search_result.empty:
+            if st.session_state.day_is_search_data and not st.session_state.df_day_search_result.empty:
                 # 【搜索功能】
                 # 获取关键词，搜索出所有结果的dt，然后使用上下翻页来定位，定位后展示对应的视频
-                day_is_video_ondisk,day_video_file_name,shown_timestamp = OneDay().get_result_df_video_time(df_day_search_result,st.session_state.day_search_result_index_num)
+                day_is_video_ondisk,day_video_file_name,shown_timestamp = OneDay().get_result_df_video_time(st.session_state.df_day_search_result,st.session_state.day_search_result_index_num)
                 if day_is_video_ondisk:
                     show_n_locate_video_timestamp_by_filename_n_time(day_video_file_name,shown_timestamp)
                     st.markdown(d_lang[config.lang]["oneday_md_rewinding_video_name"].format(day_video_file_name=day_video_file_name))
                 else:
                     st.info(d_lang[config.lang]["oneday_text_not_found_vid_but_has_data"], icon="🎐")
-                    found_row = df_day_search_result.loc[st.session_state.day_search_result_index_num].to_frame().T
+                    found_row = st.session_state.df_day_search_result.loc[st.session_state.day_search_result_index_num].to_frame().T
                     found_row = DBManager().db_refine_search_data_day(found_row, catch_videofile_ondisk_list=st.session_state.catch_videofile_ondisk_list_oneday) # 优化下数据展示
                     draw_dataframe(found_row,heightIn=0)
 
@@ -732,6 +745,9 @@ with tab2:
                 st.session_state.search_content_exclude_lazy = st.session_state.search_content_exclude
                 st.session_state.search_date_range_in_lazy = st.session_state.search_date_range_in
                 st.session_state.search_date_range_out_lazy = st.session_state.search_date_range_out
+
+                # 清理状态
+                st.session_state.page_index = 1
 
                 st.session_state.db_global_search_result, st.session_state.all_result_counts, st.session_state.max_page_count = DBManager().db_search_data(st.session_state.search_content, 
                                                                                                                                           st.session_state.search_date_range_in, 
