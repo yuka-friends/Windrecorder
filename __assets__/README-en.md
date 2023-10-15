@@ -13,7 +13,7 @@ This is a tool that continuously records your screen and allows you to retrieve 
 
 **All its capabilities (recording, recognition processing, storage, and retrieval) run entirely locally without the need for an internet connection. It does not upload any data. It simply does what it is supposed to do.**
 
-![Windrecorder](https://github.com/Antonoko/Windrecorder/blob/main/__assets__/product-preview-en.jpg)
+![Windrecorder](https://github.com/Antonoko/Windrecorder/blob/main/__assets__/product-preview-cn.jpg)
 
 
 # 🦝 Installation
