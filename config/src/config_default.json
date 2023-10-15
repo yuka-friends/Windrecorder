@@ -14,7 +14,8 @@
     "Windrecorder",
     "捕风记录仪",
     "一天之时",
-    "OneDay"
+    "OneDay",
+    "KeePass"
   ],
   "wordcloud_user_stop_words": [
     "请","替换","为","不想","统计","在","词云","中","的","词语"
@@ -32,5 +33,6 @@
   "use_similar_ch_char_to_search": true,
   "release_ver":false,
   "video_compress_rate":"0.75",
-  "oneday_timeline_pic_num":50
+  "oneday_timeline_pic_num":50,
+  "enable_ocr_chineseocr_lite_onnx":false
 }

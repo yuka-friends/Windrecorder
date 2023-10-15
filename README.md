@@ -31,9 +31,9 @@
 
 # 🦝 QuickStart ｜ 快速开始
 
-- 下载 [ffmpeg](https://www.gyan.dev/ffmpeg/builds/ffmpeg-release-essentials.zip) 并解压到 `C:\Windows\System32` 下（或其他 PATH 访问得到的目录下）
+- 下载 [ffmpeg](https://www.gyan.dev/ffmpeg/builds/ffmpeg-release-essentials.zip) ，并将其中bin目录下的ffmpeg.exe解压至 `C:\Windows\System32` 下（或其他 PATH 访问得到的目录下）
 
-- 确保已安装 [Git](https://git-scm.com/downloads)、[Python](https://www.python.org/ftp/python/3.11.6/python-3.11.6-amd64.exe)、[Pip](https://pip.pypa.io/en/stable/installation/)；
+- 确保已安装 [Git](https://git-scm.com/downloads)、[Python](https://www.python.org/ftp/python/3.11.6/python-3.11.6-amd64.exe)（安装时勾选 Add python.exe to PATH）、[Pip](https://pip.pypa.io/en/stable/installation/)；
 
 - 导航到想要安装的目录下，通过终端命令 `git clone https://github.com/Antonoko/Windrecorder` 下载该工具；
 

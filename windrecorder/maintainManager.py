@@ -7,7 +7,7 @@ import shutil
 
 import cv2
 import numpy as np
-from ocr_lib.chineseocr_lite_onnx.model import OcrHandle
+
 import win32file
 import pyautogui
 from send2trash import send2trash
@@ -21,7 +21,8 @@ import windrecorder.utils as utils
 import windrecorder.files as files
 import windrecorder.record as record
 
-
+if config.enable_ocr_chineseocr_lite_onnx:
+    from ocr_lib.chineseocr_lite_onnx.model import OcrHandle
 
 # ocr_short_side = int(config.ocr_short_size)
 
@@ -122,7 +123,11 @@ def ocr_image(img_input):
     if ocr_engine == "Windows.Media.Ocr.Cli":
         return ocr_image_ms(img_input)
     elif ocr_engine == "ChineseOCR_lite_onnx":
-        return ocr_image_col(img_input)
+        if config.enable_ocr_chineseocr_lite_onnx:
+            return ocr_image_col(img_input)
+        else:
+            print("maintainManager: enable_ocr_chineseocr_lite_onnx is disabled. Fallback to Windows.Media.Ocr.Cli.")
+            return ocr_image_ms(img_input)
 
 
 # OCR文本-chineseOCRlite

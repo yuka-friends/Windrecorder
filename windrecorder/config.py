@@ -29,6 +29,7 @@ class Config:
         release_ver,
         video_compress_rate,
         oneday_timeline_pic_num,
+        enable_ocr_chineseocr_lite_onnx,
         **other_field
     ) -> None:
         self.db_path = db_path
@@ -56,6 +57,7 @@ class Config:
         self.release_ver = release_ver
         self.video_compress_rate = video_compress_rate
         self.oneday_timeline_pic_num = oneday_timeline_pic_num
+        self.enable_ocr_chineseocr_lite_onnx = enable_ocr_chineseocr_lite_onnx
     
     def set_and_save_config(self, attr: str, value):
         if not hasattr(self, attr):
