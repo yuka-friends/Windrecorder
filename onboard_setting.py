@@ -114,6 +114,7 @@ if config.enable_ocr_chineseocr_lite_onnx:
         _, ocr_correct_col = maintainManager.compare_strings(ocr_result_col, ocr_text_refer)
 
     except Exception as e:
+        ocr_result_col = ""
         print(e)
 else:
     print("enable_ocr_chineseocr_lite_onnx disabled.")
@@ -128,6 +129,7 @@ try:
     _, ocr_correct_ms = maintainManager.compare_strings(ocr_result_ms, ocr_text_refer)
 
 except Exception as e:
+    ocr_result_ms = ""
     print(e)
 
 
