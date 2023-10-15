@@ -99,8 +99,8 @@ subprocess.run('pause', shell=True)
 
 
 # 测试与设置 ocr 引擎
-test_img_filepath = "__assets__\OCR_test_1080.png"
-with open("__assets__\\OCR_test_1080_words.txt", encoding='utf-8') as f:
+test_img_filepath = "__assets__\OCR_test_1080_" + config.lang + ".png"
+with open("__assets__\\OCR_test_1080_words_" + config.lang + ".txt", encoding='utf-8') as f:
     ocr_text_refer = f.read()
     ocr_text_refer = utils.wrap_text_by_remove_break(ocr_text_refer)
 
@@ -118,6 +118,7 @@ if config.enable_ocr_chineseocr_lite_onnx:
         print(e)
 else:
     print("enable_ocr_chineseocr_lite_onnx disabled.")
+    ocr_result_col = ""
 
 
 # 测试ms

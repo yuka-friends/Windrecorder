@@ -39,6 +39,7 @@ try:
         time_read = f.read()
         last_idle_maintain_time = datetime.datetime.strptime(time_read,"%Y-%m-%d_%H-%M-%S")
 except:
+    files.check_and_create_folder("catch")
     with open("catch\\LAST_IDLE_MAINTAIN.MD", 'w', encoding='utf-8') as f:
         f.write(str(datetime.datetime.now().strftime("%Y-%m-%d_%H-%M-%S")))
     last_idle_maintain_time = datetime.datetime.now()   # 上次闲时维护时间
