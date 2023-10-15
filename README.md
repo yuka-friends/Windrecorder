@@ -1,32 +1,18 @@
 ![Windrecorder](https://github.com/Antonoko/Windrecorder/blob/main/__assets__/product-header-cn.jpg)
 <h1 align="center"> 🦝 Windrecorder | 捕风记录仪</h1>
-<p align="center"> An Open Source Rewind’s alternative for Windows. | 一款运行在 Windows 平台上的 Rewind 替代工具</p>
+<p align="center"> An Open Source Rewind’s alternative tool on Windows to help you retrieve memory cues.</p>
+<p align="center">一款运行在 Windows 平台上的 Rewind 替代工具，帮助你找回记忆线索</p>
 
-<p align="center"> English  | 简体中文 </p>
+<p align="center"> English  | 简体中文 | 日本語 </p>
 
 ---
 > What's Rewind ｜ Rewind 是什么？: https://www.rewind.ai/
 
-This tool can continuously record and OCR your desktop screen, and search to retrieve the picture at that moment at any time.
-It runs **entirely locally, stored your private data locally, without any need of Internet connection.**
-
-这是一款可以持续录制并识别你的屏幕内容、通过搜索等手段随时找回相关记忆的工具。**它的所有服务（录制、识别处理等）完全运行在本地，在本地存储数据，无需联网，不会外泄你任何数据。**
-
+这是一款可以持续记录你的屏幕内容、通过关键词搜索等方式随时找回相关记忆的工具。**它的所有服务（录制、识别处理等）完全运行在本地，在本地存储数据，无需联网，不会外泄你任何数据。**
 
 ![Windrecorder](https://github.com/Antonoko/Windrecorder/blob/main/__assets__/preview.png)
 
-
-**NOTE: This project is still under early development and the availability of many features are not guaranteed.** 
-
-**注意：这个项目仍然在开发早期阶段，部分能力和特性不保证可以正常运行。**
-
 ----
-
-💡 Project Status: Have basically completely functions. Under intensity development
-
-💡 项目状态：具有基本完整可用的功能。仍在持续开发中。
-
----
 
 ### Roadmap:
 - [x] Continuously record screen with smaller file size
@@ -47,7 +33,7 @@ It runs **entirely locally, stored your private data locally, without any need o
 
 There are two ways to setup windrecorder:
 
-## A. Download the integration package in Release Page (not yet created - soon!) (recommended)
+## A. Download the integration package in Release Page (not yet created - soon!)
 
 - Download the integrated package with complete dependencies in Release Page.
 

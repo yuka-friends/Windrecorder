@@ -137,7 +137,7 @@ def continuously_record_screen(screentime_detect_stop_event):
         # 主循环过程
         if monitor_change_rank > config.screentime_not_change_to_pause_record:
             print("Windrecorder: Screen content not updated, stop recording.")
-            subprocess.run('color 60', shell=True)
+            subprocess.run('color 60', shell=True)   # 设定背景色为不活动
 
             # 算算是否该进入维护了（与上次维护时间相比）
             timegap_between_last_idle_maintain = datetime.datetime.now() - last_idle_maintain_time
@@ -154,7 +154,7 @@ def continuously_record_screen(screentime_detect_stop_event):
                 
             time.sleep(10)
         else:
-            subprocess.run('color 2f', shell=True)
+            subprocess.run('color 2f', shell=True)   # 设定背景色为活动
             video_saved_dir, video_out_name = record_screen() # 录制屏幕
             screentime_detect_stop_event.wait(2)
 
@@ -234,6 +234,8 @@ def monitor_compare_screenshot(screentime_detect_stop_event):
 
 
 if __name__ == '__main__':
+    subprocess.run('color 60', shell=True)   # 设定背景色为不活动
+    
     if record.is_recording():
         print("Windrecorder: Another screen record service is running.")
         exit(1)
