@@ -31,21 +31,25 @@
 
 # 🦝 QuickStart ｜ 快速开始
 
-There are two ways to setup windrecorder:
+- 下载 [ffmpeg](https://www.gyan.dev/ffmpeg/builds/ffmpeg-release-essentials.zip) 并解压到 `C:\Windows\System32` 下（或其他 PATH 访问得到的目录下）
 
-## A. Download the integration package in Release Page (not yet created - soon!)
+- 确保已安装 [Git](https://git-scm.com/downloads)、[Python](https://www.python.org/ftp/python/3.11.6/python-3.11.6-amd64.exe)、[Pip](https://pip.pypa.io/en/stable/installation/)；
 
-- Download the integrated package with complete dependencies in Release Page.
+- 导航到想要安装的目录下，通过终端命令 `git clone https://github.com/Antonoko/Windrecorder` 下载该工具；
 
-- Run `install_update_setting.bat` to complete basic settings. That's it!
+    - 可以打开到想要安装的文件夹中，在路径栏输入`cmd`并回车，进入当前目录终端，将以上命令贴入、回车执行；
 
-- Starting recording screen content: run `start_record.bat` (Close the console window to stop recording)
+- 打开目录下的`install_update_setting.bat`进行工具安装与配置，顺利的话就可以开始使用了！
 
-- Query, Rewind or update database manually through webui: run  `start_webui.bat`
+    - 如因网络原因报错，可在脚本安装依赖前添加代理`set https_proxy=http://127.0.0.1:xxxx`、或添加大陆镜像源；
 
-## B. Manual deployment
+- 通过打开目录下的`start_record.bat`进行屏幕记录，通过`start_webui.bat`来回溯、查询与进行设置；
 
-- Ensure [ffmpeg](https://ffmpeg.org/) is installed and can be accessed from PATH.
+
+
+
+
+- Ensure [ffmpeg](https://www.gyan.dev/ffmpeg/builds/ffmpeg-release-essentials.zip) is installed and can be accessed from PATH.
 
 - Make sure Python, Pip and Git are installed. Git clone this repository to your computer, then install virtualenv by `pip install virtualenv` and create a virtual environment under Windrecorder directory: `python -m venv env`. 
 
