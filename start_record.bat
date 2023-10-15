@@ -6,12 +6,10 @@ if not exist "env" (
   python -m venv env
 )
 
-SET folderPath=%~dp0
-SET PATH=%PATH%;%folderPath:~0,-1%\python
+cd /d %~dp0
 call env\Scripts\activate.bat
 
 color 60
 echo Starting Recording Screen...
-cd /d %~dp0
 python "%~dp0\recordScreen.py"
 pause

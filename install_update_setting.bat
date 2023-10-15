@@ -1,21 +1,23 @@
 @echo off
 title Windrecorder - installing dependence and updating
-REM 判断是否存在 env 文件夹
+
+@REM SET folderPath=%~dp0
+@REM SET PATH=%PATH%;%folderPath:~0,-1%\python
+
 if not exist "env" (
+  echo -installing virtual environment
+  pip install virtualenv
+  echo -creating virtual environment
   python -m venv env
 )
-
-SET folderPath=%~dp0
-SET PATH=%PATH%;%folderPath:~0,-1%\python
 
 call env\Scripts\activate.bat
 cd /d %~dp0
 
-rem 安装与更新requirement.txt依赖
+echo -updating dependencies
 pip install -r requirements.txt
 
-rem 更新GitHub仓库
-echo git: updating repository
+echo -git: updating repository
 git pull
 
 cls
