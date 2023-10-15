@@ -37,7 +37,7 @@
 
 - 导航到想要安装的目录下，通过终端命令 `git clone https://github.com/Antonoko/Windrecorder` 下载该工具；
 
-    - 可以打开到想要安装的文件夹中，在路径栏输入`cmd`并回车，进入当前目录终端，将以上命令贴入、回车执行；
+    - 可以打开想要安装的文件夹，在路径栏输入`cmd`并回车，进入当前目录终端，将以上命令贴入、回车执行；
 
 - 打开目录下的`install_update_setting.bat`进行工具安装与配置，顺利的话就可以开始使用了！
 
@@ -59,7 +59,7 @@
 
 - Query, Rewind or update database manually through webui: run  `start_webui.bat`
 
-    - We recommend using Windows.Media.Ocr.Cli method to OCR Video data, which is faster and using less system resources. Make sure your Windows computer has installed the corresponding OCR language module (it should have been installed with IME by default, and used to identify the corresponding language content). For more information: https://learn.microsoft.com/en-us/windows/powertoys/text-extractor
+    - We recommend using Windows.Media.Ocr.Cli method to OCR Video data, which is faster and using less system resources. Make sure your Windows computer has installed the corresponding OCR language module (it should have been installed with IME by default, and used to identify the corresponding language content). For more information: https://learn.microsoft.com/en-us/uwp/api/windows.media.ocr
 
 
 # 🦝 Q&A | 常见问题

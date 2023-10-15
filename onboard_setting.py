@@ -142,7 +142,8 @@ while(True):
         print("- Windows.Media.Ocr.Cli")
         # print("准确率：", ocr_correct_ms, "，识别时间：", time_cost_ms, "，索引15分钟视频约用时：", utils.convert_seconds_to_hhmmss(int(time_cost_ms*350)))
         print(d_lang[config.lang]["qs_ocr_result_describe"].format(accuracy=ocr_correct_ms, timecost=time_cost_ms , timecost_15=utils.convert_seconds_to_hhmmss(int(time_cost_ms*350))))
-
+        if ocr_correct_ms< 60:
+            print(d_lang[config.lang]["qs_ocr_tips_low_accuracy"])
     print("")
 
     if ocr_result_col:
