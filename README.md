@@ -30,7 +30,7 @@
     - 如因网络原因报错，可在脚本安装依赖前添加代理`set https_proxy=http://127.0.0.1:xxxx`、或添加大陆[镜像源](https://mirrors.tuna.tsinghua.edu.cn/help/pypi/)；
 
 - 通过打开目录下的`start_record.bat`进行屏幕记录，通过`start_webui.bat`来回溯、查询回忆、进行设置；
-    - 最佳实践：在webui中设置开机自启动`start_record.bat`，即可无感记录下一切。在空闲无人使用时，`start_record.bat`会自动暂停录制并压缩、清理过期视频；
+    - 最佳实践：在webui中设置开机自启动`start_record.bat`，即可无感记录下一切。在空闲无人使用时，`start_record.bat`会自动暂停录制并压缩、清理过期视频；Set it and forget it！
 
 ---
 ### Roadmap:
@@ -59,10 +59,6 @@ Q: 在打开webui时提示：`FileNotFoundError: [WinError 2] The system cannot 
 Q: 录制过程中鼠标闪烁
 
 - A：Windows历史遗留问题，可尝试[该帖](https://stackoverflow.com/questions/34023630/how-to-avoid-mouse-pointer-flicker-when-capture-a-window-by-ffmpeg)方法解决🤔。
-
-Q：结果在同一个视频中时，拖动滑杆不自动跳转时间
-
-- A：streamlit 的 bug [#7126](https://github.com/streamlit/streamlit/issues/7126)，将在未来修复。
 
 Q: Windows.Media.Ocr.Cli OCR的识别率过低
 
