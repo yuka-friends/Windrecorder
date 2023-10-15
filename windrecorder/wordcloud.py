@@ -39,6 +39,12 @@ def generate_word_cloud_pic(text_file_path,img_save_path,mask_img="month"):
         with open(text_file_path) as f:
             s = f.read()
 
+    try:
+        if len(s) <10:
+            return
+    except:
+        print("")
+
     # 中文分词
     text = ' '.join(jieba.cut(s))
 

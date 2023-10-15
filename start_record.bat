@@ -3,6 +3,9 @@ title Windrecorder - Recording Screening      == Windrecorder == Windrecorder ==
 
 REM 判断是否存在 env 文件夹
 if not exist "env" (
+  echo -installing virtual environment
+  pip install virtualenv
+  echo -creating virtual environment
   python -m venv env
 )
 
