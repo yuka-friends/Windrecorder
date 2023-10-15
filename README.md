@@ -30,6 +30,7 @@
     - 如因网络原因报错，可在脚本安装依赖前添加代理`set https_proxy=http://127.0.0.1:xxxx`、或添加大陆[镜像源](https://mirrors.tuna.tsinghua.edu.cn/help/pypi/)；
 
 - 通过打开目录下的`start_record.bat`进行屏幕记录，通过`start_webui.bat`来回溯、查询回忆、进行设置；
+    - 最佳实践：在webui中设置开机自启动`start_record.bat`，即可无感记录下一切。在空闲无人使用时，`start_record.bat`会自动暂停录制并压缩、清理过期视频；
 
 ---
 ### Roadmap:
@@ -40,6 +41,8 @@
 - [x] 录制完片段后自动识别，闲时自动维护、清理与压缩视频
 - [ ] 多语言支持：已完成界面的 i18n 支持。todo：编译支持 English/日本語 环境的 Windows.Media.Ocr.Cli
 - [ ] 优化流程，提升性能
+- [ ] 添加数据库加密功能
+- [ ] 记录前台进程名与记录OCR词语对应位置，以在搜索时作为线索呈现
 - [ ] 添加多屏幕的记录支持（取决于 pyautogui 未来特性加入）
 - [ ] 添加画面模态的识别，以实现对画面内容描述的搜索
 - [ ] 添加词嵌入索引、本地 LLM 查询
