@@ -1136,7 +1136,7 @@ with tab5:
         
         # 更新提醒
         if 'update_info' not in st.session_state:
-            st.session_state['update_info'] = d_lang[config.lang]["set_update_latest"]
+            st.session_state['update_info'] = d_lang[config.lang]["set_update_checking"]
 
         if 'update_check' not in st.session_state:
             try:

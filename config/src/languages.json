@@ -114,7 +114,7 @@
         "set_input_max_num_search_page": "In global search, maximum number of results per page",
         "set_update_latest": "The current version is already up to date.",
         "set_update_checking": "Checking for updates...",
-        "set_update_new": "A new version {tool_version} has been detected. Update by opening `install_update_setting.bat` file in the directory.",
+        "set_update_new": "\n💫 A new version {tool_version} has been detected. Update by opening `install_update_setting.bat` file in the directory.",
         "set_update_fail": "Failed to check for updates. {e}",
         
         "qs_un_set_your_username": "Set your username as a database identifier.",
@@ -253,7 +253,7 @@
         "set_input_max_num_search_page": "全局搜索中，每页显示结果的最大数量",
         "set_update_latest": "当前已是最新版本。",
         "set_update_checking": "检查更新中……",
-        "set_update_new": "检查到有新版本{tool_version}，通过打开目录下的`install_update_setting.bat`以更新。",
+        "set_update_new": "\n💫 检查到有新版本 {tool_version}，请通过打开目录下的`install_update_setting.bat`以更新。",
         "set_update_fail": "无法检查更新。{e}",
 
 
@@ -394,7 +394,7 @@
         "set_input_max_num_search_page": "グローバル検索で表示される各ページの最大結果数",
         "set_update_latest": "現在のバージョンは最新です。",
         "set_update_checking": "更新を確認中...",
-        "set_update_new": "新しいバージョン {tool_version} が見つかりました。アップデートするには、ディレクトリ内の `install_update_setting.bat` を開いてください。",
+        "set_update_new": "\n💫 新しいバージョン {tool_version} が見つかりました。アップデートするには、ディレクトリ内の `install_update_setting.bat` を開いてください。",
         "set_update_fail": "更新を確認できませんでした。{e}",
         
         "qs_un_set_your_username": "データベースの識別子として使用するユーザー名を設定してください。",
