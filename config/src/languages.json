@@ -112,6 +112,10 @@
         "set_md_auto_maintain": "#### Automatic maintenance",
         "set_input_video_hold_days":"Video file retention days",
         "set_input_max_num_search_page": "In global search, maximum number of results per page",
+        "set_update_latest": "The current version is already up to date.",
+        "set_update_checking": "Checking for updates...",
+        "set_update_new": "A new version {tool_version} has been detected. Update by opening `install_update_setting.bat` file in the directory.",
+        "set_update_fail": "Failed to check for updates. {e}",
         
         "qs_un_set_your_username": "Set your username as a database identifier.",
         "qs_un_describe": "Press enter to use the current username: [{sys_username}], or type a custom username (up to 20 characters).",
@@ -247,6 +251,11 @@
         "set_md_auto_maintain": "#### 自动化维护",
         "set_input_video_hold_days":"视频文件保留天数",
         "set_input_max_num_search_page": "全局搜索中，每页显示结果的最大数量",
+        "set_update_latest": "当前已是最新版本。",
+        "set_update_checking": "检查更新中……",
+        "set_update_new": "检查到有新版本{tool_version}，通过打开目录下的`install_update_setting.bat`以更新。",
+        "set_update_fail": "无法检查更新。{e}",
+
 
         "qs_un_set_your_username": "设定你的用户名，以作为数据库标识。",
         "qs_un_describe": "回车直接使用当前用户名作为用户标识：「{sys_username}」，也可以输入自定义用户名（20个字符以内）。",
@@ -383,6 +392,10 @@
         "set_md_auto_maintain": "#### 自動メンテナンス",
         "set_input_video_hold_days":"ビデオファイルの保持日数",
         "set_input_max_num_search_page": "グローバル検索で表示される各ページの最大結果数",
+        "set_update_latest": "現在のバージョンは最新です。",
+        "set_update_checking": "更新を確認中...",
+        "set_update_new": "新しいバージョン {tool_version} が見つかりました。アップデートするには、ディレクトリ内の `install_update_setting.bat` を開いてください。",
+        "set_update_fail": "更新を確認できませんでした。{e}",
         
         "qs_un_set_your_username": "データベースの識別子として使用するユーザー名を設定してください。",
         "qs_un_describe": "Enterキーを押すと現在のユーザー名（{sys_username}）を使用することもできます。または、カスタムのユーザー名（20文字以内）を入力することもできます。",

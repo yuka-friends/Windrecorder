@@ -4,6 +4,9 @@ title Windrecorder - installing dependence and updating
 @REM SET folderPath=%~dp0
 @REM SET PATH=%PATH%;%folderPath:~0,-1%\python
 
+echo -git: updating repository
+git pull
+
 if not exist "env" (
   echo -installing virtual environment
   pip install virtualenv
@@ -16,9 +19,6 @@ cd /d %~dp0
 
 echo -updating dependencies
 pip install -r requirements.txt
-
-echo -git: updating repository
-git pull
 
 cls
 color 0e

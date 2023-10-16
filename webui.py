@@ -1134,13 +1134,36 @@ with tab5:
     with col3b:
         # 关于
         
+        # 更新提醒
+        if 'update_info' not in st.session_state:
+            st.session_state['update_info'] = d_lang[config.lang]["set_update_latest"]
+
+        if 'update_check' not in st.session_state:
+            try:
+                with st.spinner(d_lang[config.lang]["set_update_checking"]):
+                    tool_version, tool_update_date = utils.get_github_version_and_date()
+                    tool_local_version, tool_local_update_date = utils.get_current_version_and_update()
+                if tool_update_date > tool_local_update_date:
+                    st.session_state.update_info = d_lang[config.lang]["set_update_new"].format(tool_version=tool_version)
+                else:
+                    st.session_state.update_info = d_lang[config.lang]["set_update_latest"]
+            except Exception as e:
+                st.session_state.update_info = d_lang[config.lang]["set_update_fail"].format(e=e)
+                
+            st.session_state['update_check'] = True
+
+
         about_image_b64 = utils.image_to_base64("__assets__\\readme_racoonNagase.png")
         st.markdown(f"<img align='right' style='max-width: 100%;max-height: 100%;' src='data:image/png;base64, {about_image_b64}'/>", unsafe_allow_html=True)
 
         about_path = "config\\src\\meta.json"
         with open(about_path, 'r', encoding='utf-8') as f:
             about_json = json.load(f)
-        about_markdown = Path("config\\src\\about_" + config.lang + ".md").read_text(encoding='utf-8').format(version=about_json["version"], update_date=about_json["update_date"])
+        about_markdown = Path("config\\src\\about_" + config.lang + ".md").read_text(encoding='utf-8').format(version=about_json["version"], update_date=about_json["update_date"], update_info=st.session_state.update_info)
         st.markdown(about_markdown,unsafe_allow_html=True)
+
+
+
+
 
 web_footer_state()

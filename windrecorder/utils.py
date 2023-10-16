@@ -11,6 +11,7 @@ import re
 import signal
 import base64
 from io import BytesIO
+import requests
 
 import cv2
 import pyautogui
@@ -411,3 +412,20 @@ def is_maintain_lock_file_valid(gap=datetime.timedelta(minutes=16)):
         return False
     
 
+# 更新提醒
+def get_github_version_and_date(url='https://raw.githubusercontent.com/Antonoko/Windrecorder/main/config/src/meta.json'):
+    response = requests.get(url)
+    data = response.json()
+    version = data['version']
+    update_date = data['update_date']
+    update_date = date_to_datetime(update_date)
+    return version, update_date
+
+# 获得当前版本号与时间
+def get_current_version_and_update(filepath='config\\src\\meta.json'):
+    with open(filepath, 'r', encoding='utf-8') as f:
+        data = json.load(f)
+    local_version = data['version']
+    local_update_date = data['update_date']
+    local_update_date = date_to_datetime(local_update_date)
+    return local_version, local_update_date
