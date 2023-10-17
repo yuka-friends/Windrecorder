@@ -29,7 +29,7 @@
 
     - 如因网络原因报错，可在脚本安装依赖前添加代理`set https_proxy=http://127.0.0.1:xxxx`、或添加大陆[镜像源](https://mirrors.tuna.tsinghua.edu.cn/help/pypi/)；
 
-- 通过打开目录下的`start_record.bat`进行屏幕记录，通过`start_webui.bat`来回溯、查询回忆、进行设置；
+- 通过打开目录下的`start_record.bat`进行屏幕记录（需要一直最小化放在后台运行来记录，同样地，当需要暂停录制时只要关掉终端窗口就可以），通过打开`start_webui.bat`来回溯、查询回忆、进行设置；
     - 最佳实践：在webui中设置开机自启动`start_record.bat`，即可无感记录下一切。在空闲无人使用时，`start_record.bat`会自动暂停录制并压缩、清理过期视频；Set it and forget it！
 
 ---
