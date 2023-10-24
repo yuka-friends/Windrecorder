@@ -531,7 +531,7 @@ with tab1:
         # 时间滑动控制杆
         start_time = datetime.time(day_min_timestamp_dt.hour, day_min_timestamp_dt.minute)
         end_time = datetime.time(day_max_timestamp_dt.hour, day_max_timestamp_dt.minute)
-        st.session_state.day_time_select_24h = st.slider("Time Rewind",label_visibility="collapsed",min_value=start_time,max_value=end_time,value=end_time,step=timedelta(seconds=30),disabled=st.session_state.day_time_slider_disable,key="day_time_select_slider")
+        st.session_state.day_time_select_24h = st.slider("Time Rewind",label_visibility="collapsed", min_value=start_time, max_value=end_time, value=end_time,step=timedelta(seconds=30), disabled=st.session_state.day_time_slider_disable, key="day_time_select_slider")
 
 
         # 展示时间轴缩略图
@@ -590,6 +590,70 @@ with tab1:
                 df_day_search_result_refine = DBManager().db_refine_search_data_day(st.session_state.df_day_search_result, catch_videofile_ondisk_list=st.session_state.catch_videofile_ondisk_list_oneday) # 优化下数据展示
                 draw_dataframe(df_day_search_result_refine)
             else:
+                # # 时间轴拖动视图 - 切换前后视频片段
+                # # 初始化状态
+                # if 'btn_last_vid_disable' not in st.session_state:
+                #     st.session_state['btn_last_vid_disable'] = False
+                # if 'btn_next_vid_disable' not in st.session_state:
+                #     st.session_state['btn_next_vid_disable'] = False
+                # if 'all_video_filepath_dict' not in st.session_state:   # 获取所有视频的文件-dt词典
+                #     st.session_state['all_video_filepath_dict'] = files.get_videofile_path_dict_datetime(files.get_videofile_path_list_by_time_range(files.get_file_path_list(config.record_videos_dir)))
+                # if 'timeline_select_dt' not in st.session_state:   # 当前选择的时间
+                #     st.session_state['timeline_select_dt'] = utils.merge_date_day_datetime_together(st.session_state.day_date_input,st.session_state.day_time_select_24h) #合并时间为datetime
+
+                # # 找到最近的上一项/下一项时间
+                # def find_closest_dict_key(sorted_dict, target_datetime, return_mode = 'last'):
+                #     closest_datetime = None
+
+                #     for key, value in sorted_dict.items():
+                #         if return_mode == 'last':
+                #             if value < target_datetime:
+                #                 closest_datetime = value
+                #         elif return_mode == 'next':
+                #             if value > target_datetime:
+                #                 closest_datetime = value
+                #         else:
+                #             break
+
+                #     if closest_datetime is not None:
+                #         closest_datetime = closest_datetime + datetime.timedelta(seconds=1)
+                #     return closest_datetime
+
+                # # 切换到上个视频片段
+                # def switch_to_last_vid():
+                #     new_datetime_select = find_closest_dict_key(st.session_state.all_video_filepath_dict, st.session_state.timeline_select_dt, return_mode='last')
+                #     if new_datetime_select is None:
+                #         st.session_state.btn_last_vid_disable = True
+                #         st.session_state.btn_next_vid_disable = False
+                #     else:
+                #         st.session_state.day_time_slider_disable = True
+                #         st.session_state.day_date_input = utils.set_full_datetime_to_YYYY_MM_DD(new_datetime_select)
+                #         st.session_state.day_time_select_24h = utils.set_full_datetime_to_day_time(new_datetime_select)
+                #         st.session_state.timeline_select_dt = utils.merge_date_day_datetime_together(st.session_state.day_date_input,st.session_state.day_time_select_24h) # 更新时间
+                #     return
+
+                # # 切换到下个视频片段
+                # def switch_to_next_vid():
+                #     new_datetime_select = find_closest_dict_key(st.session_state.all_video_filepath_dict, st.session_state.timeline_select_dt, return_mode='next')
+                #     if new_datetime_select is None:
+                #         st.session_state.btn_last_vid_disable = False
+                #         st.session_state.btn_next_vid_disable = True
+                #     else:
+                #         st.session_state.day_time_slider_disable = True
+                #         st.session_state.day_date_input = utils.set_full_datetime_to_YYYY_MM_DD(new_datetime_select)
+                #         st.session_state.day_time_select_24h = utils.set_full_datetime_to_day_time(new_datetime_select)
+                #         st.session_state.timeline_select_dt = utils.merge_date_day_datetime_together(st.session_state.day_date_input,st.session_state.day_time_select_24h) # 更新时间
+                #     return
+
+                # col1_switchvid, col2_switchvid = st.columns([1,1])
+                # with col1_switchvid:
+                #     st.button("← 上个视频片段", use_container_width=True, disabled=st.session_state.btn_last_vid_disable, on_click=switch_to_last_vid)
+                # with col2_switchvid:
+                #     st.button("下个视频片段 →", use_container_width=True, disabled=st.session_state.btn_next_vid_disable, on_click=switch_to_next_vid)
+                
+                # st.session_state.day_date_input
+                # st.session_state.day_time_select_24h
+                # st.session_state.timeline_select_dt
                 st.empty()
 
         with col2a:
@@ -610,7 +674,7 @@ with tab1:
             else:
                 # 【时间线速查功能】
                 # 获取选择的时间，查询对应时间下有无视频，有则换算与定位
-                day_full_select_datetime = utils.merge_date_day_datetime_together(st.session_state.day_date_input,st.session_state.day_time_select_24h) #合并时间为datetime
+                day_full_select_datetime = utils.merge_date_day_datetime_together(st.session_state.day_date_input, st.session_state.day_time_select_24h) #合并时间为datetime
                 day_is_result_exist, day_video_file_name = OneDay().find_closest_video_by_filesys(day_full_select_datetime) #通过文件查询
                 # 计算换算用于播放视频的时间
 

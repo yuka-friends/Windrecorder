@@ -147,7 +147,7 @@ def get_file_path_list(dir):
     return filepath_list
 
 
-# 取得文件夹下的一级文件名列表
+# 取得文件夹下的第一级文件名列表
 def get_file_path_list_first_level(dir):
     file_names = []
     for filename in os.listdir(dir):
@@ -156,17 +156,30 @@ def get_file_path_list_first_level(dir):
     return file_names
 
 
-# 返回指定时间段的视频文件夹内、已索引了的视频路径列表（包括未压缩的与已压缩的）
-def get_videofile_path_list_by_time_range(filepath_list, start_datetime, end_datetime):
+# 根据已有的文件列表，返回指定时间段的视频文件夹内、已索引了的视频路径列表（包括未压缩的与已压缩的）
+def get_videofile_path_list_by_time_range(filepath_list, start_datetime = None, end_datetime = None):
     filepath_list_daterange = []
     for filepath in filepath_list:
         if filepath.endswith('-OCRED.mp4'):
-            filename_extract_date = os.path.basename(filepath)[:18]
-            file_datetime = utils.date_to_datetime(filename_extract_date)
-            if start_datetime <= file_datetime <= end_datetime:
+            if start_datetime is None or end_datetime is None:   # 如果不指定时间段，返回所有结果
                 filepath_list_daterange.append(filepath)
+            else:
+                filename_extract_date = os.path.basename(filepath)[:18]
+                file_datetime = utils.date_to_datetime(filename_extract_date)
+                if start_datetime <= file_datetime <= end_datetime:
+                    filepath_list_daterange.append(filepath)
 
     return filepath_list_daterange
+
+
+# 根据已有的视频文件夹路径列表，生成对应datetime的词典
+def get_videofile_path_dict_datetime(filepath_list):
+    result_dict = {}
+    for filepath in filepath_list:
+        filename = os.path.basename(filepath)[:18]
+        datetime_value = utils.date_to_datetime(filename)
+        result_dict[filepath] = datetime_value
+    return result_dict
 
 
 # 从db文件名提取YYYY-MM的datatime
