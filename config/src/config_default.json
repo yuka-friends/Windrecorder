@@ -22,7 +22,7 @@
   ],
   "ocr_image_crop_URBL": [6,6,6,3],
   "vid_store_day": 600,
-  "vid_compress_day": 90,
+  "vid_compress_day": 120,
   "OCR_index_strategy": 1,
   "wordcloud_result_dir": "result_wordcloud",
   "timeline_result_dir": "result_timeline",
