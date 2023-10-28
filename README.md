@@ -78,3 +78,5 @@ Q: Windows.Media.Ocr.Cli OCR的识别率过低
 🧡 喜欢这个工具？欢迎到 Youtube 与流媒体音乐平台上听听 [長瀬有花 / YUKA NAGASE](https://www.youtube.com/channel/UCf-PcSHzYAtfcoiBr5C9DZA) 温柔的音乐，谢谢！
 
 > "Your tools suck, check out my girl Yuka Nagase, she's amazing, I code 10 times faster when listening to her." -- @jpswing
+
+> "糟糕到想吐的可用性甚至想怀疑这个东西是不是一群文科生靠 ChatGPT 写出来的" -- @hatsuroku
