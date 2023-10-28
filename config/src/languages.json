@@ -238,7 +238,7 @@
         "set_text_right_padding":"右边框",
         "set_checkbox_show_wordcloud_under_oneday": "在「一天之时」下展示每日词云",
         "set_checkbox_use_similar_zh_char_to_search": "使用中文形近字进行搜索",
-        "set_checkbox_use_similar_zh_char_to_search_help": "OCR 可能会误认相似字，开启此项会同时搜索和关键词相近的字形，以提高结果的命中率。",
+        "set_checkbox_use_similar_zh_char_to_search_help": "OCR 可能会误认相似字，开启此项会同时搜索和关键词相近的字形，以提高结果的命中率。在某些情况下，会降低搜索性能、让结果噪音增加。",
         "set_input_wordcloud_filter": "在词云生成中过滤以下词语：",
         "set_input_wordcloud_filter_help": "有一些 UI 的词语会常驻显示，从而在数据中出现频次更高，这里可以将它们排除在词云的统计范围之外。",
         "set_input_oneday_timeline_thumbnail_num": "「一天之时」时间轴的横向缩略图数量",
