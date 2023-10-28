@@ -8,6 +8,7 @@ import numpy as np
 import matplotlib.pyplot as plt
 import jieba
 import pandas as pd
+from send2trash import send2trash
 
 import windrecorder.utils as utils
 from windrecorder.dbManager import DBManager
@@ -26,6 +27,73 @@ def read_stopwords(filename):
 
 
 stopwords = read_stopwords("config\\src\\wordcloud_stopword.txt") + config.wordcloud_user_stop_words
+
+
+# 按月数据库生成已有所有数据的词库
+def generate_all_word_lexicon_by_month():
+    # 取得所有数据库地址
+    all_db_files_dict = files.get_db_file_path_dict()
+
+    # 取得已有随机词典txt文件名
+    lexicon_directory = "config\\random_lexicon"
+    suffix = '_now.txt'
+    files.check_and_create_folder(lexicon_directory)
+    file_list = [filename for filename in os.listdir(lexicon_directory) if filename.endswith(".txt")]
+
+    # 获取需要更新索引的数据库
+    file_list_to_generate_lexicon = []
+
+    # 检查已有txt文件，是否有未生成的数据库对应词典，有着写入索引数据库队列
+    file_list_str = ''
+    file_list_str = file_list_str.join(file_list)
+    for key, value in all_db_files_dict.items():
+        if key[:-3] not in file_list_str:
+            file_list_to_generate_lexicon.append(key)
+
+    # 检查已生成词典中尾缀为'_now.txt'一项，有且超过一定时间未更新则写入索引数据库队列
+    for filename in file_list:
+        if suffix in filename:   # 若有
+            if not files.is_file_modified_recently(os.path.join(lexicon_directory, filename), time_gap=14400): # 超过十天未修改
+                send2trash(os.path.join(lexicon_directory, filename))
+                file_list_to_generate_lexicon.append(filename[:-8] + '.db')
+
+    file_list_to_generate_lexicon = list(set(file_list_to_generate_lexicon))   # 整理去重需要整理词语的数据库列表
+    print(f'[wordcloud] file_list_to_generate_lexicon:{file_list_to_generate_lexicon}')
+
+    for db_name in file_list_to_generate_lexicon:
+        print(f'[wordcloud]processing {db_name}')
+
+        # 获取对应数据库的所有ocr数据
+        print(all_db_files_dict[db_name])
+        ocr_text_filepath = get_month_ocr_result(utils.datetime_to_seconds(all_db_files_dict[db_name]), text_file_path = f"catch\\lexicon_ocr_temp.txt")
+        # 分词
+        with open(ocr_text_filepath, "r", encoding='utf-8') as file:
+            data = file.read()
+            jieba_list = jieba.lcut(data)
+        jieba_list = list(set(jieba_list) - set(stopwords))   # 去重 & stopwords
+
+        # 如果是当月的数据库，添加尾缀
+        if all_db_files_dict[db_name].month == datetime.now().month:
+            lexicon_save_filename = db_name[:-3] + suffix
+        else:
+            lexicon_save_filename = db_name[:-3] + '.txt'
+        lexicon_save_filepath = os.path.join(lexicon_directory, lexicon_save_filename)
+
+        with open(lexicon_save_filepath, "w", encoding='utf-8') as file:
+            for element in jieba_list:
+                file.write(str(element) + '\n')
+
+
+def check_if_word_lexicon_empty():
+    # 取得已有随机词典txt文件名
+    lexicon_directory = "config\\random_lexicon"
+    files.check_and_create_folder(lexicon_directory)
+    file_list = [filename for filename in os.listdir(lexicon_directory) if filename.endswith(".txt")]
+    if len(file_list) > 0:
+        return False
+    else:
+        return True
+
 
 # 生成词云
 def generate_word_cloud_pic(text_file_path,img_save_path,mask_img="month"):
@@ -101,7 +169,7 @@ def generate_word_cloud_pic(text_file_path,img_save_path,mask_img="month"):
 
 
 # 获取某个时间戳下当月的所有识别内容
-def get_month_ocr_result(timestamp):
+def get_month_ocr_result(timestamp, text_file_path = "catch/get_month_ocr_result_out.txt"):
     timestamp_datetime = utils.seconds_to_datetime(timestamp)
     #查询当月所有识别到的数据，存储在文本中
     date_in = datetime(timestamp_datetime.year,
@@ -121,8 +189,8 @@ def get_month_ocr_result(timestamp):
     ocr_text_data = ocr_text_data.replace("\n", "").replace("\r", "")
     # 输出到文件
     files.check_and_create_folder("catch")
-    text_file_path = "catch/get_month_ocr_result_out.txt"
-    with open(text_file_path, "w") as file:
+    
+    with open(text_file_path, "w", encoding='utf-8') as file:
         file.write(ocr_text_data)
     return text_file_path
 
@@ -152,7 +220,7 @@ def get_day_ocr_result(timestamp):
     # 输出到文件
     files.check_and_create_folder("catch")
     text_file_path = "catch/get_day_ocr_result_out.txt"
-    with open(text_file_path, "w") as file:
+    with open(text_file_path, "w", encoding='utf-8') as file:
         file.write(ocr_text_data)
     return text_file_path
 

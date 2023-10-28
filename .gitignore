@@ -19,3 +19,4 @@ config/config_user.json
 .vscode/settings.json
 test.png
 env
+random_lexicon

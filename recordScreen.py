@@ -17,6 +17,7 @@ import windrecorder.utils as utils
 from windrecorder.config import config
 import windrecorder.files as files
 import windrecorder.record as record
+import windrecorder.wordcloud as wordcloud
 
 if config.release_ver:
     ffmpeg_path = 'env\\ffmpeg.exe'
@@ -181,6 +182,8 @@ def idle_maintain_process():
     maintainManager.remove_outdated_videofiles()
     # 压缩过期视频
     maintainManager.compress_outdated_videofiles()
+    # 生成随机词表
+    wordcloud.generate_all_word_lexicon_by_month()
     
     lock_idle_maintaining = False
 

@@ -760,22 +760,13 @@ with tab2:
 
     col1, col2 = st.columns([1, 2])
     with col1:
-        col1_gstype, col2_gstype = st.columns([2,1])
-        with col1_gstype:
-            st.markdown(d_lang[config.lang]["gs_md_search_title"])
-        with col2_gstype:
-            # st.selectbox("搜索方式", ('关键词匹配','模糊语义搜索 [不可用]','画面内容搜索 [不可用]'),label_visibility="collapsed")
-            st.empty()
-
-        web_onboarding()
-
         # 初始化一些全局状态
         if 'max_page_count' not in st.session_state:
             st.session_state.max_page_count = 1
         if 'all_result_counts' not in st.session_state:
             st.session_state.all_result_counts = 1
         if 'search_content' not in st.session_state:
-            st.session_state.search_content = "hello"
+            st.session_state.search_content = ""
         if 'search_content_exclude' not in st.session_state:
             st.session_state.search_content_exclude = ""
         if 'search_date_range_in' not in st.session_state:
@@ -784,6 +775,24 @@ with tab2:
             st.session_state.search_date_range_out = datetime.datetime.today()
         if 'catch_videofile_ondisk_list' not in st.session_state:   # 减少io查询，预拿视频文件列表供比对是否存在
             st.session_state.catch_videofile_ondisk_list = files.get_file_path_list(config.record_videos_dir)
+
+
+        col1_gstype, col2_gstype = st.columns([10,1])
+        with col1_gstype:
+            st.markdown(d_lang[config.lang]["gs_md_search_title"])
+        with col2_gstype:
+            # st.selectbox("搜索方式", ('关键词匹配','模糊语义搜索 [不可用]','画面内容搜索 [不可用]'),label_visibility="collapsed")
+            if not wordcloud.check_if_word_lexicon_empty():
+                if st.button("🎲",use_container_width=True, help=d_lang[config.lang]["gs_text_randomwalk"]):
+                    try:
+                        st.session_state.search_content = utils.get_random_word_from_lexicon()
+                    except Exception as e:
+                        print(e)
+                        st.session_state.search_content = ""
+            st.empty()
+
+        web_onboarding()
+
 
         # 时间搜索范围组件（懒加载）
         if 'search_latest_record_time_int' not in st.session_state:
@@ -821,7 +830,7 @@ with tab2:
 
         col1a, col2a, col3a, col4a = st.columns([2, 1, 2, 1])
         with col1a:
-            st.session_state.search_content = st.text_input(d_lang[config.lang]["text_search_keyword"], value="", on_change=do_global_keyword_search(),help="可使用空格分隔多个关键词。")
+            st.session_state.search_content = st.text_input(d_lang[config.lang]["text_search_keyword"], value=st.session_state.search_content, on_change=do_global_keyword_search(),help="可使用空格分隔多个关键词。")
         with col2a:
             st.session_state.search_content_exclude = st.text_input(d_lang[config.lang]["gs_input_exclude"], "",help=d_lang[config.lang]["gs_input_exclude_help"], on_change=do_global_keyword_search())
         with col3a:
@@ -848,14 +857,13 @@ with tab2:
 
         # 进行搜索
         if not len(st.session_state.search_content) == 0:
-            timeCost = time.time() # 预埋计算实际时长
+            timeCost_globalSearch = time.time() # 预埋计算实际时长
 
             df = DBManager().db_search_data_page_turner(st.session_state.db_global_search_result, st.session_state.page_index)
             
             is_df_result_exist = len(df)
 
-            timeCost = round(time.time() - timeCost, 5)
-            st.markdown(d_lang[config.lang]["gs_md_search_result_stat"].format(all_result_counts=st.session_state.all_result_counts, max_page_count=st.session_state.max_page_count, search_content=st.session_state.search_content, timeCost=timeCost))
+            st.markdown(d_lang[config.lang]["gs_md_search_result_stat"].format(all_result_counts=st.session_state.all_result_counts, max_page_count=st.session_state.max_page_count, search_content=st.session_state.search_content, timeCost=timeCost_globalSearch))
 
             # 滑杆选择
             result_choose_num = choose_search_result_num(df, is_df_result_exist)
@@ -866,9 +874,13 @@ with tab2:
                 # 打表
                 df = DBManager().db_refine_search_data_global(df, catch_videofile_ondisk_list=st.session_state.catch_videofile_ondisk_list) # 优化数据显示
                 draw_dataframe(df, heightIn=800)
-        
+
+            timeCost_globalSearch = round(time.time() - timeCost_globalSearch, 5)
+            st.markdown(d_lang[config.lang]["gs_md_search_result_below"].format(timecost=timeCost_globalSearch))
+
         else:
             st.info(d_lang[config.lang]["gs_text_intro"])
+
 
     with col2:
         # 选择视频
@@ -1086,7 +1098,8 @@ with tab5:
             check_ocr_engine()
             config_ocr_engine = st.selectbox(d_lang[config.lang]["set_selectbox_local_ocr_engine"], ('Windows.Media.Ocr.Cli', 'ChineseOCR_lite_onnx'),
                                              index=config_ocr_engine_choice_index,
-                                             help=d_lang[config.lang]["set_selectbox_local_ocr_engine_help"])
+                                             help=d_lang[config.lang]["set_selectbox_local_ocr_engine_help"],
+                                             disabled=not config.enable_ocr_chineseocr_lite_onnx)
 
             # 设置排除词
             exclude_words = st.text_area(d_lang[config.lang]["set_input_exclude_word"],value=utils.list_to_string(config.exclude_words),help=d_lang[config.lang]["set_input_exclude_word_help"])

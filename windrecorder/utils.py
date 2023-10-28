@@ -12,6 +12,7 @@ import signal
 import base64
 from io import BytesIO
 import requests
+import random
 
 import cv2
 import pyautogui
@@ -411,6 +412,37 @@ def is_maintain_lock_file_valid(gap=datetime.timedelta(minutes=16)):
     else:
         return False
     
+
+# 从词库中获取一个随机词语
+def get_random_word_from_lexicon():
+    directory = 'config\\random_lexicon'
+    file_list = [filename for filename in os.listdir(directory) if filename.endswith(".txt")]
+    words = []
+    
+    # 随机读取一个文件后从中抽取词
+    filename = random.choice(file_list)
+    file_path = os.path.join(directory, filename)
+    with open(file_path, "r", encoding='utf-8') as file:
+        for line in file:
+            word = line.strip()
+            if word:
+                words.append(word)
+
+    # 读取全部后随机抽取
+    # for filename in file_list:
+    #     file_path = os.path.join(directory, filename)
+    #     with open(file_path, "r", encoding='utf-8') as file:
+    #         for line in file:
+    #             word = line.strip()
+    #             if word:
+    #                 words.append(word)
+    
+    if not words:
+        return None
+    
+    random_word = random.choice(words)
+    return random_word
+
 
 # 更新提醒
 def get_github_version_and_date(url='https://raw.githubusercontent.com/Antonoko/Windrecorder/main/config/src/meta.json'):
