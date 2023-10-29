@@ -158,7 +158,7 @@ def ocr_image_ms(img_input):
     print("maintainManager: OCR text by Windows.Media.Ocr.Cli")
     text = ""
     # 调用Windows.Media.Ocr.Cli.exe,参数为图片路径
-    command = ['ocr_lib\\Windows.Media.Ocr.Cli.exe', img_input]
+    command = ['ocr_lib\\Windows.Media.Ocr.Cli.exe', '-l', config.ocr_lang, img_input]
 
     proc = subprocess.run(command, capture_output=True)
     encodings_try = ['gbk', 'utf-8']  # 强制兼容

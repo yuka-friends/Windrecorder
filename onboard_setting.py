@@ -98,30 +98,62 @@ divider()
 subprocess.run('pause', shell=True)
 
 
+
+
+# 选择可ocr的语言
+os_support_lang = utils.get_os_support_lang()
+
+if len(os_support_lang) > 1:
+    while(True):
+        print_header(step=3)
+        print(d_lang[config.lang]["qs_olang_intro"])
+        utils.print_numbered_list(os_support_lang)
+        divider()
+
+        try:
+            input_ocr_lang_num = int(input('> '))
+            if input_ocr_lang_num <= len(os_support_lang):
+                config.set_and_save_config("ocr_lang", os_support_lang[input_ocr_lang_num-1])
+                print(d_lang[config.lang]["qs_olang_ocrlang_set_to"], os_support_lang[input_ocr_lang_num-1])
+                subprocess.run('pause', shell=True)
+                break
+        
+        except:
+            print(d_lang[config.lang]["qs_olang_error"])
+            subprocess.run('pause', shell=True)
+
+else:
+    print_header(step=3)
+    print(d_lang[config.lang]["qs_olang_one_choice_default_set"].format(os_support_lang=os_support_lang[0]))
+    subprocess.run('pause', shell=True)
+
+
 # 测试与设置 ocr 引擎
-test_img_filepath = "__assets__\OCR_test_1080_" + config.lang + ".png"
-with open("__assets__\\OCR_test_1080_words_" + config.lang + ".txt", encoding='utf-8') as f:
+test_img_filepath = "__assets__\OCR_test_1080_" + config.ocr_lang + ".png"   # 读取测试图像
+with open("__assets__\\OCR_test_1080_words_" + config.ocr_lang + ".txt", encoding='utf-8') as f:   # 读取比对参考文本
     ocr_text_refer = f.read()
     ocr_text_refer = utils.wrap_text_by_remove_break(ocr_text_refer)
 
+
+
 # 测试COL
-if config.enable_ocr_chineseocr_lite_onnx:
-    try:
-        time_cost_col = time.time()
-        ocr_result_col = maintainManager.ocr_image_col(test_img_filepath)
-        time_cost_col = time.time() - time_cost_col
-        ocr_result_col = utils.wrap_text_by_remove_break(ocr_result_col)
-        _, ocr_correct_col = maintainManager.compare_strings(ocr_result_col, ocr_text_refer)
+# if config.enable_ocr_chineseocr_lite_onnx:
+#     try:
+#         time_cost_col = time.time()
+#         ocr_result_col = maintainManager.ocr_image_col(test_img_filepath)
+#         time_cost_col = time.time() - time_cost_col
+#         ocr_result_col = utils.wrap_text_by_remove_break(ocr_result_col)
+#         _, ocr_correct_col = maintainManager.compare_strings(ocr_result_col, ocr_text_refer)
 
-    except Exception as e:
-        ocr_result_col = ""
-        print(e)
-else:
-    print("enable_ocr_chineseocr_lite_onnx disabled.")
-    ocr_result_col = ""
+#     except Exception as e:
+#         ocr_result_col = ""
+#         print(e)
+# else:
+#     print("enable_ocr_chineseocr_lite_onnx disabled.")
+#     ocr_result_col = ""
 
 
-# 测试ms
+# 测试ms ocr
 try:
     time_cost_ms = time.time()
     ocr_result_ms = maintainManager.ocr_image_ms(test_img_filepath)
@@ -132,44 +164,45 @@ try:
 except Exception as e:
     ocr_result_ms = ""
     print(e)
+    subprocess.run('pause', shell=True)
 
 while(True):
     print_header(step=3)
     print(d_lang[config.lang]["qs_ocr_title"])
 
     if ocr_result_ms:
-        print("- Windows.Media.Ocr.Cli")
-        # print("准确率：", ocr_correct_ms, "，识别时间：", time_cost_ms, "，索引15分钟视频约用时：", utils.convert_seconds_to_hhmmss(int(time_cost_ms*350)))
+        print("- Windows.Media.Ocr.Cli   OCR languages: ", config.ocr_lang)
         print(d_lang[config.lang]["qs_ocr_result_describe"].format(accuracy=ocr_correct_ms, timecost=time_cost_ms , timecost_15=utils.convert_seconds_to_hhmmss(int(time_cost_ms*350))))
         if ocr_correct_ms< 50:
             print(d_lang[config.lang]["qs_ocr_tips_low_accuracy"])
-    print("")
 
-    if ocr_result_col:
-        print("- chineseocr_lite_onnx")
-        # print("准确率：", ocr_correct_col, "，识别时间：", time_cost_col, "，索引15分钟视频约用时：", utils.convert_seconds_to_hhmmss(int(time_cost_col*350)))
-        print(d_lang[config.lang]["qs_ocr_result_describe"].format(accuracy=ocr_correct_col, timecost=time_cost_col , timecost_15=utils.convert_seconds_to_hhmmss(int(time_cost_col*350))))
-    else:
-        print(d_lang[config.lang]["qs_ocr_describe_disable_clo"])
+    break
 
-    divider()
-    print(d_lang[config.lang]["qs_ocr_describe"])
-    print(d_lang[config.lang]["qs_ocr_cta"])
-    print("1. Windows.Media.Ocr.Cli", d_lang[config.lang]["qs_ocr_option_recommand"], "\n2. chineseocr_lite_onnx")
-    input_lang_num = input('> ')
+    # if ocr_result_col:
+    #     print("- chineseocr_lite_onnx")
+    #     # print("准确率：", ocr_correct_col, "，识别时间：", time_cost_col, "，索引15分钟视频约用时：", utils.convert_seconds_to_hhmmss(int(time_cost_col*350)))
+    #     print(d_lang[config.lang]["qs_ocr_result_describe"].format(accuracy=ocr_correct_col, timecost=time_cost_col , timecost_15=utils.convert_seconds_to_hhmmss(int(time_cost_col*350))))
+    # else:
+    #     print(d_lang[config.lang]["qs_ocr_describe_disable_clo"])
 
-    if input_lang_num == '2':
-        if config.enable_ocr_chineseocr_lite_onnx:
-            config.set_and_save_config("ocr_engine", "chineseocr_lite_onnx")
-            print(d_lang[config.lang]["qs_ocr_option_recommand"], "chineseocr_lite_onnx")
-        else:
-            config.set_and_save_config("ocr_engine", "Windows.Media.Ocr.Cli")
-            print(d_lang[config.lang]["qs_ocr_engine_chosen"], "Windows.Media.Ocr.Cli")
-        break
-    else:
-        config.set_and_save_config("ocr_engine", "Windows.Media.Ocr.Cli")
-        print(d_lang[config.lang]["qs_ocr_engine_chosen"], "Windows.Media.Ocr.Cli")
-        break
+    # divider()
+    # print(d_lang[config.lang]["qs_ocr_describe"])
+    # print(d_lang[config.lang]["qs_ocr_cta"])
+    # print("1. Windows.Media.Ocr.Cli", d_lang[config.lang]["qs_ocr_option_recommand"], "\n2. chineseocr_lite_onnx")
+    # input_lang_num = input('> ')
+
+    # if input_lang_num == '2':
+    #     if config.enable_ocr_chineseocr_lite_onnx:
+    #         config.set_and_save_config("ocr_engine", "chineseocr_lite_onnx")
+    #         print(d_lang[config.lang]["qs_ocr_option_recommand"], "chineseocr_lite_onnx")
+    #     else:
+    #         config.set_and_save_config("ocr_engine", "Windows.Media.Ocr.Cli")
+    #         print(d_lang[config.lang]["qs_ocr_engine_chosen"], "Windows.Media.Ocr.Cli")
+    #     break
+    # else:
+    #     config.set_and_save_config("ocr_engine", "Windows.Media.Ocr.Cli")
+    #     print(d_lang[config.lang]["qs_ocr_engine_chosen"], "Windows.Media.Ocr.Cli")
+    #     break
 
 divider()
 subprocess.run('pause', shell=True)

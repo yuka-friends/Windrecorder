@@ -10,6 +10,7 @@ class Config:
         record_videos_dir,
         record_seconds,
         lang,
+        ocr_lang,
         ocr_engine,
         max_page_result,
         target_screen_res,
@@ -38,6 +39,7 @@ class Config:
         self.record_videos_dir = record_videos_dir
         self.record_seconds = record_seconds
         self.lang = lang
+        self.ocr_lang = ocr_lang
         self.ocr_engine = ocr_engine
         self.max_page_result = max_page_result
         self.target_screen_res = target_screen_res

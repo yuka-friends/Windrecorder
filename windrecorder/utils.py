@@ -461,3 +461,36 @@ def get_current_version_and_update(filepath='config\\src\\meta.json'):
     local_update_date = data['update_date']
     local_update_date = date_to_datetime(local_update_date)
     return local_version, local_update_date
+
+
+# 输入cmd命令，返回结果回显内容
+def get_cmd_tool_echo(command):
+    print(f"command: {command}")
+    proc = subprocess.run(command, capture_output=True)
+    encodings_try = ['gbk', 'utf-8']  # 强制兼容
+    for enc in encodings_try:
+        try:
+            text = proc.stdout.decode(enc)
+            if text is None or text == "":
+                pass
+            break
+        except UnicodeDecodeError:
+            pass
+    
+    text = str(text.encode('utf-8').decode('utf-8'))
+    return text
+
+
+# 将list打印为列表项
+def print_numbered_list(lst):
+    for i, item in enumerate(lst, 1):
+        print(f"{i}. {item}")
+
+
+# 获取系统支持的ocr语言
+def get_os_support_lang():
+    command = ['ocr_lib\\Windows.Media.Ocr.Cli.exe', '-s']
+    text = get_cmd_tool_echo(command)
+    lines = text.replace('\r','').split('\n')  # 将字符串按行分割为列表
+    extracted_lines = lines[1:-1]  # 获取第二行开始的所有行
+    return extracted_lines

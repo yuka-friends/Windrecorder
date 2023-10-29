@@ -285,6 +285,22 @@ def check_ocr_engine():
         config_ocr_engine_choice_index = 1
 
 
+# 检查配置使用的ocr语言
+def check_ocr_lang():
+    global config_ocr_lang_choice_index
+    global os_support_lang_list
+
+    os_support_lang_list = utils.get_os_support_lang()   # 获取系统支持的语言
+
+    if config.ocr_lang in os_support_lang_list:   # 如果配置项在支持的列表中，返回索引值
+        config_ocr_lang_choice_index = os_support_lang_list.index(config.ocr_lang)
+    else:   # 如果配置项不在支持的列表中，返回默认值，config设定为支持的第一项
+        config_ocr_lang_choice_index = 0
+        config.set_and_save_config("ocr_lang", os_support_lang_list[0])
+
+    
+
+
 # 调整屏幕忽略范围的设置可视化
 def screen_ignore_padding(topP,rightP,bottomP,leftP,use_screenshot = False):
     image_padding_refer = Image.open("__assets__\\setting-crop-refer-pure.png")
@@ -1095,11 +1111,18 @@ with tab5:
         
         with col2:
             # 设置ocr引擎
-            check_ocr_engine()
-            config_ocr_engine = st.selectbox(d_lang[config.lang]["set_selectbox_local_ocr_engine"], ('Windows.Media.Ocr.Cli', 'ChineseOCR_lite_onnx'),
-                                             index=config_ocr_engine_choice_index,
-                                             help=d_lang[config.lang]["set_selectbox_local_ocr_engine_help"],
-                                             disabled=not config.enable_ocr_chineseocr_lite_onnx)
+            if config.enable_ocr_chineseocr_lite_onnx:
+                check_ocr_engine()
+                config_ocr_engine = st.selectbox(d_lang[config.lang]["set_selectbox_local_ocr_engine"], ('Windows.Media.Ocr.Cli', 'ChineseOCR_lite_onnx'),
+                                                index=config_ocr_engine_choice_index,
+                                                help=d_lang[config.lang]["set_selectbox_local_ocr_engine_help"]
+                                                )
+            
+            # 设定ocr引擎语言
+            check_ocr_lang()
+            config_ocr_lang = st.selectbox(d_lang[config.lang]["set_selectbox_ocr_lang"], os_support_lang_list,
+                                           index=config_ocr_lang_choice_index,
+                                           )
 
             # 设置排除词
             exclude_words = st.text_area(d_lang[config.lang]["set_input_exclude_word"],value=utils.list_to_string(config.exclude_words),help=d_lang[config.lang]["set_input_exclude_word_help"])
@@ -1194,7 +1217,8 @@ with tab5:
         if st.button('Save and Apple All Change / 保存并应用所有更改', type="primary",key="SaveBtnGeneral"):
             config_set_lang(language_option)
             config.set_and_save_config("max_page_result", config_max_search_result_num)
-            config.set_and_save_config("ocr_engine", config_ocr_engine)
+            # config.set_and_save_config("ocr_engine", config_ocr_engine)
+            config.set_and_save_config("ocr_lang", config_ocr_lang)
             config.set_and_save_config("exclude_words", utils.string_to_list(exclude_words))
             config.set_and_save_config("show_oneday_wordcloud",option_show_oneday_wordcloud)
             config.set_and_save_config("use_similar_ch_char_to_search",config_use_similar_ch_char_to_search)
