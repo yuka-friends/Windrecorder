@@ -238,12 +238,12 @@ def get_show_month_data_state(stat_select_month_datetime: datetime.datetime):
     update_condition = False
     if not st.session_state.df_month_stat.empty and utils.set_full_datetime_to_YYYY_MM(
             st.session_state.df_month_stat_dt) <= utils.set_full_datetime_to_YYYY_MM(
-            st.session_state.stat_select_month_datetime):
+        st.session_state.stat_select_month_datetime):
         update_condition = True
 
     if st.session_state.df_month_stat.empty or update_condition or utils.set_full_datetime_to_YYYY_MM(
             st.session_state.df_month_stat_dt) != utils.set_full_datetime_to_YYYY_MM(
-            st.session_state.stat_select_month_datetime):  # 页面内无缓存，或不是当月日期
+        st.session_state.stat_select_month_datetime):  # 页面内无缓存，或不是当月日期
 
         # 检查磁盘上有无统计缓存，然后检查是否过时
         if os.path.exists(df_filepath):  # 存在
@@ -851,14 +851,14 @@ with tab2:
 
         # 优化streamlit强加载机制导致的索引时间：改变了再重新搜索，而不是每次提交了更改都进行搜索
         if 'search_content_lazy' not in st.session_state:
-            st.session_state.search_content_lazy = None
+            st.session_state.search_content_lazy = ""
         if 'search_content_exclude_lazy' not in st.session_state:
-            st.session_state.search_content_lazy = None
+            st.session_state.search_content_exclude_lazy = None
         if 'search_date_range_in_lazy' not in st.session_state:
             st.session_state.search_date_range_in_lazy = datetime.datetime(1970, 1, 2) + datetime.timedelta(
                 seconds=st.session_state.search_earlist_record_time_int) - datetime.timedelta(seconds=86400)
         if 'search_date_range_out_lazy' not in st.session_state:
-            st.session_state.search_date_range_out = datetime.datetime(1970, 1, 2) + datetime.timedelta(
+            st.session_state.search_date_range_out_lazy = datetime.datetime(1970, 1, 2) + datetime.timedelta(
                 seconds=st.session_state.search_latest_record_time_int) - datetime.timedelta(seconds=86400)
 
 
@@ -866,35 +866,38 @@ with tab2:
         def do_global_keyword_search():
             # 如果搜索所需入参状态改变了，进行搜索
             if (
-                    st.session_state.search_content_lazy != st.session_state.search_content
-                    or st.session_state.search_content_exclude_lazy != st.session_state.search_content_exclude
-                    or st.session_state.search_date_range_in_lazy != st.session_state.search_date_range_in
-                    or st.session_state.search_date_range_out_lazy != st.session_state.search_date_range_out
+                    st.session_state.search_content_lazy == st.session_state.search_content
+                    and st.session_state.search_content_exclude_lazy == st.session_state.search_content_exclude
+                    and st.session_state.search_date_range_in_lazy == st.session_state.search_date_range_in
+                    and st.session_state.search_date_range_out_lazy == st.session_state.search_date_range_out
             ):
-                st.session_state.search_content_lazy = st.session_state.search_content
-                st.session_state.search_content_exclude_lazy = st.session_state.search_content_exclude
-                st.session_state.search_date_range_in_lazy = st.session_state.search_date_range_in
-                st.session_state.search_date_range_out_lazy = st.session_state.search_date_range_out
+                return
 
-                # 清理状态
-                st.session_state.page_index = 1
+            st.session_state.search_content_lazy = st.session_state.search_content
+            st.session_state.search_content_exclude_lazy = st.session_state.search_content_exclude
+            st.session_state.search_date_range_in_lazy = st.session_state.search_date_range_in
+            st.session_state.search_date_range_out_lazy = st.session_state.search_date_range_out
 
-                st.session_state.db_global_search_result, st.session_state.all_result_counts, st.session_state.max_page_count = DBManager().db_search_data(
-                    st.session_state.search_content,
-                    st.session_state.search_date_range_in,
-                    st.session_state.search_date_range_out,
-                    keyword_input_exclude=st.session_state.search_content_exclude)
+            # 清理状态
+            st.session_state.page_index = 1
+
+            st.session_state.db_global_search_result, st.session_state.all_result_counts, st.session_state.max_page_count = DBManager().db_search_data(
+                st.session_state.search_content,
+                st.session_state.search_date_range_in,
+                st.session_state.search_date_range_out,
+                keyword_input_exclude=st.session_state.search_content_exclude)
 
 
         col1a, col2a, col3a, col4a = st.columns([2, 1, 2, 1])
         with col1a:
             st.session_state.search_content = st.text_input(d_lang[config.lang]["text_search_keyword"],
-                                                            on_change=do_global_keyword_search,
                                                             help="可使用空格分隔多个关键词。")
+
+            do_global_keyword_search()
         with col2a:
             st.session_state.search_content_exclude = st.text_input(d_lang[config.lang]["gs_input_exclude"], "",
-                                                                    help=d_lang[config.lang]["gs_input_exclude_help"],
-                                                                    on_change=do_global_keyword_search)
+                                                                    help=d_lang[config.lang]["gs_input_exclude_help"])
+            do_global_keyword_search()
         with col3a:
 
             try:
@@ -907,9 +910,9 @@ with tab2:
                      + datetime.timedelta(seconds=st.session_state.search_latest_record_time_int)
                      - datetime.timedelta(seconds=86400)
                      ),
-                    format="YYYY-MM-DD",
-                    on_change=do_global_keyword_search
+                    format="YYYY-MM-DD"
                 )
+                do_global_keyword_search()
             except:
                 st.warning(d_lang[config.lang]["gs_text_pls_choose_full_date_range"])
 
