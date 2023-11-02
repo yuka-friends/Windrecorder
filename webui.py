@@ -363,7 +363,7 @@ def config_set_lang(lang_name):
 # footer状态信息
 def web_footer_state():
     # 懒加载，只在刷新时第一次获取
-    if 'footer_first_record_time_int' not in st.session_state:
+    if 'footer_first_record_time_str' not in st.session_state:
         st.session_state['footer_first_record_time_str'] = utils.seconds_to_date_goodlook_formart(
             DBManager().db_first_earliest_record_time())
 
@@ -476,24 +476,25 @@ with tab1:
             if 'day_search_keyword' not in st.session_state:
                 st.session_state.day_search_keyword = None
             if 'day_search_keyword_lazy' not in st.session_state:
-                st.session_state.day_search_keyword_lazy = None
+                st.session_state.day_search_keyword_lazy = 'Keyword'
 
 
             def do_day_keyword_search():
                 # 搜索前清除状态
                 st.session_state.day_search_result_index_num = 0  # 条目检索
-
-                if st.session_state.day_search_keyword_lazy != st.session_state.day_search_keyword:
-                    st.session_state.day_search_keyword_lazy = st.session_state.day_search_keyword
-                    st.session_state.df_day_search_result = OneDay().search_day_data(
-                        utils.complete_datetime(st.session_state.day_date_input),
-                        search_content=st.session_state.day_search_keyword)
+                if st.session_state.day_search_keyword_lazy == st.session_state.day_search_keyword:
+                    return
+                st.session_state.day_search_keyword_lazy = st.session_state.day_search_keyword
+                st.session_state.df_day_search_result = OneDay().search_day_data(
+                    utils.complete_datetime(st.session_state.day_date_input),
+                    search_content=st.session_state.day_search_keyword)
 
 
             st.session_state.day_search_keyword = st.text_input(d_lang[config.lang]["text_search_keyword"], 'Keyword',
                                                                 key=2, label_visibility="collapsed",
-                                                                on_change=do_day_keyword_search(),
                                                                 disabled=not st.session_state.day_time_slider_disable)
+            do_day_keyword_search()
+
             # 执行搜索，搜索结果
             # df_day_search_result = OneDay().search_day_data(utils.complete_datetime(st.session_state.day_date_input),search_content=st.session_state.day_search_keyword)
         with col3c:
