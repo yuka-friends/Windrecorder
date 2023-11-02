@@ -889,13 +889,12 @@ with tab2:
         col1a, col2a, col3a, col4a = st.columns([2, 1, 2, 1])
         with col1a:
             st.session_state.search_content = st.text_input(d_lang[config.lang]["text_search_keyword"],
-                                                            value=st.session_state.search_content,
-                                                            on_change=do_global_keyword_search(),
+                                                            on_change=do_global_keyword_search,
                                                             help="可使用空格分隔多个关键词。")
         with col2a:
             st.session_state.search_content_exclude = st.text_input(d_lang[config.lang]["gs_input_exclude"], "",
                                                                     help=d_lang[config.lang]["gs_input_exclude_help"],
-                                                                    on_change=do_global_keyword_search())
+                                                                    on_change=do_global_keyword_search)
         with col3a:
 
             try:
@@ -909,7 +908,7 @@ with tab2:
                      - datetime.timedelta(seconds=86400)
                      ),
                     format="YYYY-MM-DD",
-                    on_change=do_global_keyword_search()
+                    on_change=do_global_keyword_search
                 )
             except:
                 st.warning(d_lang[config.lang]["gs_text_pls_choose_full_date_range"])
