@@ -14,6 +14,7 @@
 
 ![Windrecorder](https://github.com/Antonoko/Windrecorder/blob/main/__assets__/product-preview-cn.jpg)
 
+> 🤯 该项目仍在较早期开发阶段，体验与使用上可能会遇上些小问题。如果遇到，欢迎提出 issue 反馈与关注更新 🤯
 
 # 🦝 安装
 
