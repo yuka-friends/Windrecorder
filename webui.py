@@ -892,7 +892,7 @@ with tab2:
         col1a, col2a, col3a, col4a = st.columns([2, 1, 2, 1])
         with col1a:
             st.session_state.search_content = st.text_input(d_lang[config.lang]["text_search_keyword"],
-                                                            help="可使用空格分隔多个关键词。")
+                                                            help=d_lang[config.lang]["gs_input_search_help"])
 
             do_global_keyword_search()
         with col2a:
