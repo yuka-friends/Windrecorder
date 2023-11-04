@@ -27,16 +27,14 @@ import windrecorder.files as files
 import windrecorder.record as record
 import windrecorder.wordcloud as wordcloud
 import windrecorder.state as state
+from windrecorder.utils import get_text as _t
 
 update_button_key = "update_button"
 reset_button_key = "setting_reset"
 
 # python -m streamlit run webui.py
 
-# 获取i18n表，调用方式为 d_lang[config.lang]["key"].format(var=var, var=var)
-with open("config\\src\\languages.json", encoding='utf-8') as f:
-    d_lang = json.load(f)
-lang_map = d_lang['lang_map']
+lang_map = utils.d_lang['lang_map']
 
 
 # 获取配置中语言选项是第几位；使设置选择项能匹配
@@ -47,7 +45,7 @@ def get_language_index(lang, data):
     return 1
 
 
-lang_index = get_language_index(config.lang, d_lang)
+lang_index = get_language_index(config.lang, utils.d_lang)
 
 st.set_page_config(
     page_title="Windrecord - webui",
@@ -124,8 +122,8 @@ def web_onboarding():
 
     if st.session_state.is_onboarding:
         # 数据库不存在，展示 Onboarding 提示
-        st.success(d_lang[config.lang]["text_welcome_to_windrecorder"], icon="😺")
-        intro_markdown = Path("config\\src\\onboarding_" + config.lang + ".md").read_text(encoding='utf-8')
+        st.success(_t("text_welcome_to_windrecorder"), icon="😺")
+        intro_markdown = Path(f"config\\src\\onboarding_{config.lang}.md").read_text(encoding='utf-8')
         st.markdown(intro_markdown)
         st.divider()
 
@@ -147,10 +145,10 @@ def choose_search_result_num(df, is_df_result_exist):
         # 使用滑杆选择视频
         col1, col2 = st.columns([5, 1])
         with col1:
-            select_num = st.slider(d_lang[config.lang]["gs_slider_to_rewind_result"], slider_min_num_display,
+            select_num = st.slider(_t("gs_slider_to_rewind_result"), slider_min_num_display,
                                    slider_max_num_display, select_num)
         with col2:
-            select_num = st.number_input(d_lang[config.lang]["gs_slider_to_rewind_result"], label_visibility="hidden",
+            select_num = st.number_input(_t("gs_slider_to_rewind_result"), label_visibility="hidden",
                                          min_value=slider_min_num_display,
                                          max_value=slider_max_num_display, value=select_num)
 
@@ -169,27 +167,27 @@ def draw_db_status():
         # 启用自动索引
         if nocred_count == 1 and record.is_recording():
             st.success(
-                d_lang[config.lang]["set_text_one_video_to_index"].format(nocred_count=nocred_count, count=count),
+                _t("set_text_one_video_to_index").format(nocred_count=nocred_count, count=count),
                 icon='✅')
         elif nocred_count == 0:
             st.success(
-                d_lang[config.lang]["set_text_no_video_need_index"].format(nocred_count=nocred_count, count=count),
+                _t("set_text_no_video_need_index").format(nocred_count=nocred_count, count=count),
                 icon='✅')
         else:
             st.success(
-                d_lang[config.lang]["set_text_some_video_will_be_index"].format(nocred_count=nocred_count, count=count),
+                _t("set_text_some_video_will_be_index").format(nocred_count=nocred_count, count=count),
                 icon='✅')
     elif config.OCR_index_strategy == 2:
         if nocred_count == 1 and record.is_recording():
             st.success(
-                d_lang[config.lang]["set_text_one_video_to_index"].format(nocred_count=nocred_count, count=count),
+                _t("set_text_one_video_to_index").format(nocred_count=nocred_count, count=count),
                 icon='✅')
         elif nocred_count >= 1:
-            st.warning(d_lang[config.lang]["set_text_video_not_index"].format(nocred_count=nocred_count, count=count,
+            st.warning(_t("set_text_video_not_index").format(nocred_count=nocred_count, count=count,
                                                                               timeCostStr=timeCostStr), icon='🧭')
         else:
             st.success(
-                d_lang[config.lang]["set_text_no_video_need_index"].format(nocred_count=nocred_count, count=count),
+                _t("set_text_no_video_need_index").format(nocred_count=nocred_count, count=count),
                 icon='✅')
 
 
@@ -232,8 +230,8 @@ def get_show_month_data_state(stat_select_month_datetime: datetime.datetime):
         st.session_state.df_month_stat_dt = stat_select_month_datetime
 
     df_file_name = stat_select_month_datetime.strftime("%Y-%m") + "_month_data_state.csv"
-    df_catch_dir = "catch"
-    df_filepath = os.path.join(df_catch_dir, df_file_name)
+    df_cache_dir = "cache"
+    df_filepath = os.path.join(df_cache_dir, df_file_name)
 
     update_condition = False
     if not st.session_state.df_month_stat.empty and utils.set_full_datetime_to_YYYY_MM(
@@ -250,7 +248,7 @@ def get_show_month_data_state(stat_select_month_datetime: datetime.datetime):
             if df_file_name[:7] == datetime.datetime.today().strftime("%Y-%m"):  # 如果是需要时效性的当下月数据
                 if not files.is_file_modified_recently(df_filepath, time_gap=120):  # 超过120分钟未更新，过时 重新生成
                     # 更新操作
-                    with st.spinner(d_lang[config.lang]["text_updating_month_stat"]):
+                    with st.spinner(_t("text_updating_month_stat")):
                         st.session_state.df_month_stat = state.get_month_day_overview_scatter(
                             stat_select_month_datetime)
                         files.save_dataframe_to_path(st.session_state.df_month_stat, file_path=df_filepath)
@@ -258,7 +256,7 @@ def get_show_month_data_state(stat_select_month_datetime: datetime.datetime):
             st.session_state.df_month_stat = files.read_dataframe_from_path(file_path=df_filepath)
 
         else:  # 磁盘上不存在缓存
-            with st.spinner(d_lang[config.lang]["text_updating_month_stat"]):
+            with st.spinner(_t("text_updating_month_stat")):
                 st.session_state.df_month_stat = state.get_month_day_overview_scatter(stat_select_month_datetime)
                 files.save_dataframe_to_path(st.session_state.df_month_stat, file_path=df_filepath)
 
@@ -271,8 +269,8 @@ def get_show_year_data_state(stat_select_year_datetime: datetime.datetime):
         st.session_state.df_year_stat = pd.DataFrame()
 
     df_file_name = stat_select_year_datetime.strftime("%Y") + "_year_data_state.csv"
-    df_catch_dir = "catch"
-    df_filepath = os.path.join(df_catch_dir, df_file_name)
+    df_cache_dir = "cache"
+    df_filepath = os.path.join(df_cache_dir, df_file_name)
 
     if st.session_state.df_year_stat.empty:  # 页面内无缓存
 
@@ -280,7 +278,7 @@ def get_show_year_data_state(stat_select_year_datetime: datetime.datetime):
         if os.path.exists(df_filepath):  # 存在
             if not files.is_file_modified_recently(df_filepath, time_gap=3000):  # 超过3000分钟未更新，过时 重新生成
                 # 更新操作
-                with st.spinner(d_lang[config.lang]["text_updating_yearly_stat"]):
+                with st.spinner(_t("text_updating_yearly_stat")):
                     st.session_state.df_year_stat = state.get_year_data_overview_scatter(stat_select_year_datetime)
                     files.save_dataframe_to_path(st.session_state.df_year_stat, file_path=df_filepath)
             else:
@@ -288,7 +286,7 @@ def get_show_year_data_state(stat_select_year_datetime: datetime.datetime):
                 st.session_state.df_year_stat = files.read_dataframe_from_path(file_path=df_filepath)
 
         else:  # 磁盘上不存在缓存
-            with st.spinner(d_lang[config.lang]["text_updating_yearly_stat"]):
+            with st.spinner(_t("text_updating_yearly_stat")):
                 st.session_state.df_year_stat = state.get_year_data_overview_scatter(stat_select_year_datetime)
                 files.save_dataframe_to_path(st.session_state.df_year_stat, file_path=df_filepath)
 
@@ -386,7 +384,7 @@ def web_footer_state():
     st.divider()
     col1, col2 = st.columns([1, .3])
     with col1:
-        st.markdown(d_lang[config.lang]["footer_info"].format(
+        st.markdown(_t("footer_info").format(
             first_record_time_str=st.session_state.footer_first_record_time_str,
             latest_record_time_str=st.session_state.footer_latest_record_time_str,
             latest_db_records=st.session_state.footer_latest_db_records,
@@ -397,13 +395,13 @@ def web_footer_state():
 
 
 # 主界面_________________________________________________________
-st.markdown(d_lang[config.lang]["main_title"])
+st.markdown(_t("main_title"))
 
-tab1, tab2, tab3, tab4, tab5 = st.tabs([d_lang[config.lang]["tab_name_oneday"],
-                                        d_lang[config.lang]["tab_name_search"],
-                                        d_lang[config.lang]["tab_name_stat"],
-                                        d_lang[config.lang]["tab_name_recording"],
-                                        d_lang[config.lang]["tab_name_setting"]])
+tab1, tab2, tab3, tab4, tab5 = st.tabs([_t("tab_name_oneday"),
+                                        _t("tab_name_search"),
+                                        _t("tab_name_stat"),
+                                        _t("tab_name_recording"),
+                                        _t("tab_name_setting")])
 
 # TAB：今天也是一天
 with tab1:
@@ -426,15 +424,15 @@ with tab1:
 
     col1, col2, col3, col4, col5, col6, col7 = st.columns([.4, .25, .25, .15, .25, .2, 1])
     with col1:
-        st.markdown(d_lang[config.lang]["oneday_title"])
+        st.markdown(_t("oneday_title"))
     with col2:
-        if st.button(d_lang[config.lang]["oneday_btn_yesterday"], use_container_width=True):
+        if st.button(_t("oneday_btn_yesterday"), use_container_width=True):
             st.session_state.day_date_input -= datetime.timedelta(days=1)
     with col3:
-        if st.button(d_lang[config.lang]["oneday_btn_tomorrow"], use_container_width=True):
+        if st.button(_t("oneday_btn_tomorrow"), use_container_width=True):
             st.session_state.day_date_input += datetime.timedelta(days=1)
     with col4:
-        if st.button(d_lang[config.lang]["oneday_btn_today"], use_container_width=True):
+        if st.button(_t("oneday_btn_today"), use_container_width=True):
             st.session_state.day_date_input = datetime.date.today()
     with col5:
         st.session_state.day_date_input = st.date_input("Today Date", label_visibility="collapsed",
@@ -460,8 +458,8 @@ with tab1:
 
         col1c, col2c, col3c, col4c, col5c = st.columns([1, 1.5, 1, 1, .5])
         with col1c:
-            if st.toggle(d_lang[config.lang]["oneday_toggle_search"],
-                         help=d_lang[config.lang]["oneday_toggle_search_help"]):
+            if st.toggle(_t("oneday_toggle_search"),
+                         help=_t("oneday_toggle_search_help")):
                 st.session_state.day_time_slider_disable = True
                 st.session_state.day_is_search_data = True
             else:
@@ -490,7 +488,7 @@ with tab1:
                     search_content=st.session_state.day_search_keyword)
 
 
-            st.session_state.day_search_keyword = st.text_input(d_lang[config.lang]["text_search_keyword"], 'Keyword',
+            st.session_state.day_search_keyword = st.text_input(_t("text_search_keyword"), 'Keyword',
                                                                 key=2, label_visibility="collapsed",
                                                                 disabled=not st.session_state.day_time_slider_disable)
             do_day_keyword_search()
@@ -502,10 +500,10 @@ with tab1:
             if st.session_state.day_is_search_data:
                 # 启用了搜索功能
                 if st.session_state.df_day_search_result.empty:
-                    st.markdown(d_lang[config.lang]["oneday_search_md_none"], unsafe_allow_html=True)
+                    st.markdown(_t("oneday_search_md_none"), unsafe_allow_html=True)
                 else:
                     result_num = st.session_state.df_day_search_result.shape[0]
-                    st.markdown(d_lang[config.lang]["oneday_search_md_result"].format(result_num=result_num),
+                    st.markdown(_t("oneday_search_md_result").format(result_num=result_num),
                                 unsafe_allow_html=True)
             else:
                 st.empty()
@@ -571,7 +569,7 @@ with tab1:
 
         # 展示时间轴缩略图
         def update_day_timeline_thumbnail():
-            with st.spinner(d_lang[config.lang]["oneday_text_generate_timeline_thumbnail"]):
+            with st.spinner(_t("oneday_text_generate_timeline_thumbnail")):
                 if OneDay().generate_preview_timeline_img(st.session_state.day_date_input,
                                                           img_saved_name=current_day_cloud_n_TL_img_name):
                     return True
@@ -604,7 +602,7 @@ with tab1:
             render_daily_timeline_html(utils.image_to_base64(current_day_TL_img_path))
             # st.image(image_thumbnail,use_column_width="always")
         else:
-            st.markdown(d_lang[config.lang]["oneday_md_no_enough_thunmbnail_for_timeline"], unsafe_allow_html=True)
+            st.markdown(_t("oneday_md_no_enough_thunmbnail_for_timeline"), unsafe_allow_html=True)
 
         # 可视化数据时间轴
         # day_chart_data_overview = OneDay().get_day_statistic_chart_overview(df = day_df, start = day_min_timestamp_dt.hour, end = day_max_timestamp_dt.hour+1)
@@ -614,8 +612,8 @@ with tab1:
                       color="#AC79D5")
 
         # 初始化懒加载状态
-        if 'catch_videofile_ondisk_list_oneday' not in st.session_state:  # 减少io查询，预拿视频文件列表供比对是否存在
-            st.session_state.catch_videofile_ondisk_list_oneday = files.get_file_path_list(config.record_videos_dir)
+        if 'cache_videofile_ondisk_list_oneday' not in st.session_state:  # 减少io查询，预拿视频文件列表供比对是否存在
+            st.session_state.cache_videofile_ondisk_list_oneday = files.get_file_path_list(config.record_videos_dir)
 
         # 视频展示区域
         col1a, col2a, col3a = st.columns([1, 3, 1])
@@ -625,7 +623,7 @@ with tab1:
                 # 如果是搜索视图，这里展示全部的搜索结果
                 df_day_search_result_refine = DBManager().db_refine_search_data_day(
                     st.session_state.df_day_search_result,
-                    catch_videofile_ondisk_list=st.session_state.catch_videofile_ondisk_list_oneday)  # 优化下数据展示
+                    cache_videofile_ondisk_list=st.session_state.cache_videofile_ondisk_list_oneday)  # 优化下数据展示
                 draw_dataframe(df_day_search_result_refine)
             else:
                 # # 时间轴拖动视图 - 切换前后视频片段
@@ -703,14 +701,14 @@ with tab1:
                     st.session_state.df_day_search_result, st.session_state.day_search_result_index_num)
                 if day_is_video_ondisk:
                     show_n_locate_video_timestamp_by_filename_n_time(day_video_file_name, shown_timestamp)
-                    st.markdown(d_lang[config.lang]["oneday_md_rewinding_video_name"].format(
+                    st.markdown(_t("oneday_md_rewinding_video_name").format(
                         day_video_file_name=day_video_file_name))
                 else:
-                    st.info(d_lang[config.lang]["oneday_text_not_found_vid_but_has_data"], icon="🎐")
+                    st.info(_t("oneday_text_not_found_vid_but_has_data"), icon="🎐")
                     found_row = st.session_state.df_day_search_result.loc[
                         st.session_state.day_search_result_index_num].to_frame().T
                     found_row = DBManager().db_refine_search_data_day(found_row,
-                                                                      catch_videofile_ondisk_list=st.session_state.catch_videofile_ondisk_list_oneday)  # 优化下数据展示
+                                                                      cache_videofile_ondisk_list=st.session_state.cache_videofile_ondisk_list_oneday)  # 优化下数据展示
                     draw_dataframe(found_row, heightIn=0)
 
             else:
@@ -728,7 +726,7 @@ with tab1:
                     select_timestamp = utils.datetime_to_seconds(day_full_select_datetime)
                     shown_timestamp = select_timestamp - vidfile_timestamp
                     show_n_locate_video_timestamp_by_filename_n_time(day_video_file_name, shown_timestamp)
-                    st.markdown(d_lang[config.lang]["oneday_md_rewinding_video_name"].format(
+                    st.markdown(_t("oneday_md_rewinding_video_name").format(
                         day_video_file_name=day_video_file_name))
                 else:
                     # 没有对应的视频，查一下有无索引了的数据
@@ -736,23 +734,23 @@ with tab1:
                                                                                        utils.datetime_to_seconds(
                                                                                            day_full_select_datetime))
                     if is_data_found:
-                        st.info(d_lang[config.lang]["oneday_text_not_found_vid_but_has_data"], icon="🎐")
+                        st.info(_t("oneday_text_not_found_vid_but_has_data"), icon="🎐")
                         found_row = DBManager().db_refine_search_data_day(found_row,
-                                                                          catch_videofile_ondisk_list=st.session_state.catch_videofile_ondisk_list_oneday)  # 优化下数据展示
+                                                                          cache_videofile_ondisk_list=st.session_state.cache_videofile_ondisk_list_oneday)  # 优化下数据展示
                         draw_dataframe(found_row, heightIn=0)
                     else:
                         # 如果是当天第一次打开但数据库正在索引因而无法访问
                         if st.session_state.day_date_input == utils.set_full_datetime_to_YYYY_MM_DD(
                                 datetime.datetime.today()) and utils.is_maintain_lock_file_valid():
-                            st.warning(d_lang[config.lang]["oneday_text_data_indexing_wait_and_refresh"], icon="🦫")
+                            st.warning(_t("oneday_text_data_indexing_wait_and_refresh"), icon="🦫")
                         else:
-                            st.warning(d_lang[config.lang]["oneday_text_no_found_record_and_vid_on_disk"], icon="🦫")
+                            st.warning(_t("oneday_text_no_found_record_and_vid_on_disk"), icon="🦫")
 
         with col3a:
             if config.show_oneday_wordcloud:
                 # 是否展示当天词云
                 def update_day_word_cloud():
-                    with st.spinner(d_lang[config.lang]["oneday_text_generate_word_cloud"]):
+                    with st.spinner(_t("oneday_text_generate_word_cloud")):
                         day_input_datetime_finetune = datetime.datetime(st.session_state.day_date_input.year,
                                                                         st.session_state.day_date_input.month,
                                                                         st.session_state.day_date_input.day, 0, 0, 2)
@@ -775,14 +773,14 @@ with tab1:
                     image = Image.open(current_day_cloud_img_path)
                     st.image(image)
                 except Exception as e:
-                    st.exception(d_lang[config.lang]["text_cannot_open_img"] + e)
+                    st.exception(_t("text_cannot_open_img") + e)
 
 
                 def update_wordcloud_btn_clicked():
                     st.session_state.update_wordcloud_button_disabled = True
 
 
-                if st.button(d_lang[config.lang]["oneday_btn_update_word_cloud"], key="refresh_day_cloud",
+                if st.button(_t("oneday_btn_update_word_cloud"), key="refresh_day_cloud",
                              use_container_width=True,
                              disabled=st.session_state.get("update_wordcloud_button_disabled", False),
                              on_click=update_wordcloud_btn_clicked):
@@ -794,16 +792,16 @@ with tab1:
                         st.session_state.update_wordcloud_button_disabled = False
                         st.experimental_rerun()
             else:
-                st.markdown(d_lang[config.lang]["oneday_md_word_cloud_turn_off"], unsafe_allow_html=True)
+                st.markdown(_t("oneday_md_word_cloud_turn_off"), unsafe_allow_html=True)
 
 
     else:
         # 数据库中没有今天的记录
         # 判断videos下有无今天的视频文件
         if files.find_filename_in_dir("videos", utils.datetime_to_dateDayStr(dt_in)):
-            st.info(d_lang[config.lang]["oneday_text_has_vid_but_not_index"], icon="📎")
+            st.info(_t("oneday_text_has_vid_but_not_index"), icon="📎")
         else:
-            st.info(d_lang[config.lang]["oneday_text_vid_and_data_not_found"], icon="🎐")
+            st.info(_t("oneday_text_vid_and_data_not_found"), icon="🎐")
 
 # tab：全局关键词搜索
 if 'db_global_search_result' not in st.session_state:
@@ -825,16 +823,16 @@ with tab2:
             st.session_state.search_date_range_in = datetime.datetime.today() - datetime.timedelta(seconds=86400)
         if 'search_date_range_out' not in st.session_state:
             st.session_state.search_date_range_out = datetime.datetime.today()
-        if 'catch_videofile_ondisk_list' not in st.session_state:  # 减少io查询，预拿视频文件列表供比对是否存在
-            st.session_state.catch_videofile_ondisk_list = files.get_file_path_list(config.record_videos_dir)
+        if 'cache_videofile_ondisk_list' not in st.session_state:  # 减少io查询，预拿视频文件列表供比对是否存在
+            st.session_state.cache_videofile_ondisk_list = files.get_file_path_list(config.record_videos_dir)
 
         col1_gstype, col2_gstype = st.columns([10, 1])
         with col1_gstype:
-            st.markdown(d_lang[config.lang]["gs_md_search_title"])
+            st.markdown(_t("gs_md_search_title"))
         with col2_gstype:
             # st.selectbox("搜索方式", ('关键词匹配','模糊语义搜索 [不可用]','画面内容搜索 [不可用]'),label_visibility="collapsed")
             if not wordcloud.check_if_word_lexicon_empty():
-                if st.button("🎲", use_container_width=True, help=d_lang[config.lang]["gs_text_randomwalk"]):
+                if st.button("🎲", use_container_width=True, help=_t("gs_text_randomwalk")):
                     try:
                         st.session_state.search_content = utils.get_random_word_from_lexicon()
                     except Exception as e:
@@ -891,19 +889,19 @@ with tab2:
 
         col1a, col2a, col3a, col4a = st.columns([2, 1, 2, 1])
         with col1a:
-            st.session_state.search_content = st.text_input(d_lang[config.lang]["text_search_keyword"],
-                                                            help=d_lang[config.lang]["gs_input_search_help"])
+            st.session_state.search_content = st.text_input(_t("text_search_keyword"),
+                                                            help=_t("gs_input_search_help"))
 
             do_global_keyword_search()
         with col2a:
-            st.session_state.search_content_exclude = st.text_input(d_lang[config.lang]["gs_input_exclude"], "",
-                                                                    help=d_lang[config.lang]["gs_input_exclude_help"])
+            st.session_state.search_content_exclude = st.text_input(_t("gs_input_exclude"), "",
+                                                                    help=_t("gs_input_exclude_help"))
             do_global_keyword_search()
         with col3a:
 
             try:
                 st.session_state.search_date_range_in, st.session_state.search_date_range_out = st.date_input(
-                    d_lang[config.lang]["text_search_daterange"],
+                    _t("text_search_daterange"),
                     (datetime.datetime(1970, 1, 2)
                      + datetime.timedelta(seconds=st.session_state.search_earlist_record_time_int)
                      - datetime.timedelta(seconds=86400),
@@ -915,11 +913,11 @@ with tab2:
                 )
                 do_global_keyword_search()
             except:
-                st.warning(d_lang[config.lang]["gs_text_pls_choose_full_date_range"])
+                st.warning(_t("gs_text_pls_choose_full_date_range"))
 
         with col4a:
             # 结果翻页器
-            st.session_state.page_index = st.number_input(d_lang[config.lang]["gs_input_result_page"], min_value=1,
+            st.session_state.page_index = st.number_input(_t("gs_input_result_page"), min_value=1,
                                                           step=1, max_value=st.session_state.max_page_count + 1)
 
         # 进行搜索
@@ -931,7 +929,7 @@ with tab2:
 
             is_df_result_exist = len(df)
 
-            st.markdown(d_lang[config.lang]["gs_md_search_result_stat"].format(
+            st.markdown(_t("gs_md_search_result_stat").format(
                 all_result_counts=st.session_state.all_result_counts, max_page_count=st.session_state.max_page_count,
                 search_content=st.session_state.search_content, timeCost=timeCost_globalSearch))
 
@@ -940,19 +938,19 @@ with tab2:
 
             if len(df) == 0:
                 st.info(
-                    d_lang[config.lang]["text_search_not_found"].format(search_content=st.session_state.search_content),
+                    _t("text_search_not_found").format(search_content=st.session_state.search_content),
                     icon="🎐")
             else:
                 # 打表
                 df = DBManager().db_refine_search_data_global(df,
-                                                              catch_videofile_ondisk_list=st.session_state.catch_videofile_ondisk_list)  # 优化数据显示
+                                                              cache_videofile_ondisk_list=st.session_state.cache_videofile_ondisk_list)  # 优化数据显示
                 draw_dataframe(df, heightIn=800)
 
             timeCost_globalSearch = round(time.time() - timeCost_globalSearch, 5)
-            st.markdown(d_lang[config.lang]["gs_md_search_result_below"].format(timecost=timeCost_globalSearch))
+            st.markdown(_t("gs_md_search_result_below").format(timecost=timeCost_globalSearch))
 
         else:
-            st.info(d_lang[config.lang]["gs_text_intro"])
+            st.info(_t("gs_text_intro"))
 
     with col2:
         # 选择视频
@@ -980,7 +978,7 @@ with tab3:
             selector_month_min = st.session_state.stat_db_earliest_datetime.month
             selector_month_max = st.session_state.stat_db_latest_datetime.month
 
-        st.markdown(d_lang[config.lang]["stat_md_month_title"])
+        st.markdown(_t("stat_md_month_title"))
         col1a, col2a, col3a = st.columns([.5, .5, 1])
         with col1a:
             st.session_state.Stat_query_Year = st.number_input(label="Stat_query_Year",
@@ -1001,11 +999,11 @@ with tab3:
         get_show_month_data_state(st.session_state.stat_select_month_datetime)  # 显示当月概览
 
         stat_year_title = st.session_state.stat_select_month_datetime.year
-        st.markdown(d_lang[config.lang]["stat_md_year_title"].format(stat_year_title=stat_year_title))
+        st.markdown(_t("stat_md_year_title").format(stat_year_title=stat_year_title))
         get_show_year_data_state(st.session_state.stat_select_month_datetime)  # 显示当年概览
 
     with col2:
-        st.markdown(d_lang[config.lang]["stat_md_memory_title"])
+        st.markdown(_t("stat_md_memory_title"))
 
         col1_mem, col2_mem = st.columns([1, 1])
         with col1_mem:
@@ -1013,8 +1011,8 @@ with tab3:
                 st.session_state.Stat_query_Month) + ".png"
             current_month_cloud_img_path = os.path.join(config.wordcloud_result_dir, current_month_cloud_img_name)
 
-            if st.button(d_lang[config.lang]["stat_btn_generate_update_word_cloud"]):
-                with st.spinner(d_lang[config.lang]["stat_text_generating_word_cloud"]):
+            if st.button(_t("stat_btn_generate_update_word_cloud")):
+                with st.spinner(_t("stat_text_generating_word_cloud")):
                     wordcloud.generate_word_cloud_in_month(
                         utils.datetime_to_seconds(st.session_state.stat_select_month_datetime),
                         current_month_cloud_img_name)
@@ -1023,15 +1021,15 @@ with tab3:
                 image = Image.open(current_month_cloud_img_path)
                 st.image(image, caption=current_month_cloud_img_path)
             else:
-                st.info(d_lang[config.lang]["stat_text_no_month_word_cloud_pic"])
+                st.info(_t("stat_text_no_month_word_cloud_pic"))
 
         with col2_mem:
             current_month_lightbox_img_name = str(st.session_state.Stat_query_Year) + "-" + str(
                 st.session_state.Stat_query_Month) + ".png"
             current_month_lightbox_img_path = os.path.join(config.lightbox_result_dir, current_month_lightbox_img_name)
 
-            if st.button(d_lang[config.lang]["stat_btn_generate_lightbox"]):
-                with st.spinner(d_lang[config.lang]["stat_text_generating_lightbox"]):
+            if st.button(_t("stat_btn_generate_lightbox")):
+                with st.spinner(_t("stat_text_generating_lightbox")):
                     state.generate_month_lightbox(st.session_state.stat_select_month_datetime,
                                                   img_saved_name=current_month_lightbox_img_name)
 
@@ -1039,14 +1037,14 @@ with tab3:
                 image = Image.open(current_month_lightbox_img_path)
                 st.image(image, caption=current_month_lightbox_img_path)
             else:
-                st.info(d_lang[config.lang]["stat_text_no_month_lightbox"])
+                st.info(_t("stat_text_no_month_lightbox"))
 
 with tab4:
-    st.markdown(d_lang[config.lang]["rs_md_title"])
+    st.markdown(_t("rs_md_title"))
 
     col1c, col2c, col3c = st.columns([1, .5, 1.5])
     with col1c:
-        st.info(d_lang[config.lang]["rs_text_need_to_restart_after_save_setting"])
+        st.info(_t("rs_text_need_to_restart_after_save_setting"))
 
 
         # 手动检查录屏服务有无进行中
@@ -1068,77 +1066,77 @@ with tab4:
             st.session_state.update_btn_dis_record = False
 
 
-        btn_refresh = st.button(d_lang[config.lang]["rs_btn_check_record_stat"], on_click=update_record_btn_state)
+        btn_refresh = st.button(_t("rs_btn_check_record_stat"), on_click=update_record_btn_state)
 
         if st.session_state.update_btn_refresh_press:
 
             if record.is_recording():
-                st.success(d_lang[config.lang]["rs_text_recording_screen_now"], icon="🦚")
+                st.success(_t("rs_text_recording_screen_now"), icon="🦚")
                 # stop_record_btn = st.button('停止录制屏幕', type="secondary",disabled=st.session_state.get("update_btn_dis_record",False),on_click=update_record_service_btn_clicked)
                 # if stop_record_btn:
                 #     st.toast("正在结束录屏进程……")
                 #     utils.kill_recording()
 
             else:
-                st.error(d_lang[config.lang]["rs_text_not_recording_screen"], icon="🦫")
-                start_record_btn = st.button(d_lang[config.lang]["rs_btn_start_record"], type="primary",
+                st.error(_t("rs_text_not_recording_screen"), icon="🦫")
+                start_record_btn = st.button(_t("rs_btn_start_record"), type="primary",
                                              disabled=st.session_state.get("update_btn_dis_record", False),
                                              on_click=update_record_service_btn_clicked)
                 if start_record_btn:
                     os.startfile('start_record.bat', 'open')
-                    st.toast(d_lang[config.lang]["rs_text_starting_record"])
+                    st.toast(_t("rs_text_starting_record"))
                     st.session_state.update_btn_refresh_press = False
 
         # st.warning("录制服务已启用。当前暂停录制屏幕。",icon="🦫")
         st.divider()
-        st.markdown(d_lang[config.lang]["rs_md_record_setting_title"])
+        st.markdown(_t("rs_md_record_setting_title"))
 
         col1_record, col2_record = st.columns([1, 1])
         with col1_record:
             if 'is_create_startup_shortcut' not in st.session_state:
                 st.session_state.is_create_startup_shortcut = record.is_file_already_in_startup('start_record.bat.lnk')
             st.session_state.is_create_startup_shortcut = st.checkbox(
-                d_lang[config.lang]["rs_checkbox_start_record_when_startup"],
+                _t("rs_checkbox_start_record_when_startup"),
                 value=record.is_file_already_in_startup('start_record.bat.lnk'),
                 on_change=record.create_startup_shortcut(is_create=st.session_state.is_create_startup_shortcut),
-                help=d_lang[config.lang]["rs_checkbox_start_record_when_startup_help"])
+                help=_t("rs_checkbox_start_record_when_startup_help"))
 
         with col2_record:
-            st.markdown(d_lang[config.lang]["rs_md_only_support_main_monitor"], unsafe_allow_html=True)
+            st.markdown(_t("rs_md_only_support_main_monitor"), unsafe_allow_html=True)
 
         screentime_not_change_to_pause_record = st.number_input(
-            d_lang[config.lang]["rs_input_stop_recording_when_screen_freeze"],
+            _t("rs_input_stop_recording_when_screen_freeze"),
             value=config.screentime_not_change_to_pause_record, min_value=0)
 
         st.divider()
 
         # 自动化维护选项 WIP
-        st.markdown(d_lang[config.lang]["set_md_auto_maintain"])
+        st.markdown(_t("set_md_auto_maintain"))
         ocr_strategy_option_dict = {
-            d_lang[config.lang]["rs_text_ocr_manual_update"]: 0,
-            d_lang[config.lang]["rs_text_ocr_auto_update"]: 1
+            _t("rs_text_ocr_manual_update"): 0,
+            _t("rs_text_ocr_auto_update"): 1
         }
-        ocr_strategy_option = st.selectbox(d_lang[config.lang]["rs_selectbox_ocr_strategy"],
+        ocr_strategy_option = st.selectbox(_t("rs_selectbox_ocr_strategy"),
                                            (list(ocr_strategy_option_dict.keys())),
                                            index=config.OCR_index_strategy
                                            )
 
         col1d, col2d, col3d = st.columns([1, 1, 1])
         with col1d:
-            vid_store_day = st.number_input(d_lang[config.lang]["set_input_video_hold_days"], min_value=0,
+            vid_store_day = st.number_input(_t("set_input_video_hold_days"), min_value=0,
                                             value=config.vid_store_day,
-                                            help=d_lang[config.lang]["rs_input_vid_store_time_help"])
+                                            help=_t("rs_input_vid_store_time_help"))
         with col2d:
-            vid_compress_day = st.number_input(d_lang[config.lang]["rs_input_vid_compress_time"],
+            vid_compress_day = st.number_input(_t("rs_input_vid_compress_time"),
                                                value=config.vid_compress_day, min_value=0,
-                                               help=d_lang[config.lang]["rs_input_vid_compress_time_help"])
+                                               help=_t("rs_input_vid_compress_time_help"))
         with col3d:
             video_compress_selectbox_dict = {'0.75': 0, '0.5': 1, '0.25': 2}
-            video_compress_rate_selectbox = st.selectbox(d_lang[config.lang]["rs_selectbox_compress_ratio"],
+            video_compress_rate_selectbox = st.selectbox(_t("rs_selectbox_compress_ratio"),
                                                          list(video_compress_selectbox_dict.keys()),
                                                          index=video_compress_selectbox_dict[
                                                              config.video_compress_rate],
-                                                         help=d_lang[config.lang]["rs_selectbox_compress_ratio_help"])
+                                                         help=_t("rs_selectbox_compress_ratio_help"))
 
         st.divider()
 
@@ -1148,7 +1146,7 @@ with tab4:
             config.set_and_save_config("vid_store_day", vid_store_day)
             config.set_and_save_config("vid_compress_day", vid_compress_day)
             config.set_and_save_config("video_compress_rate", video_compress_rate_selectbox)
-            st.toast(d_lang[config.lang]["utils_toast_setting_saved"], icon="🦝")
+            st.toast(_t("utils_toast_setting_saved"), icon="🦝")
             time.sleep(2)
             st.experimental_rerun()
 
@@ -1166,46 +1164,46 @@ def update_database_clicked():
 
 # 设置页
 with tab5:
-    st.markdown(d_lang[config.lang]["set_md_title"])
+    st.markdown(_t("set_md_title"))
 
     col1b, col2b, col3b = st.columns([1, .5, 1.5])
     with col1b:
         # 更新数据库
-        st.markdown(d_lang[config.lang]["set_md_index_db"])
+        st.markdown(_t("set_md_index_db"))
 
         # 绘制数据库提示横幅
         draw_db_status()
 
         col1, col2 = st.columns([1, 1])
         with col1:
-            update_db_btn = st.button(d_lang[config.lang]["set_btn_update_db_manual"], type="secondary",
+            update_db_btn = st.button(_t("set_btn_update_db_manual"), type="secondary",
                                       key='update_button_key',
                                       disabled=st.session_state.get("update_button_disabled", False),
                                       on_click=update_database_clicked)
             is_shutdown_pasocon_after_updatedDB = st.checkbox(
-                d_lang[config.lang]["set_checkbox_shutdown_after_updated"], value=False,
+                _t("set_checkbox_shutdown_after_updated"), value=False,
                 disabled=st.session_state.get("update_button_disabled", False))
 
         with col2:
             # 设置ocr引擎
             if config.enable_ocr_chineseocr_lite_onnx:
                 check_ocr_engine()
-                config_ocr_engine = st.selectbox(d_lang[config.lang]["set_selectbox_local_ocr_engine"],
+                config_ocr_engine = st.selectbox(_t("set_selectbox_local_ocr_engine"),
                                                  ('Windows.Media.Ocr.Cli', 'ChineseOCR_lite_onnx'),
                                                  index=config_ocr_engine_choice_index,
-                                                 help=d_lang[config.lang]["set_selectbox_local_ocr_engine_help"]
+                                                 help=_t("set_selectbox_local_ocr_engine_help")
                                                  )
 
             # 设定ocr引擎语言
             check_ocr_lang()
-            config_ocr_lang = st.selectbox(d_lang[config.lang]["set_selectbox_ocr_lang"], os_support_lang_list,
+            config_ocr_lang = st.selectbox(_t("set_selectbox_ocr_lang"), os_support_lang_list,
                                            index=config_ocr_lang_choice_index,
                                            )
 
             # 设置排除词
-            exclude_words = st.text_area(d_lang[config.lang]["set_input_exclude_word"],
+            exclude_words = st.text_area(_t("set_input_exclude_word"),
                                          value=utils.list_to_string(config.exclude_words),
-                                         help=d_lang[config.lang]["set_input_exclude_word_help"])
+                                         help=_t("set_input_exclude_word_help"))
 
         # 更新数据库按钮
         if update_db_btn:
@@ -1213,7 +1211,7 @@ with tab5:
                 st.divider()
                 estimate_time_str = utils.estimate_indexing_time()  # 预估剩余时间
                 with st.spinner(
-                        d_lang[config.lang]["set_text_updating_db"].format(estimate_time_str=estimate_time_str)):
+                        _t("set_text_updating_db").format(estimate_time_str=estimate_time_str)):
                     timeCost = time.time()  # 预埋计算实际时长
                     maintainManager.maintain_manager_main()  # 更新数据库
 
@@ -1222,23 +1220,23 @@ with tab5:
                 st.exception(ex)
             else:
                 timeCostStr = utils.convert_seconds_to_hhmmss(timeCost)
-                st.success(d_lang[config.lang]["set_text_db_updated_successful"].format(timeCostStr=timeCostStr),
+                st.success(_t("set_text_db_updated_successful").format(timeCostStr=timeCostStr),
                            icon="🧃")
             finally:
                 if is_shutdown_pasocon_after_updatedDB:
                     subprocess.run(["shutdown", "-s", "-t", "60"], shell=True)
                 st.snow()
                 st.session_state.update_button_disabled = False
-                st.button(d_lang[config.lang]["set_btn_got_it"], key=reset_button_key)
+                st.button(_t("set_btn_got_it"), key=reset_button_key)
 
         st.divider()
         col1pb, col2pb = st.columns([1, 1])
         with col1pb:
-            st.markdown(d_lang[config.lang]["set_md_ocr_ignore_area"],
-                        help=d_lang[config.lang]["set_md_ocr_ignore_area_help"])
+            st.markdown(_t("set_md_ocr_ignore_area"),
+                        help=_t("set_md_ocr_ignore_area_help"))
         with col2pb:
             st.session_state.ocr_screenshot_refer_used = st.toggle(
-                d_lang[config.lang]["set_toggle_use_screenshot_as_refer"], False)
+                _t("set_toggle_use_screenshot_as_refer"), False)
 
         if 'ocr_padding_top' not in st.session_state:
             st.session_state.ocr_padding_top = config.ocr_image_crop_URBL[0]
@@ -1251,18 +1249,18 @@ with tab5:
 
         col1pa, col2pa, col3pa = st.columns([.5, .5, 1])
         with col1pa:
-            st.session_state.ocr_padding_top = st.number_input(d_lang[config.lang]["set_text_top_padding"],
+            st.session_state.ocr_padding_top = st.number_input(_t("set_text_top_padding"),
                                                                value=st.session_state.ocr_padding_top, min_value=0,
                                                                max_value=40)
-            st.session_state.ocr_padding_bottom = st.number_input(d_lang[config.lang]["set_text_bottom_padding"],
+            st.session_state.ocr_padding_bottom = st.number_input(_t("set_text_bottom_padding"),
                                                                   value=st.session_state.ocr_padding_bottom,
                                                                   min_value=0, max_value=40)
 
         with col2pa:
-            st.session_state.ocr_padding_left = st.number_input(d_lang[config.lang]["set_text_left_padding"],
+            st.session_state.ocr_padding_left = st.number_input(_t("set_text_left_padding"),
                                                                 value=st.session_state.ocr_padding_left, min_value=0,
                                                                 max_value=40)
-            st.session_state.ocr_padding_right = st.number_input(d_lang[config.lang]["set_text_right_padding"],
+            st.session_state.ocr_padding_right = st.number_input(_t("set_text_right_padding"),
                                                                  value=st.session_state.ocr_padding_right, min_value=0,
                                                                  max_value=40)
         with col3pa:
@@ -1279,31 +1277,31 @@ with tab5:
         # 界面设置组
         col1_ui, col2_ui = st.columns([1, 1])
         with col1_ui:
-            st.markdown(d_lang[config.lang]["set_md_gui"])
-            option_show_oneday_wordcloud = st.checkbox(d_lang[config.lang]["set_checkbox_show_wordcloud_under_oneday"],
+            st.markdown(_t("set_md_gui"))
+            option_show_oneday_wordcloud = st.checkbox(_t("set_checkbox_show_wordcloud_under_oneday"),
                                                        value=config.show_oneday_wordcloud)
             # 使用中文形近字进行搜索
             config_use_similar_ch_char_to_search = st.checkbox(
-                d_lang[config.lang]["set_checkbox_use_similar_zh_char_to_search"],
+                _t("set_checkbox_use_similar_zh_char_to_search"),
                 value=config.use_similar_ch_char_to_search,
-                help=d_lang[config.lang]["set_checkbox_use_similar_zh_char_to_search_help"])
+                help=_t("set_checkbox_use_similar_zh_char_to_search_help"))
         with col2_ui:
-            config_wordcloud_user_stop_words = st.text_area(d_lang[config.lang]["set_input_wordcloud_filter"],
-                                                            help=d_lang[config.lang]["set_input_wordcloud_filter_help"],
+            config_wordcloud_user_stop_words = st.text_area(_t("set_input_wordcloud_filter"),
+                                                            help=_t("set_input_wordcloud_filter_help"),
                                                             value=utils.list_to_string(
                                                                 config.wordcloud_user_stop_words))
 
         # 每页结果最大数量
         col1_ui2, col2_ui2 = st.columns([1, 1])
         with col1_ui2:
-            config_max_search_result_num = st.number_input(d_lang[config.lang]["set_input_max_num_search_page"],
+            config_max_search_result_num = st.number_input(_t("set_input_max_num_search_page"),
                                                            min_value=1,
                                                            max_value=500, value=config.max_page_result)
         with col2_ui2:
-            config_oneday_timeline_num = st.number_input(d_lang[config.lang]["set_input_oneday_timeline_thumbnail_num"],
+            config_oneday_timeline_num = st.number_input(_t("set_input_oneday_timeline_thumbnail_num"),
                                                          min_value=50, max_value=100,
-                                                         value=config.oneday_timeline_pic_num, help=d_lang[config.lang][
-                    "set_input_oneday_timeline_thumbnail_num_help"])
+                                                         value=config.oneday_timeline_pic_num, help=_t(
+                    "set_input_oneday_timeline_thumbnail_num_help"))
 
         # 选择语言
         lang_choice = OrderedDict((k, '' + v) for k, v in lang_map.items())  # 根据读入列表排下序
@@ -1328,7 +1326,7 @@ with tab5:
             config.set_and_save_config("wordcloud_user_stop_words",
                                        utils.string_to_list(config_wordcloud_user_stop_words))
             config.set_and_save_config("oneday_timeline_pic_num", config_oneday_timeline_num)
-            st.toast(d_lang[config.lang]["utils_toast_setting_saved"], icon="🦝")
+            st.toast(_t("utils_toast_setting_saved"), icon="🦝")
             time.sleep(1)
             st.experimental_rerun()
 
@@ -1340,20 +1338,20 @@ with tab5:
 
         # 更新提醒
         if 'update_info' not in st.session_state:
-            st.session_state['update_info'] = d_lang[config.lang]["set_update_checking"]
+            st.session_state['update_info'] = _t("set_update_checking")
 
         if 'update_check' not in st.session_state:
             try:
-                with st.spinner(d_lang[config.lang]["set_update_checking"]):
+                with st.spinner(_t("set_update_checking")):
                     tool_version, tool_update_date = utils.get_github_version_and_date()
                     tool_local_version, tool_local_update_date = utils.get_current_version_and_update()
                 if tool_update_date > tool_local_update_date:
-                    st.session_state.update_info = d_lang[config.lang]["set_update_new"].format(
+                    st.session_state.update_info = _t("set_update_new").format(
                         tool_version=tool_version)
                 else:
-                    st.session_state.update_info = d_lang[config.lang]["set_update_latest"]
+                    st.session_state.update_info = _t("set_update_latest")
             except Exception as e:
-                st.session_state.update_info = d_lang[config.lang]["set_update_fail"].format(e=e)
+                st.session_state.update_info = _t("set_update_fail").format(e=e)
 
             st.session_state['update_check'] = True
 
@@ -1365,7 +1363,7 @@ with tab5:
         about_path = "config\\src\\meta.json"
         with open(about_path, 'r', encoding='utf-8') as f:
             about_json = json.load(f)
-        about_markdown = Path("config\\src\\about_" + config.lang + ".md").read_text(encoding='utf-8').format(
+        about_markdown = Path(f"config\\src\\about_{config.lang}.md").read_text(encoding='utf-8').format(
             version=about_json["version"], update_date=about_json["update_date"],
             update_info=st.session_state.update_info)
         st.markdown(about_markdown, unsafe_allow_html=True)

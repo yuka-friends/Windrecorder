@@ -6,18 +6,18 @@ from pyshortcuts import make_shortcut
 import pyautogui
 import subprocess
 from send2trash import send2trash
+from windrecorder.config import config
 
 # 检测是否正在录屏
 def is_recording():
     try:
-        with open("catch\\LOCK_FILE_RECORD.MD", encoding='utf-8') as f:
+        with open(config.record_lock_path, encoding='utf-8') as f:
             check_pid = int(f.read())
 
         check_result = subprocess.run(['tasklist'], stdout=subprocess.PIPE, text=True)
         check_output = check_result.stdout
         check_result = subprocess.run(['findstr', str(check_pid)], input=check_output, stdout=subprocess.PIPE, text=True)
         check_output = check_result.stdout
-        global state_is_recording
         if "python" in check_output:
             state_is_recording = True
             print(f"record: state_is_recording:{state_is_recording}")

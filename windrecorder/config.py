@@ -2,10 +2,18 @@ import json
 import os
 import shutil
 
+
+config_name = "config_user.json"
+config_name_default = "src\\config_default.json"
+config_dir = "config"
+default_config_path = os.path.join(config_dir, config_name_default)
+user_config_path = os.path.join(config_dir, config_name)
+
+
 class Config:
     def __init__(
         self,
-        db_path, 
+        db_path,
         db_filename,
         record_videos_dir,
         record_seconds,
@@ -31,7 +39,10 @@ class Config:
         video_compress_rate,
         oneday_timeline_pic_num,
         enable_ocr_chineseocr_lite_onnx,
-        **other_field
+        maintain_lock_path='cache\\LOCK_MAINTAIN.MD',
+        record_lock_path="cache\\LOCK_FILE_RECORD.MD",
+        last_idle_maintain_file_path="cache\\LAST_IDLE_MAINTAIN.MD",
+        **other_field,
     ) -> None:
         self.db_path = db_path
         self.db_filename = db_filename
@@ -47,11 +58,13 @@ class Config:
         self.wordcloud_user_stop_words = wordcloud_user_stop_words
         self.vid_store_day = vid_store_day
         self.vid_compress_day = vid_compress_day
-        self.OCR_index_strategy = OCR_index_strategy # 0=不自动索引，1=每录制完一个切片进行索引
+        self.OCR_index_strategy = OCR_index_strategy  # 0=不自动索引，1=每录制完一个切片进行索引
         self.wordcloud_result_dir = wordcloud_result_dir
         self.timeline_result_dir = timeline_result_dir
         self.lightbox_result_dir = lightbox_result_dir
-        self.screentime_not_change_to_pause_record = screentime_not_change_to_pause_record
+        self.screentime_not_change_to_pause_record = (
+            screentime_not_change_to_pause_record
+        )
         self.show_oneday_wordcloud = show_oneday_wordcloud
         self.user_name = user_name
         self.use_similar_ch_char_to_search = use_similar_ch_char_to_search
@@ -60,13 +73,16 @@ class Config:
         self.video_compress_rate = video_compress_rate
         self.oneday_timeline_pic_num = oneday_timeline_pic_num
         self.enable_ocr_chineseocr_lite_onnx = enable_ocr_chineseocr_lite_onnx
-    
+        self.maintain_lock_path = maintain_lock_path
+        self.record_lock_path = record_lock_path
+        self.last_idle_maintain_file_path = last_idle_maintain_file_path
+
     def set_and_save_config(self, attr: str, value):
         if not hasattr(self, attr):
             raise AttributeError("{} not exist in config!".format(attr))
         setattr(self, attr, value)
         self.save_config()
-    
+
     def save_config(self):
         # 读取 config.json 获取旧设置
         config_json = get_config_json()
@@ -77,70 +93,47 @@ class Config:
         # 去除不必要的字段
         self.filter_unwanted_field(config_json)
         # 写入 config.json 文件
-        with open(config_path, 'w', encoding='utf-8') as f:
+        with open(user_config_path, "w", encoding="utf-8") as f:
             json.dump(config_json, f, indent=2, ensure_ascii=False)
-    
+
     def filter_unwanted_field(self, config_json):
         del config_json["db_filepath"]
         return config_json
-    
-
-
-
-
-
-
-config_name = 'config_user.json'
-config_name_default = 'src\\config_default.json'
-config_dir = 'config'
-config_path = os.path.join(config_dir,config_name)
-
-
-
-
 
 
 # 从default config中更新user config（升级用）
-def update_config_files_from_default_to_user(
-        a_path = os.path.join(config_dir, config_name_default), 
-        b_path =  os.path.join(config_dir, config_name)
-        ):
-    # 读取A.json文件
-    with open(a_path, 'r', encoding='utf-8') as a_file:
-        a_data = json.load(a_file)
-    # 读取B.json文件
-    with open(b_path, 'r', encoding='utf-8') as b_file:
-        b_data = json.load(b_file)
-    # 将A中有的、B中没有的属性从A写入B中
-    for key, value in a_data.items():
-        if key not in b_data:
-            b_data[key] = value
-    # 将A中没有的、B中有的属性从B中删除
-    keys_to_remove = [key for key in b_data.keys() if key not in a_data]
+def update_config_files_from_default_to_user():
+    with open(default_config_path, "r", encoding="utf-8") as f:
+        default_data = json.load(f)
+
+    with open(user_config_path, "r", encoding="utf-8") as f:
+        user_data = json.load(f)
+
+    # 将 default 中有的、user 中没有的属性从 default 写入 user中
+    for key, value in default_data.items():
+        if key not in user_data:
+            user_data[key] = value
+    # 将 default 中没有的、user 中有的属性从 user 中删除
+    keys_to_remove = [key for key in user_data.keys() if key not in default_data]
     for key in keys_to_remove:
-        del b_data[key]
-    # 将更新后的B数据写入B.json文件
-    with open(b_path, 'w', encoding='utf-8') as b_file:
-        json.dump(b_data, b_file, indent=2, ensure_ascii=False)
-    
+        del user_data[key]
+    # 将更新后的 default 数据写入 user.json 文件
+    with open(user_config_path, "w", encoding="utf-8") as f:
+        json.dump(user_data, f, indent=2, ensure_ascii=False)
+
 
 def initialize_config():
-    if not os.path.exists(config_path):
+    if not os.path.exists(user_config_path):
         print(f"-User config not found, will be created.")
-        default_config_path = os.path.join(config_dir,config_name_default)
-        shutil.copyfile(default_config_path,config_path)
+        shutil.copyfile(default_config_path, user_config_path)
 
 
 def get_config_json():
     initialize_config()
     update_config_files_from_default_to_user()
-    with open(config_path, 'r', encoding='utf-8') as f:
+    with open(user_config_path, "r", encoding="utf-8") as f:
         config_json = json.load(f)
     return config_json
-
-
-
-    
 
 
 config = Config(**get_config_json())
