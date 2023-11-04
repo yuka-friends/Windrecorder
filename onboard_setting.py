@@ -1,13 +1,12 @@
-import subprocess
-import json
-import time
 import getpass
 import os
+import subprocess
+import time
 
-from windrecorder.config import config
 import windrecorder.maintainManager as maintainManager
-import windrecorder.utils as utils
 import windrecorder.record as record
+import windrecorder.utils as utils
+from windrecorder.config import config
 from windrecorder.utils import get_text as _t
 
 ALLSTEPS = 5
@@ -24,9 +23,7 @@ def divider():
 def print_header(step=1, toast=""):
     subprocess.run("cls", shell=True)
     print("Weclome to Windrecorder | 欢迎使用捕风记录仪\n")
-    print(
-        "Thanks for downloading! This Quick Wizard will help you set it up. \n感谢下载使用！本向导将协助你完成基础配置项。不用担心，所有选项之后都可以再次调整。"
-    )
+    print("Thanks for downloading! This Quick Wizard will help you set it up. \n感谢下载使用！本向导将协助你完成基础配置项。不用担心，所有选项之后都可以再次调整。")
     divider()
     print(step, "/", ALLSTEPS, toast)
     print("\n")
@@ -39,9 +36,7 @@ subprocess.run("color 06", shell=True)
 # 设置语言
 while True:
     print_header(step=1)
-    print(
-        "First, please choose your interface language. (Enter the number option and press Enter to confirm.)"
-    )
+    print("First, please choose your interface language. (Enter the number option and press Enter to confirm.)")
     print("首先，请设置你的界面语言。（输入数字项后回车确认）")
     divider()
     print("1. English   2. 简体中文   3. 日本語")
@@ -89,19 +84,11 @@ while True:
         divider()
         subprocess.run("pause", shell=True)
     elif len(your_username) == 0:
-        print(
-            _t("qs_un_use_current_name").format(
-                sys_username=sys_username
-            )
-        )
+        print(_t("qs_un_use_current_name").format(sys_username=sys_username))
         config.set_and_save_config("user_name", sys_username)
         break
     else:
-        print(
-            _t("qs_un_use_custom_name").format(
-                your_username=your_username
-            )
-        )
+        print(_t("qs_un_use_custom_name").format(your_username=your_username))
         config.set_and_save_config("user_name", your_username)
         break
 
@@ -123,9 +110,7 @@ if len(os_support_lang) > 1:
         try:
             input_ocr_lang_num = int(input("> "))
             if input_ocr_lang_num <= len(os_support_lang):
-                config.set_and_save_config(
-                    "ocr_lang", os_support_lang[input_ocr_lang_num - 1]
-                )
+                config.set_and_save_config("ocr_lang", os_support_lang[input_ocr_lang_num - 1])
                 print(
                     _t("qs_olang_ocrlang_set_to"),
                     os_support_lang[input_ocr_lang_num - 1],
@@ -139,19 +124,13 @@ if len(os_support_lang) > 1:
 
 else:
     print_header(step=3)
-    print(
-        _t("qs_olang_one_choice_default_set").format(
-            os_support_lang=os_support_lang[0]
-        )
-    )
+    print(_t("qs_olang_one_choice_default_set").format(os_support_lang=os_support_lang[0]))
     subprocess.run("pause", shell=True)
 
 
 # 测试与设置 ocr 引擎
-test_img_filepath = "__assets__\OCR_test_1080_" + config.ocr_lang + ".png"  # 读取测试图像
-with open(
-    "__assets__\\OCR_test_1080_words_" + config.ocr_lang + ".txt", encoding="utf-8"
-) as f:  # 读取比对参考文本
+test_img_filepath = "__assets__\\OCR_test_1080_" + config.ocr_lang + ".png"  # 读取测试图像
+with open("__assets__\\OCR_test_1080_words_" + config.ocr_lang + ".txt", encoding="utf-8") as f:  # 读取比对参考文本
     ocr_text_refer = f.read()
     ocr_text_refer = utils.wrap_text_by_remove_break(ocr_text_refer)
 
@@ -236,9 +215,7 @@ while True:
 
     monitor_width = utils.get_screen_resolution().width
     monitor_height = utils.get_screen_resolution().height
-    scale_width, scale_height = record.get_scale_screen_res_strategy(
-        origin_width=monitor_width, origin_height=monitor_height
-    )
+    scale_width, scale_height = record.get_scale_screen_res_strategy(origin_width=monitor_width, origin_height=monitor_height)
 
     print(
         _t("qs_mo_detect").format(

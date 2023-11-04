@@ -2,7 +2,6 @@ import json
 import os
 import shutil
 
-
 config_name = "config_user.json"
 config_name_default = "src\\config_default.json"
 config_dir = "config"
@@ -39,7 +38,7 @@ class Config:
         video_compress_rate,
         oneday_timeline_pic_num,
         enable_ocr_chineseocr_lite_onnx,
-        maintain_lock_path='cache\\LOCK_MAINTAIN.MD',
+        maintain_lock_path="cache\\LOCK_MAINTAIN.MD",
         record_lock_path="cache\\LOCK_FILE_RECORD.MD",
         last_idle_maintain_file_path="cache\\LAST_IDLE_MAINTAIN.MD",
         **other_field,
@@ -62,9 +61,7 @@ class Config:
         self.wordcloud_result_dir = wordcloud_result_dir
         self.timeline_result_dir = timeline_result_dir
         self.lightbox_result_dir = lightbox_result_dir
-        self.screentime_not_change_to_pause_record = (
-            screentime_not_change_to_pause_record
-        )
+        self.screentime_not_change_to_pause_record = screentime_not_change_to_pause_record
         self.show_oneday_wordcloud = show_oneday_wordcloud
         self.user_name = user_name
         self.use_similar_ch_char_to_search = use_similar_ch_char_to_search
@@ -124,7 +121,7 @@ def update_config_files_from_default_to_user():
 
 def initialize_config():
     if not os.path.exists(user_config_path):
-        print(f"-User config not found, will be created.")
+        print("-User config not found, will be created.")
         shutil.copyfile(default_config_path, user_config_path)
 
 
