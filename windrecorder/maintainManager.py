@@ -435,7 +435,7 @@ def ocr_process_videos(video_path, iframe_path):
                 os.rename(full_file_path, os.path.join(new_name_dir, new_name))
                 
                 files.check_and_create_folder("cache")
-                with open("cache\\LOG_ERROR_" + str(new_name) + ".MD", 'w', encoding='utf-8') as f:
+                with open(f"cache\\LOG_ERROR_{new_name}.MD", 'w', encoding='utf-8') as f:
                     f.write(str(datetime.datetime.now().strftime("%Y-%m-%d_%H-%M-%S")) + '\n' + str(e))
 
 
@@ -539,7 +539,7 @@ def maintain_manager_main():
     """
 
     # 添加维护标识
-    utils.add_maintain_lock_file(lock="make")
+    utils.add_maintain_lock_file("make")
 
     record_videos_dir = config.record_videos_dir
     i_frames_dir = 'cache\\i_frames'
@@ -555,5 +555,5 @@ def maintain_manager_main():
     ocr_process_videos(record_videos_dir, i_frames_dir)
 
     # 移除维护标识
-    utils.add_maintain_lock_file(lock="del")
+    utils.add_maintain_lock_file("del")
 

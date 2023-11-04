@@ -125,7 +125,7 @@ def web_onboarding():
     if st.session_state.is_onboarding:
         # 数据库不存在，展示 Onboarding 提示
         st.success(d_lang[config.lang]["text_welcome_to_windrecorder"], icon="😺")
-        intro_markdown = Path("config\\src\\onboarding_" + config.lang + ".md").read_text(encoding='utf-8')
+        intro_markdown = Path(f"config\\src\\onboarding_{config.lang}.md").read_text(encoding='utf-8')
         st.markdown(intro_markdown)
         st.divider()
 
@@ -1365,7 +1365,7 @@ with tab5:
         about_path = "config\\src\\meta.json"
         with open(about_path, 'r', encoding='utf-8') as f:
             about_json = json.load(f)
-        about_markdown = Path("config\\src\\about_" + config.lang + ".md").read_text(encoding='utf-8').format(
+        about_markdown = Path(f"config\\src\\about_{config.lang}.md").read_text(encoding='utf-8').format(
             version=about_json["version"], update_date=about_json["update_date"],
             update_info=st.session_state.update_info)
         st.markdown(about_markdown, unsafe_allow_html=True)

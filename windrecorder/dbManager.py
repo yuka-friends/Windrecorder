@@ -578,7 +578,7 @@ class DBManager:
         db_filename = os.path.basename(db_filepath)
 
         try:
-            with open("cache\\LOCK_MAINTAIN.MD", encoding='utf-8') as f:
+            with open(config.maintain_lock_path, encoding='utf-8') as f:
                 dt_maintain = f.read()
             sign_maintain = True
         except:

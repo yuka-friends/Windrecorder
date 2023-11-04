@@ -39,6 +39,9 @@ class Config:
         video_compress_rate,
         oneday_timeline_pic_num,
         enable_ocr_chineseocr_lite_onnx,
+        maintain_lock_path='cache\\LOCK_MAINTAIN.MD',
+        record_lock_path="cache\\LOCK_FILE_RECORD.MD",
+        last_idle_maintain_file_path="cache\\LAST_IDLE_MAINTAIN.MD",
         **other_field,
     ) -> None:
         self.db_path = db_path
@@ -70,6 +73,9 @@ class Config:
         self.video_compress_rate = video_compress_rate
         self.oneday_timeline_pic_num = oneday_timeline_pic_num
         self.enable_ocr_chineseocr_lite_onnx = enable_ocr_chineseocr_lite_onnx
+        self.maintain_lock_path = maintain_lock_path
+        self.record_lock_path = record_lock_path
+        self.last_idle_maintain_file_path = last_idle_maintain_file_path
 
     def set_and_save_config(self, attr: str, value):
         if not hasattr(self, attr):

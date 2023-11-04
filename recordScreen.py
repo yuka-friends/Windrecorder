@@ -37,14 +37,14 @@ last_idle_maintain_time = datetime.datetime.now()
 
 try:
     # 读取之前闲时维护的时间
-    with open("cache\\LAST_IDLE_MAINTAIN.MD", "r", encoding="utf-8") as f:
+    with open(config.last_idle_maintain_file_path, "r", encoding="utf-8") as f:
         time_read = f.read()
         last_idle_maintain_time = datetime.datetime.strptime(
             time_read, "%Y-%m-%d_%H-%M-%S"
         )
 except:
     files.check_and_create_folder("cache")
-    with open("cache\\LAST_IDLE_MAINTAIN.MD", "w", encoding="utf-8") as f:
+    with open(config.last_idle_maintain_file_path, "w", encoding="utf-8") as f:
         f.write(datetime.datetime.now().strftime("%Y-%m-%d_%H-%M-%S"))
     last_idle_maintain_time = datetime.datetime.now()  # 上次闲时维护时间
 
@@ -70,14 +70,14 @@ def index_video_data(video_saved_dir, vid_file_name):
         if os.path.exists(full_path):
             print(f"--{full_path} existed. Start ocr processing.")
             # 添加维护标识
-            utils.add_maintain_lock_file(lock="make")
+            utils.add_maintain_lock_file("make")
 
             maintainManager.ocr_process_single_video(
                 video_saved_dir, vid_file_name, "cache\\i_frames"
             )
 
             # 移除维护标识
-            utils.add_maintain_lock_file(lock="del")
+            utils.add_maintain_lock_file("del")
 
 
 # 录制屏幕
@@ -97,8 +97,7 @@ def record_screen(
     files.check_and_create_folder(video_saved_dir)
     out_path = os.path.join(video_saved_dir, video_out_name)
 
-    if not os.path.exists(output_dir):
-        os.mkdir(output_dir)
+    files.check_and_create_folder(output_dir)
 
     # 获取屏幕分辨率并根据策略决定缩放
     screen_width, screen_height = utils.get_screen_resolution()
@@ -142,7 +141,7 @@ def record_screen(
     try:
         # 添加服务监测信息
         files.check_and_create_folder("cache")
-        with open("cache\\LOCK_FILE_RECORD.MD", "w", encoding="utf-8") as f:
+        with open(config.record_lock_path, "w", encoding="utf-8") as f:
             f.write(str(getpid()))
         print("Windrecorder: Start Recording via FFmpeg")
         # 运行ffmpeg
@@ -155,9 +154,7 @@ def record_screen(
 
 # 持续录制屏幕的主要线程
 def continuously_record_screen(screentime_detect_stop_event):
-    global monitor_change_rank
     global last_idle_maintain_time
-    global lock_idle_maintaining
 
     while not continuously_stop_event.is_set():
         # 主循环过程
@@ -182,7 +179,7 @@ def continuously_record_screen(screentime_detect_stop_event):
 
                 # 更新维护时间
                 last_idle_maintain_time = datetime.datetime.now()  # 本次闲时维护时间
-                with open("cache\\LAST_IDLE_MAINTAIN.MD", "w", encoding="utf-8") as f:
+                with open(config.last_idle_maintain_file_path, "w", encoding="utf-8") as f:
                     f.write(str(last_idle_maintain_time.strftime("%Y-%m-%d_%H-%M-%S")))
 
             time.sleep(10)
@@ -230,8 +227,8 @@ def idle_maintain_process():
 # 测试ffmpeg是否存在可用
 def test_ffmpeg():
     try:
-        res = subprocess.run(ffmpeg_path + " -version")
-    except Exception:
+        res = subprocess.run([ffmpeg_path, "-version"])
+    except FileNotFoundError:
         print("Error: ffmpeg is not installed! Please ensure ffmpeg is in the PATH.")
         exit(1)
 
