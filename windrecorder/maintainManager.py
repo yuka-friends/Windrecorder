@@ -1,25 +1,22 @@
-import os
 import base64
-import subprocess
-import json
 import datetime
+import os
 import shutil
+import subprocess
 
 import cv2
 import numpy as np
-
-import win32file
-import pyautogui
-from send2trash import send2trash
-from PIL import Image
 import pandas as pd
+import win32file
+from PIL import Image
+from send2trash import send2trash
 
-from windrecorder.utils import empty_directory, date_to_seconds, seconds_to_date
-from windrecorder.dbManager import DBManager
-from windrecorder.config import config
-import windrecorder.utils as utils
-import windrecorder.files as files
 import windrecorder.record as record
+import windrecorder.utils as utils
+from windrecorder import file_utils
+from windrecorder.config import config
+from windrecorder.dbManager import DBManager
+from windrecorder.utils import date_to_seconds, empty_directory
 
 if config.enable_ocr_chineseocr_lite_onnx:
     from ocr_lib.chineseocr_lite_onnx.model import OcrHandle
@@ -35,17 +32,26 @@ if config.enable_ocr_chineseocr_lite_onnx:
 #     except OSError:
 #         return True
 
+
 # 使用 win32file 的判断实现
 def is_file_in_use(file_path):
     try:
-        vHandle = win32file.CreateFile(file_path, win32file.GENERIC_READ, 0, None, win32file.OPEN_EXISTING, win32file.FILE_ATTRIBUTE_NORMAL, None)
+        vHandle = win32file.CreateFile(
+            file_path,
+            win32file.GENERIC_READ,
+            0,
+            None,
+            win32file.OPEN_EXISTING,
+            win32file.FILE_ATTRIBUTE_NORMAL,
+            None,
+        )
         return int(vHandle) == win32file.INVALID_HANDLE_VALUE
-    except:
+    except Exception:
         return True
     finally:
         try:
             win32file.CloseHandle(vHandle)
-        except:
+        except Exception:
             pass
 
 
@@ -66,7 +72,7 @@ def extract_iframe(video_file, iframe_interval=4000):
 
         if frame_cnt % frame_step == 0:
             print("maintainManager: extract frame cut:" + str(frame_cnt))
-            cv2.imwrite('cache\\i_frames\\%d.jpg' % frame_cnt, frame)
+            cv2.imwrite("cache\\i_frames\\%d.jpg" % frame_cnt, frame)
 
         frame_cnt += 1
 
@@ -76,14 +82,14 @@ def extract_iframe(video_file, iframe_interval=4000):
 # 根据config配置裁剪图片
 def crop_iframe(directory):
     # 检查目录是否存在
-    files.check_and_create_folder(directory)
+    file_utils.check_and_create_folder(directory)
     top_percent = config.ocr_image_crop_URBL[0] * 0.01
     bottom_percent = config.ocr_image_crop_URBL[1] * 0.01
     left_percent = config.ocr_image_crop_URBL[2] * 0.01
     right_percent = config.ocr_image_crop_URBL[3] * 0.01
 
     # 获取目录下所有图片文件
-    image_files = [f for f in os.listdir(directory) if f.endswith(('.jpg', '.jpeg', '.png'))]
+    image_files = [f for f in os.listdir(directory) if f.endswith((".jpg", ".jpeg", ".png"))]
 
     # 循环处理每个图片文件
     for file_name in image_files:
@@ -158,10 +164,10 @@ def ocr_image_ms(img_input):
     print("maintainManager: OCR text by Windows.Media.Ocr.Cli")
     text = ""
     # 调用Windows.Media.Ocr.Cli.exe,参数为图片路径
-    command = ['ocr_lib\\Windows.Media.Ocr.Cli.exe', '-l', config.ocr_lang, img_input]
+    command = ["ocr_lib\\Windows.Media.Ocr.Cli.exe", "-l", config.ocr_lang, img_input]
 
     proc = subprocess.run(command, capture_output=True)
-    encodings_try = ['gbk', 'utf-8']  # 强制兼容
+    encodings_try = ["gbk", "utf-8"]  # 强制兼容
     for enc in encodings_try:
         try:
             text = proc.stdout.decode(enc)
@@ -171,7 +177,7 @@ def ocr_image_ms(img_input):
         except UnicodeDecodeError:
             pass
 
-    text = str(text.encode('utf-8').decode('utf-8'))
+    text = str(text.encode("utf-8").decode("utf-8"))
 
     return text
 
@@ -275,17 +281,17 @@ def resize_imahe_as_base64(img_path):
 
     # 编码为JPEG格式,质量为30
     encode_param = [int(cv2.IMWRITE_JPEG_QUALITY), 10]
-    _, encimg = cv2.imencode('.jpg', resized, encode_param)
+    _, encimg = cv2.imencode(".jpg", resized, encode_param)
 
     # 转为base64字符串
-    img_b64 = base64.b64encode(encimg).decode('utf-8')
+    img_b64 = base64.b64encode(encimg).decode("utf-8")
     return img_b64
 
 
 # 回滚操作
-def rollback_data(video_path,vid_file_name):
+def rollback_data(video_path, vid_file_name):
     # 擦除db中没索引完全的数据
-    vid_file_name_db = vid_file_name.replace("-INDEX","")
+    vid_file_name_db = vid_file_name.replace("-INDEX", "")
     print(f"maintainManager: rollback {vid_file_name}")
     DBManager().db_rollback_delete_video_refer_record(vid_file_name_db)
 
@@ -304,18 +310,18 @@ def ocr_process_single_video(video_path, vid_file_name, iframe_path):
     if "-INDEX" in vid_file_name:
         # 是-执行回滚操作
         print("maintainManager: INDEX flag exists, perform rollback operation.")
-        rollback_data(video_path,vid_file_name)
+        rollback_data(video_path, vid_file_name)
     else:
         # 为正在索引的视频文件改名添加"-INDEX"
-        new_filename = vid_file_name.replace(".","-INDEX.")
+        new_filename = vid_file_name.replace(".", "-INDEX.")
         new_file_path = os.path.join(video_path, new_filename)
-        os.rename(file_path,new_file_path)
+        os.rename(file_path, new_file_path)
         file_path = new_file_path
 
     # - 提取i帧
     extract_iframe(file_path)
     # 裁剪图片
-    crop_iframe('cache\\i_frames')
+    crop_iframe("cache\\i_frames")
 
     img1_path_temp = ""
     img2_path_temp = ""
@@ -346,7 +352,15 @@ def ocr_process_single_video(video_path, vid_file_name, iframe_path):
     # - OCR所有i帧图像
     ocr_result_stringA = ""
     ocr_result_stringB = ""
-    dataframe_column_names = ['videofile_name', 'picturefile_name', 'videofile_time', 'ocr_text', 'is_videofile_exist', 'is_videofile_exist', 'thumbnail']
+    dataframe_column_names = [
+        "videofile_name",
+        "picturefile_name",
+        "videofile_time",
+        "ocr_text",
+        "is_videofile_exist",
+        "is_videofile_exist",
+        "thumbnail",
+    ]
     dataframe_all = pd.DataFrame(columns=dataframe_column_names)
 
     # todo: os.listdir 应该进行正确的数字排序、以确保是按视频顺序索引的
@@ -358,7 +372,7 @@ def ocr_process_single_video(video_path, vid_file_name, iframe_path):
         ocr_result_stringB = ocr_image(img)
         # print(f"ocr_result_stringB:{ocr_result_stringB}")
 
-        is_str_same,_ = compare_strings(ocr_result_stringA, ocr_result_stringB)
+        is_str_same, _ = compare_strings(ocr_result_stringA, ocr_result_stringB)
         if is_str_same:
             print("[Skip] The content is consistent, not written to the database, skipped.")
         elif len(ocr_result_stringB) < 3:
@@ -371,7 +385,7 @@ def ocr_process_single_video(video_path, vid_file_name, iframe_path):
                 print("Writing to database.")
                 # 使用os.path.splitext()可以把文件名和文件扩展名分割开来，os.path.splitext(file_name)会返回一个元组,元组的第一个元素是文件名,第二个元素是扩展名
                 calc_to_sec_vidname = os.path.splitext(vid_file_name)[0]
-                calc_to_sec_vidname = calc_to_sec_vidname.replace("-INDEX","")
+                calc_to_sec_vidname = calc_to_sec_vidname.replace("-INDEX", "")
                 calc_to_sec_picname = round(int(os.path.splitext(img_file_name)[0]) / 2)
                 calc_to_sec_data = date_to_seconds(calc_to_sec_vidname) + calc_to_sec_picname
                 # 计算图片预览图
@@ -379,7 +393,15 @@ def ocr_process_single_video(video_path, vid_file_name, iframe_path):
                 # 清理ocr数据
                 ocr_result_write = utils.clean_dirty_text(ocr_result_stringB)
                 # 为准备写入数据库dataframe添加记录
-                dataframe_all.loc[len(dataframe_all.index)] = [vid_file_name, img_file_name, calc_to_sec_data, ocr_result_write, True, False, img_thumbnail]
+                dataframe_all.loc[len(dataframe_all.index)] = [
+                    vid_file_name,
+                    img_file_name,
+                    calc_to_sec_data,
+                    ocr_result_write,
+                    True,
+                    False,
+                    img_thumbnail,
+                ]
                 # DBManager().db_update_data(vid_file_name, img_file_name, calc_to_sec_data,
                 #                          ocr_result_write, True, False, img_thumbnail)
                 ocr_result_stringA = ocr_result_stringB
@@ -391,13 +413,12 @@ def ocr_process_single_video(video_path, vid_file_name, iframe_path):
     empty_directory(iframe_path)
 
     print("Add tags to video file")
-    new_file_path = file_path.replace("-INDEX","-OCRED")
-    os.rename(file_path,new_file_path)
+    new_file_path = file_path.replace("-INDEX", "-OCRED")
+    os.rename(file_path, new_file_path)
     print(f"maintainManager: --------- {file_path} Finished! ---------")
 
     # new_name = vid_file_name.split('.')[0] + "-OCRED." + vid_file_name.split('.')[1]
     # os.rename(file_path, os.path.join(video_path, new_name))
-
 
 
 # 处理文件夹内所有视频的主要流程
@@ -405,22 +426,22 @@ def ocr_process_videos(video_path, iframe_path):
     print("maintainManager: Processing all video files under path.")
 
     # 备份最新的数据库
-    db_filepath_latest = files.get_db_filepath_by_datetime(datetime.datetime.now())   # 直接获取对应时间的数据库路径
+    db_filepath_latest = file_utils.get_db_filepath_by_datetime(datetime.datetime.now())  # 直接获取对应时间的数据库路径
     backup_dbfile(db_filepath_latest)
 
-    for root,dirs,filess in os.walk(video_path):
+    for root, dirs, filess in os.walk(video_path):
         for file in filess:
             full_file_path = os.path.join(root, file)
             print("processing VID:" + full_file_path)
 
             # 检查视频文件是否已被索引
-            if not file.endswith('.mp4') or file.endswith("-OCRED.mp4") or file.endswith("-ERROR.mp4"):
+            if not file.endswith(".mp4") or file.endswith("-OCRED.mp4") or file.endswith("-ERROR.mp4"):
                 continue
 
             # 判断文件是否正在被占用
             if is_file_in_use(full_file_path):
                 continue
-            
+
             # 清理文件
             empty_directory(iframe_path)
             # ocr该文件
@@ -428,32 +449,38 @@ def ocr_process_videos(video_path, iframe_path):
                 ocr_process_single_video(root, file, iframe_path)
             except Exception as e:
                 # 记录错误日志
-                print("maintainManager: Error occurred while processing :",full_file_path,e)
+                print(
+                    "maintainManager: Error occurred while processing :",
+                    full_file_path,
+                    e,
+                )
                 video_filename = os.path.basename(full_file_path)
-                new_name = video_filename.split('.')[0] + "-ERROR." + video_filename.split('.')[1]
+                new_name = video_filename.split(".")[0] + "-ERROR." + video_filename.split(".")[1]
                 new_name_dir = os.path.dirname(full_file_path)
                 os.rename(full_file_path, os.path.join(new_name_dir, new_name))
-                
-                files.check_and_create_folder("cache")
-                with open(f"cache\\LOG_ERROR_{new_name}.MD", 'w', encoding='utf-8') as f:
-                    f.write(str(datetime.datetime.now().strftime("%Y-%m-%d_%H-%M-%S")) + '\n' + str(e))
+
+                file_utils.check_and_create_folder("cache")
+                with open(f"cache\\LOG_ERROR_{new_name}.MD", "w", encoding="utf-8") as f:
+                    f.write(str(datetime.datetime.now().strftime("%Y-%m-%d_%H-%M-%S")) + "\n" + str(e))
 
 
 # 检查视频文件夹中所有文件的日期，对超出储存时限的文件进行删除操作
 def remove_outdated_videofiles():
     if config.vid_store_day == 0:
         return None
-    
+
     today_datetime = datetime.datetime.today()
     days_to_subtract = config.vid_store_day
-    start_datetime = datetime.datetime(2000,1,1,0,0,1)
+    start_datetime = datetime.datetime(2000, 1, 1, 0, 0, 1)
     end_datetime = today_datetime - datetime.timedelta(days=days_to_subtract)
 
-    video_filepath_list = files.get_file_path_list(config.record_videos_dir)
-    video_filepath_list_outdate = files.get_videofile_path_list_by_time_range(video_filepath_list, start_datetime, end_datetime)
+    video_filepath_list = file_utils.get_file_path_list(config.record_videos_dir)
+    video_filepath_list_outdate = file_utils.get_videofile_path_list_by_time_range(
+        video_filepath_list, start_datetime, end_datetime
+    )
     print(f"maintainManager: outdated file to remove: {video_filepath_list_outdate}")
 
-    if len(video_filepath_list_outdate) >0:
+    if len(video_filepath_list_outdate) > 0:
         for item in video_filepath_list_outdate:
             print(f"maintainManager: removing {item}")
             send2trash(item)
@@ -463,42 +490,42 @@ def remove_outdated_videofiles():
 def compress_outdated_videofiles():
     if config.vid_compress_day == 0:
         return None
-    
+
     today_datetime = datetime.datetime.today()
     days_to_subtract = config.vid_compress_day
-    start_datetime = datetime.datetime(2000,1,1,0,0,1)
+    start_datetime = datetime.datetime(2000, 1, 1, 0, 0, 1)
     end_datetime = today_datetime - datetime.timedelta(days=days_to_subtract)
 
-    video_filepath_list = files.get_file_path_list(config.record_videos_dir)
-    video_filepath_list_outdate = files.get_videofile_path_list_by_time_range(video_filepath_list, start_datetime, end_datetime)
+    video_filepath_list = file_utils.get_file_path_list(config.record_videos_dir)
+    video_filepath_list_outdate = file_utils.get_videofile_path_list_by_time_range(
+        video_filepath_list, start_datetime, end_datetime
+    )
     print(f"maintainManager: file to compress {video_filepath_list_outdate}")
 
-    if len(video_filepath_list_outdate) >0:
+    if len(video_filepath_list_outdate) > 0:
         for item in video_filepath_list_outdate:
-            if not item.endswith('-COMPRESS-OCRED.mp4') and item.endswith('-OCRED.mp4'):
+            if not item.endswith("-COMPRESS-OCRED.mp4") and item.endswith("-OCRED.mp4"):
                 print(f"maintainManager: compressing {item}")
-                record.compress_video_resolution(item,config.video_compress_rate)
+                record.compress_video_resolution(item, config.video_compress_rate)
                 send2trash(item)
     print("maintainManager: All compress tasks done!")
-                
-
 
 
 # 备份数据库
-def backup_dbfile(db_filepath, keep_items_num = 15, make_new_backup_timegap = datetime.timedelta(hours=8)):
+def backup_dbfile(db_filepath, keep_items_num=15, make_new_backup_timegap=datetime.timedelta(hours=8)):
     if db_filepath.endswith("_TEMP_READ.db"):
         return False
 
     db_backup_filepath = "cache\\db_backup"
-    files.check_and_create_folder(db_backup_filepath)
-    db_filelist_name = files.get_file_path_list_first_level(db_backup_filepath)
+    file_utils.check_and_create_folder(db_backup_filepath)
+    db_filelist_name = file_utils.get_file_path_list_first_level(db_backup_filepath)
     make_new_backup_state = False
 
-    if len(db_filelist_name)>0:
+    if len(db_filelist_name) > 0:
         # 获取每个备份数据库文件对应的datatime
         db_date_dict = {}
         for item in db_filelist_name:
-            result = files.extract_datetime_from_db_backup_filename(item)
+            result = file_utils.extract_datetime_from_db_backup_filename(item)
             db_date_dict[item] = result
 
         # 按照datatime进行排序，并获取最晚的x项
@@ -510,7 +537,7 @@ def backup_dbfile(db_filepath, keep_items_num = 15, make_new_backup_timegap = da
             make_new_backup_state = True
 
         # 移除超过x项中较早的项目
-        if len(db_filelist_name)>15:
+        if len(db_filelist_name) > 15:
             lastest_items = sorted_items[-keep_items_num:]
             # 从词典中移除最晚的x项
             for item in lastest_items:
@@ -522,13 +549,18 @@ def backup_dbfile(db_filepath, keep_items_num = 15, make_new_backup_timegap = da
     else:
         # 没有新的备份文件，应当创建备份
         make_new_backup_state = True
-    
+
     if make_new_backup_state:
         # 创建备份
-        db_filepath_backup = db_backup_filepath + "\\" + os.path.splitext(os.path.basename(db_filepath))[0] + "_BACKUP_" + datetime.datetime.now().strftime("%Y-%m-%d_%H-%M-%S") + ".db"
+        db_filepath_backup = (
+            db_backup_filepath
+            + "\\"
+            + os.path.splitext(os.path.basename(db_filepath))[0]
+            + "_BACKUP_"
+            + datetime.datetime.now().strftime("%Y-%m-%d_%H-%M-%S")
+            + ".db"
+        )
         shutil.copy2(db_filepath, db_filepath_backup)
-
-
 
     # _________________________________________________________________
 
@@ -542,7 +574,7 @@ def maintain_manager_main():
     utils.add_maintain_lock_file("make")
 
     record_videos_dir = config.record_videos_dir
-    i_frames_dir = 'cache\\i_frames'
+    i_frames_dir = "cache\\i_frames"
 
     if not os.path.exists(i_frames_dir):
         os.mkdir(i_frames_dir)
@@ -556,4 +588,3 @@ def maintain_manager_main():
 
     # 移除维护标识
     utils.add_maintain_lock_file("del")
-

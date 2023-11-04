@@ -1,13 +1,13 @@
+import datetime
 import os
 import time
-import datetime
-import shutil
 
 import pandas as pd
 
-from windrecorder.config import config
-import windrecorder.files as files
 import windrecorder.utils as utils
+from windrecorder import file_utils
+from windrecorder.config import config
+
 
 # 检查目录是否存在，若无则创建
 def check_and_create_folder(folder_name):
@@ -28,7 +28,7 @@ def check_and_create_folder(folder_name):
 
 # 将数据库的视频名加上-OCRED标志，使之能正常读取到
 def add_OCRED_suffix(video_name):
-    video_name = video_name.replace('-INDEX','')
+    video_name = video_name.replace("-INDEX", "")
     vidname = os.path.splitext(video_name)[0] + "-OCRED" + os.path.splitext(video_name)[1]
     return vidname
 
@@ -52,8 +52,8 @@ def get_videos_and_ocred_videos_count(folder_path):
     for root, dirs, files in os.walk(folder_path):
         for file in files:
             count += 1
-            if not file.split('.')[0].endswith("-OCRED"):
-                if not file.split('.')[0].endswith("-ERROR"):
+            if not file.split(".")[0].endswith("-OCRED"):
+                if not file.split(".")[0].endswith("-ERROR"):
                     nocred_count += 1
 
     return count, nocred_count
@@ -61,7 +61,7 @@ def get_videos_and_ocred_videos_count(folder_path):
 
 # 遍历XXX文件夹下有无文件中包含入参str的文件名
 def find_filename_in_dir(dir, search_str):
-    dir = 'videos'
+    dir = "videos"
     check_and_create_folder(dir)
 
     for filename in os.listdir(dir):
@@ -73,13 +73,10 @@ def find_filename_in_dir(dir, search_str):
 
 # 检查视频文件是否存在
 def check_video_exist_in_videos_dir(video_name):
-    videofile_path_month_dir = files.convert_vid_filename_as_YYYY_MM(
-        video_name)
-    video_path = os.path.join(config.record_videos_dir,
-                              videofile_path_month_dir, video_name)
-    ocred_video_name = os.path.splitext(video_name)[0] + '-OCRED' + os.path.splitext(video_name)[1]
-    ocred_path = os.path.join(config.record_videos_dir,
-                              videofile_path_month_dir, ocred_video_name)
+    videofile_path_month_dir = file_utils.convert_vid_filename_as_YYYY_MM(video_name)
+    video_path = os.path.join(config.record_videos_dir, videofile_path_month_dir, video_name)
+    ocred_video_name = os.path.splitext(video_name)[0] + "-OCRED" + os.path.splitext(video_name)[1]
+    ocred_path = os.path.join(config.record_videos_dir, videofile_path_month_dir, ocred_video_name)
 
     if os.path.exists(video_path):
         return video_name
@@ -93,8 +90,7 @@ def check_video_exist_in_videos_dir(video_name):
 def get_dir_size(dir):
     size = 0
     for root, _, files in os.walk(dir):
-        size += sum([os.path.getsize(os.path.join(root, name))
-                    for name in files])
+        size += sum([os.path.getsize(os.path.join(root, name)) for name in files])
     return size
 
 
@@ -125,7 +121,7 @@ def is_fileA_modified_newer_than_fileB(file_path_A, file_path_B):
     modified_timestamp_B = os.path.getmtime(file_path_B)
 
     # 计算时间差
-    time_diff_minutes = (modified_timestamp_A - modified_timestamp_B)/60
+    time_diff_minutes = (modified_timestamp_A - modified_timestamp_B) / 60
 
     if time_diff_minutes > 0:
         return True, time_diff_minutes
@@ -155,11 +151,11 @@ def get_file_path_list_first_level(dir):
 
 
 # 根据已有的文件列表，返回指定时间段的视频文件夹内、已索引了的视频路径列表（包括未压缩的与已压缩的）
-def get_videofile_path_list_by_time_range(filepath_list, start_datetime = None, end_datetime = None):
+def get_videofile_path_list_by_time_range(filepath_list, start_datetime=None, end_datetime=None):
     filepath_list_daterange = []
     for filepath in filepath_list:
-        if filepath.endswith('-OCRED.mp4'):
-            if start_datetime is None or end_datetime is None:   # 如果不指定时间段，返回所有结果
+        if filepath.endswith("-OCRED.mp4"):
+            if start_datetime is None or end_datetime is None:  # 如果不指定时间段，返回所有结果
                 filepath_list_daterange.append(filepath)
             else:
                 filename_extract_date = os.path.basename(filepath)[:18]
@@ -183,14 +179,13 @@ def get_videofile_path_dict_datetime(filepath_list):
 # 从db文件名提取YYYY-MM的datatime
 def extract_date_from_db_filename(db_file_name, user_name=config.user_name):
     prefix = user_name + "_"
-    suffix = "_wind.db"
 
     if db_file_name.startswith(prefix):
-        db_file_name = db_file_name[len(prefix):]
+        db_file_name = db_file_name[len(prefix) :]
 
     db_file_name = db_file_name[:7]
     # if db_file_name.endswith(suffix):
-        # db_file_name = db_file_name[:-(len(suffix))]
+    # db_file_name = db_file_name[:-(len(suffix))]
 
     db_file_name_datetime = datetime.datetime.strptime(db_file_name, "%Y-%m")
     db_file_name_datetime = utils.set_full_datetime_to_YYYY_MM(db_file_name_datetime)
@@ -199,14 +194,11 @@ def extract_date_from_db_filename(db_file_name, user_name=config.user_name):
 
 # 从备份的db文件名提取datetime
 def extract_datetime_from_db_backup_filename(db_file_name, user_name=config.user_name):
-    prefix = user_name + "_"
-    suffix = "_wind.db"
-
     try:
         db_file_name_extract = db_file_name[-22:-3]
         db_file_name_extract_datetime = utils.date_to_datetime(db_file_name_extract)
         return db_file_name_extract_datetime
-    except:
+    except (IndexError, ValueError):
         return None
 
 
@@ -228,8 +220,8 @@ def get_db_file_path_dict(db_dir=config.db_path, user_name=config.user_name):
 
         db_list, db_list_datetime = zip(*sorted(zip(db_list, db_list_datetime), key=lambda x: x[1]))
 
-        items = zip(db_list, db_list_datetime)   # 使用zip将两个列表打包成元组的列表
-        db_dict = dict(items)   # 将zip结果转换为字典
+        items = zip(db_list, db_list_datetime)  # 使用zip将两个列表打包成元组的列表
+        db_dict = dict(items)  # 将zip结果转换为字典
         return db_dict
 
 
@@ -306,6 +298,6 @@ def read_dataframe_from_path(file_path="cache/temp.csv"):
     if len(os.path.dirname(file_path)) == 0:
         # 目录为空
         return None
-    
+
     dataframe = pd.read_csv(file_path)  # 使用read_csv()方法读取CSV文件（可根据文件格式选择对应的读取方法）
     return dataframe

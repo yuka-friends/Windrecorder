@@ -1,26 +1,24 @@
-import os
-import shutil
-import json
-import datetime
-from datetime import timedelta
-import calendar
-import subprocess
-import time
-import threading
-import re
-import signal
 import base64
-from io import BytesIO
-import requests
+import calendar
+import datetime
+import json
+import os
 import random
+import re
+import shutil
+import subprocess
+import threading
+import time
+from datetime import timedelta
+from io import BytesIO
 
 import cv2
 import pyautogui
+import requests
 from PIL import Image
-import numpy as np
 from send2trash import send2trash
 
-import windrecorder.files as files
+from windrecorder import file_utils
 from windrecorder.config import config
 
 
@@ -40,6 +38,7 @@ class RepeatingTimer(threading.Thread):
 
     def stop(self):
         self.running = False
+
 
 # 清空指定目录下的所有文件和子目录
 def empty_directory(path):
@@ -69,9 +68,8 @@ def date_to_seconds(date_str):
 
 # 将输入的文件（ %Y-%m-%d_%H-%M-%S str）时间转为datetime
 def date_to_datetime(date_str):
-    datetime_obj = datetime.datetime.strptime(date_str, '%Y-%m-%d_%H-%M-%S')
+    datetime_obj = datetime.datetime.strptime(date_str, "%Y-%m-%d_%H-%M-%S")
     return datetime_obj
-
 
 
 # 将时间戳秒数格式化为时间 %Y-%m-%d_%H-%M-%S
@@ -114,7 +112,7 @@ def seconds_to_24numfloat(seconds):
     dt = seconds_to_datetime(seconds)
     hour = dt.hour
     minute = dt.minute
-    minute_decimal = minute / 60 
+    minute_decimal = minute / 60
     time_float = hour + minute_decimal
     return round(time_float, 4)
 
@@ -132,7 +130,7 @@ def datetime_to_seconds(dt):
 def datetime_to_24numfloat(dt):
     hour = dt.hour
     minute = dt.minute
-    minute_decimal = minute / 60 
+    minute_decimal = minute / 60
     time_float = hour + minute_decimal
     return round(time_float, 2)
 
@@ -149,26 +147,26 @@ def datetime_to_dateDayStr(dt):
 
 # 将输入的秒数格式化为 1h2m3s str
 def convert_seconds_to_hhmmss(seconds):
-  seconds = int(round(seconds))
-  td = timedelta(seconds=seconds)
+    seconds = int(round(seconds))
+    td = timedelta(seconds=seconds)
 
-  hours = td.seconds // 3600
-  minutes = (td.seconds // 60) % 60
-  seconds = td.seconds % 60
+    hours = td.seconds // 3600
+    minutes = (td.seconds // 60) % 60
+    seconds = td.seconds % 60
 
-  time_str = ""
-  if hours > 0:
-    time_str += str(hours) + "h"
-  if minutes > 0 or hours > 0:  
-    time_str += str(minutes).zfill(2) + "m"
-  time_str += str(seconds).zfill(2) + "s"
+    time_str = ""
+    if hours > 0:
+        time_str += str(hours) + "h"
+    if minutes > 0 or hours > 0:
+        time_str += str(minutes).zfill(2) + "m"
+    time_str += str(seconds).zfill(2) + "s"
 
-  return time_str
+    return time_str
 
 
 # 将整个视频文件名中的YYYY-MM-DD_HH-MM-SS转换为1970时间戳
 def calc_vid_name_to_timestamp(filename):
-    pattern = r'(\d{4}-\d{2}-\d{2}_\d{2}-\d{2}-\d{2})'
+    pattern = r"(\d{4}-\d{2}-\d{2}_\d{2}-\d{2}-\d{2})"
     match = re.search(pattern, filename)
     if match:
         return date_to_seconds(match.group(1))
@@ -177,14 +175,14 @@ def calc_vid_name_to_timestamp(filename):
 
 
 # 将只有天的datetime和只有日期的datetime合为完整的datetime
-def merge_date_day_datetime_together(date,today):
+def merge_date_day_datetime_together(date, today):
     dt = datetime.datetime(
-        year=date.year, 
-        month=date.month, 
+        year=date.year,
+        month=date.month,
         day=date.day,
         hour=today.hour,
         minute=today.minute,
-        second=today.second
+        second=today.second,
     )
     return dt
 
@@ -207,33 +205,36 @@ def set_full_datetime_to_YYYY_MM_DD(dt):
 
 # 将输入的不完整的datetime补齐为默认年月日时分秒的datetime
 def complete_datetime(dt):
-    if isinstance(dt, datetime.date): 
-        # 如果是 date 类型,先转换为 datetime 
+    if isinstance(dt, datetime.date):
+        # 如果是 date 类型,先转换为 datetime
         dt = datetime.datetime(dt.year, dt.month, dt.day)
-    
+
     if dt.year == 1900 and dt.month == 1 and dt.day == 1:
         # 日期缺失,使用当前日期
-        dt = dt.replace(year=datetime.datetime.now().year,
-                       month=datetime.datetime.now().month,
-                       day=datetime.datetime.now().day)
+        dt = dt.replace(
+            year=datetime.datetime.now().year,
+            month=datetime.datetime.now().month,
+            day=datetime.datetime.now().day,
+        )
 
     if dt.hour == 0 and dt.minute == 0 and dt.second == 0:
         # 时间缺失,使用当前时间
-        dt = dt.replace(hour=datetime.datetime.now().hour,
-                       minute=datetime.datetime.now().minute,  
-                       second=datetime.datetime.now().second)
-                       
+        dt = dt.replace(
+            hour=datetime.datetime.now().hour,
+            minute=datetime.datetime.now().minute,
+            second=datetime.datetime.now().second,
+        )
+
     return dt
 
 
 # 通过输入dt中视频名与时间戳计算相对的视频定位时间戳，以
-def get_video_timestamp_by_filename_and_abs_timestamp(videofile_name:str, videofile_time:int):
+def get_video_timestamp_by_filename_and_abs_timestamp(videofile_name: str, videofile_time: int):
     # videofile_name like 2023-09-08_17-23-50.mp4
     videofile_name = videofile_name[:19]  # 确保只截取到str时间部分
     # vidfilename = os.path.splitext(videofile_name)[0]
     vid_timestamp = videofile_time - date_to_seconds(videofile_name)
     return vid_timestamp
-
 
 
 # 查询一个月有几天
@@ -246,51 +247,53 @@ def get_days_in_month(year, month):
 # 结束录屏服务进程
 def kill_recording():
     try:
-        with open(config.record_lock_path, encoding='utf-8') as f:
+        with open(config.record_lock_path, encoding="utf-8") as f:
             check_pid = int(f.read())
-        check_result = subprocess.run(['taskkill', '/pid', str(check_pid), '-t','-f'], stdout=subprocess.PIPE, text=True)
+        check_result = subprocess.run(
+            ["taskkill", "/pid", str(check_pid), "-t", "-f"],
+            stdout=subprocess.PIPE,
+            text=True,
+        )
         # os.kill(check_pid, signal.SIGINT) #通过发送中断信号来停止，但是失败了
         print(f"utils: The screen recording process has ended. {check_result.stdout}")
-    except:
-        print(f"utils: Unable to find process lock.")
+    except FileNotFoundError:
+        print("utils: Unable to find process lock.")
 
 
 # 通过数据库内项目计算视频对应时间戳
 def calc_vid_inside_time(df, num):
-    fulltime = df.iloc[num]['videofile_time']
-    vidfilename = os.path.splitext(df.iloc[num]['videofile_name'])[0]
+    fulltime = df.iloc[num]["videofile_time"]
+    vidfilename = os.path.splitext(df.iloc[num]["videofile_name"])[0]
     # 用记录时的总时间减去视频文件时间（开始记录的时间）即可得到相对的时间
-    vidfilename = vidfilename.replace('-INDEX','')
-    vidfilename = vidfilename.replace('-ERROR','')
+    vidfilename = vidfilename.replace("-INDEX", "")
+    vidfilename = vidfilename.replace("-ERROR", "")
     vid_timestamp = fulltime - date_to_seconds(vidfilename)
-    print("utils: video file fulltime:" + str(fulltime) + "\n vidfilename:" + str(vidfilename) + "\n vid_timestamp:" + str(vid_timestamp))
+    print(f"utils: video file fulltime:{fulltime}\n" f" vidfilename:{vidfilename}\n" f" vid_timestamp:{vid_timestamp}\n")
     return vid_timestamp
 
 
 # 估计索引时间
 def estimate_indexing_time():
-    count, nocred_count = files.get_videos_and_ocred_videos_count(config.record_videos_dir)
-    record_minutes = int(config.record_seconds)/60
-    ocr_cost_time_table = {
-        "Windows.Media.Ocr.Cli":5,
-        "ChineseOCR_lite_onnx":25
-    }
+    count, nocred_count = file_utils.get_videos_and_ocred_videos_count(config.record_videos_dir)
+    record_minutes = int(config.record_seconds) / 60
+    ocr_cost_time_table = {"Windows.Media.Ocr.Cli": 5, "ChineseOCR_lite_onnx": 25}
     ocr_cost_time = ocr_cost_time_table[config.ocr_engine]
     estimate_time = int(nocred_count) * int(round(record_minutes)) * int(ocr_cost_time)
     estimate_time_str = convert_seconds_to_hhmmss(estimate_time)
     return estimate_time_str
-  
+
 
 # 将列表转换为以逗号分隔的字符串
 def list_to_string(lst):
-  return ", ".join(lst)
+    return ", ".join(lst)
 
-# 将字符串转换为列表  
+
+# 将字符串转换为列表
 def string_to_list(string):
-  string = string.replace("，", ",")
-  string = string.replace("、", ",")
-  split_list = [item.strip() for item in string.split(',')]
-  return split_list
+    string = string.replace("，", ",")
+    string = string.replace("、", ",")
+    split_list = [item.strip() for item in string.split(",")]
+    return split_list
 
 
 # 判断字符串是否包含列表内的元素
@@ -310,16 +313,18 @@ def clean_dirty_text(text):
 
     return text
 
+
 # 移除少于数个字符的行
-def delete_short_lines(text,less_than = 6):
-    lines = text.split('\n')  # 将文本按行分割成列表
+def delete_short_lines(text, less_than=6):
+    lines = text.split("\n")  # 将文本按行分割成列表
     filtered_lines = [line for line in lines if len(line) >= less_than]  # 仅保留长度大于等于6的行
-    adjusted_text = '\n'.join(filtered_lines)  # 将过滤后的行重新连接成字符串
+    adjusted_text = "\n".join(filtered_lines)  # 将过滤后的行重新连接成字符串
     return adjusted_text
 
+
 # 合并少于数个字符的行
-def merge_short_lines(text,less_than = 20):
-    lines = re.split(r'[\n\r]+', text)
+def merge_short_lines(text, less_than=20):
+    lines = re.split(r"[\n\r]+", text)
     # lines = text.split('\n')
     merged_lines = [lines[0]]
 
@@ -329,30 +334,32 @@ def merge_short_lines(text,less_than = 20):
         else:
             merged_lines.append(line)
 
-    merged_text = '\n'.join(merged_lines)
+    merged_text = "\n".join(merged_lines)
     return merged_text
+
 
 # 根据符号进行换行
 def wrap_text_by_symbol(text):
-    symbol_list = ["。","！","？","），","）。","，","．"]
-    text = text.replace('\n', ' ')
-    text = text.replace('\r', ' ')
+    symbol_list = ["。", "！", "？", "），", "）。", "，", "．"]
+    text = text.replace("\n", " ")
+    text = text.replace("\r", " ")
     for symbol in symbol_list:
-        text = text.replace(symbol, symbol + '\n')  # 将符号替换为换行符+符号
+        text = text.replace(symbol, symbol + "\n")  # 将符号替换为换行符+符号
 
     # 使用正则表达式匹配中文字符之间的空格，并移除
-    pattern = re.compile(r'([\u4e00-\u9fa5]+)\s+([\u4e00-\u9fa5]+)')
-    text = re.sub(pattern, r'\1\2', text)
+    pattern = re.compile(r"([\u4e00-\u9fa5]+)\s+([\u4e00-\u9fa5]+)")
+    text = re.sub(pattern, r"\1\2", text)
 
     return text
 
+
 # 去除所有的换行
 def wrap_text_by_remove_break(text):
-    text = text.replace('\n', ' ')
-    text = text.replace('\r', ' ')
+    text = text.replace("\n", " ")
+    text = text.replace("\r", " ")
     # 使用正则表达式匹配中文字符之间的空格，并移除
-    pattern = re.compile(r'([\u4e00-\u9fa5]+)\s+([\u4e00-\u9fa5]+)')
-    text = re.sub(pattern, r'\1\2', text)
+    pattern = re.compile(r"([\u4e00-\u9fa5]+)\s+([\u4e00-\u9fa5]+)")
+    text = re.sub(pattern, r"\1\2", text)
     return text
 
 
@@ -377,7 +384,7 @@ def image_to_base64(image_path):
     image = cv2.imread(image_path, cv2.IMREAD_UNCHANGED)
 
     # 将图像转换为PNG格式
-    _, encoded_image = cv2.imencode(".png", image)   # 返回一个元组 (retval, buffer)。retval 表示编码的结果，buffer 是包含图像数据的字节对象。
+    _, encoded_image = cv2.imencode(".png", image)  # 返回一个元组 (retval, buffer)。retval 表示编码的结果，buffer 是包含图像数据的字节对象。
 
     # 将图像数据编码为base64字符串
     base64_image = base64.b64encode(encoded_image.tobytes()).decode("utf-8")
@@ -387,9 +394,9 @@ def image_to_base64(image_path):
 
 # 添加维护锁文件标识
 def add_maintain_lock_file(operation="make"):
-    files.check_and_create_folder("cache")
+    file_utils.check_and_create_folder("cache")
     if operation == "make":
-        with open(config.maintain_lock_path, 'w', encoding='utf-8') as f:
+        with open(config.maintain_lock_path, "w", encoding="utf-8") as f:
             f.write(str(datetime.datetime.now().strftime("%Y-%m-%d_%H-%M-%S")))
     elif operation == "del":
         try:
@@ -401,7 +408,7 @@ def add_maintain_lock_file(operation="make"):
 # 检查db是否是有合法的、正在维护中的锁（超过一定时间则解锁），否的话可以执行任务，是的话暂时不执行
 def is_maintain_lock_file_valid(gap=datetime.timedelta(minutes=16)):
     if os.path.exists(config.maintain_lock_path):
-        with open(config.maintain_lock_path, 'r', encoding='utf-8') as f:
+        with open(config.maintain_lock_path, "r", encoding="utf-8") as f:
             last_maintain_locktime = date_to_datetime(str(f.read()))
         if datetime.datetime.now() - last_maintain_locktime > gap:
             return False
@@ -409,18 +416,18 @@ def is_maintain_lock_file_valid(gap=datetime.timedelta(minutes=16)):
             return True
     else:
         return False
-    
+
 
 # 从词库中获取一个随机词语
 def get_random_word_from_lexicon():
-    directory = 'config\\random_lexicon'
+    directory = "config\\random_lexicon"
     file_list = [filename for filename in os.listdir(directory) if filename.endswith(".txt")]
     words = []
-    
+
     # 随机读取一个文件后从中抽取词
     filename = random.choice(file_list)
     file_path = os.path.join(directory, filename)
-    with open(file_path, "r", encoding='utf-8') as file:
+    with open(file_path, "r", encoding="utf-8") as file:
         for line in file:
             word = line.strip()
             if word:
@@ -434,29 +441,32 @@ def get_random_word_from_lexicon():
     #             word = line.strip()
     #             if word:
     #                 words.append(word)
-    
+
     if not words:
         return None
-    
+
     random_word = random.choice(words)
     return random_word
 
 
 # 更新提醒
-def get_github_version_and_date(url='https://raw.githubusercontent.com/Antonoko/Windrecorder/main/config/src/meta.json'):
+def get_github_version_and_date(
+    url="https://raw.githubusercontent.com/Antonoko/Windrecorder/main/config/src/meta.json",
+):
     response = requests.get(url)
     data = response.json()
-    version = data['version']
-    update_date = data['update_date']
+    version = data["version"]
+    update_date = data["update_date"]
     update_date = date_to_datetime(update_date)
     return version, update_date
 
+
 # 获得当前版本号与时间
-def get_current_version_and_update(filepath='config\\src\\meta.json'):
-    with open(filepath, 'r', encoding='utf-8') as f:
+def get_current_version_and_update(filepath="config\\src\\meta.json"):
+    with open(filepath, "r", encoding="utf-8") as f:
         data = json.load(f)
-    local_version = data['version']
-    local_update_date = data['update_date']
+    local_version = data["version"]
+    local_update_date = data["update_date"]
     local_update_date = date_to_datetime(local_update_date)
     return local_version, local_update_date
 
@@ -465,7 +475,7 @@ def get_current_version_and_update(filepath='config\\src\\meta.json'):
 def get_cmd_tool_echo(command):
     print(f"command: {command}")
     proc = subprocess.run(command, capture_output=True)
-    encodings_try = ['gbk', 'utf-8']  # 强制兼容
+    encodings_try = ["gbk", "utf-8"]  # 强制兼容
     for enc in encodings_try:
         try:
             text = proc.stdout.decode(enc)
@@ -474,8 +484,8 @@ def get_cmd_tool_echo(command):
             break
         except UnicodeDecodeError:
             pass
-    
-    text = str(text.encode('utf-8').decode('utf-8'))
+
+    text = str(text.encode("utf-8").decode("utf-8"))
     return text
 
 
@@ -487,9 +497,9 @@ def print_numbered_list(lst):
 
 # 获取系统支持的ocr语言
 def get_os_support_lang():
-    command = ['ocr_lib\\Windows.Media.Ocr.Cli.exe', '-s']
+    command = ["ocr_lib\\Windows.Media.Ocr.Cli.exe", "-s"]
     text = get_cmd_tool_echo(command)
-    lines = text.replace('\r','').split('\n')  # 将字符串按行分割为列表
+    lines = text.replace("\r", "").split("\n")  # 将字符串按行分割为列表
     extracted_lines = lines[1:-1]  # 获取第二行开始的所有行
     return extracted_lines
 

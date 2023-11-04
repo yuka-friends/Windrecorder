@@ -1,24 +1,22 @@
-import subprocess
+import ctypes
 import datetime
-import time
-import threading
 
 # https://steam.oxxostudio.tw/category/python/library/threading.html
 import os
+import subprocess
+import threading
+import time
 from os import getpid
-import json
-import ctypes
 
-import pyautogui
 import numpy as np
-from send2trash import send2trash
+import pyautogui
 
 import windrecorder.maintainManager as maintainManager
-import windrecorder.utils as utils
-from windrecorder.config import config
-import windrecorder.files as files
 import windrecorder.record as record
+import windrecorder.utils as utils
 import windrecorder.wordcloud as wordcloud
+from windrecorder import file_utils
+from windrecorder.config import config
 
 if config.release_ver:
     ffmpeg_path = "env\\ffmpeg.exe"
@@ -39,9 +37,7 @@ try:
     # 读取之前闲时维护的时间
     with open(config.last_idle_maintain_file_path, "r", encoding="utf-8") as f:
         time_read = f.read()
-        last_idle_maintain_time = datetime.datetime.strptime(
-            time_read, "%Y-%m-%d_%H-%M-%S"
-        )
+        last_idle_maintain_time = datetime.datetime.strptime(time_read, "%Y-%m-%d_%H-%M-%S")
 except FileNotFoundError:
     with open(config.last_idle_maintain_file_path, "w", encoding="utf-8") as f:
         f.write(last_idle_maintain_time.strftime("%Y-%m-%d_%H-%M-%S"))
@@ -70,9 +66,7 @@ def index_video_data(video_saved_dir, vid_file_name):
             # 添加维护标识
             utils.add_maintain_lock_file("make")
 
-            maintainManager.ocr_process_single_video(
-                video_saved_dir, vid_file_name, "cache\\i_frames"
-            )
+            maintainManager.ocr_process_single_video(video_saved_dir, vid_file_name, "cache\\i_frames")
 
             # 移除维护标识
             utils.add_maintain_lock_file("del")
@@ -92,19 +86,17 @@ def record_screen(
     video_out_name = now.strftime("%Y-%m-%d_%H-%M-%S") + ".mp4"
     output_dir_with_date = now.strftime("%Y-%m")  # 将视频存储在日期月份子目录下
     video_saved_dir = os.path.join(output_dir, output_dir_with_date)
-    files.check_and_create_folder(video_saved_dir)
+    file_utils.check_and_create_folder(video_saved_dir)
     out_path = os.path.join(video_saved_dir, video_out_name)
 
-    files.check_and_create_folder(output_dir)
+    file_utils.check_and_create_folder(output_dir)
 
     # 获取屏幕分辨率并根据策略决定缩放
     screen_width, screen_height = utils.get_screen_resolution()
     target_scale_width, target_scale_height = record.get_scale_screen_res_strategy(
         origin_width=screen_width, origin_height=screen_height
     )
-    print(
-        f"Origin screen resolution: {screen_width}x{screen_height}, Resized to {target_scale_width}x{target_scale_height}."
-    )
+    print(f"Origin screen resolution: {screen_width}x{screen_height}, Resized to {target_scale_width}x{target_scale_height}.")
 
     ffmpeg_cmd = [
         ffmpeg_path,
@@ -138,7 +130,7 @@ def record_screen(
     # 执行命令
     try:
         # 添加服务监测信息
-        files.check_and_create_folder("cache")
+        file_utils.check_and_create_folder("cache")
         with open(config.record_lock_path, "w", encoding="utf-8") as f:
             f.write(str(getpid()))
         print("Windrecorder: Start Recording via FFmpeg")
@@ -161,13 +153,8 @@ def continuously_record_screen(screentime_detect_stop_event):
             subprocess.run("color 60", shell=True)  # 设定背景色为不活动
 
             # 算算是否该进入维护了（与上次维护时间相比）
-            timegap_between_last_idle_maintain = (
-                datetime.datetime.now() - last_idle_maintain_time
-            )
-            if (
-                timegap_between_last_idle_maintain > idle_maintain_time_gap
-                and not lock_idle_maintaining
-            ):  # 超时且无锁情况下
+            timegap_between_last_idle_maintain = datetime.datetime.now() - last_idle_maintain_time
+            if timegap_between_last_idle_maintain > idle_maintain_time_gap and not lock_idle_maintaining:  # 超时且无锁情况下
                 print(
                     f"Windrecorder: It is separated by {timegap_between_last_idle_maintain} from the last maintenance, enter idle maintenance."
                 )
@@ -208,9 +195,7 @@ def idle_maintain_process():
     lock_idle_maintaining = True
     # 维护之前退出没留下的视频
     if not utils.is_maintain_lock_file_valid():
-        thread_maintain_last_time = threading.Thread(
-            target=maintainManager.maintain_manager_main
-        )
+        thread_maintain_last_time = threading.Thread(target=maintainManager.maintain_manager_main)
         thread_maintain_last_time.start()
     # 清理过时视频
     maintainManager.remove_outdated_videofiles()
@@ -225,7 +210,7 @@ def idle_maintain_process():
 # 测试ffmpeg是否存在可用
 def test_ffmpeg():
     try:
-        res = subprocess.run([ffmpeg_path, "-version"])
+        subprocess.run([ffmpeg_path, "-version"])
     except FileNotFoundError:
         print("Error: ffmpeg is not installed! Please ensure ffmpeg is in the PATH.")
         exit(1)
@@ -247,9 +232,7 @@ def monitor_compare_screenshot(screentime_detect_stop_event):
                     screenshot_array = np.array(screenshot)
 
                     if last_screenshot_array is not None:
-                        similarity = maintainManager.compare_image_similarity_np(
-                            last_screenshot_array, screenshot_array
-                        )
+                        similarity = maintainManager.compare_image_similarity_np(last_screenshot_array, screenshot_array)
 
                         if similarity > 0.9:  # 对比检测阈值
                             monitor_change_rank += 0.5
@@ -257,9 +240,7 @@ def monitor_compare_screenshot(screentime_detect_stop_event):
                             monitor_change_rank = 0
 
                     last_screenshot_array = screenshot_array.copy()
-                    print(
-                        f"Windrecorder: monitor_change_rank:{monitor_change_rank}, similarity:{similarity}"
-                    )
+                    print(f"Windrecorder: monitor_change_rank:{monitor_change_rank}, similarity:{similarity}")
                     time.sleep(30)
             except Exception as e:
                 print("Windrecorder: Error occurred:", str(e))
@@ -283,15 +264,11 @@ if __name__ == "__main__":
 
     # 维护之前退出没留下的视频
     if not utils.is_maintain_lock_file_valid():
-        thread_maintain_last_time = threading.Thread(
-            target=maintainManager.maintain_manager_main
-        )
+        thread_maintain_last_time = threading.Thread(target=maintainManager.maintain_manager_main)
         thread_maintain_last_time.start()
 
     # 屏幕内容多长时间不变则暂停录制
-    print(
-        f"Windrecorder: config.screentime_not_change_to_pause_record: {config.screentime_not_change_to_pause_record}"
-    )
+    print(f"Windrecorder: config.screentime_not_change_to_pause_record: {config.screentime_not_change_to_pause_record}")
     screentime_detect_stop_event = threading.Event()  # 使用事件对象来检测检测函数是否意外被终止
     if config.screentime_not_change_to_pause_record > 0:  # 是否使用屏幕不变检测
         thread_monitor_compare_screenshot = threading.Thread(
@@ -325,10 +302,7 @@ if __name__ == "__main__":
         #     time.sleep(2) # 再歇
 
         # 如果屏幕重复画面检测线程意外出错，重启它
-        if (
-            not thread_monitor_compare_screenshot.is_alive()
-            and config.screentime_not_change_to_pause_record > 0
-        ):
+        if not thread_monitor_compare_screenshot.is_alive() and config.screentime_not_change_to_pause_record > 0:
             thread_monitor_compare_screenshot = threading.Thread(
                 target=monitor_compare_screenshot, args=(screentime_detect_stop_event,)
             )
