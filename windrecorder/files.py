@@ -22,10 +22,8 @@ def check_and_create_folder(folder_name):
         # 创建文件夹
         os.makedirs(folder_path)
         print(f"files: created folder {folder_name}")
-        return False
     else:
         print(f"files: folder existed:{folder_name}")
-        return True
 
 
 # 将数据库的视频名加上-OCRED标志，使之能正常读取到
@@ -277,13 +275,13 @@ def get_db_filepath_by_datetime(dt, db_dir=config.db_path, user_name=config.user
 
 
 # 将dataframe存储到csv文件
-def save_dataframe_to_path(dataframe, file_path="catch/temp.csv"):
+def save_dataframe_to_path(dataframe, file_path="cache/temp.csv"):
     """
     将DataFrame数据保存到指定路径
 
     参数:
     dataframe (pandas.DataFrame): 要保存的DataFrame数据
-    file_path (str): 要保存到的文件路径 默认为catch
+    file_path (str): 要保存到的文件路径 默认为cache
 
     返回:
     无
@@ -294,12 +292,12 @@ def save_dataframe_to_path(dataframe, file_path="catch/temp.csv"):
 
 
 # 从csv文件读取dataframe
-def read_dataframe_from_path(file_path="catch/temp.csv"):
+def read_dataframe_from_path(file_path="cache/temp.csv"):
     """
     从指定路径读取数据到DataFrame
 
     参数:
-    file_path (str): 要读取数据的文件路径 默认为catch
+    file_path (str): 要读取数据的文件路径 默认为cache
 
     返回:
     pandas.DataFrame: 读取到的DataFrame数据

@@ -65,7 +65,7 @@ def generate_all_word_lexicon_by_month():
 
         # 获取对应数据库的所有ocr数据
         print(all_db_files_dict[db_name])
-        ocr_text_filepath = get_month_ocr_result(utils.datetime_to_seconds(all_db_files_dict[db_name]), text_file_path = f"catch\\lexicon_ocr_temp.txt")
+        ocr_text_filepath = get_month_ocr_result(utils.datetime_to_seconds(all_db_files_dict[db_name]), text_file_path = f"cache\\lexicon_ocr_temp.txt")
         # 分词
         with open(ocr_text_filepath, "r", encoding='utf-8') as file:
             data = file.read()
@@ -169,7 +169,7 @@ def generate_word_cloud_pic(text_file_path,img_save_path,mask_img="month"):
 
 
 # 获取某个时间戳下当月的所有识别内容
-def get_month_ocr_result(timestamp, text_file_path = "catch/get_month_ocr_result_out.txt"):
+def get_month_ocr_result(timestamp, text_file_path = "cache/get_month_ocr_result_out.txt"):
     timestamp_datetime = utils.seconds_to_datetime(timestamp)
     #查询当月所有识别到的数据，存储在文本中
     date_in = datetime(timestamp_datetime.year,
@@ -188,14 +188,14 @@ def get_month_ocr_result(timestamp, text_file_path = "catch/get_month_ocr_result
     # 移除换行符
     ocr_text_data = ocr_text_data.replace("\n", "").replace("\r", "")
     # 输出到文件
-    files.check_and_create_folder("catch")
+    files.check_and_create_folder("cache")
     
     with open(text_file_path, "w", encoding='utf-8') as file:
         file.write(ocr_text_data)
     return text_file_path
 
     # 以csv列输出
-    # output_file = "catch/out.txt"
+    # output_file = "cache/out.txt"
     # ocr_text_data.to_csv(output_file, index=False, header=False, sep="\t")
 
 
@@ -218,8 +218,8 @@ def get_day_ocr_result(timestamp):
     # 移除换行符
     ocr_text_data = ocr_text_data.replace("\n", "").replace("\r", "")
     # 输出到文件
-    files.check_and_create_folder("catch")
-    text_file_path = "catch/get_day_ocr_result_out.txt"
+    files.check_and_create_folder("cache")
+    text_file_path = "cache/get_day_ocr_result_out.txt"
     with open(text_file_path, "w", encoding='utf-8') as file:
         file.write(ocr_text_data)
     return text_file_path

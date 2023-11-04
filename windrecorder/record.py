@@ -10,7 +10,7 @@ from send2trash import send2trash
 # 检测是否正在录屏
 def is_recording():
     try:
-        with open("catch\\LOCK_FILE_RECORD.MD", encoding='utf-8') as f:
+        with open("cache\\LOCK_FILE_RECORD.MD", encoding='utf-8') as f:
             check_pid = int(f.read())
 
         check_result = subprocess.run(['tasklist'], stdout=subprocess.PIPE, text=True)

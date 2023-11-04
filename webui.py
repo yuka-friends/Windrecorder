@@ -232,8 +232,8 @@ def get_show_month_data_state(stat_select_month_datetime: datetime.datetime):
         st.session_state.df_month_stat_dt = stat_select_month_datetime
 
     df_file_name = stat_select_month_datetime.strftime("%Y-%m") + "_month_data_state.csv"
-    df_catch_dir = "catch"
-    df_filepath = os.path.join(df_catch_dir, df_file_name)
+    df_cache_dir = "cache"
+    df_filepath = os.path.join(df_cache_dir, df_file_name)
 
     update_condition = False
     if not st.session_state.df_month_stat.empty and utils.set_full_datetime_to_YYYY_MM(
@@ -271,8 +271,8 @@ def get_show_year_data_state(stat_select_year_datetime: datetime.datetime):
         st.session_state.df_year_stat = pd.DataFrame()
 
     df_file_name = stat_select_year_datetime.strftime("%Y") + "_year_data_state.csv"
-    df_catch_dir = "catch"
-    df_filepath = os.path.join(df_catch_dir, df_file_name)
+    df_cache_dir = "cache"
+    df_filepath = os.path.join(df_cache_dir, df_file_name)
 
     if st.session_state.df_year_stat.empty:  # 页面内无缓存
 
@@ -614,8 +614,8 @@ with tab1:
                       color="#AC79D5")
 
         # 初始化懒加载状态
-        if 'catch_videofile_ondisk_list_oneday' not in st.session_state:  # 减少io查询，预拿视频文件列表供比对是否存在
-            st.session_state.catch_videofile_ondisk_list_oneday = files.get_file_path_list(config.record_videos_dir)
+        if 'cache_videofile_ondisk_list_oneday' not in st.session_state:  # 减少io查询，预拿视频文件列表供比对是否存在
+            st.session_state.cache_videofile_ondisk_list_oneday = files.get_file_path_list(config.record_videos_dir)
 
         # 视频展示区域
         col1a, col2a, col3a = st.columns([1, 3, 1])
@@ -625,7 +625,7 @@ with tab1:
                 # 如果是搜索视图，这里展示全部的搜索结果
                 df_day_search_result_refine = DBManager().db_refine_search_data_day(
                     st.session_state.df_day_search_result,
-                    catch_videofile_ondisk_list=st.session_state.catch_videofile_ondisk_list_oneday)  # 优化下数据展示
+                    cache_videofile_ondisk_list=st.session_state.cache_videofile_ondisk_list_oneday)  # 优化下数据展示
                 draw_dataframe(df_day_search_result_refine)
             else:
                 # # 时间轴拖动视图 - 切换前后视频片段
@@ -710,7 +710,7 @@ with tab1:
                     found_row = st.session_state.df_day_search_result.loc[
                         st.session_state.day_search_result_index_num].to_frame().T
                     found_row = DBManager().db_refine_search_data_day(found_row,
-                                                                      catch_videofile_ondisk_list=st.session_state.catch_videofile_ondisk_list_oneday)  # 优化下数据展示
+                                                                      cache_videofile_ondisk_list=st.session_state.cache_videofile_ondisk_list_oneday)  # 优化下数据展示
                     draw_dataframe(found_row, heightIn=0)
 
             else:
@@ -738,7 +738,7 @@ with tab1:
                     if is_data_found:
                         st.info(d_lang[config.lang]["oneday_text_not_found_vid_but_has_data"], icon="🎐")
                         found_row = DBManager().db_refine_search_data_day(found_row,
-                                                                          catch_videofile_ondisk_list=st.session_state.catch_videofile_ondisk_list_oneday)  # 优化下数据展示
+                                                                          cache_videofile_ondisk_list=st.session_state.cache_videofile_ondisk_list_oneday)  # 优化下数据展示
                         draw_dataframe(found_row, heightIn=0)
                     else:
                         # 如果是当天第一次打开但数据库正在索引因而无法访问
@@ -825,8 +825,8 @@ with tab2:
             st.session_state.search_date_range_in = datetime.datetime.today() - datetime.timedelta(seconds=86400)
         if 'search_date_range_out' not in st.session_state:
             st.session_state.search_date_range_out = datetime.datetime.today()
-        if 'catch_videofile_ondisk_list' not in st.session_state:  # 减少io查询，预拿视频文件列表供比对是否存在
-            st.session_state.catch_videofile_ondisk_list = files.get_file_path_list(config.record_videos_dir)
+        if 'cache_videofile_ondisk_list' not in st.session_state:  # 减少io查询，预拿视频文件列表供比对是否存在
+            st.session_state.cache_videofile_ondisk_list = files.get_file_path_list(config.record_videos_dir)
 
         col1_gstype, col2_gstype = st.columns([10, 1])
         with col1_gstype:
@@ -945,7 +945,7 @@ with tab2:
             else:
                 # 打表
                 df = DBManager().db_refine_search_data_global(df,
-                                                              catch_videofile_ondisk_list=st.session_state.catch_videofile_ondisk_list)  # 优化数据显示
+                                                              cache_videofile_ondisk_list=st.session_state.cache_videofile_ondisk_list)  # 优化数据显示
                 draw_dataframe(df, heightIn=800)
 
             timeCost_globalSearch = round(time.time() - timeCost_globalSearch, 5)

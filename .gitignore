@@ -14,7 +14,7 @@ LOCK_FILE_RECORD.MD
 result_wordcloud
 result_timeline
 result_lightbox
-catch
+cache
 config/config_user.json
 .vscode/settings.json
 test.png

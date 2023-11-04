@@ -66,7 +66,7 @@ def extract_iframe(video_file, iframe_interval=4000):
 
         if frame_cnt % frame_step == 0:
             print("maintainManager: extract frame cut:" + str(frame_cnt))
-            cv2.imwrite('catch\\i_frames\\%d.jpg' % frame_cnt, frame)
+            cv2.imwrite('cache\\i_frames\\%d.jpg' % frame_cnt, frame)
 
         frame_cnt += 1
 
@@ -179,20 +179,18 @@ def ocr_image_ms(img_input):
 # 计算两次结果的重合率
 def compare_strings(a, b, threshold=70):
     print("maintainManager: Calculate the coincidence rate of two results")
-    # print(f"a:{a}")
-    # print(f"b:{b}")
 
     # a 和 b 都不含任何文字
-    if len(set(a) | set(b)) == 0:
+    if not a and not b:
         return True, 0
 
-    # if len(a) == 0 or len(b) == 0:
-    #     return True, 0
-    
     if a.isspace() and b.isspace():
         return True, 0
 
     # 计算两个字符串的重合率
+    # TODO: WTF is this?
+    # For example:
+    # "ababababab" is very similar to "aaaaabbbbb"
     overlap = len(set(a) & set(b)) / len(set(a) | set(b)) * 100
     print("overlap:" + str(overlap))
 
@@ -317,7 +315,7 @@ def ocr_process_single_video(video_path, vid_file_name, iframe_path):
     # - 提取i帧
     extract_iframe(file_path)
     # 裁剪图片
-    crop_iframe('catch\\i_frames')
+    crop_iframe('cache\\i_frames')
 
     img1_path_temp = ""
     img2_path_temp = ""
@@ -436,8 +434,8 @@ def ocr_process_videos(video_path, iframe_path):
                 new_name_dir = os.path.dirname(full_file_path)
                 os.rename(full_file_path, os.path.join(new_name_dir, new_name))
                 
-                files.check_and_create_folder("catch")
-                with open("catch\\LOG_ERROR_" + str(new_name) + ".MD", 'w', encoding='utf-8') as f:
+                files.check_and_create_folder("cache")
+                with open("cache\\LOG_ERROR_" + str(new_name) + ".MD", 'w', encoding='utf-8') as f:
                     f.write(str(datetime.datetime.now().strftime("%Y-%m-%d_%H-%M-%S")) + '\n' + str(e))
 
 
@@ -491,7 +489,7 @@ def backup_dbfile(db_filepath, keep_items_num = 15, make_new_backup_timegap = da
     if db_filepath.endswith("_TEMP_READ.db"):
         return False
 
-    db_backup_filepath = "catch\\db_backup"
+    db_backup_filepath = "cache\\db_backup"
     files.check_and_create_folder(db_backup_filepath)
     db_filelist_name = files.get_file_path_list_first_level(db_backup_filepath)
     make_new_backup_state = False
@@ -544,7 +542,7 @@ def maintain_manager_main():
     utils.add_maintain_lock_file(lock="make")
 
     record_videos_dir = config.record_videos_dir
-    i_frames_dir = 'catch\\i_frames'
+    i_frames_dir = 'cache\\i_frames'
 
     if not os.path.exists(i_frames_dir):
         os.mkdir(i_frames_dir)

@@ -246,7 +246,7 @@ def get_days_in_month(year, month):
 # 结束录屏服务进程
 def kill_recording():
     try:
-        with open("catch\\LOCK_FILE_RECORD.MD", encoding='utf-8') as f:
+        with open("cache\\LOCK_FILE_RECORD.MD", encoding='utf-8') as f:
             check_pid = int(f.read())
         check_result = subprocess.run(['taskkill', '/pid', str(check_pid), '-t','-f'], stdout=subprocess.PIPE, text=True)
         # os.kill(check_pid, signal.SIGINT) #通过发送中断信号来停止，但是失败了
@@ -387,8 +387,8 @@ def image_to_base64(image_path):
 
 # 添加维护锁文件标识
 def add_maintain_lock_file(lock="make"):
-    files.check_and_create_folder("catch")
-    lock_filepath = "catch\\LOCK_MAINTAIN.MD"
+    files.check_and_create_folder("cache")
+    lock_filepath = "cache\\LOCK_MAINTAIN.MD"
     if lock == "make":
         with open(lock_filepath, 'w', encoding='utf-8') as f:
             f.write(str(datetime.datetime.now().strftime("%Y-%m-%d_%H-%M-%S")))
@@ -401,7 +401,7 @@ def add_maintain_lock_file(lock="make"):
 
 # 检查db是否是有合法的、正在维护中的锁（超过一定时间则解锁），否的话可以执行任务，是的话暂时不执行
 def is_maintain_lock_file_valid(gap=datetime.timedelta(minutes=16)):
-    lock_filepath = "catch\\LOCK_MAINTAIN.MD"
+    lock_filepath = "cache\\LOCK_MAINTAIN.MD"
     if os.path.exists(lock_filepath):
         with open(lock_filepath, 'r', encoding='utf-8') as f:
             last_maintain_locktime = date_to_datetime(str(f.read()))

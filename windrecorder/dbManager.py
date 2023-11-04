@@ -332,18 +332,18 @@ class DBManager:
 
 
     # 优化全局搜索数据结果的展示
-    def db_refine_search_data_global(self, df, catch_videofile_ondisk_list = None):
+    def db_refine_search_data_global(self, df, cache_videofile_ondisk_list = None):
         # 1. Add a new column "locate_time"
         df["locate_time"] = df.apply(lambda row: utils.convert_seconds_to_hhmmss(utils.get_video_timestamp_by_filename_and_abs_timestamp(row["videofile_name"], row["videofile_time"])), axis=1)
         df["timestamp"] = df.apply(lambda row: utils.seconds_to_date_goodlook_formart(row['videofile_time']), axis=1)
         df['thumbnail'] = 'data:image/png;base64,' + df['thumbnail']
 
         # 磁盘上有无对应视频检测
-        catch_videofile_ondisk_str = ''
-        if catch_videofile_ondisk_list is None:
-            catch_videofile_ondisk_str = catch_videofile_ondisk_str.join(files.get_file_path_list(config.record_videos_dir))
+        cache_videofile_ondisk_str = ''
+        if cache_videofile_ondisk_list is None:
+            cache_videofile_ondisk_str = cache_videofile_ondisk_str.join(files.get_file_path_list(config.record_videos_dir))
         else:
-            catch_videofile_ondisk_str = catch_videofile_ondisk_str.join(catch_videofile_ondisk_list)
+            cache_videofile_ondisk_str = cache_videofile_ondisk_str.join(cache_videofile_ondisk_list)
         
 
         def is_videofile_ondisk(filename, video_ondisk_str):
@@ -352,7 +352,7 @@ class DBManager:
             else:
                 return False
         
-        df['videofile'] = df.apply(lambda row: is_videofile_ondisk(row['videofile_name'], catch_videofile_ondisk_str), axis=1)
+        df['videofile'] = df.apply(lambda row: is_videofile_ondisk(row['videofile_name'], cache_videofile_ondisk_str), axis=1)
 
         # 2. Remove specified columns
         df = df.drop(columns=["picturefile_name", "is_picturefile_exist", "is_videofile_exist"])
@@ -363,17 +363,17 @@ class DBManager:
     
 
     # 优化一天之时数据结果的展示
-    def db_refine_search_data_day(self, df, catch_videofile_ondisk_list = None):
+    def db_refine_search_data_day(self, df, cache_videofile_ondisk_list = None):
         df["locate_time"] = df.apply(lambda row: utils.convert_seconds_to_hhmmss(utils.get_video_timestamp_by_filename_and_abs_timestamp(row["videofile_name"], row["videofile_time"])), axis=1)
         df["timestamp"] = df.apply(lambda row: utils.seconds_to_date_dayHMS(row['videofile_time']), axis=1)
         df['thumbnail'] = 'data:image/png;base64,' + df['thumbnail']
 
         # 磁盘上有无对应视频检测
-        catch_videofile_ondisk_str = ''
-        if catch_videofile_ondisk_list is None:
-            catch_videofile_ondisk_str = catch_videofile_ondisk_str.join(files.get_file_path_list(config.record_videos_dir))
+        cache_videofile_ondisk_str = ''
+        if cache_videofile_ondisk_list is None:
+            cache_videofile_ondisk_str = cache_videofile_ondisk_str.join(files.get_file_path_list(config.record_videos_dir))
         else:
-            catch_videofile_ondisk_str = catch_videofile_ondisk_str.join(catch_videofile_ondisk_list)
+            cache_videofile_ondisk_str = cache_videofile_ondisk_str.join(cache_videofile_ondisk_list)
         
 
         def is_videofile_ondisk(filename, video_ondisk_str):
@@ -382,7 +382,7 @@ class DBManager:
             else:
                 return False
         
-        df['videofile'] = df.apply(lambda row: is_videofile_ondisk(row['videofile_name'], catch_videofile_ondisk_str), axis=1)
+        df['videofile'] = df.apply(lambda row: is_videofile_ondisk(row['videofile_name'], cache_videofile_ondisk_str), axis=1)
         df = df.drop(columns=["picturefile_name", "is_picturefile_exist", "is_videofile_exist"])
         
         df = df[["thumbnail", "timestamp", "ocr_text", "videofile", "videofile_name", "locate_time", "videofile_time"]]
@@ -578,7 +578,7 @@ class DBManager:
         db_filename = os.path.basename(db_filepath)
 
         try:
-            with open("catch\\LOCK_MAINTAIN.MD", encoding='utf-8') as f:
+            with open("cache\\LOCK_MAINTAIN.MD", encoding='utf-8') as f:
                 dt_maintain = f.read()
             sign_maintain = True
         except:
