@@ -42,11 +42,9 @@ try:
         last_idle_maintain_time = datetime.datetime.strptime(
             time_read, "%Y-%m-%d_%H-%M-%S"
         )
-except:
-    files.check_and_create_folder("cache")
+except FileNotFoundError:
     with open(config.last_idle_maintain_file_path, "w", encoding="utf-8") as f:
-        f.write(datetime.datetime.now().strftime("%Y-%m-%d_%H-%M-%S"))
-    last_idle_maintain_time = datetime.datetime.now()  # 上次闲时维护时间
+        f.write(last_idle_maintain_time.strftime("%Y-%m-%d_%H-%M-%S"))
 
 
 # 判断是否已锁屏

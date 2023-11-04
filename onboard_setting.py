@@ -8,12 +8,9 @@ from windrecorder.config import config
 import windrecorder.maintainManager as maintainManager
 import windrecorder.utils as utils
 import windrecorder.record as record
+from windrecorder.utils import get_text as _t
 
 ALLSTEPS = 5
-
-# 读取i18n
-with open("config\\src\\languages.json", encoding="utf-8") as f:
-    d_lang = json.load(f)
 
 # 清理缓存
 if os.path.exists("cache"):
@@ -83,17 +80,17 @@ while True:
         sys_username = getpass.getuser()
     else:
         sys_username = config.user_name
-    print(d_lang[config.lang]["qs_un_set_your_username"])
-    print(d_lang[config.lang]["qs_un_describe"].format(sys_username=sys_username))
+    print(_t("qs_un_set_your_username"))
+    print(_t("qs_un_describe").format(sys_username=sys_username))
     divider()
     your_username = input("> ")
     if len(your_username) > 20:
-        print(d_lang[config.lang]["qs_un_longer_than_expect"])
+        print(_t("qs_un_longer_than_expect"))
         divider()
         subprocess.run("pause", shell=True)
     elif len(your_username) == 0:
         print(
-            d_lang[config.lang]["qs_un_use_current_name"].format(
+            _t("qs_un_use_current_name").format(
                 sys_username=sys_username
             )
         )
@@ -101,7 +98,7 @@ while True:
         break
     else:
         print(
-            d_lang[config.lang]["qs_un_use_custom_name"].format(
+            _t("qs_un_use_custom_name").format(
                 your_username=your_username
             )
         )
@@ -119,7 +116,7 @@ os_support_lang = utils.get_os_support_lang()
 if len(os_support_lang) > 1:
     while True:
         print_header(step=3)
-        print(d_lang[config.lang]["qs_olang_intro"])
+        print(_t("qs_olang_intro"))
         utils.print_numbered_list(os_support_lang)
         divider()
 
@@ -130,20 +127,20 @@ if len(os_support_lang) > 1:
                     "ocr_lang", os_support_lang[input_ocr_lang_num - 1]
                 )
                 print(
-                    d_lang[config.lang]["qs_olang_ocrlang_set_to"],
+                    _t("qs_olang_ocrlang_set_to"),
                     os_support_lang[input_ocr_lang_num - 1],
                 )
                 subprocess.run("pause", shell=True)
                 break
 
         except ValueError:
-            print(d_lang[config.lang]["qs_olang_error"])
+            print(_t("qs_olang_error"))
             subprocess.run("pause", shell=True)
 
 else:
     print_header(step=3)
     print(
-        d_lang[config.lang]["qs_olang_one_choice_default_set"].format(
+        _t("qs_olang_one_choice_default_set").format(
             os_support_lang=os_support_lang[0]
         )
     )
@@ -186,46 +183,46 @@ _, ocr_correct_ms = maintainManager.compare_strings(ocr_result_ms, ocr_text_refe
 
 while True:
     print_header(step=3)
-    print(d_lang[config.lang]["qs_ocr_title"])
+    print(_t("qs_ocr_title"))
 
     if ocr_result_ms:
         print("- Windows.Media.Ocr.Cli   OCR languages: ", config.ocr_lang)
         print(
-            d_lang[config.lang]["qs_ocr_result_describe"].format(
+            _t("qs_ocr_result_describe").format(
                 accuracy=ocr_correct_ms,
                 timecost=time_cost_ms,
                 timecost_15=utils.convert_seconds_to_hhmmss(int(time_cost_ms * 350)),
             )
         )
         if ocr_correct_ms < 50:
-            print(d_lang[config.lang]["qs_ocr_tips_low_accuracy"])
+            print(_t("qs_ocr_tips_low_accuracy"))
 
     break
 
     # if ocr_result_col:
     #     print("- chineseocr_lite_onnx")
     #     # print("准确率：", ocr_correct_col, "，识别时间：", time_cost_col, "，索引15分钟视频约用时：", utils.convert_seconds_to_hhmmss(int(time_cost_col*350)))
-    #     print(d_lang[config.lang]["qs_ocr_result_describe"].format(accuracy=ocr_correct_col, timecost=time_cost_col , timecost_15=utils.convert_seconds_to_hhmmss(int(time_cost_col*350))))
+    #     print(_t("qs_ocr_result_describe").format(accuracy=ocr_correct_col, timecost=time_cost_col , timecost_15=utils.convert_seconds_to_hhmmss(int(time_cost_col*350))))
     # else:
-    #     print(d_lang[config.lang]["qs_ocr_describe_disable_clo"])
+    #     print(_t("qs_ocr_describe_disable_clo"))
 
     # divider()
-    # print(d_lang[config.lang]["qs_ocr_describe"])
-    # print(d_lang[config.lang]["qs_ocr_cta"])
-    # print("1. Windows.Media.Ocr.Cli", d_lang[config.lang]["qs_ocr_option_recommand"], "\n2. chineseocr_lite_onnx")
+    # print(_t("qs_ocr_describe"))
+    # print(_t("qs_ocr_cta"))
+    # print("1. Windows.Media.Ocr.Cli", _t("qs_ocr_option_recommand"), "\n2. chineseocr_lite_onnx")
     # input_lang_num = input('> ')
 
     # if input_lang_num == '2':
     #     if config.enable_ocr_chineseocr_lite_onnx:
     #         config.set_and_save_config("ocr_engine", "chineseocr_lite_onnx")
-    #         print(d_lang[config.lang]["qs_ocr_option_recommand"], "chineseocr_lite_onnx")
+    #         print(_t("qs_ocr_option_recommand"), "chineseocr_lite_onnx")
     #     else:
     #         config.set_and_save_config("ocr_engine", "Windows.Media.Ocr.Cli")
-    #         print(d_lang[config.lang]["qs_ocr_engine_chosen"], "Windows.Media.Ocr.Cli")
+    #         print(_t("qs_ocr_engine_chosen"), "Windows.Media.Ocr.Cli")
     #     break
     # else:
     #     config.set_and_save_config("ocr_engine", "Windows.Media.Ocr.Cli")
-    #     print(d_lang[config.lang]["qs_ocr_engine_chosen"], "Windows.Media.Ocr.Cli")
+    #     print(_t("qs_ocr_engine_chosen"), "Windows.Media.Ocr.Cli")
     #     break
 
 divider()
@@ -235,7 +232,7 @@ subprocess.run("pause", shell=True)
 # 设置显示器
 while True:
     print_header(step=4)
-    print(d_lang[config.lang]["qs_mo_describe"])
+    print(_t("qs_mo_describe"))
 
     monitor_width = utils.get_screen_resolution().width
     monitor_height = utils.get_screen_resolution().height
@@ -244,14 +241,14 @@ while True:
     )
 
     print(
-        d_lang[config.lang]["qs_mo_detect"].format(
+        _t("qs_mo_detect").format(
             monitor_width=monitor_width,
             monitor_height=monitor_height,
             scale_width=scale_width,
             scale_height=scale_height,
         )
     )
-    print(d_lang[config.lang]["qs_mo_cta"])
+    print(_t("qs_mo_cta"))
     break
 
 divider()
@@ -260,7 +257,7 @@ subprocess.run("pause", shell=True)
 
 # 完成初始化设定
 print_header(step=5)
-print(d_lang[config.lang]["qs_end_describe"])
-print(d_lang[config.lang]["qs_end_slogan"])
-print(d_lang[config.lang]["qs_end_feedback"])
+print(_t("qs_end_describe"))
+print(_t("qs_end_slogan"))
+print(_t("qs_end_feedback"))
 divider()

@@ -492,3 +492,11 @@ def get_os_support_lang():
     lines = text.replace('\r','').split('\n')  # 将字符串按行分割为列表
     extracted_lines = lines[1:-1]  # 获取第二行开始的所有行
     return extracted_lines
+
+
+with open("config\\src\\languages.json", encoding="utf-8") as f:
+    d_lang = json.load(f)
+
+
+def get_text(text_key):
+    return d_lang[config.lang].get(text_key, "")
