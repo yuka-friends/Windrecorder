@@ -1242,6 +1242,7 @@ with tab4:
         st.divider()
         st.markdown(_t("rs_md_record_setting_title"))
 
+        # 录制选项
         col1_record, col2_record = st.columns([1, 1])
         with col1_record:
             if "is_create_startup_shortcut" not in st.session_state:
@@ -1256,6 +1257,12 @@ with tab4:
         with col2_record:
             st.markdown(_t("rs_md_only_support_main_monitor"), unsafe_allow_html=True)
 
+        record_screen_enable_half_res_while_hidpi = st.checkbox(
+            _t("rs_checkbox_enable_half_res_while_hidpi"),
+            help=_t("rs_text_enable_half_res_while_hidpi"),
+            value=config.record_screen_enable_half_res_while_hidpi,
+        )
+
         screentime_not_change_to_pause_record = st.number_input(
             _t("rs_input_stop_recording_when_screen_freeze"),
             value=config.screentime_not_change_to_pause_record,
@@ -1264,7 +1271,7 @@ with tab4:
 
         st.divider()
 
-        # 自动化维护选项 WIP
+        # 自动化维护选项
         st.markdown(_t("set_md_auto_maintain"))
         ocr_strategy_option_dict = {
             _t("rs_text_ocr_manual_update"): 0,
@@ -1303,10 +1310,8 @@ with tab4:
         st.divider()
 
         if st.button("Save and Apple All Change / 保存并应用所有更改", type="primary", key="SaveBtnRecord"):
-            config.set_and_save_config(
-                "screentime_not_change_to_pause_record",
-                screentime_not_change_to_pause_record,
-            )
+            config.set_and_save_config("screentime_not_change_to_pause_record", screentime_not_change_to_pause_record)
+            config.set_and_save_config("record_screen_enable_half_res_while_hidpi", record_screen_enable_half_res_while_hidpi)
             config.set_and_save_config("OCR_index_strategy", ocr_strategy_option_dict[ocr_strategy_option])
             config.set_and_save_config("vid_store_day", vid_store_day)
             config.set_and_save_config("vid_compress_day", vid_compress_day)

@@ -16,6 +16,7 @@ class Config:
         db_filename,
         record_videos_dir,
         record_seconds,
+        record_screen_enable_half_res_while_hidpi,
         lang,
         ocr_lang,
         ocr_engine,
@@ -48,6 +49,7 @@ class Config:
         self.db_filepath = os.path.join(self.db_path, self.db_filename)
         self.record_videos_dir = record_videos_dir
         self.record_seconds = record_seconds
+        self.record_screen_enable_half_res_while_hidpi = record_screen_enable_half_res_while_hidpi
         self.lang = lang
         self.ocr_lang = ocr_lang
         self.ocr_engine = ocr_engine

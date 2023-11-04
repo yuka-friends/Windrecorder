@@ -99,7 +99,7 @@ def get_scale_screen_res_strategy(origin_width=1920, origin_height=1080):
     target_scale_width = origin_width
     target_scale_height = origin_height
 
-    if origin_height > 1500:
+    if origin_height > 1500 and config.record_screen_enable_half_res_while_hidpi:  # 高分屏缩放至四分之一策略
         target_scale_width = int(origin_width / 2)
         target_scale_height = int(origin_height / 2)
 
