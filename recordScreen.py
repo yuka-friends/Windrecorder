@@ -39,6 +39,7 @@ try:
         time_read = f.read()
         last_idle_maintain_time = datetime.datetime.strptime(time_read, "%Y-%m-%d_%H-%M-%S")
 except FileNotFoundError:
+    file_utils.check_and_create_folder("cache")
     with open(config.last_idle_maintain_file_path, "w", encoding="utf-8") as f:
         f.write(last_idle_maintain_time.strftime("%Y-%m-%d_%H-%M-%S"))
 
