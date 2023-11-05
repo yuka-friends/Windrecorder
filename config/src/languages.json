@@ -123,6 +123,8 @@
         "set_update_new": "\n💫 A new version {tool_version} has been detected. Update by opening `install_update_setting.bat` file in the directory.",
         "set_update_fail": "Failed to check for updates. {e}",
         
+        "qs_config_indicator": "   ← Current options",
+        "qs_la_text_same_as_previous": "The interface language remains the same as before: English",
         "qs_un_set_your_username": "Set your username as a database identifier.",
         "qs_un_describe": "Press enter to use the current username: [{sys_username}], or type a custom username (up to 20 characters).",
         "qs_un_longer_than_expect": "Exceeded the length limit (20 half-width English characters / 10 full-width Chinese characters).",
@@ -141,7 +143,7 @@
         "qs_ocr_option_recommand": "(Recommended & Default)",
         "qs_ocr_engine_chosen": "OCR Engine Used:",
         "qs_mo_describe": "Note: Due to the lack of official support for multiple monitors in pyautogui, Windrecorder will only record the screen set as the 'primary display' in Windows.\n",
-        "qs_mo_detect": "The detected resolution of the primary display is: {monitor_width}x{monitor_height}, and the recorded video resolution will be: {scale_width}x{scale_height}.",
+        "qs_mo_detect": "The detected resolution of the primary display is: {monitor_width}x{monitor_height}",
         "qs_mo_cta": "This setting will be automatically detected each time you start recording, so you don't need to choose or set it separately.",
         "qs_end_describe": "Congratulations! You have completed all the initial settings. Don't worry, you can open 'start_webui.bat' at any time to adjust the settings!\n\nNow, you can open 'start_record.bat' in the directory to start recording the screen content.\nUse 'start_webui.bat' in the directory to index your data and adjust more personalized options.\n",
         "qs_end_slogan": "> Capture and preserve the fleeting moments of the wind, as seen through your eyes.",
@@ -231,7 +233,7 @@
         "rs_selectbox_compress_ratio": "压缩到原先画面尺寸的",
         "rs_selectbox_compress_ratio_help": "0.75 倍的边缩放约可压缩到原视频体积的 1/4，0.5 倍为 1/8，0.25 倍为 1/16。根据视频具体内容不同，压缩比可能有所差异。",
         "rs_checkbox_enable_half_res_while_hidpi": "对于「高 DPI /高分辨率屏幕」，在录制时缩放至四分之一的分辨率",
-        "rs_text_enable_half_res_while_hidpi": "对于高度大于 1500 的屏幕分辨率，将被视为「高 DPI /高分辨率屏幕」，其录制视频分辨率将缩小至原来的四分之一。比如在 3840x2160 的 4k 显示器上，录制视频的分辨率将为 1920x1080。开启该选项后，可以降低一开始录制视频的体积，但也会导致 OCR 识别准确率的下降。如果你在高分辨率屏幕上使用较小的字体/缩放、或发现 OCR 识别的准确率较低，可以关闭此选项。",
+        "rs_text_enable_half_res_while_hidpi": "对于高度大于 1500 的屏幕分辨率，将被视为「高 DPI /高分辨率屏幕」，其录制视频分辨率将缩小至原来的四分之一。比如在 3840x2160 的 4k 显示器上，录制视频的分辨率将为 1920x1080。开启该选项后，可以稍微减少录制视频时的体积，但也会导致 OCR 识别准确率的下降。如果你在高分辨率屏幕上使用较小的字体/缩放、或发现 OCR 识别的准确率较低，可以关闭此选项。",
 
         "set_md_title": "### ⚙️ 设置",
         "set_md_index_db": "#### 数据库索引\n",
@@ -272,7 +274,8 @@
         "set_update_new": "\n💫 检查到有新版本 {tool_version}，请通过打开目录下的`install_update_setting.bat`以更新。",
         "set_update_fail": "无法检查更新。{e}",
 
-
+        "qs_config_indicator": "   ← 当前选项",
+        "qs_la_text_same_as_previous": "界面语言保持与先前一致的：简体中文",
         "qs_un_set_your_username": "设定你的用户名，以作为数据库标识。",
         "qs_un_describe": "回车直接使用当前用户名作为用户标识：「{sys_username}」，也可以输入自定义用户名（20个字符以内）。",
         "qs_un_longer_than_expect": "超出限定长度（20个半角英文字符/10个全角中文字符）",
@@ -291,7 +294,7 @@
         "qs_ocr_option_recommand": "（推荐 & 默认）",
         "qs_ocr_engine_chosen": "OCR 引擎使用：",
         "qs_mo_describe": "注意：由于 pyautogui 暂未官方支持多显示器，捕风记录仪将只记录 Windows 下设置的【主显示器】\n",
-        "qs_mo_detect": "当前检测到的主显示器分辨率为：{monitor_width}x{monitor_height}，将录制的视频分辨率为：{scale_width}x{scale_height}。",
+        "qs_mo_detect": "当前检测到的主显示器分辨率为：{monitor_width}x{monitor_height}",
         "qs_mo_cta": "此项设定将在每次录屏时自动识别，无需额外选择与设定。",
         "qs_end_describe": "恭喜！你已完成所有初始设定。别担心，你可以随时打开 【start_webui.bat】 来调整设置！\n\n现在，你可以打开目录下的 【start_record.bat】 来开始记录屏幕内容啦。\n通过打开目录下的 【start_webui.bat】 来索引你的数据、调整更多个性化选项。\n",
         "qs_end_slogan": "> 一起捕捉贮藏风一般掠过的、你的目之所见。",
@@ -423,6 +426,8 @@
         "set_update_new": "\n💫 新しいバージョン {tool_version} が見つかりました。アップデートするには、ディレクトリ内の `install_update_setting.bat` を開いてください。",
         "set_update_fail": "更新を確認できませんでした。{e}",
         
+        "qs_config_indicator": "   ← 現在のオプション",
+        "qs_la_text_same_as_previous": "インターフェイス言語は以前と同じで日本語です。",
         "qs_un_set_your_username": "データベースの識別子として使用するユーザー名を設定してください。",
         "qs_un_describe": "Enterキーを押すと現在のユーザー名（{sys_username}）を使用することもできます。または、カスタムのユーザー名（20文字以内）を入力することもできます。",
         "qs_un_longer_than_expect": "制限の長さを超えています（半角英数字20文字/全角日本語10文字）",
@@ -441,7 +446,7 @@
         "qs_ocr_option_recommand": "（おすすめ＆デフォルト）",
         "qs_ocr_engine_chosen": "使用されるOCRエンジン：",
         "qs_mo_describe": "注意：pyautoguiは公式に複数のディスプレイをサポートしていないため、WindrecorderはWindowsで設定された【メインディスプレイ】のみを記録します。\n",
-        "qs_mo_detect": "現在検出されたメインディスプレイの解像度は{monitor_width}x{monitor_height}で、録画されるビデオの解像度は{scale_width}x{scale_height}です。",
+        "qs_mo_detect": "現在検出されたメインディスプレイの解像度は{monitor_width}x{monitor_height}",
         "qs_mo_cta": "この設定は画面録画時に自動的に識別され、追加の選択や設定は必要ありません。",
         "qs_end_describe": "おめでとうございます！すべての初期設定が完了しました。心配しないでください、設定を調整するためにいつでも【start_webui.bat】を開くことができます！\n\nさあ、ディレクトリ内の【start_record.bat】を開いて画面の記録を開始しましょう。\nデータを索引化し、より多くのパーソナライズオプションを調整するには、ディレクトリ内の【start_webui.bat】を開いてください。\n",
         "qs_end_slogan": "> 一緒に、あなたの目が見た、風のように過ぎ去るものをキャプチャしましょう。",

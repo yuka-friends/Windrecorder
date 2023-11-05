@@ -1,12 +1,15 @@
-from PIL import  Image
-import numpy as np
 import cv2
+import numpy as np
+import onnxruntime as rt
+from PIL import Image
+
 from .keys import alphabetChinese as alphabet
+
+# from util import strLabelConverter, resizeNormalize
+from .util import resizeNormalize, strLabelConverter
+
 # from keys import alphabetChinese as alphabet
 
-import onnxruntime as rt
-# from util import strLabelConverter, resizeNormalize
-from .util import strLabelConverter, resizeNormalize
 
 converter = strLabelConverter(''.join(alphabet))
 
@@ -22,7 +25,7 @@ def softmax(x):
 
 class CRNNHandle:
     def __init__(self, model_path):
-
+        rt.set_default_logger_severity(3)
         self.sess = rt.InferenceSession(model_path)
 
     def predict(self, image):

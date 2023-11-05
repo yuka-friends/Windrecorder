@@ -10,8 +10,10 @@ repos:
     hooks:
       - id: isort
         args: ["--profile", "black"]
+        exclude: ocr_lib
   - repo: https://github.com/PyCQA/flake8
     rev: 6.1.0
     hooks:
       - id: flake8
         args: ['--ignore=E501,E203,W503', '--max-line-length=127']
+        exclude: ocr_lib

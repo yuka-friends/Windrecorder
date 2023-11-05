@@ -5,7 +5,7 @@ title Windrecorder - installing dependence and updating
 @REM SET PATH=%PATH%;%folderPath:~0,-1%\python
 
 echo -git: updating repository
-git pull
+rem git pull
 
 if not exist "env" (
   echo -installing virtual environment
