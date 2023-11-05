@@ -20,6 +20,9 @@ cd /d %~dp0
 echo -updating dependencies
 pip install -r requirements.txt
 
+@REM update routine
+python "%~dp0\update_routine.py"
+
 cls
 color 0e
 title Windrecorder - Quick Setup
