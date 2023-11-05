@@ -271,7 +271,7 @@
         "set_input_max_num_search_page": "全局搜索中，每页显示结果的最大数量",
         "set_update_latest": "当前已是最新版本。",
         "set_update_checking": "检查更新中……",
-        "set_update_new": "\n💫 检查到有新版本 {tool_version}，请通过打开目录下的`install_update_setting.bat`以更新。",
+        "set_update_new": "\n💫 检查到有新版本 {tool_version}，请打开目录下的`install_update_setting.bat`来更新。",
         "set_update_fail": "无法检查更新。{e}",
 
         "qs_config_indicator": "   ← 当前选项",

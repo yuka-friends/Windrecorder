@@ -44,6 +44,15 @@ lang_index = get_language_index(config.lang, utils.d_lang)
 st.set_page_config(page_title="Windrecord - webui", page_icon="🦝", layout="wide")
 
 
+# 从GitHub检查更新、添加提醒 - 初始化状态
+if "update_info" not in st.session_state:
+    st.session_state["update_info"] = _t("set_update_checking")
+if "update_need" not in st.session_state:
+    st.session_state["update_need"] = False
+if "update_badge_emoji" not in st.session_state:
+    st.session_state["update_badge_emoji"] = ""
+
+
 # 通过表内搜索结果定位视频时间码，展示视频
 def show_n_locate_video_timestamp_by_df(df, num):
     # 入参：df，滑杆选择到表中的第几项
@@ -444,7 +453,7 @@ tab1, tab2, tab3, tab4, tab5 = st.tabs(
         _t("tab_name_search"),
         _t("tab_name_stat"),
         _t("tab_name_recording"),
-        _t("tab_name_setting"),
+        _t("tab_name_setting") + st.session_state.update_badge_emoji,
     ]
 )
 
@@ -1550,11 +1559,7 @@ with tab5:
 
     with col3b:
         # 关于
-
-        # 更新提醒
-        if "update_info" not in st.session_state:
-            st.session_state["update_info"] = _t("set_update_checking")
-
+        # 从GitHub检查更新、添加提醒 - 位于设置页靠后的流程，以不打扰用户
         if "update_check" not in st.session_state:
             try:
                 with st.spinner(_t("set_update_checking")):
@@ -1565,11 +1570,12 @@ with tab5:
                     ) = utils.get_current_version_and_update()
                 if tool_update_date > tool_local_update_date:
                     st.session_state.update_info = _t("set_update_new").format(tool_version=tool_version)
+                    st.session_state.update_need = True
+                    st.session_state.update_badge_emoji = "✨"
                 else:
                     st.session_state.update_info = _t("set_update_latest")
             except Exception as e:
                 st.session_state.update_info = _t("set_update_fail").format(e=e)
-
             st.session_state["update_check"] = True
 
         about_image_b64 = utils.image_to_base64("__assets__\\readme_racoonNagase.png")
