@@ -7,11 +7,11 @@ from PIL import Image
 
 import windrecorder.utils as utils
 import windrecorder.wordcloud as wordcloud
-from ui import components
 from windrecorder import file_utils
 from windrecorder.config import config
 from windrecorder.dbManager import DBManager
 from windrecorder.oneday import OneDay
+from windrecorder.ui import components
 from windrecorder.utils import get_text as _t
 
 

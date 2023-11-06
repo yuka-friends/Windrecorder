@@ -1,10 +1,10 @@
 import streamlit as st
 
-import ui.oneday
-import ui.recording
-import ui.search
-import ui.setting
-import ui.state
+import windrecorder.ui.oneday
+import windrecorder.ui.recording
+import windrecorder.ui.search
+import windrecorder.ui.setting
+import windrecorder.ui.state
 import windrecorder.utils as utils
 from windrecorder import file_utils
 from windrecorder.config import config
@@ -85,18 +85,18 @@ oneday_tab, search_tab, state_tab, recording_tab, setting_tab = st.tabs(
 )
 
 with oneday_tab:
-    ui.oneday.render()
+    windrecorder.ui.oneday.render()
 
 with search_tab:
-    ui.search.render()
+    windrecorder.ui.search.render()
 
 with state_tab:
-    ui.state.render()
+    windrecorder.ui.state.render()
 
 with recording_tab:
-    ui.recording.render()
+    windrecorder.ui.recording.render()
 
 with setting_tab:
-    ui.setting.render()
+    windrecorder.ui.setting.render()
 
 web_footer_state()

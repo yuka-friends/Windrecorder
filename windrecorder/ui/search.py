@@ -7,10 +7,10 @@ import streamlit as st
 
 import windrecorder.utils as utils
 import windrecorder.wordcloud as wordcloud
-from ui import components
 from windrecorder import file_utils
 from windrecorder.config import config
 from windrecorder.dbManager import DBManager
+from windrecorder.ui import components
 from windrecorder.utils import get_text as _t
 
 
