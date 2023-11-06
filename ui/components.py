@@ -1,25 +1,11 @@
-import datetime
-import json
 import os
-import subprocess
-import time
-from collections import OrderedDict
 from pathlib import Path
 
-import pandas as pd
-import pyautogui
 import streamlit as st
-from PIL import Image
 
-import windrecorder.maintainManager as maintainManager
-import windrecorder.record as record
-import windrecorder.state as state
 import windrecorder.utils as utils
-import windrecorder.wordcloud as wordcloud
 from windrecorder import file_utils
 from windrecorder.config import config
-from windrecorder.dbManager import DBManager
-from windrecorder.oneday import OneDay
 from windrecorder.utils import get_text as _t
 
 
