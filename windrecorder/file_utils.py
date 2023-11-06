@@ -5,7 +5,6 @@ import time
 import pandas as pd
 
 import windrecorder.utils as utils
-from windrecorder import file_utils
 from windrecorder.config import config
 
 
@@ -73,7 +72,7 @@ def find_filename_in_dir(dir, search_str):
 
 # 检查视频文件是否存在
 def check_video_exist_in_videos_dir(video_name):
-    videofile_path_month_dir = file_utils.convert_vid_filename_as_YYYY_MM(video_name)
+    videofile_path_month_dir = convert_vid_filename_as_YYYY_MM(video_name)
     video_path = os.path.join(config.record_videos_dir, videofile_path_month_dir, video_name)
     ocred_video_name = os.path.splitext(video_name)[0] + "-OCRED" + os.path.splitext(video_name)[1]
     ocred_path = os.path.join(config.record_videos_dir, videofile_path_month_dir, ocred_video_name)
