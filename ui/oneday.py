@@ -239,8 +239,9 @@ def render():
 
         # 展示时间轴缩略图
         if get_generate_result:
-            image_thumbnail = Image.open(current_day_TL_img_path)
-            components.daily_timeline_html(utils.image_to_base64(current_day_TL_img_path))
+            # TODO: 不知道这里是因为什么问题没用上，以后搞清楚原因再看看
+            image_thumbnail = Image.open(current_day_TL_img_path)  # noqa: F841
+            daily_timeline_html(utils.image_to_base64(current_day_TL_img_path))
             # st.image(image_thumbnail,use_column_width="always")
         else:
             st.markdown(
@@ -358,7 +359,7 @@ def render():
                     st.session_state.day_search_result_index_num,
                 )
                 if day_is_video_ondisk:
-                    components.show_and_locate_video_timestamp_by_filename_and_time(day_video_file_name, shown_timestamp)
+                    show_and_locate_video_timestamp_by_filename_and_time(day_video_file_name, shown_timestamp)
                     st.markdown(_t("oneday_md_rewinding_video_name").format(day_video_file_name=day_video_file_name))
                 else:
                     st.info(_t("oneday_text_not_found_vid_but_has_data"), icon="🎐")
@@ -391,7 +392,7 @@ def render():
                     vidfile_timestamp = utils.calc_vid_name_to_timestamp(day_video_file_name)
                     select_timestamp = utils.datetime_to_seconds(day_full_select_datetime)
                     shown_timestamp = select_timestamp - vidfile_timestamp
-                    components.show_and_locate_video_timestamp_by_filename_and_time(day_video_file_name, shown_timestamp)
+                    show_and_locate_video_timestamp_by_filename_and_time(day_video_file_name, shown_timestamp)
                     st.markdown(_t("oneday_md_rewinding_video_name").format(day_video_file_name=day_video_file_name))
                 else:
                     # 没有对应的视频，查一下有无索引了的数据
@@ -483,3 +484,25 @@ def render():
             st.info(_t("oneday_text_has_vid_but_not_index"), icon="📎")
         else:
             st.info(_t("oneday_text_vid_and_data_not_found"), icon="🎐")
+
+
+# 直接定位视频时间码、展示视频
+def show_and_locate_video_timestamp_by_filename_and_time(video_file_name, timestamp):
+    st.session_state.day_timestamp = int(timestamp)
+    # 合并视频文件路径
+    videofile_path_month_dir = file_utils.convert_vid_filename_as_YYYY_MM(video_file_name)  # 获取对应的日期目录
+    videofile_path = os.path.join(config.record_videos_dir, videofile_path_month_dir, video_file_name)
+    print("webui: videofile_path: " + videofile_path)
+    # 打开并展示定位视频文件
+    video_file = open(videofile_path, "rb")
+    video_bytes = video_file.read()
+    with st.empty():
+        st.video(video_bytes, start_time=st.session_state.day_timestamp)
+
+
+# 显示时间轴
+def daily_timeline_html(image_b64):
+    st.markdown(
+        f"<img style='max-width: 97%;max-height: 100%;margin: 0 0px 5px 50px' src='data:image/png;base64, {image_b64}'/>",
+        unsafe_allow_html=True,
+    )

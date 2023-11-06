@@ -1,10 +1,8 @@
-import os
 from pathlib import Path
 
 import streamlit as st
 
 import windrecorder.utils as utils
-from windrecorder import file_utils
 from windrecorder.config import config
 from windrecorder.utils import get_text as _t
 
@@ -21,14 +19,6 @@ def web_onboarding():
         intro_markdown = Path(f"config\\src\\onboarding_{config.lang}.md").read_text(encoding="utf-8")
         st.markdown(intro_markdown)
         st.divider()
-
-
-# 显示时间轴
-def daily_timeline_html(image_b64):
-    st.markdown(
-        f"<img style='max-width: 97%;max-height: 100%;margin: 0 0px 5px 50px' src='data:image/png;base64, {image_b64}'/>",
-        unsafe_allow_html=True,
-    )
 
 
 # 规范化的打表渲染组件
@@ -50,17 +40,3 @@ def video_dataframe(df, heightIn=800):
         },
         height=heightIn,
     )
-
-
-# 直接定位视频时间码、展示视频
-def show_and_locate_video_timestamp_by_filename_and_time(video_file_name, timestamp):
-    st.session_state.day_timestamp = int(timestamp)
-    # 合并视频文件路径
-    videofile_path_month_dir = file_utils.convert_vid_filename_as_YYYY_MM(video_file_name)  # 获取对应的日期目录
-    videofile_path = os.path.join(config.record_videos_dir, videofile_path_month_dir, video_file_name)
-    print("webui: videofile_path: " + videofile_path)
-    # 打开并展示定位视频文件
-    video_file = open(videofile_path, "rb")
-    video_bytes = video_file.read()
-    with st.empty():
-        st.video(video_bytes, start_time=st.session_state.day_timestamp)
