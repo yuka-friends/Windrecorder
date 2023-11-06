@@ -557,17 +557,20 @@ class DBManager:
         return thumbnails_result
 
     # 获取一个时间段内，按数据分布等均分的几张缩略图
-    def db_get_day_thumbnail_by_distributeavg(self, date_in, date_out, back_pic_num):
+    def db_get_day_thumbnail_by_distributeavg(self, date_in, date_out, pic_num):
         df, all_result_counts, _ = self.db_search_data("", date_in, date_out)
-
-        gap_num = int(all_result_counts / (back_pic_num - 1))
 
         # 平均地获取结果图片，而不是平均地按时间分
         img_list = []
         thumbnails_result = df["thumbnail"].tolist()
         rows = len(df)
 
-        for i in range(1, rows, gap_num):
+        if rows < pic_num:
+            return None
+
+        gap_num = all_result_counts // pic_num
+
+        for i in range(0, rows, gap_num):
             img_list.append(thumbnails_result[i])
 
         return img_list
