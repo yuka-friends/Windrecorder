@@ -18,6 +18,7 @@ import requests
 from PIL import Image
 from send2trash import send2trash
 
+import windrecorder.db_manager as db_manager
 from windrecorder import file_utils
 from windrecorder.config import config
 
@@ -510,3 +511,15 @@ with open("config\\src\\languages.json", encoding="utf-8") as f:
 
 def get_text(text_key):
     return d_lang[config.lang].get(text_key, "")
+
+
+# 检测是否初次使用工具，如果不存在数据库/数据库中只有一条数据，则判定为是
+def check_is_onboarding():
+    is_db_existed = db_manager.db_main_initialize()
+    db_file_count = len(file_utils.get_db_file_path_dict())
+    if not is_db_existed:
+        return True
+    latest_db_records = db_manager.db_num_records()
+    if latest_db_records == 1 and db_file_count == 1:
+        return True
+    return False
