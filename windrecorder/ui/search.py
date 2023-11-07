@@ -5,11 +5,11 @@ import time
 import pandas as pd
 import streamlit as st
 
+import windrecorder.db_manager as db_manager
 import windrecorder.utils as utils
 import windrecorder.wordcloud as wordcloud
 from windrecorder import file_utils
 from windrecorder.config import config
-from windrecorder.dbManager import DBManager
 from windrecorder.ui import components
 from windrecorder.utils import get_text as _t
 
@@ -53,9 +53,9 @@ def render():
 
         # 时间搜索范围组件（懒加载）
         if "search_latest_record_time_int" not in st.session_state:
-            st.session_state["search_latest_record_time_int"] = DBManager().db_latest_record_time()
+            st.session_state["search_latest_record_time_int"] = db_manager.db_latest_record_time()
         if "search_earlist_record_time_int" not in st.session_state:
-            st.session_state["search_earlist_record_time_int"] = DBManager().db_first_earliest_record_time()
+            st.session_state["search_earlist_record_time_int"] = db_manager.db_first_earliest_record_time()
 
         # 优化streamlit强加载机制导致的索引时间：改变了再重新搜索，而不是每次提交了更改都进行搜索
         if "search_content_lazy" not in st.session_state:
@@ -98,7 +98,7 @@ def render():
                 st.session_state.db_global_search_result,
                 st.session_state.all_result_counts,
                 st.session_state.max_page_count,
-            ) = DBManager().db_search_data(
+            ) = db_manager.db_search_data(
                 st.session_state.search_content,
                 st.session_state.search_date_range_in,
                 st.session_state.search_date_range_out,
@@ -149,7 +149,7 @@ def render():
         if not len(st.session_state.search_content) == 0:
             timeCost_globalSearch = time.time()  # 预埋计算实际时长
 
-            df = DBManager().db_search_data_page_turner(st.session_state.db_global_search_result, st.session_state.page_index)
+            df = db_manager.db_search_data_page_turner(st.session_state.db_global_search_result, st.session_state.page_index)
 
             is_df_result_exist = len(df)
 
@@ -172,7 +172,7 @@ def render():
                 )
             else:
                 # 打表
-                df = DBManager().db_refine_search_data_global(
+                df = db_manager.db_refine_search_data_global(
                     df,
                     cache_videofile_ondisk_list=st.session_state.cache_videofile_ondisk_list,
                 )  # 优化数据显示

@@ -7,10 +7,10 @@ from io import BytesIO
 import pandas as pd
 from PIL import Image
 
+import windrecorder.db_manager as db_manager
 import windrecorder.utils as utils
 from windrecorder import file_utils
 from windrecorder.config import config
-from windrecorder.dbManager import DBManager
 
 
 # 统计当月数据概览：条形图
@@ -22,7 +22,7 @@ def get_month_data_overview(dt: datetime.datetime):
         day_datetime_start = datetime.datetime(dt.year, dt.month, day, 0, 0, 1)
         day_datetime_end = datetime.datetime(dt.year, dt.month, day, 23, 59, 59)
 
-        df, _, _ = DBManager().db_search_data("", day_datetime_start, day_datetime_end)
+        df, _, _ = db_manager.db_search_data("", day_datetime_start, day_datetime_end)
 
         row_count = len(df)
         df_month_data.loc[day - 1] = [day, row_count]
@@ -38,7 +38,7 @@ def get_month_day_overview_scatter(dt: datetime.datetime):
 
     query_month_start = datetime.datetime(dt.year, dt.month, 1, 0, 0, 1)
     query_month_end = datetime.datetime(dt.year, dt.month, month_days, 23, 59, 59)
-    df, _, _ = DBManager().db_search_data("", query_month_start, query_month_end)  # 获取当月所有数据
+    df, _, _ = db_manager.db_search_data("", query_month_start, query_month_end)  # 获取当月所有数据
 
     for day in range(1, month_days + 1):
         for hour in range(1, 24):
@@ -61,7 +61,7 @@ def get_year_data_overview(dt: datetime.datetime):
         dt_month_start = datetime.datetime(dt.year, month, 1, 0, 0, 1)
         dt_month_end = datetime.datetime(dt.year, month, month_days, 23, 23, 59)
 
-        df, _, _ = DBManager().db_search_data("", dt_month_start, dt_month_end)
+        df, _, _ = db_manager.db_search_data("", dt_month_start, dt_month_end)
 
         row_count = len(df)
         df_year_data.loc[month - 1] = [month, row_count]
@@ -75,7 +75,7 @@ def get_year_data_overview_scatter(dt: datetime.datetime):
 
     query_year_start = datetime.datetime(dt.year, 1, 1, 0, 0, 1)
     query_year_end = datetime.datetime(dt.year, 12, 1, 23, 23, 59)
-    df, _, _ = DBManager().db_search_data("", query_year_start, query_year_end)  # 获取全年所有数据
+    df, _, _ = db_manager.db_search_data("", query_year_start, query_year_end)  # 获取全年所有数据
 
     for month in range(1, 13):
         month_days = calendar.monthrange(dt.year, month)[1]
@@ -107,7 +107,7 @@ def generate_month_lightbox(
     all_pic_num = pic_height_num * pic_width_num
 
     # 获取时间段所需图片列表（b64）
-    image_list = DBManager().db_get_day_thumbnail_by_distributeavg(dt_month_start, dt_month_end, all_pic_num)
+    image_list = db_manager.db_get_day_thumbnail_by_distributeavg(dt_month_start, dt_month_end, all_pic_num)
     if image_list is None:
         return False
 

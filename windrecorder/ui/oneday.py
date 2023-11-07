@@ -5,11 +5,11 @@ import pandas as pd
 import streamlit as st
 from PIL import Image
 
+import windrecorder.db_manager as db_manager
 import windrecorder.utils as utils
 import windrecorder.wordcloud as wordcloud
 from windrecorder import file_utils
 from windrecorder.config import config
-from windrecorder.dbManager import DBManager
 from windrecorder.oneday import OneDay
 from windrecorder.ui import components
 from windrecorder.utils import get_text as _t
@@ -273,7 +273,7 @@ def render():
             # 居左部分
             if st.session_state.day_is_search_data and not st.session_state.df_day_search_result.empty:
                 # 如果是搜索视图，这里展示全部的搜索结果
-                df_day_search_result_refine = DBManager().db_refine_search_data_day(
+                df_day_search_result_refine = db_manager.db_refine_search_data_day(
                     st.session_state.df_day_search_result,
                     cache_videofile_ondisk_list=st.session_state.cache_videofile_ondisk_list_oneday,
                 )  # 优化下数据展示
@@ -366,7 +366,7 @@ def render():
                     found_row = (
                         st.session_state.df_day_search_result.loc[st.session_state.day_search_result_index_num].to_frame().T
                     )
-                    found_row = DBManager().db_refine_search_data_day(
+                    found_row = db_manager.db_refine_search_data_day(
                         found_row,
                         cache_videofile_ondisk_list=st.session_state.cache_videofile_ondisk_list_oneday,
                     )  # 优化下数据展示
@@ -401,7 +401,7 @@ def render():
                     )
                     if is_data_found:
                         st.info(_t("oneday_text_not_found_vid_but_has_data"), icon="🎐")
-                        found_row = DBManager().db_refine_search_data_day(
+                        found_row = db_manager.db_refine_search_data_day(
                             found_row,
                             cache_videofile_ondisk_list=st.session_state.cache_videofile_ondisk_list_oneday,
                         )  # 优化下数据展示

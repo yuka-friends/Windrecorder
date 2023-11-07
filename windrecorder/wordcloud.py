@@ -10,10 +10,10 @@ from PIL import Image
 from send2trash import send2trash
 from wordcloud import ImageColorGenerator, WordCloud
 
+import windrecorder.db_manager as db_manager
 import windrecorder.utils as utils
 from windrecorder import file_utils
 from windrecorder.config import config
-from windrecorder.dbManager import DBManager
 
 
 # 读取跳过词
@@ -181,7 +181,7 @@ def get_month_ocr_result(timestamp, text_file_path="cache/get_month_ocr_result_o
         59,
         59,
     )
-    df, _, _ = DBManager().db_search_data("", date_in, date_out)
+    df, _, _ = db_manager.db_search_data("", date_in, date_out)
     # ocr_text_data = df["ocr_text"].to_string(index=False)
     ocr_text_data = "".join(df["ocr_text"].tolist())
     ocr_text_data = utils.delete_short_lines(ocr_text_data, less_than=10)
@@ -220,7 +220,7 @@ def get_day_ocr_result(timestamp):
         59,
         59,
     )
-    df, _, _ = DBManager().db_search_data("", date_in, date_out)
+    df, _, _ = db_manager.db_search_data("", date_in, date_out)
     ocr_text_data = "".join(df["ocr_text"].tolist())
     ocr_text_data = utils.delete_short_lines(ocr_text_data, less_than=10)
 
