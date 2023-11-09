@@ -8,10 +8,10 @@ import numpy as np
 import pandas as pd
 from PIL import Image
 
-import windrecorder.db_manager as db_manager
 import windrecorder.utils as utils
 from windrecorder import file_utils
 from windrecorder.config import config
+from windrecorder.dbManager import DBManager
 
 
 # 一天之时功能模块
@@ -24,7 +24,7 @@ class OneDay:
         # 入参：查询时间，搜索内容
         search_date_range_in = dt_in.replace(hour=0, minute=0, second=0, microsecond=0)
         search_date_range_out = dt_in.replace(hour=23, minute=59, second=59, microsecond=0)
-        df, _, _ = db_manager.db_search_data(search_content, search_date_range_in, search_date_range_out)
+        df, _, _ = DBManager().db_search_data(search_content, search_date_range_in, search_date_range_out)
         return df
 
     # 检查当天数据索引情况
@@ -155,7 +155,7 @@ class OneDay:
         date_in = datetime.datetime(day_datetime.year, day_datetime.month, day_datetime.day, 0, 0, 1)
         date_out = datetime.datetime(day_datetime.year, day_datetime.month, day_datetime.day, 23, 23, 59)
 
-        image_list = db_manager.db_get_day_thumbnail_by_timeavg(date_in, date_out, config.oneday_timeline_pic_num)
+        image_list = DBManager().db_get_day_thumbnail_by_timeavg(date_in, date_out, config.oneday_timeline_pic_num)
 
         if image_list is None:
             return False
