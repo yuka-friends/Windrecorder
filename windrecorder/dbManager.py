@@ -13,12 +13,12 @@ from windrecorder import file_utils
 from windrecorder.config import config
 
 
-class DBManager:
-    def __init__(self):
-        self.db_path = config.db_path  # 存放数据库的目录
-        self.db_filename_dict = file_utils.get_db_file_path_dict()  # 传入当前db目录下的对应用户的数据库文件列表
-        self.db_max_page_result = int(config.max_page_result)  # 最大查询页数
-        self.user_name = config.user_name  # 用户名
+class _DBManager:
+    def __init__(self, db_path, db_filename_dict, db_max_page_result, user_name):
+        self.db_path = db_path  # 存放数据库的目录
+        self.db_filename_dict = db_filename_dict  # 传入当前db目录下的对应用户的数据库文件列表
+        self.db_max_page_result = db_max_page_result  # 最大查询页数
+        self.user_name = user_name  # 用户名
 
         # 如果目录为空/没有目录，应该进行初始化
         if self.db_filename_dict is None:
@@ -701,8 +701,9 @@ class DBManager:
             conn.close()
 
 
-# dbManager = DBManager(
-#     config.db_path,
-#     file_utils.get_db_file_path_list(),
-#     int(config.max_page_result)
-# )
+db_manager = _DBManager(
+    config.db_path,
+    file_utils.get_db_file_path_dict(),
+    int(config.max_page_result),
+    config.user_name,
+)

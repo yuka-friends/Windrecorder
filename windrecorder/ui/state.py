@@ -10,7 +10,7 @@ import windrecorder.utils as utils
 import windrecorder.wordcloud as wordcloud
 from windrecorder import file_utils
 from windrecorder.config import config
-from windrecorder.dbManager import DBManager
+from windrecorder.dbManager import db_manager
 from windrecorder.utils import get_text as _t
 
 
@@ -20,10 +20,10 @@ def render():
         # 懒加载
         if "stat_db_earliest_datetime" not in st.session_state:
             st.session_state["stat_db_earliest_datetime"] = utils.seconds_to_datetime(
-                DBManager().db_first_earliest_record_time()
+                db_manager.db_first_earliest_record_time()
             )
         if "stat_db_latest_datetime" not in st.session_state:
-            st.session_state["stat_db_latest_datetime"] = utils.seconds_to_datetime(DBManager().db_latest_record_time())
+            st.session_state["stat_db_latest_datetime"] = utils.seconds_to_datetime(db_manager.db_latest_record_time())
 
         if st.session_state.stat_db_latest_datetime.year > st.session_state.stat_db_earliest_datetime.year:
             # 当记录时间超过一年

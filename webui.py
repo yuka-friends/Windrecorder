@@ -8,7 +8,7 @@ import windrecorder.ui.state
 import windrecorder.utils as utils
 from windrecorder import file_utils
 from windrecorder.config import config
-from windrecorder.dbManager import DBManager
+from windrecorder.dbManager import db_manager
 from windrecorder.utils import get_text as _t
 
 update_button_key = "update_button"
@@ -29,16 +29,16 @@ def web_footer_state():
     # 懒加载，只在刷新时第一次获取
     if "footer_first_record_time_str" not in st.session_state:
         st.session_state["footer_first_record_time_str"] = utils.seconds_to_date_goodlook_formart(
-            DBManager().db_first_earliest_record_time()
+            db_manager.db_first_earliest_record_time()
         )
 
     if "footer_latest_record_time_str" not in st.session_state:
         st.session_state["footer_latest_record_time_str"] = utils.seconds_to_date_goodlook_formart(
-            DBManager().db_latest_record_time()
+            db_manager.db_latest_record_time()
         )
 
     if "footer_latest_db_records" not in st.session_state:
-        st.session_state["footer_latest_db_records"] = DBManager().db_num_records()
+        st.session_state["footer_latest_db_records"] = db_manager.db_num_records()
 
     if "footer_videos_file_size" not in st.session_state:
         st.session_state["footer_videos_file_size"] = round(
