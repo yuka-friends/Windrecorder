@@ -30,10 +30,6 @@ def db_main_initialize():
     return conn_check
 
 
-if db_filename_dict is None:
-    db_main_initialize()
-
-
 # 根据传入的时间段取得对应数据库的文件名词典
 def db_get_dbfilename_by_datetime(db_query_datetime_start, db_query_datetime_end):
     db_query_datetime_start_YMD = utils.set_full_datetime_to_YYYY_MM(db_query_datetime_start)
@@ -697,3 +693,7 @@ def db_update_videofile_exist_status():
         # Commit the transaction
         conn.commit()
         conn.close()
+
+
+if db_filename_dict is None:
+    db_main_initialize()
