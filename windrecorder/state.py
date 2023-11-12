@@ -128,6 +128,9 @@ def generate_month_lightbox(
     x_num = 0
 
     for image_data in image_list:
+        if image_data is None:
+            continue
+
         image_thumbnail = Image.open(BytesIO(base64.b64decode(image_data)))
         image_thumbnail = image_thumbnail.resize((thumbnail_resize_width, thumbnail_resize_height))
         # 创建一个与图像大小相同的纯白色图像作为透明度掩码
