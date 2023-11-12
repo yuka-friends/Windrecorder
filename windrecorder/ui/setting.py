@@ -69,10 +69,13 @@ def render():
             #     )
 
             # 设定ocr引擎语言
+            if "os_support_lang" not in st.session_state:  # 获取系统支持的OCR语言
+                st.session_state.os_support_lang = utils.get_os_support_lang()
+
             ocr_lang_index = legal_ocr_lang_index()
             config_ocr_lang = st.selectbox(
                 _t("set_selectbox_ocr_lang"),
-                utils.get_os_support_lang(),
+                st.session_state.os_support_lang,
                 index=ocr_lang_index,
             )
 
@@ -340,7 +343,7 @@ def check_ocr_engine():
 
 # 检查配置使用的ocr语言，如果不在则设为可用的第一个
 def legal_ocr_lang_index():
-    os_support_lang_list = utils.get_os_support_lang()  # 获取系统支持的语言
+    os_support_lang_list = st.session_state.os_support_lang  # 获取系统支持的语言
 
     if config.ocr_lang in os_support_lang_list:  # 如果配置项在支持的列表中，返回索引值
         return os_support_lang_list.index(config.ocr_lang)
