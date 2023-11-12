@@ -39,25 +39,26 @@ def render():
         with title_col:
             st.markdown(_t("gs_md_search_title"))
         with random_word_btn_col:
-            # st.selectbox("搜索方式", ('关键词匹配','模糊语义搜索 [不可用]','画面内容搜索 [不可用]'),label_visibility="collapsed")
             if not wordcloud.check_if_word_lexicon_empty():
                 if st.button("🎲", use_container_width=True, help=_t("gs_text_randomwalk")):
                     try:
                         st.session_state.search_content = utils.get_random_word_from_lexicon()
                     except Exception as e:
+                        print("[Exception] gs_text_randomwalk:")
                         print(e)
                         st.session_state.search_content = ""
             st.empty()
 
         components.web_onboarding()
 
-        # 时间搜索范围组件（懒加载）
+        # 初始化时间搜索范围组件（懒加载）
         if "search_latest_record_time_int" not in st.session_state:
             st.session_state["search_latest_record_time_int"] = db_manager.db_latest_record_time()
         if "search_earlist_record_time_int" not in st.session_state:
             st.session_state["search_earlist_record_time_int"] = db_manager.db_first_earliest_record_time()
 
         # 优化streamlit强加载机制导致的索引时间：改变了再重新搜索，而不是每次提交了更改都进行搜索
+        # 初始化懒状态
         if "search_content_lazy" not in st.session_state:
             st.session_state.search_content_lazy = ""
         if "search_content_exclude_lazy" not in st.session_state:
@@ -86,14 +87,16 @@ def render():
             ):
                 return
 
+            # 更新懒状态
             st.session_state.search_content_lazy = st.session_state.search_content
             st.session_state.search_content_exclude_lazy = st.session_state.search_content_exclude
             st.session_state.search_date_range_in_lazy = st.session_state.search_date_range_in
             st.session_state.search_date_range_out_lazy = st.session_state.search_date_range_out
 
-            # 清理状态
+            # 重置每次进行新搜索需要重置的状态
             st.session_state.page_index = 1
 
+            # 进行搜索，取回结果
             (
                 st.session_state.db_global_search_result,
                 st.session_state.all_result_counts,
@@ -106,16 +109,19 @@ def render():
             )
 
         keyword_col, exclude_col, date_range_col, page_col = st.columns([2, 1, 2, 1])
-        with keyword_col:
-            st.session_state.search_content = st.text_input(_t("text_search_keyword"), help=_t("gs_input_search_help"))
+        with keyword_col:  # 输入搜索关键词
+            st.session_state.search_content = st.text_input(
+                _t("text_search_keyword"), help=_t("gs_input_search_help"), value=st.session_state.search_content
+            )
 
             do_global_keyword_search()
-        with exclude_col:
+        with exclude_col:  # 排除关键词
             st.session_state.search_content_exclude = st.text_input(
                 _t("gs_input_exclude"), "", help=_t("gs_input_exclude_help")
             )
+
             do_global_keyword_search()
-        with date_range_col:
+        with date_range_col:  # 选择时间范围
             try:
                 (
                     st.session_state.search_date_range_in,
@@ -132,8 +138,10 @@ def render():
                     ),
                     format="YYYY-MM-DD",
                 )
+
                 do_global_keyword_search()
             except Exception:
+                # 处理没选择完整选择时间段
                 st.warning(_t("gs_text_pls_choose_full_date_range"))
 
         with page_col:
@@ -182,7 +190,7 @@ def render():
             st.markdown(_t("gs_md_search_result_below").format(timecost=timeCost_globalSearch))
 
         else:
-            st.info(_t("gs_text_intro"))
+            st.info(_t("gs_text_intro"))  # 搜索内容为空时显示指引
 
     with video_col:
         # 选择视频
