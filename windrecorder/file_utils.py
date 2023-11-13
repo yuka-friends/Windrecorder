@@ -205,15 +205,19 @@ def extract_datetime_from_db_backup_filename(db_file_name, user_name=config.user
 def get_db_file_path_dict(db_dir=config.db_path, user_name=config.user_name):
     check_and_create_folder(db_dir)
 
-    db_list = os.listdir(db_dir)
-    if len(db_list) == 0:
+    db_list_origin = os.listdir(db_dir)
+    if len(db_list_origin) == 0:
         # 目录为空
         return None
     else:
-        # 去除非当前用户且临时使用的内容
-        for file in db_list:
+        # 去除非当前用户、且临时使用的内容
+        db_list = db_list_origin.copy()
+        for file in db_list_origin:
             if not file.startswith(user_name) or file.endswith("_TEMP_READ.db"):
                 db_list.remove(file)
+
+        if len(db_list) == 0: # 如果去除了非当前用户内容后为空
+            return None
 
         db_list_datetime = [extract_date_from_db_filename(file) for file in db_list]
 
