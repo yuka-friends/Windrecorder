@@ -35,47 +35,6 @@ def render():
         if "cache_videofile_ondisk_list" not in st.session_state:  # 减少io查询，预拿视频文件列表供比对是否存在
             st.session_state.cache_videofile_ondisk_list = file_utils.get_file_path_list(config.record_videos_dir)
 
-        title_col, random_word_btn_col = st.columns([10, 1])
-        with title_col:
-            st.markdown(_t("gs_md_search_title"))
-        with random_word_btn_col:
-            if not wordcloud.check_if_word_lexicon_empty():
-                if st.button("🎲", use_container_width=True, help=_t("gs_text_randomwalk")):
-                    try:
-                        st.session_state.search_content = utils.get_random_word_from_lexicon()
-                    except Exception as e:
-                        print("[Exception] gs_text_randomwalk:")
-                        print(e)
-                        st.session_state.search_content = ""
-            st.empty()
-
-        components.web_onboarding()
-
-        # 初始化时间搜索范围组件（懒加载）
-        if "search_latest_record_time_int" not in st.session_state:
-            st.session_state["search_latest_record_time_int"] = db_manager.db_latest_record_time()
-        if "search_earlist_record_time_int" not in st.session_state:
-            st.session_state["search_earlist_record_time_int"] = db_manager.db_first_earliest_record_time()
-
-        # 优化streamlit强加载机制导致的索引时间：改变了再重新搜索，而不是每次提交了更改都进行搜索
-        # 初始化懒状态
-        if "search_content_lazy" not in st.session_state:
-            st.session_state.search_content_lazy = ""
-        if "search_content_exclude_lazy" not in st.session_state:
-            st.session_state.search_content_exclude_lazy = None
-        if "search_date_range_in_lazy" not in st.session_state:
-            st.session_state.search_date_range_in_lazy = (
-                datetime.datetime(1970, 1, 2)
-                + datetime.timedelta(seconds=st.session_state.search_earlist_record_time_int)
-                - datetime.timedelta(seconds=86400)
-            )
-        if "search_date_range_out_lazy" not in st.session_state:
-            st.session_state.search_date_range_out_lazy = (
-                datetime.datetime(1970, 1, 2)
-                + datetime.timedelta(seconds=st.session_state.search_latest_record_time_int)
-                - datetime.timedelta(seconds=86400)
-            )
-
         # 获得全局搜索结果
         def do_global_keyword_search():
             # 如果搜索所需入参状态改变了，进行搜索
@@ -108,19 +67,61 @@ def render():
                 keyword_input_exclude=st.session_state.search_content_exclude,
             )
 
-        keyword_col, exclude_col, date_range_col, page_col = st.columns([2, 1, 2, 1])
-        with keyword_col:  # 输入搜索关键词
-            st.session_state.search_content = st.text_input(
-                _t("text_search_keyword"), help=_t("gs_input_search_help"), value=st.session_state.search_content
+        title_col, random_word_btn_col = st.columns([10, 1])
+        with title_col:
+            st.markdown(_t("gs_md_search_title"))
+        with random_word_btn_col:
+            if not wordcloud.check_if_word_lexicon_empty():
+                if st.button("🎲", use_container_width=True, help=_t("gs_text_randomwalk")):
+                    try:
+                        st.session_state.search_content = utils.get_random_word_from_lexicon()
+                        st.session_state.use_random_search = True
+                    except Exception as e:
+                        print("[Exception] gs_text_randomwalk:")
+                        print(e)
+                        st.session_state.search_content = ""
+                        st.session_state.use_random_search = False
+                else:
+                    st.session_state.use_random_search = False
+            st.empty()
+
+        components.web_onboarding()
+
+        # 初始化时间搜索范围组件（懒加载）
+        if "search_latest_record_time_int" not in st.session_state:
+            st.session_state["search_latest_record_time_int"] = db_manager.db_latest_record_time()
+        if "search_earlist_record_time_int" not in st.session_state:
+            st.session_state["search_earlist_record_time_int"] = db_manager.db_first_earliest_record_time()
+
+        # 优化streamlit强加载机制导致的索引时间：改变了再重新搜索，而不是每次提交了更改都进行搜索
+        # 初始化懒状态
+        if "search_content_lazy" not in st.session_state:
+            st.session_state.search_content_lazy = ""
+        if "search_content_exclude_lazy" not in st.session_state:
+            st.session_state.search_content_exclude_lazy = None
+        if "search_date_range_in_lazy" not in st.session_state:
+            st.session_state.search_date_range_in_lazy = (
+                datetime.datetime(1970, 1, 2)
+                + datetime.timedelta(seconds=st.session_state.search_earlist_record_time_int)
+                - datetime.timedelta(seconds=86400)
+            )
+        if "search_date_range_out_lazy" not in st.session_state:
+            st.session_state.search_date_range_out_lazy = (
+                datetime.datetime(1970, 1, 2)
+                + datetime.timedelta(seconds=st.session_state.search_latest_record_time_int)
+                - datetime.timedelta(seconds=86400)
             )
 
-            do_global_keyword_search()
+        keyword_col, exclude_col, date_range_col, page_col = st.columns([2, 1, 2, 1])
+        with keyword_col:  # 输入搜索关键词
+            input_value = st.text_input(_t("text_search_keyword"), help=_t("gs_input_search_help"))
+            st.session_state.search_content = (
+                st.session_state.search_content if st.session_state.use_random_search else input_value
+            )
         with exclude_col:  # 排除关键词
             st.session_state.search_content_exclude = st.text_input(
                 _t("gs_input_exclude"), "", help=_t("gs_input_exclude_help")
             )
-
-            do_global_keyword_search()
         with date_range_col:  # 选择时间范围
             try:
                 (
@@ -138,8 +139,6 @@ def render():
                     ),
                     format="YYYY-MM-DD",
                 )
-
-                do_global_keyword_search()
             except Exception:
                 # 处理没选择完整选择时间段
                 st.warning(_t("gs_text_pls_choose_full_date_range"))
@@ -152,6 +151,8 @@ def render():
                 step=1,
                 max_value=st.session_state.max_page_count + 1,
             )
+
+        do_global_keyword_search()
 
         # 进行搜索
         if not len(st.session_state.search_content) == 0:
