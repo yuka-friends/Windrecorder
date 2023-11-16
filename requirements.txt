@@ -11,6 +11,6 @@ pyshortcuts==1.9.0
 pywin32==306
 Send2Trash==1.8.2
 Shapely==2.0.1
-streamlit==1.27.2
+streamlit==1.28.2
 wordcloud
 pre-commit==3.5.0

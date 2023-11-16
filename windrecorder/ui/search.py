@@ -112,7 +112,7 @@ def render():
                 - datetime.timedelta(seconds=86400)
             )
 
-        keyword_col, exclude_col, date_range_col, page_col = st.columns([2, 1, 2, 1])
+        keyword_col, exclude_col, date_range_col, page_col = st.columns([2, 1, 2, 1.5])
         with keyword_col:  # 输入搜索关键词
             input_value = st.text_input(_t("text_search_keyword"), help=_t("gs_input_search_help"))
             st.session_state.search_content = (
