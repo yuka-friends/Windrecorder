@@ -28,6 +28,8 @@ def render():
             st.session_state.search_content = ""
         if "search_content_exclude" not in st.session_state:
             st.session_state.search_content_exclude = ""
+        if "use_random_search" not in st.session_state:
+            st.session_state.use_random_search = ""
         if "search_date_range_in" not in st.session_state:
             st.session_state.search_date_range_in = datetime.datetime.today() - datetime.timedelta(seconds=86400)
         if "search_date_range_out" not in st.session_state:
