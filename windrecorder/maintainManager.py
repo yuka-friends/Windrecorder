@@ -15,7 +15,7 @@ import windrecorder.record as record
 import windrecorder.utils as utils
 from windrecorder import file_utils
 from windrecorder.config import config
-from windrecorder.dbManager import db_manager
+from windrecorder.db_manager import db_manager
 from windrecorder.utils import date_to_seconds, empty_directory
 
 if config.enable_ocr_chineseocr_lite_onnx:

@@ -10,7 +10,7 @@ import windrecorder.utils as utils
 import windrecorder.wordcloud as wordcloud
 from windrecorder import file_utils
 from windrecorder.config import config
-from windrecorder.dbManager import db_manager
+from windrecorder.db_manager import db_manager
 from windrecorder.utils import get_text as _t
 
 

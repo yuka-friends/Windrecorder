@@ -11,7 +11,7 @@ from PIL import Image
 import windrecorder.utils as utils
 from windrecorder import file_utils
 from windrecorder.config import config
-from windrecorder.dbManager import db_manager
+from windrecorder.db_manager import db_manager
 
 
 # 一天之时功能模块
@@ -38,7 +38,7 @@ class OneDay:
         # search_date_range_out = dt_in.replace(hour=23, minute=59, second=59, microsecond=0)
         # page_index = 0
         # # 获取当日所有的索引信息
-        # df,_,_ = dbManager.db_search_data(search_content, search_date_range_in, search_date_range_out,page_index,is_p_index_used=False) # 不启用页数限制，以返回所有结果
+        # df,_,_ = db_manager.db_search_data(search_content, search_date_range_in, search_date_range_out,page_index,is_p_index_used=False) # 不启用页数限制，以返回所有结果
         df = OneDay().search_day_data(dt_in)
 
         # 获得结果数量
