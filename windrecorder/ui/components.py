@@ -2,8 +2,8 @@ from pathlib import Path
 
 import streamlit as st
 
-import windrecorder.utils as utils
 from windrecorder.config import config
+from windrecorder.dbManager import db_manager
 from windrecorder.utils import get_text as _t
 
 
@@ -11,7 +11,7 @@ from windrecorder.utils import get_text as _t
 def web_onboarding():
     # 状态懒加载
     if "is_onboarding" not in st.session_state:
-        st.session_state["is_onboarding"] = utils.check_is_onboarding()
+        st.session_state["is_onboarding"] = db_manager.check_is_onboarding()
 
     if st.session_state.is_onboarding:
         # 数据库不存在，展示 Onboarding 提示

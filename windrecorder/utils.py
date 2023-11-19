@@ -20,7 +20,6 @@ from send2trash import send2trash
 
 from windrecorder import file_utils
 from windrecorder.config import config
-from windrecorder.dbManager import db_manager
 
 
 # 启动定时执行线程
@@ -513,13 +512,61 @@ def get_text(text_key):
     return d_lang[config.lang].get(text_key, "")
 
 
-# 检测是否初次使用工具，如果不存在数据库/数据库中只有一条数据，则判定为是
-def check_is_onboarding():
-    is_db_existed = db_manager.db_main_initialize()
-    db_file_count = len(file_utils.get_db_file_path_dict())
-    if not is_db_existed:
-        return True
-    latest_db_records = db_manager.db_num_records()
-    if latest_db_records == 1 and db_file_count == 1:
-        return True
-    return False
+# 查找db字典中最早一项的key值
+def get_earliest_datetime_key(dictionary):
+    if not dictionary:
+        return None
+
+    earliest_datetime = None
+    earliest_key = None
+
+    for key, value in dictionary.items():
+        if isinstance(value, datetime.datetime):
+            if earliest_datetime is None or value < earliest_datetime:
+                earliest_datetime = value
+                earliest_key = key
+
+    return earliest_key
+
+
+# 查找db字典中最晚一项的key值
+def get_lastest_datetime_key(dictionary):
+    if not dictionary:
+        return None
+
+    latest_datetime = None
+    latest_key = None
+
+    for key, value in dictionary.items():
+        if isinstance(value, datetime.datetime):
+            if latest_datetime is None or value > latest_datetime:
+                latest_datetime = value
+                latest_key = key
+
+    return latest_key
+
+
+# 从db文件名提取YYYY-MM的datatime
+def extract_date_from_db_filename(db_file_name, user_name=config.user_name):
+    prefix = user_name + "_"
+
+    if db_file_name.startswith(prefix):
+        db_file_name = db_file_name[len(prefix) :]
+
+    db_file_name = db_file_name[:7]
+    # if db_file_name.endswith(suffix):
+    # db_file_name = db_file_name[:-(len(suffix))]
+
+    db_file_name_datetime = datetime.datetime.strptime(db_file_name, "%Y-%m")
+    db_file_name_datetime = set_full_datetime_to_YYYY_MM(db_file_name_datetime)
+    return db_file_name_datetime
+
+
+# 从备份的db文件名提取datetime
+def extract_datetime_from_db_backup_filename(db_file_name, user_name=config.user_name):
+    try:
+        db_file_name_extract = db_file_name[-22:-3]
+        db_file_name_extract_datetime = date_to_datetime(db_file_name_extract)
+        return db_file_name_extract_datetime
+    except (IndexError, ValueError):
+        return None

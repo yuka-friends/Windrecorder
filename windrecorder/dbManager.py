@@ -14,15 +14,13 @@ from windrecorder.config import config
 
 
 class _DBManager:
-    def __init__(self, db_path, db_filename_dict, db_max_page_result, user_name):
+    def __init__(self, db_path, db_max_page_result, user_name):
         self.db_path = db_path  # 存放数据库的目录
-        self.db_filename_dict = db_filename_dict  # 传入当前db目录下的对应用户的数据库文件列表
         self.db_max_page_result = db_max_page_result  # 最大查询页数
         self.user_name = user_name  # 用户名
+        self._db_filename_dict = self._init_db_filename_dict()
 
-        # 如果目录为空/没有目录，应该进行初始化
-        if self.db_filename_dict is None:
-            self.db_main_initialize()
+        self.db_main_initialize()
 
     # 根据传入的时间段取得对应数据库的文件名词典
     def db_get_dbfilename_by_datetime(self, db_query_datetime_start, db_query_datetime_end):
@@ -30,7 +28,7 @@ class _DBManager:
         db_query_datetime_end_YMD = utils.set_full_datetime_to_YYYY_MM(db_query_datetime_end)
 
         result = []
-        for key, value in self.db_filename_dict.items():
+        for key, value in self.get_db_filename_dict().items():
             if db_query_datetime_start_YMD <= value <= db_query_datetime_end_YMD:
                 result.append(key)
         return result
@@ -39,17 +37,26 @@ class _DBManager:
     # 初始化对应时间的数据库流程
     def db_main_initialize(self):
         print("dbManager: Initialize the database...")
-        # 检查有无最新的数据库
         db_filepath_today = file_utils.get_db_filepath_by_datetime(datetime.datetime.today())
-        conn_check = self.db_check_exist(db_filepath_today)
 
         # 初始化最新的数据库
-        self.db_initialize(db_filepath_today)
+        conn_check = self.db_initialize(db_filepath_today)
 
         return conn_check
 
-    # 初始化数据库：如果内容为空，则创建表初始化
+    # 初始化数据库：检查、创建、连接入参数据库对象，如果内容为空，则创建表初始化
     def db_initialize(self, db_filepath):
+        is_db_exist = os.path.exists(db_filepath)
+
+        # 检查数据库是否存在
+        if not is_db_exist:
+            print("dbManager: db not existed")
+            if not os.path.exists(self.db_path):
+                os.mkdir(self.db_path)
+                print("dbManager: db dir not existed, mkdir")
+            db_filename = os.path.basename(db_filepath)
+            self._db_filename_dict[db_filename] = utils.extract_date_from_db_filename(db_filename)
+
         conn = sqlite3.connect(db_filepath)
         c = conn.cursor()
         c.execute("SELECT name FROM sqlite_master WHERE type='table' AND name='video_text'")
@@ -73,28 +80,11 @@ class _DBManager:
         else:
             print("dbManager: db existed and not empty")
 
+        return is_db_exist
+
     # 重新读取配置文件
     def db_update_read_config(self, config):
         self.db_max_page_result = int(config.max_page_result)
-
-    # 初始化数据库：检查、创建、连接入参数据库对象
-    def db_check_exist(self, db_filepath):
-        is_db_exist = False
-
-        # 检查数据库是否存在
-        if not os.path.exists(db_filepath):
-            print("dbManager: db not existed")
-            is_db_exist = False
-            if not os.path.exists(self.db_path):
-                os.mkdir(self.db_path)
-                print("dbManager: db dir not existed, mkdir")
-        else:
-            is_db_exist = True
-
-        # 连接/创建数据库
-        conn = sqlite3.connect(db_filepath)
-        conn.close()
-        return is_db_exist
 
     # 创建表
     def db_create_table(self, db_filepath):
@@ -170,8 +160,6 @@ class _DBManager:
             database_path_before = file_utils.get_db_filepath_by_datetime(min_datetime)  # 获取两部分的数据库
             database_path_after = file_utils.get_db_filepath_by_datetime(min_datetime)  # 获取两部分的数据库
             # 由于出现在新的一月开头，所以得先初始下新月的数据库
-            self.db_check_exist(database_path_after)
-            # 初始化最新的数据库
             self.db_initialize(database_path_after)
 
             self.db_add_dataframe_to_db(database_path_before, df_before)
@@ -435,7 +423,7 @@ class _DBManager:
         # 使用SELECT * 从video_text表查询所有列的数据
         # 使用fetchall()获取所有结果行
         # 遍历结果行,打印出每一行
-        full_db_name_ondisk_dict = file_utils.get_db_file_path_dict()
+        full_db_name_ondisk_dict = self.get_db_filename_dict()
         for key, value in full_db_name_ondisk_dict.items():
             db_filepath_origin = os.path.join(self.db_path, key)
             db_filepath = self.get_temp_dbfilepath(db_filepath_origin)
@@ -450,7 +438,7 @@ class _DBManager:
 
     # 查询全部数据库一共有多少行
     def db_num_records(self):
-        full_db_name_ondisk_dict = file_utils.get_db_file_path_dict()
+        full_db_name_ondisk_dict = self.get_db_filename_dict()
         rows_count_all = 0
         for key, value in full_db_name_ondisk_dict.items():
             db_filepath_origin = os.path.join(self.db_path, key)
@@ -467,8 +455,8 @@ class _DBManager:
 
     # 获取表内最新的记录时间
     def db_latest_record_time(self):
-        full_db_name_ondisk_dict = file_utils.get_db_file_path_dict()
-        db_name_ondisk_lastest = file_utils.get_lastest_datetime_key(full_db_name_ondisk_dict)
+        full_db_name_ondisk_dict = self.get_db_filename_dict()
+        db_name_ondisk_lastest = utils.get_lastest_datetime_key(full_db_name_ondisk_dict)
         db_filepath_origin = os.path.join(self.db_path, db_name_ondisk_lastest)
         db_filepath = self.get_temp_dbfilepath(db_filepath_origin)
 
@@ -482,8 +470,8 @@ class _DBManager:
 
     # 获取表内最早的记录时间
     def db_first_earliest_record_time(self):
-        full_db_name_ondisk_dict = file_utils.get_db_file_path_dict()
-        db_name_ondisk_lastest = file_utils.get_earliest_datetime_key(full_db_name_ondisk_dict)
+        full_db_name_ondisk_dict = self.get_db_filename_dict()
+        db_name_ondisk_lastest = utils.get_earliest_datetime_key(full_db_name_ondisk_dict)
         db_filepath_origin = os.path.join(self.db_path, db_name_ondisk_lastest)
         db_filepath = self.get_temp_dbfilepath(db_filepath_origin)
 
@@ -652,7 +640,7 @@ class _DBManager:
 
     # 检查更新数据库中的条目是否有对应视频
     def db_update_videofile_exist_status(self):
-        db_file_path_dict = file_utils.get_db_file_path_dict()
+        db_file_path_dict = self.get_db_filename_dict()
         db_file_path_list = []
         video_file_path_list = file_utils.get_file_path_list(config.record_videos_dir)
 
@@ -700,10 +688,42 @@ class _DBManager:
             conn.commit()
             conn.close()
 
+    def get_db_filename_dict(self):
+        return self._db_filename_dict
+
+    # 取得数据库文件夹下的完整数据库路径列表
+    def _init_db_filename_dict(self):
+        file_utils.check_and_create_folder(self.db_path)
+
+        db_list = os.listdir(self.db_path)
+        if len(db_list) == 0:
+            # 目录为空
+            return None
+
+        # 去除非当前用户、且临时使用的内容
+        db_list = list(filter(lambda file: file.startswith(self.user_name) and not file.endswith("_TEMP_READ.db"), db_list))
+
+        if len(db_list) == 0:  # 如果去除了非当前用户内容后为空
+            return None
+
+        db_list_datetime = [utils.extract_date_from_db_filename(file) for file in db_list]
+
+        return dict(sorted(zip(db_list, db_list_datetime), key=lambda x: x[1]))
+
+    # 检测是否初次使用工具，如果不存在数据库/数据库中只有一条数据，则判定为是
+    def check_is_onboarding(self):
+        is_db_existed = self.db_main_initialize()
+        db_file_count = len(self.get_db_filename_dict())
+        if not is_db_existed:
+            return True
+        latest_db_records = self.db_num_records()
+        if latest_db_records == 1 and db_file_count == 1:
+            return True
+        return False
+
 
 db_manager = _DBManager(
     config.db_path,
-    file_utils.get_db_file_path_dict(),
     int(config.max_page_result),
     config.user_name,
 )
