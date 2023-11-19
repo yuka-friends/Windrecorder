@@ -596,7 +596,7 @@ class _DBManager:
     def get_temp_dbfilepath(self, db_filepath):
         db_filename = os.path.basename(db_filepath)
 
-        sign_maintain = True
+        maintaining = os.path.isfile(config.maintain_lock_path)
 
         if not db_filename.endswith("_TEMP_READ.db"):
             db_filename_temp = os.path.splitext(db_filename)[0] + "_TEMP_READ.db"  # 创建临时文件名
@@ -609,7 +609,7 @@ class _DBManager:
                 ) = file_utils.is_fileA_modified_newer_than_fileB(db_filepath, filepath_temp_read)
                 if db_origin_newer and db_timestamp_diff > 5:
                     # 过时了，复制创建一份
-                    if not sign_maintain:  # 数据库是否正在被索引？是则用上一份，不进行复制更新。
+                    if not maintaining:  # 数据库是否正在被索引？是则用上一份，不进行复制更新。
                         shutil.copy2(db_filepath, filepath_temp_read)  # 保留原始文件的修改时间以更好地对比策略
             else:
                 # 不存在临时数据库，复制创建一份
