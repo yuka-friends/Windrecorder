@@ -5,12 +5,12 @@ import pandas as pd
 import streamlit as st
 from PIL import Image
 
-import windrecorder.db_manager as db_manager
 import windrecorder.state as state
 import windrecorder.utils as utils
 import windrecorder.wordcloud as wordcloud
 from windrecorder import file_utils
 from windrecorder.config import config
+from windrecorder.db_manager import db_manager
 from windrecorder.utils import get_text as _t
 
 

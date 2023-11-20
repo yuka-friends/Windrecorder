@@ -10,10 +10,10 @@ from PIL import Image
 from send2trash import send2trash
 from wordcloud import ImageColorGenerator, WordCloud
 
-import windrecorder.db_manager as db_manager
 import windrecorder.utils as utils
 from windrecorder import file_utils
 from windrecorder.config import config
+from windrecorder.db_manager import db_manager
 
 
 # 读取跳过词
@@ -31,7 +31,7 @@ stopwords = read_stopwords("config\\src\\wordcloud_stopword.txt") + config.wordc
 # 按月数据库生成已有所有数据的词库
 def generate_all_word_lexicon_by_month():
     # 取得所有数据库地址
-    all_db_files_dict = file_utils.get_db_file_path_dict()
+    all_db_files_dict = db_manager.get_db_filename_dict()
 
     # 取得已有随机词典txt文件名
     lexicon_directory = "config\\random_lexicon"

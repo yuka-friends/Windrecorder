@@ -5,11 +5,11 @@ import time
 import pandas as pd
 import streamlit as st
 
-import windrecorder.db_manager as db_manager
 import windrecorder.utils as utils
 import windrecorder.wordcloud as wordcloud
 from windrecorder import file_utils
 from windrecorder.config import config
+from windrecorder.db_manager import db_manager
 from windrecorder.ui import components
 from windrecorder.utils import get_text as _t
 

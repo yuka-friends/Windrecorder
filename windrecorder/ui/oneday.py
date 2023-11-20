@@ -5,11 +5,11 @@ import pandas as pd
 import streamlit as st
 from PIL import Image
 
-import windrecorder.db_manager as db_manager
 import windrecorder.utils as utils
 import windrecorder.wordcloud as wordcloud
 from windrecorder import file_utils
 from windrecorder.config import config
+from windrecorder.db_manager import db_manager
 from windrecorder.oneday import OneDay
 from windrecorder.ui import components
 from windrecorder.utils import get_text as _t
@@ -17,7 +17,7 @@ from windrecorder.utils import get_text as _t
 
 def render():
     # onboarding checking
-    if utils.check_is_onboarding():
+    if db_manager.check_is_onboarding():
         col1, col2 = st.columns([1, 2])
         with col1:
             components.web_onboarding()

@@ -11,11 +11,11 @@ import win32file
 from PIL import Image
 from send2trash import send2trash
 
-import windrecorder.db_manager as db_manager
 import windrecorder.record as record
 import windrecorder.utils as utils
 from windrecorder import file_utils
 from windrecorder.config import config
+from windrecorder.db_manager import db_manager
 from windrecorder.utils import date_to_seconds, empty_directory
 
 if config.enable_ocr_chineseocr_lite_onnx:
@@ -525,7 +525,7 @@ def backup_dbfile(db_filepath, keep_items_num=15, make_new_backup_timegap=dateti
         # 获取每个备份数据库文件对应的datatime
         db_date_dict = {}
         for item in db_filelist_name:
-            result = file_utils.extract_datetime_from_db_backup_filename(item)
+            result = utils.extract_datetime_from_db_backup_filename(item)
             db_date_dict[item] = result
 
         # 按照datatime进行排序，并获取最晚的x项

@@ -7,10 +7,10 @@ from io import BytesIO
 import pandas as pd
 from PIL import Image
 
-import windrecorder.db_manager as db_manager
 import windrecorder.utils as utils
 from windrecorder import file_utils
 from windrecorder.config import config
+from windrecorder.db_manager import db_manager
 
 
 # 统计当月数据概览：条形图
