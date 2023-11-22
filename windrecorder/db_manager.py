@@ -679,13 +679,13 @@ class _DBManager:
         db_list = os.listdir(self.db_path)
         if len(db_list) == 0:
             # 目录为空
-            return None
+            return {}
 
         # 去除非当前用户、且临时使用的内容
         db_list = list(filter(lambda file: file.startswith(self.user_name) and not file.endswith("_TEMP_READ.db"), db_list))
 
         if len(db_list) == 0:  # 如果去除了非当前用户内容后为空
-            return None
+            return {}
 
         db_list_datetime = [utils.extract_date_from_db_filename(file) for file in db_list]
 
