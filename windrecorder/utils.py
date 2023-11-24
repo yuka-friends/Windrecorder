@@ -18,7 +18,7 @@ import requests
 from PIL import Image
 from send2trash import send2trash
 
-from windrecorder import file_utils
+from windrecorder import UPDATE_DATETIME, __version__, file_utils
 from windrecorder.config import config
 
 
@@ -451,23 +451,19 @@ def get_random_word_from_lexicon():
 
 # 更新提醒
 def get_github_version_and_date(
-    url="https://raw.githubusercontent.com/Antonoko/Windrecorder/main/config/src/meta.json",
+    url="https://raw.githubusercontent.com/yuka-friends/Windrecorder/main/windrecorder/__init__.py",
 ):
     response = requests.get(url)
-    data = response.json()
-    version = data["version"]
-    update_date = data["update_date"]
-    update_date = date_to_datetime(update_date)
+    exec(response)
+    version = __version__
+    update_date = UPDATE_DATETIME
     return version, update_date
 
 
 # 获得当前版本号与时间
-def get_current_version_and_update(filepath="config\\src\\meta.json"):
-    with open(filepath, "r", encoding="utf-8") as f:
-        data = json.load(f)
-    local_version = data["version"]
-    local_update_date = data["update_date"]
-    local_update_date = date_to_datetime(local_update_date)
+def get_current_version_and_update():
+    local_version = __version__
+    local_update_date = UPDATE_DATETIME
     return local_version, local_update_date
 
 

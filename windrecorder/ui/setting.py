@@ -1,4 +1,3 @@
-import json
 import subprocess
 import time
 from pathlib import Path
@@ -10,7 +9,7 @@ from PIL import Image
 import windrecorder.maintainManager as maintainManager
 import windrecorder.record as record
 import windrecorder.utils as utils
-from windrecorder import file_utils
+from windrecorder import UPDATE_DATETIME, __version__, file_utils
 from windrecorder.config import config
 from windrecorder.utils import get_text as _t
 
@@ -278,15 +277,12 @@ def render():
             unsafe_allow_html=True,
         )
 
-        about_path = "config\\src\\meta.json"
-        with open(about_path, "r", encoding="utf-8") as f:
-            about_json = json.load(f)
         about_markdown = (
             Path(f"config\\src\\about_{config.lang}.md")
             .read_text(encoding="utf-8")
             .format(
-                version=about_json["version"],
-                update_date=about_json["update_date"],
+                version=__version__,
+                update_date=UPDATE_DATETIME,
                 update_info=st.session_state.update_info,
             )
         )
