@@ -2,18 +2,6 @@
 
 All notable changes to this project will be documented in this file.
 
-## 0.0.5 [Unreleased]
-
-### Key takeaways
-
-- WIP
-
-### Added
-- Feature 1: 添加托盘入口 [WIP]
-
-### Changed
-- Improvement 1: 规范的版本与虚拟环境配置管理
-
 
 
 ## 0.0.4 - 2023-11-25
