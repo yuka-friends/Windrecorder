@@ -1,6 +1,6 @@
 #### プロフィール
 
-現在のバージョン：**{version}** `{update_date}` - {update_info}
+現在のバージョン：**{version}** - {update_info}
 
 問題が発生しましたか？フィードバックや提案はありますか？[Github](https://github.com/yuka-friends/Windrecorder) でIssueやPRを提出して改善にご協力ください。
 

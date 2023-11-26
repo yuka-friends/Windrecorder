@@ -170,7 +170,7 @@
         "tray_record_stop": "⏸️ Pause recording",
         "tray_update_cta": "🚀 Update to new version: {version}",
         "tray_version_info": "🚀 It is currently the latest version {version}",
-        "tray_exit": "❌ exit",
+        "tray_exit": "❌ Exit",
         "tray_notify_title": "Windrecorder is running",
         "tray_notify_text": "Pause recording and search memories through the tray menu"
     },

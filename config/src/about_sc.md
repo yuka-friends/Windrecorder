@@ -1,6 +1,6 @@
 #### 关于
 
-当前版本：**{version}** `{update_date}` - {update_info}
+当前版本：**{version}** - {update_info}
 
 遇到问题？想建议反馈？欢迎在 [Github](https://github.com/yuka-friends/Windrecorder) 提出 Issue 与 Pr 改进。
 

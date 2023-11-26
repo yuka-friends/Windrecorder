@@ -8,7 +8,7 @@ from PIL import Image
 
 import windrecorder.record as record
 import windrecorder.utils as utils
-from windrecorder import UPDATE_DATETIME, __version__, file_utils, ocr_manager
+from windrecorder import __version__, file_utils, ocr_manager
 from windrecorder.config import config
 from windrecorder.utils import get_text as _t
 
@@ -255,13 +255,9 @@ def render():
         if "update_check" not in st.session_state:
             try:
                 with st.spinner(_t("set_update_checking")):
-                    tool_version, tool_update_date = utils.get_github_version_and_date()
-                    (
-                        tool_local_version,
-                        tool_local_update_date,
-                    ) = utils.get_current_version_and_update()
-                if tool_update_date > tool_local_update_date:
-                    st.session_state.update_info = _t("set_update_new").format(tool_version=tool_version) + _t(
+                    new_version = utils.get_new_version_if_available()
+                if new_version is not None:
+                    st.session_state.update_info = _t("set_update_new").format(tool_version=new_version) + _t(
                         "set_update_changelog"
                     )
                     st.session_state.update_need = True
@@ -283,7 +279,6 @@ def render():
             .read_text(encoding="utf-8")
             .format(
                 version=__version__,
-                update_date=UPDATE_DATETIME,
                 update_info=st.session_state.update_info,
             )
         )
