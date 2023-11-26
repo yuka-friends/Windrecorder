@@ -18,7 +18,7 @@ import pyautogui
 import requests
 from PIL import Image
 
-from windrecorder import UPDATE_DATETIME, __version__, file_utils
+from windrecorder import __version__, file_utils
 from windrecorder.config import config
 
 
@@ -435,22 +435,34 @@ def get_random_word_from_lexicon():
     return random_word
 
 
-# 更新提醒
-def get_github_version_and_date(
+def get_github_version(
     url="https://raw.githubusercontent.com/yuka-friends/Windrecorder/main/windrecorder/__init__.py",
 ):
     response = requests.get(url)
     exec(response.text)
     version = __version__
-    update_date = UPDATE_DATETIME
-    return version, update_date
+    return version
 
 
-# 获得当前版本号与时间
-def get_current_version_and_update():
+# 获得当前版本号
+def get_current_version():
     local_version = __version__
-    local_update_date = UPDATE_DATETIME
-    return local_version, local_update_date
+    return local_version
+
+
+def get_new_version_if_available():
+    remote_version = get_github_version()
+    current_version = get_current_version()
+    remote_list = remote_version.split(".")
+    current_list = current_version.split(".")
+    for i, j in zip(remote_list, current_list):
+        try:
+            if int(i) > int(j):
+                return remote_version
+        except ValueError:
+            if i.split("b") > j.split("b"):
+                return remote_version
+    return None
 
 
 # 输入cmd命令，返回结果回显内容
