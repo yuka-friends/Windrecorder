@@ -23,6 +23,7 @@ Shapely = "~2.0.1"
 streamlit = "^1.28.2"
 pillow = "^10.1.0"
 wordcloud = "^1.9.2"
+pystray = "^0.19.5"
 
 [tool.poetry.group.dev.dependencies]
 pre-commit = "^3.5.0"
