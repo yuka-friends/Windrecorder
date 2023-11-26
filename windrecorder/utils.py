@@ -454,7 +454,7 @@ def get_github_version_and_date(
     url="https://raw.githubusercontent.com/yuka-friends/Windrecorder/main/windrecorder/__init__.py",
 ):
     response = requests.get(url)
-    exec(response)
+    exec(response.text)
     version = __version__
     update_date = UPDATE_DATETIME
     return version, update_date
