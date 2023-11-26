@@ -262,7 +262,9 @@ def render():
                         tool_local_update_date,
                     ) = utils.get_current_version_and_update()
                 if tool_update_date > tool_local_update_date:
-                    st.session_state.update_info = _t("set_update_new").format(tool_version=tool_version)
+                    st.session_state.update_info = _t("set_update_new").format(tool_version=tool_version) + _t(
+                        "set_update_changelog"
+                    )
                     st.session_state.update_need = True
                     st.session_state.update_badge_emoji = "✨"
                 else:
