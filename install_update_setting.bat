@@ -7,18 +7,13 @@ title Windrecorder - installing dependence and updating
 echo -git: updating repository
 rem git pull
 
-if not exist "env" (
-  echo -installing virtual environment
-  pip install virtualenv
-  echo -creating virtual environment
-  python -m venv env
-)
-
-call env\Scripts\activate.bat
-cd /d %~dp0
-
 echo -updating dependencies
-pip install -r requirements.txt
+python -m pip install poetry==1.7.1
+python -m poetry install
+
+for /F "usebackq tokens=*" %%A in (`python -m poetry env info --path`) do call %%A\Scripts\activate.bat
+
+cd /d %~dp0
 
 @REM update routine
 python "%~dp0\update_routine.py"

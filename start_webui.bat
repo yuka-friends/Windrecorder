@@ -2,15 +2,7 @@
 
 title Windrecorder - Webui Dashboard: http://localhost:8501     == Windrecorder == Windrecorder == Windrecorder ==
 
-REM 判断是否存在 env 文件夹
-if not exist "env" (
-  echo -installing virtual environment
-  pip install virtualenv
-  echo -creating virtual environment
-  python -m venv env
-)
-
-call env\Scripts\activate.bat
+for /F "tokens=* USEBACKQ" %%A in (`python -m poetry env info --path`) do call %%A\Scripts\activate.bat
 
 color 7D
 echo Starting webui...
