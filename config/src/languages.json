@@ -121,7 +121,7 @@
         "set_update_latest": "The current version is already up to date.",
         "set_update_checking": "Checking for updates...",
         "set_update_new": "\n💫 A new version {tool_version} has been detected. Update by opening `install_update_setting.bat` file in the directory.",
-        "set_update_changelog": "\n [What's new](https://github.com/yuka-friends/Windrecorder/blob/main/__assets__/CHANGELOG.md)",
+        "set_update_changelog": "\n [What's new](https://github.com/yuka-friends/Windrecorder/blob/main/CHANGELOG.md)",
         "set_update_fail": "Failed to check for updates. {e}",
         
         "qs_config_indicator": "   ← Current options",
@@ -273,7 +273,7 @@
         "set_update_latest": "当前已是最新版本。",
         "set_update_checking": "检查更新中……",
         "set_update_new": "\n💫 检查到有新版本 {tool_version}，请打开目录下的`install_update_setting.bat`来更新。",
-        "set_update_changelog": "\n [更新日志](https://github.com/yuka-friends/Windrecorder/blob/main/__assets__/CHANGELOG.md)",
+        "set_update_changelog": "\n [更新日志](https://github.com/yuka-friends/Windrecorder/blob/main/CHANGELOG.md)",
         "set_update_fail": "无法检查更新。{e}",
 
         "qs_config_indicator": "   ← 当前选项",
@@ -426,7 +426,7 @@
         "set_update_latest": "現在のバージョンは最新です。",
         "set_update_checking": "更新を確認中...",
         "set_update_new": "\n💫 新しいバージョン {tool_version} が見つかりました。アップデートするには、ディレクトリ内の `install_update_setting.bat` を開いてください。",
-        "set_update_changelog": "\n [変更ログ](https://github.com/yuka-friends/Windrecorder/blob/main/__assets__/CHANGELOG.md)",
+        "set_update_changelog": "\n [変更ログ](https://github.com/yuka-friends/Windrecorder/blob/main/CHANGELOG.md)",
         "set_update_fail": "更新を確認できませんでした。{e}",
         
         "qs_config_indicator": "   ← 現在のオプション",
