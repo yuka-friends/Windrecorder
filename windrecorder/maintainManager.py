@@ -16,7 +16,9 @@ import windrecorder.utils as utils
 from windrecorder import file_utils
 from windrecorder.config import config
 from windrecorder.db_manager import db_manager
-from windrecorder.utils import date_to_seconds, empty_directory
+from windrecorder.exceptions import LockExistsException
+from windrecorder.lock import FileLock
+from windrecorder.utils import date_to_seconds
 
 if config.enable_ocr_chineseocr_lite_onnx:
     from ocr_lib.chineseocr_lite_onnx.model import OcrHandle
@@ -291,33 +293,11 @@ def resize_imahe_as_base64(img_path):
 # 回滚操作
 def rollback_data(video_path, vid_file_name):
     # 擦除db中没索引完全的数据
-    vid_file_name_db = vid_file_name.replace("-INDEX", "")
     print(f"maintainManager: rollback {vid_file_name}")
-    db_manager.db_rollback_delete_video_refer_record(vid_file_name_db)
-
-    # 回滚完毕，将命名调整回来
-    # file_path = os.path.join(video_path, vid_file_name)
-    # new_file_path = file_path.replace("-INDEX","")
-    # os.rename(file_path,new_file_path)
+    db_manager.db_rollback_delete_video_refer_record(vid_file_name)
 
 
-# 对某个视频进行处理的过程
-def ocr_process_single_video(video_path, vid_file_name, iframe_path):
-    # 整合完整路径
-    file_path = os.path.join(video_path, vid_file_name)
-
-    # 判断文件是否为上次索引未完成的文件
-    if "-INDEX" in vid_file_name:
-        # 是-执行回滚操作
-        print("maintainManager: INDEX flag exists, perform rollback operation.")
-        rollback_data(video_path, vid_file_name)
-    else:
-        # 为正在索引的视频文件改名添加"-INDEX"
-        new_filename = vid_file_name.replace(".", "-INDEX.")
-        new_file_path = os.path.join(video_path, new_filename)
-        os.rename(file_path, new_file_path)
-        file_path = new_file_path
-
+def ocr_core_logic(file_path, vid_file_name, iframe_path):
     # - 提取i帧
     extract_iframe(file_path)
     # 裁剪图片
@@ -402,28 +382,68 @@ def ocr_process_single_video(video_path, vid_file_name, iframe_path):
                     False,
                     img_thumbnail,
                 ]
-                # db_manager.db_update_data(vid_file_name, img_file_name, calc_to_sec_data,
-                #                          ocr_result_write, True, False, img_thumbnail)
                 ocr_result_stringA = ocr_result_stringB
 
     # 将完成的dataframe写入数据库
     db_manager.db_add_dataframe_to_db_process(dataframe_all)
 
-    # 清理文件
-    empty_directory(iframe_path)
 
-    print("Add tags to video file")
-    new_file_path = file_path.replace("-INDEX", "-OCRED")
-    os.rename(file_path, new_file_path)
-    print(f"maintainManager: --------- {file_path} Finished! ---------")
+# 对某个视频进行处理的过程
+def ocr_process_single_video(video_path, vid_file_name, iframe_path):
+    with acquire_maintain_lock(vid_file_name):
+        iframe_sub_path = os.path.join(iframe_path, os.path.splitext(vid_file_name)[0])
+        # 整合完整路径
+        file_path = os.path.join(video_path, vid_file_name)
 
-    # new_name = vid_file_name.split('.')[0] + "-OCRED." + vid_file_name.split('.')[1]
-    # os.rename(file_path, os.path.join(video_path, new_name))
+        # 判断文件是否为上次索引未完成的文件
+        if "-INDEX" in vid_file_name:
+            # 是-执行回滚操作
+            print("maintainManager: INDEX flag exists, perform rollback operation.")
+            # 这里我们保证 vid_file_name 不包含 -INDEX
+            vid_file_name = vid_file_name.replace("-INDEX", "")
+            rollback_data(video_path, vid_file_name)
+            # 保证进入 ocr_core_logic 前 iframe_sub_path 是空的
+            try:
+                shutil.rmtree(iframe_sub_path)
+            except FileNotFoundError:
+                pass
+        else:
+            # 为正在索引的视频文件改名添加"-INDEX"
+            new_filename = vid_file_name.replace(".", "-INDEX.")
+            new_file_path = os.path.join(video_path, new_filename)
+            os.rename(file_path, new_file_path)
+            file_path = new_file_path
+
+        file_utils.check_and_create_folder(iframe_sub_path)
+        try:
+            ocr_core_logic(file_path, vid_file_name, iframe_sub_path)
+        except Exception as e:
+            # 记录错误日志
+            print(
+                "maintainManager: Error occurred while processing :",
+                file_path,
+                e,
+            )
+            new_name = vid_file_name.split(".")[0] + "-ERROR." + vid_file_name.split(".")[1]
+            new_name_dir = os.path.dirname(file_path)
+            os.rename(file_path, os.path.join(new_name_dir, new_name))
+
+            file_utils.check_and_create_folder("cache")
+            with open(f"cache\\LOG_ERROR_{new_name}.MD", "w", encoding="utf-8") as f:
+                f.write(f'{datetime.datetime.now().strftime("%Y-%m-%d_%H-%M-%S")}\n{e}')
+        else:
+            print("Add tags to video file")
+            new_file_path = file_path.replace("-INDEX", "-OCRED")
+            os.rename(file_path, new_file_path)
+            print(f"maintainManager: --------- {file_path} Finished! ---------")
+        finally:
+            # 清理文件
+            shutil.rmtree(iframe_sub_path)
 
 
 # 处理文件夹内所有视频的主要流程
 def ocr_process_videos(video_path, iframe_path):
-    print("maintainManager: Processing all video files under path.")
+    print("maintainManager: Processing all video files.")
 
     # 备份最新的数据库
     db_filepath_latest = file_utils.get_db_filepath_by_datetime(datetime.datetime.now())  # 直接获取对应时间的数据库路径
@@ -442,26 +462,11 @@ def ocr_process_videos(video_path, iframe_path):
             if is_file_in_use(full_file_path):
                 continue
 
-            # 清理文件
-            empty_directory(iframe_path)
-            # ocr该文件
             try:
+                # ocr该文件
                 ocr_process_single_video(root, file, iframe_path)
-            except Exception as e:
-                # 记录错误日志
-                print(
-                    "maintainManager: Error occurred while processing :",
-                    full_file_path,
-                    e,
-                )
-                video_filename = os.path.basename(full_file_path)
-                new_name = video_filename.split(".")[0] + "-ERROR." + video_filename.split(".")[1]
-                new_name_dir = os.path.dirname(full_file_path)
-                os.rename(full_file_path, os.path.join(new_name_dir, new_name))
-
-                file_utils.check_and_create_folder("cache")
-                with open(f"cache\\LOG_ERROR_{new_name}.MD", "w", encoding="utf-8") as f:
-                    f.write(str(datetime.datetime.now().strftime("%Y-%m-%d_%H-%M-%S")) + "\n" + str(e))
+            except LockExistsException:
+                pass
 
 
 # 检查视频文件夹中所有文件的日期，对超出储存时限的文件进行删除操作
@@ -562,7 +567,11 @@ def backup_dbfile(db_filepath, keep_items_num=15, make_new_backup_timegap=dateti
         )
         shutil.copy2(db_filepath, db_filepath_backup)
 
-    # _________________________________________________________________
+
+def acquire_maintain_lock(file_name: str):
+    file_utils.check_and_create_folder(config.maintain_lock_path)
+    file_name = file_name.replace(".mp4", ".md")
+    return FileLock(os.path.join(config.maintain_lock_path, file_name), datetime.datetime.now().strftime("%Y-%m-%d_%H-%M-%S"))
 
 
 def maintain_manager_main():
@@ -570,21 +579,11 @@ def maintain_manager_main():
     数据库主维护方式
     """
 
-    # 添加维护标识
-    utils.add_maintain_lock_file("make")
-
     record_videos_dir = config.record_videos_dir
     i_frames_dir = "cache\\i_frames"
 
-    if not os.path.exists(i_frames_dir):
-        os.mkdir(i_frames_dir)
-    if not os.path.exists(record_videos_dir):
-        os.mkdir(record_videos_dir)
+    file_utils.check_and_create_folder(i_frames_dir)
+    file_utils.check_and_create_folder(record_videos_dir)
 
-    # 初始化一下数据库
-    db_manager.db_main_initialize()
     # 对目录下所有视频进行OCR提取处理
     ocr_process_videos(record_videos_dir, i_frames_dir)
-
-    # 移除维护标识
-    utils.add_maintain_lock_file("del")

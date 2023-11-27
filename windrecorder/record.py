@@ -12,26 +12,26 @@ def is_recording():
     try:
         with open(config.record_lock_path, encoding="utf-8") as f:
             check_pid = int(f.read())
-
-        check_result = subprocess.run(["tasklist"], stdout=subprocess.PIPE, text=True)
-        check_output = check_result.stdout
-        check_result = subprocess.run(
-            ["findstr", str(check_pid)],
-            input=check_output,
-            stdout=subprocess.PIPE,
-            text=True,
-        )
-        check_output = check_result.stdout
-        if "python" in check_output:
-            state_is_recording = True
-            print(f"record: state_is_recording:{state_is_recording}")
-            return True
-        else:
-            state_is_recording = False
-            print(f"record: state_is_recording:{state_is_recording}")
-            return False
     except FileNotFoundError:
         print("record: Screen recording service file lock does not exist.")
+        return False
+
+    check_result = subprocess.run(["tasklist"], stdout=subprocess.PIPE, text=True)
+    check_output = check_result.stdout
+    check_result = subprocess.run(
+        ["findstr", str(check_pid)],
+        input=check_output,
+        stdout=subprocess.PIPE,
+        text=True,
+    )
+    check_output = check_result.stdout
+    if "python" in check_output:
+        state_is_recording = True
+        print(f"record: state_is_recording:{state_is_recording}")
+        return True
+    else:
+        state_is_recording = False
+        print(f"record: state_is_recording:{state_is_recording}")
         return False
 
     # 试图使用据说可以自动更新的组件来强制刷新状态

@@ -1,5 +1,6 @@
 import base64
 import calendar
+import ctypes
 import datetime
 import json
 import os
@@ -16,7 +17,6 @@ import cv2
 import pyautogui
 import requests
 from PIL import Image
-from send2trash import send2trash
 
 from windrecorder import UPDATE_DATETIME, __version__, file_utils
 from windrecorder.config import config
@@ -254,7 +254,6 @@ def kill_recording():
             stdout=subprocess.PIPE,
             text=True,
         )
-        # os.kill(check_pid, signal.SIGINT) #通过发送中断信号来停止，但是失败了
         print(f"utils: The screen recording process has ended. {check_result.stdout}")
     except FileNotFoundError:
         print("utils: Unable to find process lock.")
@@ -392,25 +391,12 @@ def image_to_base64(image_path):
     return base64_image
 
 
-# 添加维护锁文件标识
-def add_maintain_lock_file(operation="make"):
-    file_utils.check_and_create_folder("cache")
-    if operation == "make":
-        with open(config.maintain_lock_path, "w", encoding="utf-8") as f:
-            f.write(str(datetime.datetime.now().strftime("%Y-%m-%d_%H-%M-%S")))
-    elif operation == "del":
-        try:
-            send2trash(config.maintain_lock_path)
-        except Exception as e:
-            print(f"utils: {e}")
-
-
-# 检查db是否是有合法的、正在维护中的锁（超过一定时间则解锁），否的话可以执行任务，是的话暂时不执行
-def is_maintain_lock_file_valid(gap=datetime.timedelta(minutes=16)):
+# 检查db是否是有合法的、正在维护中的锁（超过一定时间则解锁）
+def is_maintain_lock_valid(timeout=datetime.timedelta(minutes=16)):
     if os.path.exists(config.maintain_lock_path):
         with open(config.maintain_lock_path, "r", encoding="utf-8") as f:
-            last_maintain_locktime = date_to_datetime(str(f.read()))
-        if datetime.datetime.now() - last_maintain_locktime > gap:
+            last_maintain_locktime = date_to_datetime(f.read())
+        if datetime.datetime.now() - last_maintain_locktime > timeout:
             return False
         else:
             return True
@@ -566,3 +552,16 @@ def extract_datetime_from_db_backup_filename(db_file_name, user_name=config.user
         return db_file_name_extract_datetime
     except (IndexError, ValueError):
         return None
+
+
+# 判断是否已锁屏
+def is_screen_locked():
+    return ctypes.windll.User32.GetForegroundWindow() == 0
+
+
+# 判断是否正在休眠
+def is_system_awake():
+    try:
+        return ctypes.windll.User32.GetLastInputInfo() == 0
+    except Exception:
+        return True

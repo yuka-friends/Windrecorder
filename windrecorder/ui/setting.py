@@ -312,7 +312,7 @@ def draw_db_status():
                 _t("set_text_some_video_will_be_index").format(nocred_count=nocred_count, count=count),
                 icon="✅",
             )
-    elif config.OCR_index_strategy == 2:
+    elif config.OCR_index_strategy == 0:
         if nocred_count == 1 and record.is_recording():
             st.success(
                 _t("set_text_one_video_to_index").format(nocred_count=nocred_count, count=count),
