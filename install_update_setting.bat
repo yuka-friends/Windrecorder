@@ -5,7 +5,7 @@ title Windrecorder - installing dependence and updating
 @REM SET PATH=%PATH%;%folderPath:~0,-1%\python
 
 echo -git: updating repository
-rem git pull
+git pull
 
 echo -updating dependencies
 python -m pip install poetry==1.7.1

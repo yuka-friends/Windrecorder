@@ -13,8 +13,11 @@ This is a tool that can continuously record screen images and retrieve relevant 
 ![Windrecorder](https://github.com/yuka-friends/Windrecorder/blob/main/__assets__/product-preview-cn.jpg)
 
 > [!WARNING]
->
 > 🤯 This project is still in the early stages of development, and you may encounter some minor problems in experience and use. If you encounter it, you are welcome to submit issue feedback and pay attention to updates.
+
+> [!IMPORTANT]
+> The project is adding features and making architectural changes, which may cause problems such as users of earlier versions being unable to upgrade and update normally.
+> Don't worry! Bring your `videos`, `db`, `config\config_user.json` folders and files and you can migrate to the latest version at any time.
 
 # 🦝 Installation
 
@@ -72,7 +75,8 @@ Currently, you need to open the batch script in the directory to use the tool:
 # 🦝 Q&A | Frequently Asked Questions
 Q: There is no data in the recent period when opening webui.
 
-- A: When start_record.bat is indexing data, webui will not create the latest temporary database file. You can delete the database file with the suffix _TEMP_READ.db in the db directory and refresh it after start_record.bat is indexed. This strategy will be fixed and refactored in the future. [#26](https://github.com/yuka-friends/Windrecorder/issues/26)
+- A: When start_record.bat is indexing data, webui will not create the latest temporary database file.
+Solution: After start_record.bat indexing is completed, refresh the webui interface, or delete the database file with the suffix _TEMP_READ.db in the db directory and refresh it. This strategy will be fixed and refactored in the future. [#26](https://github.com/yuka-friends/Windrecorder/issues/26)
 
 Q: When opening webui, it prompts: `FileNotFoundError: [WinError 2] The system cannot find the file specified: './db\\user_2023-10_wind.db-journal'`
 
