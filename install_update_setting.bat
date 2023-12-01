@@ -1,8 +1,7 @@
 @echo off
 title Windrecorder - installing dependence and updating
 
-@REM SET folderPath=%~dp0
-@REM SET PATH=%PATH%;%folderPath:~0,-1%\python
+cd /d %~dp0
 
 echo -git: updating repository
 git pull
@@ -13,7 +12,6 @@ python -m poetry install
 
 for /F "usebackq tokens=*" %%A in (`python -m poetry env info --path`) do call %%A\Scripts\activate.bat
 
-cd /d %~dp0
 
 @REM update routine
 python "%~dp0\update_routine.py"
