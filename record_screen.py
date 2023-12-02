@@ -57,7 +57,7 @@ def idle_maintain_process_main():
     global idle_maintaining_in_process
     idle_maintaining_in_process = True
     try:
-        threading.Thread(target=ocr_manager.ocr_manager_main).start()
+        threading.Thread(target=ocr_manager.ocr_manager_main, daemon=True).start()
         # 清理过时视频
         ocr_manager.remove_outdated_videofiles()
         # 压缩过期视频
@@ -165,7 +165,7 @@ def continuously_record_screen():
                 print(
                     f"Windrecorder: It is separated by {timegap_between_last_idle_maintain} from the last maintenance, enter idle maintenance."
                 )
-                thread_idle_maintain = threading.Thread(target=idle_maintain_process_main)
+                thread_idle_maintain = threading.Thread(target=idle_maintain_process_main, daemon=True)
                 thread_idle_maintain.start()
 
                 # 更新维护时间
@@ -187,6 +187,7 @@ def continuously_record_screen():
                         video_saved_dir,
                         video_out_name,
                     ),
+                    daemon=True,
                 )
                 thread_index_video_data.start()
 
@@ -238,28 +239,28 @@ def main():
 
         if config.OCR_index_strategy == 1:
             # 维护之前退出没留下的视频（如果有）
-            threading.Thread(target=ocr_manager.ocr_manager_main).start()
+            threading.Thread(target=ocr_manager.ocr_manager_main, daemon=True).start()
 
         # 屏幕内容多长时间不变则暂停录制
         print(f"Windrecorder: config.screentime_not_change_to_pause_record: {config.screentime_not_change_to_pause_record}")
         thread_monitor_compare_screenshot: threading.Thread | None = None
         if config.screentime_not_change_to_pause_record > 0:  # 是否使用屏幕不变检测
-            thread_monitor_compare_screenshot = threading.Thread(target=monitor_compare_screenshot)
+            thread_monitor_compare_screenshot = threading.Thread(target=monitor_compare_screenshot, daemon=True)
             thread_monitor_compare_screenshot.start()
 
         # 录屏的线程
-        thread_continuously_record_screen = threading.Thread(target=continuously_record_screen)
+        thread_continuously_record_screen = threading.Thread(target=continuously_record_screen, daemon=True)
         thread_continuously_record_screen.start()
 
         while True:
             # 如果屏幕重复画面检测线程意外出错，重启它
             if thread_monitor_compare_screenshot is not None and not thread_monitor_compare_screenshot.is_alive():
-                thread_monitor_compare_screenshot = threading.Thread(target=monitor_compare_screenshot)
+                thread_monitor_compare_screenshot = threading.Thread(target=monitor_compare_screenshot, daemon=True)
                 thread_monitor_compare_screenshot.start()
 
             # 如果屏幕录制线程意外出错，重启它
             if not thread_continuously_record_screen.is_alive():
-                thread_continuously_record_screen = threading.Thread(target=continuously_record_screen)
+                thread_continuously_record_screen = threading.Thread(target=continuously_record_screen, daemon=True)
                 thread_continuously_record_screen.start()
 
             time.sleep(30)
