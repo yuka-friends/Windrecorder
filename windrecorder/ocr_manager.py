@@ -59,7 +59,7 @@ def is_file_in_use(file_path):
 
 # 提取视频i帧
 # todo - 加入检测视频是否为合法视频?
-def extract_iframe(video_file, iframe_interval=4000):
+def extract_iframe(video_file, iframe_path, iframe_interval=4000):
     print("ocr_manager: extracting video i-frame")
     print(video_file)
     cap = cv2.VideoCapture(video_file)
@@ -74,7 +74,7 @@ def extract_iframe(video_file, iframe_interval=4000):
 
         if frame_cnt % frame_step == 0:
             print("ocr_manager: extract frame cut:" + str(frame_cnt))
-            cv2.imwrite("cache\\i_frames\\%d.jpg" % frame_cnt, frame)
+            cv2.imwrite(os.path.join(iframe_path, f"{frame_cnt}.jpg"), frame)
 
         frame_cnt += 1
 
@@ -83,8 +83,6 @@ def extract_iframe(video_file, iframe_interval=4000):
 
 # 根据config配置裁剪图片
 def crop_iframe(directory):
-    # 检查目录是否存在
-    file_utils.check_and_create_folder(directory)
     top_percent = config.ocr_image_crop_URBL[0] * 0.01
     bottom_percent = config.ocr_image_crop_URBL[1] * 0.01
     left_percent = config.ocr_image_crop_URBL[2] * 0.01
@@ -299,9 +297,9 @@ def rollback_data(video_path, vid_file_name):
 
 def ocr_core_logic(file_path, vid_file_name, iframe_path):
     # - 提取i帧
-    extract_iframe(file_path)
+    extract_iframe(file_path, iframe_path)
     # 裁剪图片
-    crop_iframe("cache\\i_frames")
+    crop_iframe(iframe_path)
 
     img1_path_temp = ""
     img2_path_temp = ""
@@ -580,7 +578,7 @@ def ocr_manager_main():
     """
 
     record_videos_dir = config.record_videos_dir
-    i_frames_dir = "cache\\i_frames"
+    i_frames_dir = config.iframe_dir
 
     file_utils.check_and_create_folder(i_frames_dir)
     file_utils.check_and_create_folder(record_videos_dir)

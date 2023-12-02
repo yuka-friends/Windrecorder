@@ -42,6 +42,7 @@ class Config:
         maintain_lock_path="cache\\LOCK_MAINTAIN",
         record_lock_path="cache\\LOCK_FILE_RECORD.MD",
         last_idle_maintain_file_path="cache\\LAST_IDLE_MAINTAIN.MD",
+        iframe_dir="cache\\i_frames",
         **other_field,
     ) -> None:
         self.db_path = db_path
@@ -75,6 +76,7 @@ class Config:
         self.maintain_lock_path = maintain_lock_path
         self.record_lock_path = record_lock_path
         self.last_idle_maintain_file_path = last_idle_maintain_file_path
+        self.iframe_dir = iframe_dir
 
     def set_and_save_config(self, attr: str, value):
         if not hasattr(self, attr):

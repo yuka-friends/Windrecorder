@@ -74,7 +74,7 @@ def index_video_data(video_saved_dir, vid_file_name):
     if os.path.exists(full_path):
         try:
             print(f"--{full_path} existed. Start ocr processing.")
-            ocr_manager.ocr_process_single_video(video_saved_dir, vid_file_name, "cache\\i_frames")
+            ocr_manager.ocr_process_single_video(video_saved_dir, vid_file_name, config.iframe_dir)
         except LockExistsException:
             print(f"--{full_path} ocr is already in process.")
 
