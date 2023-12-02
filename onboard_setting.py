@@ -3,9 +3,9 @@ import os
 import subprocess
 import time
 
-import windrecorder.maintainManager as maintainManager
 import windrecorder.record as record
 import windrecorder.utils as utils
+from windrecorder import ocr_manager
 from windrecorder.config import config
 from windrecorder.utils import get_text as _t
 
@@ -159,10 +159,10 @@ with open("__assets__\\OCR_test_1080_words_" + config.ocr_lang + ".txt", encodin
 # if config.enable_ocr_chineseocr_lite_onnx:
 #     try:
 #         time_cost_col = time.time()
-#         ocr_result_col = maintainManager.ocr_image_col(test_img_filepath)
+#         ocr_result_col = ocr_manager.ocr_image_col(test_img_filepath)
 #         time_cost_col = time.time() - time_cost_col
 #         ocr_result_col = utils.wrap_text_by_remove_break(ocr_result_col)
-#         _, ocr_correct_col = maintainManager.compare_strings(ocr_result_col, ocr_text_refer)
+#         _, ocr_correct_col = ocr_manager.compare_strings(ocr_result_col, ocr_text_refer)
 
 #     except Exception as e:
 #         ocr_result_col = ""
@@ -174,10 +174,10 @@ with open("__assets__\\OCR_test_1080_words_" + config.ocr_lang + ".txt", encodin
 
 # 测试ms ocr
 time_cost_ms = time.time()
-ocr_result_ms = maintainManager.ocr_image_ms(test_img_filepath)
+ocr_result_ms = ocr_manager.ocr_image_ms(test_img_filepath)
 time_cost_ms = time.time() - time_cost_ms
 ocr_result_ms = utils.wrap_text_by_remove_break(ocr_result_ms)
-_, ocr_correct_ms = maintainManager.compare_strings(ocr_result_ms, ocr_text_refer)
+_, ocr_correct_ms = ocr_manager.compare_strings(ocr_result_ms, ocr_text_refer)
 
 
 while True:

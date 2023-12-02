@@ -6,10 +6,9 @@ import pyautogui
 import streamlit as st
 from PIL import Image
 
-import windrecorder.maintainManager as maintainManager
 import windrecorder.record as record
 import windrecorder.utils as utils
-from windrecorder import UPDATE_DATETIME, __version__, file_utils
+from windrecorder import UPDATE_DATETIME, __version__, file_utils, ocr_manager
 from windrecorder.config import config
 from windrecorder.utils import get_text as _t
 
@@ -92,7 +91,7 @@ def render():
                 estimate_time_str = utils.estimate_indexing_time()  # 预估剩余时间
                 with st.spinner(_t("set_text_updating_db").format(estimate_time_str=estimate_time_str)):
                     timeCost = time.time()  # 预埋计算实际时长
-                    maintainManager.maintain_manager_main()  # 更新数据库
+                    ocr_manager.ocr_manager_main()  # 更新数据库
 
                     timeCost = time.time() - timeCost
             except Exception as ex:

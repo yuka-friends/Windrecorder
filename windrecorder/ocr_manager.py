@@ -60,7 +60,7 @@ def is_file_in_use(file_path):
 # 提取视频i帧
 # todo - 加入检测视频是否为合法视频?
 def extract_iframe(video_file, iframe_interval=4000):
-    print("maintainManager: extracting video i-frame")
+    print("ocr_manager: extracting video i-frame")
     print(video_file)
     cap = cv2.VideoCapture(video_file)
     fps = cap.get(cv2.CAP_PROP_FPS)
@@ -73,7 +73,7 @@ def extract_iframe(video_file, iframe_interval=4000):
             break
 
         if frame_cnt % frame_step == 0:
-            print("maintainManager: extract frame cut:" + str(frame_cnt))
+            print("ocr_manager: extract frame cut:" + str(frame_cnt))
             cv2.imwrite("cache\\i_frames\\%d.jpg" % frame_cnt, frame)
 
         frame_cnt += 1
@@ -121,26 +121,26 @@ def crop_iframe(directory):
         # 关闭图片文件
         image.close()
 
-        print(f"maintainManager: saved croped img {cropped_file_path}")
+        print(f"ocr_manager: saved croped img {cropped_file_path}")
 
 
 # OCR 分流器
 def ocr_image(img_input):
     ocr_engine = config.ocr_engine
-    # print(f"maintainManager: ocr_engine:{ocr_engine}")
+    # print(f"ocr_manager: ocr_engine:{ocr_engine}")
     if ocr_engine == "Windows.Media.Ocr.Cli":
         return ocr_image_ms(img_input)
     elif ocr_engine == "ChineseOCR_lite_onnx":
         if config.enable_ocr_chineseocr_lite_onnx:
             return ocr_image_col(img_input)
         else:
-            print("maintainManager: enable_ocr_chineseocr_lite_onnx is disabled. Fallback to Windows.Media.Ocr.Cli.")
+            print("ocr_manager: enable_ocr_chineseocr_lite_onnx is disabled. Fallback to Windows.Media.Ocr.Cli.")
             return ocr_image_ms(img_input)
 
 
 # OCR文本-chineseOCRlite
 def ocr_image_col(img_input):
-    print("maintainManager: OCR text by chineseOCRlite")
+    print("ocr_manager: OCR text by chineseOCRlite")
     # 输入图片路径，like 'test.jpg'
     # 实例化OcrHandle对象
     ocr_handle = OcrHandle()
@@ -156,14 +156,14 @@ def ocr_image_col(img_input):
         # print(box,text,score)
         ocr_sentence_result = ocr_sentence_result + "," + text
 
-    print("maintainManager: ocr_sentence_result:")
+    print("ocr_manager: ocr_sentence_result:")
     print(ocr_sentence_result)
     return ocr_sentence_result
 
 
 # OCR文本-MS自带方式
 def ocr_image_ms(img_input):
-    print("maintainManager: OCR text by Windows.Media.Ocr.Cli")
+    print("ocr_manager: OCR text by Windows.Media.Ocr.Cli")
     text = ""
     # 调用Windows.Media.Ocr.Cli.exe,参数为图片路径
     command = ["ocr_lib\\Windows.Media.Ocr.Cli.exe", "-l", config.ocr_lang, img_input]
@@ -186,7 +186,7 @@ def ocr_image_ms(img_input):
 
 # 计算两次结果的重合率
 def compare_strings(a, b, threshold=70):
-    print("maintainManager: Calculate the coincidence rate of two results")
+    print("ocr_manager: Calculate the coincidence rate of two results")
 
     # a 和 b 都不含任何文字
     if not a and not b:
@@ -214,7 +214,7 @@ def compare_strings(a, b, threshold=70):
 # 计算两张图片的重合率 - 通过本地文件的方式
 def compare_image_similarity(img_path1, img_path2, threshold=0.7):
     # todo: 将删除操作改为整理为文件列表，降低io开销
-    print("maintainManager: Calculate the coincidence rate of two pictures.")
+    print("ocr_manager: Calculate the coincidence rate of two pictures.")
     img1 = cv2.imread(img_path1)
     img2 = cv2.imread(img_path2)
 
@@ -265,7 +265,7 @@ def compare_image_similarity_np(img1, img2):
 
     # 计算相似度
     similarity = len(matches) / max(len(keypoints1), len(keypoints2))
-    print(f"maintainManager: compare_image_similarity_np:{similarity}")
+    print(f"ocr_manager: compare_image_similarity_np:{similarity}")
 
     return similarity
 
@@ -293,7 +293,7 @@ def resize_imahe_as_base64(img_path):
 # 回滚操作
 def rollback_data(video_path, vid_file_name):
     # 擦除db中没索引完全的数据
-    print(f"maintainManager: rollback {vid_file_name}")
+    print(f"ocr_manager: rollback {vid_file_name}")
     db_manager.db_rollback_delete_video_refer_record(vid_file_name)
 
 
@@ -390,7 +390,7 @@ def ocr_core_logic(file_path, vid_file_name, iframe_path):
 
 # 对某个视频进行处理的过程
 def ocr_process_single_video(video_path, vid_file_name, iframe_path):
-    with acquire_maintain_lock(vid_file_name):
+    with acquire_ocr_lock(vid_file_name):
         iframe_sub_path = os.path.join(iframe_path, os.path.splitext(vid_file_name)[0])
         # 整合完整路径
         file_path = os.path.join(video_path, vid_file_name)
@@ -398,7 +398,7 @@ def ocr_process_single_video(video_path, vid_file_name, iframe_path):
         # 判断文件是否为上次索引未完成的文件
         if "-INDEX" in vid_file_name:
             # 是-执行回滚操作
-            print("maintainManager: INDEX flag exists, perform rollback operation.")
+            print("ocr_manager: INDEX flag exists, perform rollback operation.")
             # 这里我们保证 vid_file_name 不包含 -INDEX
             vid_file_name = vid_file_name.replace("-INDEX", "")
             rollback_data(video_path, vid_file_name)
@@ -420,7 +420,7 @@ def ocr_process_single_video(video_path, vid_file_name, iframe_path):
         except Exception as e:
             # 记录错误日志
             print(
-                "maintainManager: Error occurred while processing :",
+                "ocr_manager: Error occurred while processing :",
                 file_path,
                 e,
             )
@@ -435,7 +435,7 @@ def ocr_process_single_video(video_path, vid_file_name, iframe_path):
             print("Add tags to video file")
             new_file_path = file_path.replace("-INDEX", "-OCRED")
             os.rename(file_path, new_file_path)
-            print(f"maintainManager: --------- {file_path} Finished! ---------")
+            print(f"ocr_manager: --------- {file_path} Finished! ---------")
         finally:
             # 清理文件
             shutil.rmtree(iframe_sub_path)
@@ -443,7 +443,7 @@ def ocr_process_single_video(video_path, vid_file_name, iframe_path):
 
 # 处理文件夹内所有视频的主要流程
 def ocr_process_videos(video_path, iframe_path):
-    print("maintainManager: Processing all video files.")
+    print("ocr_manager: Processing all video files.")
 
     # 备份最新的数据库
     db_filepath_latest = file_utils.get_db_filepath_by_datetime(datetime.datetime.now())  # 直接获取对应时间的数据库路径
@@ -483,11 +483,11 @@ def remove_outdated_videofiles():
     video_filepath_list_outdate = file_utils.get_videofile_path_list_by_time_range(
         video_filepath_list, start_datetime, end_datetime
     )
-    print(f"maintainManager: outdated file to remove: {video_filepath_list_outdate}")
+    print(f"ocr_manager: outdated file to remove: {video_filepath_list_outdate}")
 
     if len(video_filepath_list_outdate) > 0:
         for item in video_filepath_list_outdate:
-            print(f"maintainManager: removing {item}")
+            print(f"ocr_manager: removing {item}")
             send2trash(item)
 
 
@@ -505,15 +505,15 @@ def compress_outdated_videofiles():
     video_filepath_list_outdate = file_utils.get_videofile_path_list_by_time_range(
         video_filepath_list, start_datetime, end_datetime
     )
-    print(f"maintainManager: file to compress {video_filepath_list_outdate}")
+    print(f"ocr_manager: file to compress {video_filepath_list_outdate}")
 
     if len(video_filepath_list_outdate) > 0:
         for item in video_filepath_list_outdate:
             if not item.endswith("-COMPRESS-OCRED.mp4") and item.endswith("-OCRED.mp4"):
-                print(f"maintainManager: compressing {item}")
+                print(f"ocr_manager: compressing {item}")
                 record.compress_video_resolution(item, config.video_compress_rate)
                 send2trash(item)
-    print("maintainManager: All compress tasks done!")
+    print("ocr_manager: All compress tasks done!")
 
 
 # 备份数据库
@@ -568,13 +568,13 @@ def backup_dbfile(db_filepath, keep_items_num=15, make_new_backup_timegap=dateti
         shutil.copy2(db_filepath, db_filepath_backup)
 
 
-def acquire_maintain_lock(file_name: str):
+def acquire_ocr_lock(file_name: str):
     file_utils.check_and_create_folder(config.maintain_lock_path)
     file_name = file_name.replace(".mp4", ".md")
     return FileLock(os.path.join(config.maintain_lock_path, file_name), datetime.datetime.now().strftime("%Y-%m-%d_%H-%M-%S"))
 
 
-def maintain_manager_main():
+def ocr_manager_main():
     """
     数据库主维护方式
     """

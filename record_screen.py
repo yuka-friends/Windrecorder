@@ -14,7 +14,7 @@ import pyautogui
 import windrecorder.record as record
 import windrecorder.utils as utils
 import windrecorder.wordcloud as wordcloud
-from windrecorder import file_utils, maintainManager
+from windrecorder import file_utils, ocr_manager
 from windrecorder.config import config
 from windrecorder.exceptions import LockExistsException
 from windrecorder.lock import FileLock
@@ -57,11 +57,11 @@ def idle_maintain_process_main():
     global idle_maintaining_in_process
     idle_maintaining_in_process = True
     try:
-        threading.Thread(target=maintainManager.maintain_manager_main).start()
+        threading.Thread(target=ocr_manager.ocr_manager_main).start()
         # 清理过时视频
-        maintainManager.remove_outdated_videofiles()
+        ocr_manager.remove_outdated_videofiles()
         # 压缩过期视频
-        maintainManager.compress_outdated_videofiles()
+        ocr_manager.compress_outdated_videofiles()
         # 生成随机词表
         wordcloud.generate_all_word_lexicon_by_month()
     except Exception as e:
@@ -77,7 +77,7 @@ def index_video_data(video_saved_dir, vid_file_name):
     if os.path.exists(full_path):
         try:
             print(f"--{full_path} existed. Start ocr processing.")
-            maintainManager.ocr_process_single_video(video_saved_dir, vid_file_name, "cache\\i_frames")
+            ocr_manager.ocr_process_single_video(video_saved_dir, vid_file_name, "cache\\i_frames")
         except LockExistsException:
             print(f"--{full_path} ocr is already in process.")
 
@@ -209,7 +209,7 @@ def monitor_compare_screenshot():
                     screenshot_array = np.array(screenshot)
 
                     if last_screenshot_array is not None:
-                        similarity = maintainManager.compare_image_similarity_np(last_screenshot_array, screenshot_array)
+                        similarity = ocr_manager.compare_image_similarity_np(last_screenshot_array, screenshot_array)
 
                         if similarity > 0.9:  # 对比检测阈值
                             monitor_idle_minutes += 0.5
@@ -238,7 +238,7 @@ def main():
 
         if config.OCR_index_strategy == 1:
             # 维护之前退出没留下的视频（如果有）
-            threading.Thread(target=maintainManager.maintain_manager_main).start()
+            threading.Thread(target=ocr_manager.ocr_manager_main).start()
 
         # 屏幕内容多长时间不变则暂停录制
         print(f"Windrecorder: config.screentime_not_change_to_pause_record: {config.screentime_not_change_to_pause_record}")
