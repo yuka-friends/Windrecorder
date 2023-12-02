@@ -11,10 +11,7 @@ from os import getpid
 import numpy as np
 import pyautogui
 
-import windrecorder.record as record
-import windrecorder.utils as utils
-import windrecorder.wordcloud as wordcloud
-from windrecorder import file_utils, ocr_manager
+from windrecorder import file_utils, ocr_manager, record, utils, wordcloud
 from windrecorder.config import config
 from windrecorder.exceptions import LockExistsException
 from windrecorder.lock import FileLock
@@ -234,36 +231,52 @@ def main():
     subprocess.run("color 60", shell=True)  # 设定背景色为不活动
     assert_ffmpeg()
 
-    with FileLock(config.record_lock_path, str(getpid()), timeout_s=None):
-        print(f"Windrecorder: config.OCR_index_strategy: {config.OCR_index_strategy}")
+    while True:
+        try:
+            recording_lock = FileLock(config.record_lock_path, str(getpid()), timeout_s=None)
+        except LockExistsException:
+            if record.is_recording():
+                print("Windrecorder: Another screen record service is running.")
+                sys.exit(1)
+            else:
+                try:
+                    os.remove(config.record_lock_path)
+                except FileNotFoundError:
+                    pass
+                continue
 
-        if config.OCR_index_strategy == 1:
-            # 维护之前退出没留下的视频（如果有）
-            threading.Thread(target=ocr_manager.ocr_manager_main, daemon=True).start()
+        with recording_lock:
+            print(f"Windrecorder: config.OCR_index_strategy: {config.OCR_index_strategy}")
 
-        # 屏幕内容多长时间不变则暂停录制
-        print(f"Windrecorder: config.screentime_not_change_to_pause_record: {config.screentime_not_change_to_pause_record}")
-        thread_monitor_compare_screenshot: threading.Thread | None = None
-        if config.screentime_not_change_to_pause_record > 0:  # 是否使用屏幕不变检测
-            thread_monitor_compare_screenshot = threading.Thread(target=monitor_compare_screenshot, daemon=True)
-            thread_monitor_compare_screenshot.start()
+            if config.OCR_index_strategy == 1:
+                # 维护之前退出没留下的视频（如果有）
+                threading.Thread(target=ocr_manager.ocr_manager_main, daemon=True).start()
 
-        # 录屏的线程
-        thread_continuously_record_screen = threading.Thread(target=continuously_record_screen, daemon=True)
-        thread_continuously_record_screen.start()
-
-        while True:
-            # 如果屏幕重复画面检测线程意外出错，重启它
-            if thread_monitor_compare_screenshot is not None and not thread_monitor_compare_screenshot.is_alive():
+            # 屏幕内容多长时间不变则暂停录制
+            print(
+                f"Windrecorder: config.screentime_not_change_to_pause_record: {config.screentime_not_change_to_pause_record}"
+            )
+            thread_monitor_compare_screenshot: threading.Thread | None = None
+            if config.screentime_not_change_to_pause_record > 0:  # 是否使用屏幕不变检测
                 thread_monitor_compare_screenshot = threading.Thread(target=monitor_compare_screenshot, daemon=True)
                 thread_monitor_compare_screenshot.start()
 
-            # 如果屏幕录制线程意外出错，重启它
-            if not thread_continuously_record_screen.is_alive():
-                thread_continuously_record_screen = threading.Thread(target=continuously_record_screen, daemon=True)
-                thread_continuously_record_screen.start()
+            # 录屏的线程
+            thread_continuously_record_screen = threading.Thread(target=continuously_record_screen, daemon=True)
+            thread_continuously_record_screen.start()
 
-            time.sleep(30)
+            while True:
+                # 如果屏幕重复画面检测线程意外出错，重启它
+                if thread_monitor_compare_screenshot is not None and not thread_monitor_compare_screenshot.is_alive():
+                    thread_monitor_compare_screenshot = threading.Thread(target=monitor_compare_screenshot, daemon=True)
+                    thread_monitor_compare_screenshot.start()
+
+                # 如果屏幕录制线程意外出错，重启它
+                if not thread_continuously_record_screen.is_alive():
+                    thread_continuously_record_screen = threading.Thread(target=continuously_record_screen, daemon=True)
+                    thread_continuously_record_screen.start()
+
+                time.sleep(30)
 
 
 if __name__ == "__main__":
