@@ -57,8 +57,6 @@ def open_webui(icon: pystray.Icon, item: pystray.MenuItem):
 
 def setup(icon: pystray.Icon):
     icon.visible = True
-    if config.start_recording_on_startup:
-        start_stop_recording(icon)
     icon.notify(message=_t("tray_notify_text"), title=_t("tray_notify_title"))
 
 
@@ -99,7 +97,7 @@ def start_stop_webui(icon: pystray.Icon, item: pystray.MenuItem):
 
 
 # 开始/停止录制
-def start_stop_recording(icon: pystray.Icon, item: pystray.MenuItem | None = None):
+def start_stop_recording(icon: pystray.Icon | None = None, item: pystray.MenuItem | None = None):
     global recording_process
 
     if recording_process:
@@ -110,7 +108,8 @@ def start_stop_recording(icon: pystray.Icon, item: pystray.MenuItem | None = Non
             recording_process.wait(RECORDING_STOP_TIMEOUT)
         except subprocess.TimeoutExpired:
             # 如果超时仍未停止，向用户发送通知，并强制终止进程
-            icon.notify("Failed to exit the recording service gracefully. Killing it.")
+            if icon:
+                icon.notify("Failed to exit the recording service gracefully. Killing it.")
             recording_process.kill()
         recording_process = None  # 清空录制进程变量
     else:
@@ -191,6 +190,9 @@ def on_exit(icon: pystray.Icon, item: pystray.MenuItem):
 
 
 def main():
+    if config.start_recording_on_startup:
+        start_stop_recording()
+
     pystray.Icon(
         "Windrecorder",
         get_tray_icon(),
