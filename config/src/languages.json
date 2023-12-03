@@ -61,7 +61,7 @@
         "stat_text_generating_lightbox": "Generating, takes about 5s...",
         "stat_text_no_month_lightbox": "No lightbox image for this month.",
 
-        "rs_text_need_to_restart_after_save_setting": "After saving the settings on this page, you need to restart the 'start_record.bat' to take effect.",
+        "rs_text_need_to_restart_after_save_setting": "After saving the settings on this page, you need to restart the 'start_app.bat' to take effect.",
         "rs_md_title": "### 📼 Recording & Video Storage",
         "rs_btn_check_record_stat": "Check recording status ⟳",
         "rs_text_recording_screen_now": "Continuously recording the screen, refresh to check the latest running status. If you want to stop recording the screen, please manually close the \"Windrecorder - Recording Screening\" terminal window in the background.",
@@ -70,7 +70,7 @@
         "rs_text_starting_record": "Starting screen recording...",
         "rs_md_record_setting_title": "#### Recording options",
         "rs_checkbox_start_record_when_startup": "Automatically start the app after booting up",
-        "rs_checkbox_start_record_when_startup_help": "After applied, a shortcut will be created for 'start_record.bat' and placed in the system's startup directory. This behavior may be misjudged as a virus and cause 'start_webui.bat' to be removed by some security software, if any interception, please remove it from the isolation area and mark it as trusted software. Or manually create a shortcut for 'start_record.bat' and place it in the system's startup folder.",
+        "rs_checkbox_start_record_when_startup_help": "After applied, a shortcut will be created for 'start_app.bat' and placed in the system's startup directory. This behavior may be misjudged as a virus and cause 'start_webui.bat' to be removed by some security software, if any interception, please remove it from the isolation area and mark it as trusted software. Or manually create a shortcut for 'start_app.bat' and place it in the system's startup folder.",
         "rs_md_only_support_main_monitor": "<p align='right' style='color:rgba(0,0,0,.5)'>⚠ Currently only supports recording main monitor.</p>",
         "rs_input_stop_recording_when_screen_freeze": "Pause recording the next video clip when the screen has not changed for a few minutes (0 for never pause)",
         "rs_text_ocr_manual_update": "Manual update only, not automatic",
@@ -159,7 +159,7 @@
         "qs_mo_describe": "Note: Due to the lack of official support for multiple monitors in pyautogui, Windrecorder will only record the screen set as the 'primary display' in Windows.\n",
         "qs_mo_detect": "The detected resolution of the primary display is: {monitor_width}x{monitor_height}",
         "qs_mo_cta": "This setting will be automatically detected each time you start recording, so you don't need to choose or set it separately.",
-        "qs_end_describe": "Congratulations! You have completed all the initial settings. Don't worry, you can open 'start_webui.bat' at any time to adjust the settings!\n\nNow, you can open 'start_record.bat' in the directory to start recording the screen content.\nUse 'start_webui.bat' in the directory to index your data and adjust more personalized options.\n",
+        "qs_end_describe": "Congratulations! You have completed all the initial settings. Don't worry, you can open 'start_webui.bat' at any time to adjust the settings!\n\nNow, you can open 'start_app.bat' in the directory to start recording the screen content.\nUse 'start_webui.bat' in the directory to index your data and adjust more personalized options.\n",
         "qs_end_slogan": "> Capture and preserve the fleeting moments of the wind, as seen through your eyes.",
         "qs_end_feedback": "> Encountered a problem or have suggestions? Feel free to submit issues and PRs at https://github.com/yuka-friends/Windrecorder.",
 
@@ -237,7 +237,7 @@
         "stat_text_generating_lightbox": "生成中，大概需要 5s……",
         "stat_text_no_month_lightbox": "当月未有光箱图片。",
 
-        "rs_text_need_to_restart_after_save_setting": "本页的设置在保存后，需重启 「start_record.bat」 才能生效。",
+        "rs_text_need_to_restart_after_save_setting": "本页的设置在保存后，需重启 「start_app.bat」 才能生效。",
         "rs_md_title": "### 📼 录制与视频存储",
         "rs_btn_check_record_stat": "查询录制状态 ⟳",
         "rs_text_recording_screen_now": "正在持续录制屏幕，刷新以查询最新运行状态。若想停止录制屏幕，请手动关闭后台的 “Windrecorder - Recording Screening” 终端窗口。",
@@ -246,10 +246,10 @@
         "rs_text_starting_record": "启动录屏中……",
         "rs_md_record_setting_title": "#### 录制选项",
         "rs_checkbox_start_record_when_startup": "开机后自动启动应用",
-        "rs_checkbox_start_record_when_startup_help": "此项勾选后会为'start_record.bat'创建快捷方式，并放到系统开机自启动的目录下。此项行为可能会被部分安全软件误判为病毒行为，导致'start_webui.bat'被移除，如有拦截，请将其移出隔离区并标记为可信任软件。或手动为'start_record.bat'创建快捷方式、并放到系统的开机启动目录下。",
+        "rs_checkbox_start_record_when_startup_help": "此项勾选后会为「start_app.bat」创建快捷方式，并放到系统开机自启动的目录下。此行为可能会被部分安全软件误判为病毒行为，导致「start_webui.bat」被移除，如有拦截，请将其移出隔离区并标记为可信任软件。或手动为「start_app.bat」创建快捷方式、并放到系统的开机启动目录下。",
         "rs_md_only_support_main_monitor": "<p align='right' style='color:rgba(0,0,0,.5)'>⚠ 当前仅支持录制主显示器画面。</p>",
         "rs_input_stop_recording_when_screen_freeze": "当画面几分钟没有变化时，暂停录制下个视频切片（0为永不暂停）",
-        "rs_text_ocr_manual_update": "不自动更新，仅手动更新",
+        "rs_text_ocr_manual_update": "不自动索引，我会在需要时手动更新",
         "rs_text_ocr_auto_update": "视频切片录制完毕时自动索引（推荐）",
         "rs_selectbox_ocr_strategy": "OCR 索引策略",
         "rs_input_vid_store_time_help": "0 为永不删除。",
@@ -258,7 +258,7 @@
         "rs_selectbox_compress_ratio": "压缩到原先画面尺寸的",
         "rs_selectbox_compress_ratio_help": "0.75 倍的边缩放约可压缩到原视频体积的 1/4，0.5 倍为 1/8，0.25 倍为 1/16。根据视频具体内容不同，压缩比可能有所差异。",
         "rs_checkbox_enable_half_res_while_hidpi": "对于「高 DPI /高分辨率屏幕」，在录制时缩放至四分之一的分辨率",
-        "rs_text_enable_half_res_while_hidpi": "对于高度大于 1500 的屏幕分辨率，将被视为「高 DPI /高分辨率屏幕」，其录制视频分辨率将缩小至原来的四分之一。比如在 3840x2160 的 4k 显示器上，录制视频的分辨率将为 1920x1080。开启该选项后，可以稍微减少录制视频时的体积，但也会导致 OCR 识别准确率的下降。如果你在高分辨率屏幕上使用较小的字体/缩放、或发现 OCR 识别的准确率较低，可以关闭此选项。",
+        "rs_text_enable_half_res_while_hidpi": "对于高度大于 1500 的屏幕分辨率，将被视为「高 DPI /高分辨率屏幕」，勾选后录制分辨率将缩小至原来的四分之一。比如在 3840x2160 的 4k 显示器上，录制视频的分辨率将为 1920x1080。开启该选项后，可以稍微减少录制视频时的体积，但也会导致 OCR 识别准确率的下降。如果你在高分辨率屏幕上使用较小的字体/缩放、或发现 OCR 识别的准确率较低，可以关闭此选项。",
         "rs_text_compress_encoder": "压缩编码方式",
         "rs_text_compress_accelerator": "压缩编码加速器",
         "rs_text_compress_CRF": "压缩质量 CRF",
@@ -271,8 +271,6 @@
         "rs_text_compress_time": "压缩耗时（s）",
         "rs_checkbox_optimization_firefox": "针对火狐浏览器（Firefox）进行编码优化",
         "rs_text_optimization_firefox_help": "目前火狐浏览器（Firefox）不支持解码播放默认的 YUV444 视频，开启该选项后将以 YUV420 录制与压缩视频。",
-
-
 
         "set_md_title": "### ⚙️ 设置",
         "set_md_index_db": "#### 数据库索引\n",
@@ -336,7 +334,7 @@
         "qs_mo_describe": "注意：由于 pyautogui 暂未官方支持多显示器，捕风记录仪将只记录 Windows 下设置的【主显示器】\n",
         "qs_mo_detect": "当前检测到的主显示器分辨率为：{monitor_width}x{monitor_height}",
         "qs_mo_cta": "此项设定将在每次录屏时自动识别，无需额外选择与设定。",
-        "qs_end_describe": "恭喜！你已完成所有初始设定。别担心，你可以随时打开 【start_webui.bat】 来调整设置！\n\n现在，你可以打开目录下的 【start_record.bat】 来开始记录屏幕内容啦。\n通过打开目录下的 【start_webui.bat】 来索引你的数据、调整更多个性化选项。\n",
+        "qs_end_describe": "恭喜！你已完成所有初始设定。别担心，你可以随时打开 【start_webui.bat】 来调整设置！\n\n现在，你可以打开目录下的 【start_app.bat】 来开始记录屏幕内容啦。\n通过打开目录下的 【start_webui.bat】 来索引你的数据、调整更多个性化选项。\n",
         "qs_end_slogan": "> 一起捕捉贮藏风一般掠过的、你的目之所见。",
         "qs_end_feedback": "> 遇到问题、想反馈建议？欢迎在 https://github.com/yuka-friends/Windrecorder 提交 issue 与 PR。",
         
@@ -415,7 +413,7 @@
         "stat_text_generating_lightbox": "生成中です。約 5秒かかります...",
         "stat_text_no_month_lightbox": "今月はライトボックス画像がありません。",
 
-        "rs_text_need_to_restart_after_save_setting": "このページの設定を保存した後、start_record.bat を再起動する必要があります。",
+        "rs_text_need_to_restart_after_save_setting": "このページの設定を保存した後、start_app.bat を再起動する必要があります。",
         "rs_md_title": "### 📼 録画とビデオストレージ",
         "rs_btn_check_record_stat": "録画ステータスを確認 ⟳",
         "rs_text_recording_screen_now": "画面の連続録画が進行中です。最新の実行状態を確認するには、更新してください。画面の録画を停止するには、「Windrecorder - Recording Screening」ターミナルウィンドウを手動で閉じてください。",
@@ -424,7 +422,7 @@
         "rs_text_starting_record": "録画を開始しています...",
         "rs_md_record_setting_title": "#### 録画オプション",
         "rs_checkbox_start_record_when_startup": "起動時に自動的にAppを開始する",
-        "rs_checkbox_start_record_when_startup_help": "このオプションにチェックを入れると、start_record.bat のショートカットが作成されて、システムのスタートアップディレクトリに配置されます。このオプションにより、一部のセキュリティソフトウェアが start_webui.bat をウイルスのように誤検出する可能性がありますが、隔離エリアから取り除いて信頼できるソフトウェアとしてマークすることができます。また、手動で start_record.bat のショートカットを作成し、システムのスタートアップディレクトリに配置することもできます。",
+        "rs_checkbox_start_record_when_startup_help": "このオプションにチェックを入れると、start_app.bat のショートカットが作成されて、システムのスタートアップディレクトリに配置されます。このオプションにより、一部のセキュリティソフトウェアが start_webui.bat をウイルスのように誤検出する可能性がありますが、隔離エリアから取り除いて信頼できるソフトウェアとしてマークすることができます。また、手動で start_app.bat のショートカットを作成し、システムのスタートアップディレクトリに配置することもできます。",
         "rs_md_only_support_main_monitor": "<p align='right' style='color:rgba(0,0,0,.5)'>⚠ 現在、メインディスプレイの画面のみが録画できます。</p>",
         "rs_input_stop_recording_when_screen_freeze": "画面が数分間変化しないときは、次のビデオスライスの録画を一時停止する（0 は永続停止しない）",
         "rs_text_ocr_manual_update": "手動更新のみで、自動更新しない",
@@ -513,7 +511,7 @@
         "qs_mo_describe": "注意：pyautoguiは公式に複数のディスプレイをサポートしていないため、WindrecorderはWindowsで設定された【メインディスプレイ】のみを記録します。\n",
         "qs_mo_detect": "現在検出されたメインディスプレイの解像度は{monitor_width}x{monitor_height}",
         "qs_mo_cta": "この設定は画面録画時に自動的に識別され、追加の選択や設定は必要ありません。",
-        "qs_end_describe": "おめでとうございます！すべての初期設定が完了しました。心配しないでください、設定を調整するためにいつでも【start_webui.bat】を開くことができます！\n\nさあ、ディレクトリ内の【start_record.bat】を開いて画面の記録を開始しましょう。\nデータを索引化し、より多くのパーソナライズオプションを調整するには、ディレクトリ内の【start_webui.bat】を開いてください。\n",
+        "qs_end_describe": "おめでとうございます！すべての初期設定が完了しました。心配しないでください、設定を調整するためにいつでも【start_webui.bat】を開くことができます！\n\nさあ、ディレクトリ内の【start_app.bat】を開いて画面の記録を開始しましょう。\nデータを索引化し、より多くのパーソナライズオプションを調整するには、ディレクトリ内の【start_webui.bat】を開いてください。\n",
         "qs_end_slogan": "> 一緒に、あなたの目が見た、風のように過ぎ去るものをキャプチャしましょう。",
         "qs_end_feedback": "> 問題が発生した場合やフィードバックの提案がある場合は、https://github.com/yuka-friends/Windrecorder でissueやPRを提出してください。",
 
