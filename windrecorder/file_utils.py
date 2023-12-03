@@ -1,10 +1,21 @@
 import os
+import shutil
 import time
 
 import pandas as pd
 
 import windrecorder.utils as utils
 from windrecorder.config import config
+
+
+# 清空指定目录下的所有文件和子目录
+def empty_directory(path):
+    with os.scandir(path) as it:
+        for entry in it:
+            if entry.is_dir():
+                shutil.rmtree(entry.path)
+            else:
+                os.remove(entry.path)
 
 
 # 检查目录是否存在，若无则创建

@@ -3,9 +3,7 @@ import os
 import subprocess
 import time
 
-import windrecorder.record as record
-import windrecorder.utils as utils
-from windrecorder import ocr_manager
+from windrecorder import file_utils, ocr_manager, record, utils
 from windrecorder.config import config
 from windrecorder.utils import get_text as _t
 
@@ -14,7 +12,7 @@ ALLSTEPS = 5
 
 # 清理缓存
 if os.path.exists("cache"):
-    utils.empty_directory("cache")
+    file_utils.empty_directory("cache")
 
 
 # 画分割线的

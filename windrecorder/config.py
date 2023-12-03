@@ -44,6 +44,7 @@ class Config:
         last_idle_maintain_file_path="cache\\LAST_IDLE_MAINTAIN.MD",
         iframe_dir="cache\\i_frames",
         log_dir="logs",
+        start_recording_on_startup=True,
         **other_field,
     ) -> None:
         self.db_path = db_path
@@ -79,6 +80,7 @@ class Config:
         self.last_idle_maintain_file_path = last_idle_maintain_file_path
         self.iframe_dir = iframe_dir
         self.log_dir = log_dir
+        self.start_recording_on_startup = start_recording_on_startup
 
     def set_and_save_config(self, attr: str, value):
         if not hasattr(self, attr):

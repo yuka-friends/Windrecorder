@@ -1,10 +1,9 @@
-import os
 import time
 
 import streamlit as st
 from PIL import Image
 
-import windrecorder.record as record
+from windrecorder import utils
 from windrecorder.config import config
 from windrecorder.utils import get_text as _t
 
@@ -16,55 +15,17 @@ def render():
     with settings_col:
         st.info(_t("rs_text_need_to_restart_after_save_setting"))
 
-        # 手动检查录屏服务有无进行中
-
-        # 管理刷新服务的按钮状态：手动管理状态，cover fix streamlit只能读按钮是否被按下的问题（一旦有其他按钮按下，其他按钮就会回弹导致持续的逻辑重置、重新加载）
-        def update_record_service_btn_clicked():
-            st.session_state.update_btn_dis_record = True
-
-        if "update_btn_refresh_press" not in st.session_state:
-            st.session_state.update_btn_refresh_press = False
-
-        def update_record_btn_state():
-            if st.session_state.update_btn_refresh_press:
-                st.session_state.update_btn_refresh_press = False
-            else:
-                st.session_state.update_btn_refresh_press = True
-            st.session_state.update_btn_dis_record = False
-
-        # 这个按钮利用 streamlit 的特性触发刷新，并不是无用的变量
-        btn_refresh = st.button(_t("rs_btn_check_record_stat"), on_click=update_record_btn_state)  # noqa: F841
-
-        if st.session_state.update_btn_refresh_press:
-            if record.is_recording():
-                st.success(_t("rs_text_recording_screen_now"), icon="🦚")
-
-            else:
-                st.error(_t("rs_text_not_recording_screen"), icon="🦫")
-                start_record_btn = st.button(
-                    _t("rs_btn_start_record"),
-                    type="primary",
-                    disabled=st.session_state.get("update_btn_dis_record", False),
-                    on_click=update_record_service_btn_clicked,
-                )
-                if start_record_btn:
-                    os.startfile("start_record.bat", "open")
-                    st.toast(_t("rs_text_starting_record"))
-                    st.session_state.update_btn_refresh_press = False
-
-        # st.warning("录制服务已启用。当前暂停录制屏幕。",icon="🦫")
-        st.divider()
         st.markdown(_t("rs_md_record_setting_title"))
 
         # 录制选项
         col1_record, col2_record = st.columns([1, 1])
         with col1_record:
             if "is_create_startup_shortcut" not in st.session_state:
-                st.session_state.is_create_startup_shortcut = record.is_file_already_in_startup("start_record.bat.lnk")
+                st.session_state.is_create_startup_shortcut = utils.is_file_already_in_startup("start_app.bat.lnk")
             st.session_state.is_create_startup_shortcut = st.checkbox(
                 _t("rs_checkbox_start_record_when_startup"),
-                value=record.is_file_already_in_startup("start_record.bat.lnk"),
-                on_change=record.create_startup_shortcut(is_create=st.session_state.is_create_startup_shortcut),
+                value=st.session_state.is_create_startup_shortcut,
+                on_change=utils.change_startup_shortcut(is_create=st.session_state.is_create_startup_shortcut),
                 help=_t("rs_checkbox_start_record_when_startup_help"),
             )
 
