@@ -29,9 +29,6 @@ def render():
     # 日期选择器
     if "day_date_input" not in st.session_state:
         st.session_state["day_date_input"] = datetime.date.today()
-    # if 'day_time_select_slider' not in st.session_state:
-    #     temp_dt_now = time = datetime.datetime.now() - datetime.timedelta(seconds=5)
-    #     st.session_state.day_time_select_slider =temp_dt_now.time()
 
     title_col, yesterday_col, tomorrow_col, today_col, date_col, spacing_col, search_col = st.columns(
         [0.4, 0.25, 0.25, 0.15, 0.25, 0.2, 1]
@@ -102,13 +99,19 @@ def render():
                 st.session_state.day_search_keyword = None
             if "day_search_keyword_lazy" not in st.session_state:
                 st.session_state.day_search_keyword_lazy = "Keyword"
+            if "day_date_input_lazy" not in st.session_state:
+                st.session_state.day_date_input_lazy = st.session_state.day_date_input
 
             def do_day_keyword_search():
                 # 搜索前清除状态
                 st.session_state.day_search_result_index_num = 0  # 条目检索
-                if st.session_state.day_search_keyword_lazy == st.session_state.day_search_keyword:
+                if (
+                    st.session_state.day_search_keyword_lazy == st.session_state.day_search_keyword
+                    and st.session_state.day_date_input_lazy == st.session_state.day_date_input
+                ):
                     return
                 st.session_state.day_search_keyword_lazy = st.session_state.day_search_keyword
+                st.session_state.day_date_input_lazy = st.session_state.day_date_input
                 st.session_state.df_day_search_result = OneDay().search_day_data(
                     utils.complete_datetime(st.session_state.day_date_input),
                     search_content=st.session_state.day_search_keyword,
