@@ -6,7 +6,6 @@ import json
 import os
 import random
 import re
-import shutil
 import subprocess
 import threading
 import time
@@ -17,6 +16,7 @@ import cv2
 import pyautogui
 import requests
 from PIL import Image
+from pyshortcuts import make_shortcut
 
 from windrecorder import __version__, file_utils
 from windrecorder.config import config
@@ -38,16 +38,6 @@ class RepeatingTimer(threading.Thread):
 
     def stop(self):
         self.running = False
-
-
-# 清空指定目录下的所有文件和子目录
-def empty_directory(path):
-    with os.scandir(path) as it:
-        for entry in it:
-            if entry.is_dir():
-                shutil.rmtree(entry.path)
-            else:
-                os.remove(entry.path)
 
 
 # 获得屏幕分辨率
@@ -575,3 +565,47 @@ def find_key_position_in_dict(dictionary, key):
     keys = list(dictionary.keys())  # 获取字典的键列表
     position = keys.index(key) if key in keys else 0  # 查找键的位置，没有则返回 0
     return position
+
+
+# 检查开机启动项中是否已存在某快捷方式
+def is_file_already_in_startup(filename):
+    startup_folder = os.path.join(
+        os.getenv("APPDATA"),
+        "Microsoft",
+        "Windows",
+        "Start Menu",
+        "Programs",
+        "Startup",
+    )
+    shortcut_path = os.path.join(startup_folder, filename)
+    if os.path.exists(shortcut_path):
+        return True
+    else:
+        return False
+
+
+# 将应用设置为开机启动
+def change_startup_shortcut(is_create=True):
+    startup_folder = os.path.join(
+        os.getenv("APPDATA"),
+        "Microsoft",
+        "Windows",
+        "Start Menu",
+        "Programs",
+        "Startup",
+    )
+    shortcut_path = os.path.join(startup_folder, "start_app.bat.lnk")
+
+    if is_create:
+        # 创建快捷方式
+        if not os.path.exists(shortcut_path):
+            current_dir = os.getcwd()
+            bat_path = os.path.join(current_dir, "start_app.bat")
+            make_shortcut(bat_path, folder=startup_folder)
+            print("record: The shortcut has been created and added to the startup items")
+    else:
+        # 移除快捷方式
+        if os.path.exists(shortcut_path):
+            print("record: Shortcut already exists")
+            os.remove(shortcut_path)
+            print("record: Delete shortcut")

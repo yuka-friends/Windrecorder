@@ -4,7 +4,6 @@ import subprocess
 import time
 
 import pandas as pd
-from pyshortcuts import make_shortcut
 from send2trash import send2trash
 
 from windrecorder.config import config
@@ -36,51 +35,6 @@ def is_recording():
         state_is_recording = False
         print(f"record: state_is_recording:{state_is_recording}")
         return False
-
-
-# 检查开机启动项中是否已存在某快捷方式
-def is_file_already_in_startup(filename):
-    startup_folder = os.path.join(
-        os.getenv("APPDATA"),
-        "Microsoft",
-        "Windows",
-        "Start Menu",
-        "Programs",
-        "Startup",
-    )
-    shortcut_path = os.path.join(startup_folder, filename)
-    if os.path.exists(shortcut_path):
-        return True
-    else:
-        return False
-
-
-# 将录屏服务设置为开机启动
-def create_startup_shortcut(is_create=True):
-    startup_folder = os.path.join(
-        os.getenv("APPDATA"),
-        "Microsoft",
-        "Windows",
-        "Start Menu",
-        "Programs",
-        "Startup",
-    )
-    shortcut_path = os.path.join(startup_folder, "start_record.bat.lnk")
-
-    if is_create:
-        # 创建快捷方式
-        if not os.path.exists(shortcut_path):
-            current_dir = os.getcwd()
-            bat_path = os.path.join(current_dir, "start_record.bat")
-            make_shortcut(bat_path, folder=startup_folder)
-            print("record: The shortcut has been created and added to the startup items")
-
-    else:
-        # 移除快捷方式
-        if os.path.exists(shortcut_path):
-            print("record: Shortcut already exists")
-            os.remove(shortcut_path)
-            print("record: Delete shortcut")
 
 
 # 获取录屏时目标缩放分辨率策略

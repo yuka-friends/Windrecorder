@@ -40,5 +40,6 @@
   "compress_encoder": "x264",
   "compress_accelerator": "cpu",
   "compress_quality": 39,
-  "used_firefox": false
+  "used_firefox": false,
+  "start_recording_on_startup": true
 }

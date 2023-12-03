@@ -11,11 +11,12 @@ import pystray
 import requests
 from PIL import Image
 
-from windrecorder import file_utils, utils
-from windrecorder.config import config
-from windrecorder.utils import get_text as _t
-
 PROJECT_ROOT = os.path.abspath(os.path.dirname(__file__))
+os.chdir(PROJECT_ROOT)
+
+from windrecorder import file_utils, utils  # NOQA: E402
+from windrecorder.config import config  # NOQA: E402
+from windrecorder.utils import get_text as _t  # NOQA: E402
 
 WEBUI_STDOUT_PATH = os.path.join(config.log_dir, "webui.log")
 WEBUI_STDERR_PATH = os.path.join(config.log_dir, "webui.err")
@@ -45,7 +46,18 @@ file_utils.ensure_dir("cache")
 file_utils.ensure_dir(config.log_dir)
 
 
-def startStopWebui(icon: pystray.Icon, item: pystray.MenuItem):
+def open_webui(icon: pystray.Icon, item: pystray.MenuItem):
+    webbrowser.open(webui_url)
+
+
+def setup(icon: pystray.Icon):
+    icon.visible = True
+    if config.start_recording_on_startup:
+        start_stop_recording(icon)
+    icon.notify(message=_t("tray_notify_text"), title=_t("tray_notify_title"))
+
+
+def start_stop_webui(icon: pystray.Icon, item: pystray.MenuItem):
     global streamlit_process, webui_url
     if streamlit_process:
         streamlit_process.kill()
@@ -74,7 +86,7 @@ def startStopWebui(icon: pystray.Icon, item: pystray.MenuItem):
             icon.notify(f"Webui takes more than {STREAMLIT_OPEN_TIMEOUT} seconds to launch!")
 
 
-def startStopRecording(icon: pystray.Icon, item: pystray.MenuItem):
+def start_stop_recording(icon: pystray.Icon, item: pystray.MenuItem | None = None):
     global recording_process
     if recording_process:
         recording_process.send_signal(signal.CTRL_BREAK_EVENT)
@@ -98,16 +110,7 @@ def startStopRecording(icon: pystray.Icon, item: pystray.MenuItem):
             )
 
 
-def openWebui(icon: pystray.Icon, item: pystray.MenuItem):
-    webbrowser.open(webui_url)
-
-
-def setup(icon: pystray.Icon):
-    icon.visible = True
-    icon.notify(message=_t("tray_notify_text"), title=_t("tray_notify_title"))
-
-
-def menuCallback():
+def menu_callback():
     try:
         new_version = utils.get_new_version_if_available()
     except requests.ConnectionError:
@@ -115,15 +118,17 @@ def menuCallback():
     current_version = utils.get_current_version()
 
     return (
-        pystray.MenuItem(lambda item: _t("tray_webui_exit") if streamlit_process else _t("tray_webui_start"), startStopWebui),
+        pystray.MenuItem(
+            lambda item: _t("tray_webui_exit") if streamlit_process else _t("tray_webui_start"), start_stop_webui
+        ),
         pystray.MenuItem(
             lambda item: _t("tray_webui_address").format(address_port=webui_url),
-            openWebui,
+            open_webui,
             visible=lambda item: streamlit_process,
             default=True,
         ),
         pystray.MenuItem(
-            lambda item: _t("tray_record_stop") if recording_process else _t("tray_record_start"), startStopRecording
+            lambda item: _t("tray_record_stop") if recording_process else _t("tray_record_start"), start_stop_recording
         ),
         pystray.Menu.SEPARATOR,
         pystray.MenuItem(
@@ -135,16 +140,27 @@ def menuCallback():
             update,
             enabled=lambda item: new_version is not None,
         ),
-        pystray.MenuItem(_t("tray_exit"), lambda icon, item: icon.stop()),
+        pystray.MenuItem(_t("tray_exit"), on_exit),
     )
 
 
+def on_exit(icon: pystray.Icon, item: pystray.MenuItem):
+    if streamlit_process:
+        streamlit_process.kill()
+    if recording_process:
+        recording_process.send_signal(signal.CTRL_BREAK_EVENT)
+        try:
+            recording_process.wait(RECORDING_STOP_TIMEOUT)
+        except subprocess.TimeoutExpired:
+            recording_process.kill()
+    icon.stop()
+
+
 def main():
-    # In order for the icon to be displayed, you must provide an icon
     pystray.Icon(
         "Windrecorder",
         get_tray_icon(),
-        menu=pystray.Menu(menuCallback),
+        menu=pystray.Menu(menu_callback),
     ).run(setup=setup)
 
 
