@@ -1,21 +1,34 @@
+import os
 import re
+import signal
+import subprocess
 import sys
 import time
 import webbrowser
 from subprocess import Popen
-from typing import Optional
 
 import pystray
 import requests
 from PIL import Image
 
 from windrecorder import file_utils, utils
+from windrecorder.config import config
 from windrecorder.utils import get_text as _t
 
+PROJECT_ROOT = os.path.abspath(os.path.dirname(__file__))
+
+WEBUI_STDOUT_PATH = os.path.join(config.log_dir, "webui.log")
+WEBUI_STDERR_PATH = os.path.join(config.log_dir, "webui.err")
+RECORDING_STDOUT_PATH = os.path.join(config.log_dir, "recording.log")
+RECORDING_STDERR_PATH = os.path.join(config.log_dir, "recording.err")
+
 STREAMLIT_URL_REGEX = re.compile("Local URL: (.+)")
-streamlit_process: Optional[Popen] = None
-webui_url = ""
 STREAMLIT_OPEN_TIMEOUT = 10
+RECORDING_STOP_TIMEOUT = 5
+
+streamlit_process: Popen | None = None
+recording_process: Popen | None = None
+webui_url = ""
 
 
 def get_tray_icon():
@@ -29,7 +42,7 @@ def update():
 
 
 file_utils.ensure_dir("cache")
-file_utils.ensure_dir("logs")
+file_utils.ensure_dir(config.log_dir)
 
 
 def startStopWebui(icon: pystray.Icon, item: pystray.MenuItem):
@@ -38,15 +51,17 @@ def startStopWebui(icon: pystray.Icon, item: pystray.MenuItem):
         streamlit_process.kill()
         streamlit_process = None
     else:
-        with open("logs\\streamlit.log", "w", encoding="utf-8") as out, open(
-            "logs\\streamlit.err", "w", encoding="utf-8"
-        ) as err:
+        with open(WEBUI_STDOUT_PATH, "w", encoding="utf-8") as out, open(WEBUI_STDERR_PATH, "w", encoding="utf-8") as err:
             streamlit_process = Popen(
-                [sys.executable, "-m", "streamlit", "run", "webui.py"], stdout=out, stderr=err, encoding="utf-8"
+                [sys.executable, "-m", "streamlit", "run", "webui.py"],
+                stdout=out,
+                stderr=err,
+                encoding="utf-8",
+                cwd=PROJECT_ROOT,
             )
         time_spent = 0
         while time_spent < STREAMLIT_OPEN_TIMEOUT:
-            with open("logs\\streamlit.log", "r", encoding="utf-8") as f:
+            with open(WEBUI_STDOUT_PATH, "r", encoding="utf-8") as f:
                 m = STREAMLIT_URL_REGEX.search(f.read())
             if m:
                 webui_url = m[1]
@@ -56,15 +71,31 @@ def startStopWebui(icon: pystray.Icon, item: pystray.MenuItem):
         else:
             streamlit_process.kill()
             streamlit_process = None
-            icon.notify(f"Streamlit takes more than {STREAMLIT_OPEN_TIMEOUT} seconds to launch!")
-
-
-recording_running = False
+            icon.notify(f"Webui takes more than {STREAMLIT_OPEN_TIMEOUT} seconds to launch!")
 
 
 def startStopRecording(icon: pystray.Icon, item: pystray.MenuItem):
-    global recording_running
-    recording_running = not recording_running
+    global recording_process
+    if recording_process:
+        recording_process.send_signal(signal.CTRL_BREAK_EVENT)
+        try:
+            recording_process.wait(RECORDING_STOP_TIMEOUT)
+        except subprocess.TimeoutExpired:
+            icon.notify("Failed to exit the recording service gracefully. Killing it.")
+            recording_process.kill()
+        recording_process = None
+    else:
+        with open(RECORDING_STDOUT_PATH, "w", encoding="utf-8") as out, open(
+            RECORDING_STDERR_PATH, "w", encoding="utf-8"
+        ) as err:
+            recording_process = Popen(
+                [sys.executable, "record_screen.py"],
+                stdout=out,
+                stderr=err,
+                encoding="utf-8",
+                cwd=PROJECT_ROOT,
+                creationflags=subprocess.CREATE_NEW_PROCESS_GROUP,
+            )
 
 
 def openWebui(icon: pystray.Icon, item: pystray.MenuItem):
@@ -92,7 +123,7 @@ def menuCallback():
             default=True,
         ),
         pystray.MenuItem(
-            lambda item: _t("tray_record_stop") if recording_running else _t("tray_record_start"), startStopRecording
+            lambda item: _t("tray_record_stop") if recording_process else _t("tray_record_start"), startStopRecording
         ),
         pystray.Menu.SEPARATOR,
         pystray.MenuItem(

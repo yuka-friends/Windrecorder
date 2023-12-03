@@ -49,6 +49,7 @@ class Config:
         record_lock_path="cache\\LOCK_FILE_RECORD.MD",
         last_idle_maintain_file_path="cache\\LAST_IDLE_MAINTAIN.MD",
         iframe_dir="cache\\i_frames",
+        log_dir="logs",
         **other_field,
     ) -> None:
         self.db_path = db_path
@@ -88,6 +89,7 @@ class Config:
         self.compress_quality = compress_quality
         self.compress_preset = get_video_compress_preset_json()
         self.used_firefox = used_firefox
+        self.log_dir = log_dir
 
     def set_and_save_config(self, attr: str, value):
         if not hasattr(self, attr):

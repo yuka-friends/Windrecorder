@@ -419,15 +419,6 @@ def get_random_word_from_lexicon():
             if word:
                 words.append(word)
 
-    # 读取全部后随机抽取
-    # for filename in file_list:
-    #     file_path = os.path.join(directory, filename)
-    #     with open(file_path, "r", encoding='utf-8') as file:
-    #         for line in file:
-    #             word = line.strip()
-    #             if word:
-    #                 words.append(word)
-
     if not words:
         return None
 
