@@ -36,7 +36,7 @@ try:
         time_read = f.read()
         last_idle_maintain_time = datetime.datetime.strptime(time_read, "%Y-%m-%d_%H-%M-%S")
 except FileNotFoundError:
-    file_utils.check_and_create_folder("cache")
+    file_utils.ensure_dir("cache")
     with open(config.last_idle_maintain_file_path, "w", encoding="utf-8") as f:
         f.write(last_idle_maintain_time.strftime("%Y-%m-%d_%H-%M-%S"))
 
@@ -92,10 +92,9 @@ def record_screen(
     video_out_name = now.strftime("%Y-%m-%d_%H-%M-%S") + ".mp4"
     output_dir_with_date = now.strftime("%Y-%m")  # 将视频存储在日期月份子目录下
     video_saved_dir = os.path.join(output_dir, output_dir_with_date)
-    file_utils.check_and_create_folder(video_saved_dir)
+    file_utils.ensure_dir(video_saved_dir)
+    file_utils.ensure_dir(output_dir)
     out_path = os.path.join(video_saved_dir, video_out_name)
-
-    file_utils.check_and_create_folder(output_dir)
 
     # 获取屏幕分辨率并根据策略决定缩放
     screen_width, screen_height = utils.get_screen_resolution()
@@ -135,8 +134,6 @@ def record_screen(
 
     # 执行命令
     try:
-        # 添加服务监测信息
-        file_utils.check_and_create_folder("cache")
         # 运行ffmpeg
         subprocess.run(ffmpeg_cmd, check=True)
         print("Windrecorder: Start Recording via FFmpeg")

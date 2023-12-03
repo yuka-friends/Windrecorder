@@ -28,7 +28,8 @@ def update():
     pass
 
 
-file_utils.check_and_create_folder("cache")
+file_utils.ensure_dir("cache")
+file_utils.ensure_dir("logs")
 
 
 def startStopWebui(icon: pystray.Icon, item: pystray.MenuItem):
@@ -37,13 +38,15 @@ def startStopWebui(icon: pystray.Icon, item: pystray.MenuItem):
         streamlit_process.kill()
         streamlit_process = None
     else:
-        with open("cache\\streamlit.log", "w") as out, open("cache\\streamlit.err", "w") as err:
+        with open("logs\\streamlit.log", "w", encoding="utf-8") as out, open(
+            "logs\\streamlit.err", "w", encoding="utf-8"
+        ) as err:
             streamlit_process = Popen(
                 [sys.executable, "-m", "streamlit", "run", "webui.py"], stdout=out, stderr=err, encoding="utf-8"
             )
         time_spent = 0
         while time_spent < STREAMLIT_OPEN_TIMEOUT:
-            with open("cache\\streamlit.log", "r") as f:
+            with open("logs\\streamlit.log", "r", encoding="utf-8") as f:
                 m = STREAMLIT_URL_REGEX.search(f.read())
             if m:
                 webui_url = m[1]

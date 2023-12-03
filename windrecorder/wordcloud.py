@@ -36,7 +36,7 @@ def generate_all_word_lexicon_by_month():
     # 取得已有随机词典txt文件名
     lexicon_directory = "config\\random_lexicon"
     suffix = "_now.txt"
-    file_utils.check_and_create_folder(lexicon_directory)
+    file_utils.ensure_dir(lexicon_directory)
     file_list = [filename for filename in os.listdir(lexicon_directory) if filename.endswith(".txt")]
 
     # 获取需要更新索引的数据库
@@ -89,7 +89,7 @@ def generate_all_word_lexicon_by_month():
 def check_if_word_lexicon_empty():
     # 取得已有随机词典txt文件名
     lexicon_directory = "config\\random_lexicon"
-    file_utils.check_and_create_folder(lexicon_directory)
+    file_utils.ensure_dir(lexicon_directory)
     file_list = [filename for filename in os.listdir(lexicon_directory) if filename.endswith(".txt")]
     if len(file_list) > 0:
         return False
@@ -189,8 +189,6 @@ def get_month_ocr_result(timestamp, text_file_path="cache/get_month_ocr_result_o
     # 移除换行符
     ocr_text_data = ocr_text_data.replace("\n", "").replace("\r", "")
     # 输出到文件
-    file_utils.check_and_create_folder("cache")
-
     with open(text_file_path, "w", encoding="utf-8") as file:
         file.write(ocr_text_data)
     return text_file_path
@@ -227,7 +225,6 @@ def get_day_ocr_result(timestamp):
     # 移除换行符
     ocr_text_data = ocr_text_data.replace("\n", "").replace("\r", "")
     # 输出到文件
-    file_utils.check_and_create_folder("cache")
     text_file_path = "cache/get_day_ocr_result_out.txt"
     with open(text_file_path, "w", encoding="utf-8") as file:
         file.write(ocr_text_data)
@@ -240,7 +237,7 @@ def generate_word_cloud_in_month(timestamp, img_save_name="default"):
     text_file_path = get_month_ocr_result(timestamp)
 
     img_save_dir = config.wordcloud_result_dir
-    file_utils.check_and_create_folder(img_save_dir)
+    file_utils.ensure_dir(img_save_dir)
     img_save_name = img_save_name
     img_save_path = os.path.join(img_save_dir, img_save_name)
 
@@ -255,7 +252,7 @@ def generate_word_cloud_in_day(timestamp, img_save_name="default"):
     text_file_path = get_day_ocr_result(timestamp)
 
     img_save_dir = config.wordcloud_result_dir
-    file_utils.check_and_create_folder(img_save_dir)
+    file_utils.ensure_dir(img_save_dir)
     img_save_name = img_save_name
     img_save_path = os.path.join(img_save_dir, img_save_name)
 
