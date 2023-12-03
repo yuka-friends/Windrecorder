@@ -95,7 +95,7 @@ def generate_month_lightbox(
     img_saved_name="default.png",
     img_saved_folder=config.lightbox_result_dir,
 ):
-    file_utils.check_and_create_folder(img_saved_folder)
+    file_utils.ensure_dir(img_saved_folder)
 
     month_days = calendar.monthrange(dt.year, dt.month)[1]
     dt_month_start = datetime.datetime(dt.year, dt.month, 1, 0, 0, 1)

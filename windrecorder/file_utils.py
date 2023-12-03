@@ -8,7 +8,7 @@ from windrecorder.config import config
 
 
 # 检查目录是否存在，若无则创建
-def check_and_create_folder(folder_name):
+def ensure_dir(folder_name):
     # 获取当前工作目录
     current_directory = os.getcwd()
 
@@ -59,8 +59,8 @@ def get_videos_and_ocred_videos_count(folder_path):
 
 # 遍历XXX文件夹下有无文件中包含入参str的文件名
 def find_filename_in_dir(dir, search_str):
-    dir = "videos"
-    check_and_create_folder(dir)
+    if not os.path.isdir(dir):
+        return False
 
     for filename in os.listdir(dir):
         if search_str in filename:
@@ -193,7 +193,7 @@ def save_dataframe_to_path(dataframe, file_path="cache/temp.csv"):
     返回:
     无
     """
-    check_and_create_folder(os.path.dirname(file_path))
+    ensure_dir(os.path.dirname(file_path))
     dataframe.to_csv(file_path, index=False)  # 使用to_csv()方法将DataFrame保存为CSV文件（可根据需要选择其他文件格式）
     print("files: DataFrame has been saved at ", file_path)
 
@@ -209,9 +209,7 @@ def read_dataframe_from_path(file_path="cache/temp.csv"):
     返回:
     pandas.DataFrame: 读取到的DataFrame数据
     """
-    check_and_create_folder(os.path.dirname(file_path))
-    if len(os.path.dirname(file_path)) == 0:
-        # 目录为空
+    if not os.path.exists(file_path):
         return None
 
     dataframe = pd.read_csv(file_path)  # 使用read_csv()方法读取CSV文件（可根据文件格式选择对应的读取方法）

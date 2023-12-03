@@ -150,7 +150,7 @@ class OneDay:
         img_saved_name="default.png",
         img_saved_folder=config.timeline_result_dir,
     ):
-        file_utils.check_and_create_folder(img_saved_folder)
+        file_utils.ensure_dir(img_saved_folder)
 
         date_in = datetime.datetime(day_datetime.year, day_datetime.month, day_datetime.day, 0, 0, 1)
         date_out = datetime.datetime(day_datetime.year, day_datetime.month, day_datetime.day, 23, 23, 59)

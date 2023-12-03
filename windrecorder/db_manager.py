@@ -20,6 +20,7 @@ class _DBManager:
         self.user_name = user_name  # 用户名
         self._db_filename_dict = self._init_db_filename_dict()
 
+        file_utils.ensure_dir(self.db_path)
         self.db_main_initialize()
 
     # 根据传入的时间段取得对应数据库的文件名词典
@@ -674,8 +675,6 @@ class _DBManager:
 
     # 取得数据库文件夹下的完整数据库路径列表
     def _init_db_filename_dict(self):
-        file_utils.check_and_create_folder(self.db_path)
-
         db_list = os.listdir(self.db_path)
         if len(db_list) == 0:
             # 目录为空
