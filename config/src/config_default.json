@@ -37,5 +37,11 @@
   "oneday_timeline_pic_num":50,
   "enable_ocr_chineseocr_lite_onnx":false,
   "record_screen_enable_half_res_while_hidpi": false,
-  "start_recording_on_startup": true
+  "start_recording_on_startup": true,
+  "lock_file_dir": "cache\\locks",
+  "maintain_lock_subdir": "LOCK_MAINTAIN",
+  "record_lock_name": "LOCK_FILE_RECORD.MD",
+  "last_idle_maintain_file_path": "cache\\LAST_IDLE_MAINTAIN.MD",
+  "iframe_dir": "cache\\i_frames",
+  "log_dir": "cache\\logs"
 }
