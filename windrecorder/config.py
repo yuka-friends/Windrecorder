@@ -39,8 +39,9 @@ class Config:
         video_compress_rate,
         oneday_timeline_pic_num,
         enable_ocr_chineseocr_lite_onnx,
-        maintain_lock_path="cache\\LOCK_MAINTAIN",
-        record_lock_path="cache\\LOCK_FILE_RECORD.MD",
+        lock_file_dir="cache\\locks",
+        maintain_lock_subdir="LOCK_MAINTAIN",
+        record_lock_name="LOCK_FILE_RECORD.MD",
         last_idle_maintain_file_path="cache\\LAST_IDLE_MAINTAIN.MD",
         iframe_dir="cache\\i_frames",
         log_dir="logs",
@@ -75,12 +76,13 @@ class Config:
         self.video_compress_rate = video_compress_rate
         self.oneday_timeline_pic_num = oneday_timeline_pic_num
         self.enable_ocr_chineseocr_lite_onnx = enable_ocr_chineseocr_lite_onnx
-        self.maintain_lock_path = maintain_lock_path
-        self.record_lock_path = record_lock_path
+        self.maintain_lock_path = os.path.join(lock_file_dir, maintain_lock_subdir)
+        self.record_lock_path = os.path.join(lock_file_dir, record_lock_name)
         self.last_idle_maintain_file_path = last_idle_maintain_file_path
         self.iframe_dir = iframe_dir
         self.log_dir = log_dir
         self.start_recording_on_startup = start_recording_on_startup
+        self.lock_file_dir = lock_file_dir
 
     def set_and_save_config(self, attr: str, value):
         if not hasattr(self, attr):

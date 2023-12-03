@@ -44,6 +44,9 @@ def update():
 
 file_utils.ensure_dir("cache")
 file_utils.ensure_dir(config.log_dir)
+file_utils.ensure_dir(config.lock_file_dir)
+
+file_utils.empty_directory(config.lock_file_dir)
 
 
 def open_webui(icon: pystray.Icon, item: pystray.MenuItem):
