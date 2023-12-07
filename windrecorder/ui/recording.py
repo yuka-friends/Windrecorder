@@ -38,10 +38,6 @@ def render():
         if st.session_state.update_btn_refresh_press:
             if record.is_recording():
                 st.success(_t("rs_text_recording_screen_now"), icon="🦚")
-                # stop_record_btn = st.button('停止录制屏幕', type="secondary",disabled=st.session_state.get("update_btn_dis_record",False),on_click=update_record_service_btn_clicked)
-                # if stop_record_btn:
-                #     st.toast("正在结束录屏进程……")
-                #     utils.kill_recording()
 
             else:
                 st.error(_t("rs_text_not_recording_screen"), icon="🦫")

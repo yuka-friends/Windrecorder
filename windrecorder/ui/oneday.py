@@ -413,7 +413,7 @@ def render():
                         # 如果是当天第一次打开但数据库正在索引因而无法访问
                         if (
                             st.session_state.day_date_input == utils.set_full_datetime_to_YYYY_MM_DD(datetime.datetime.today())
-                            and utils.is_maintain_lock_file_valid()
+                            and utils.is_maintain_lock_valid()
                         ):
                             st.warning(
                                 _t("oneday_text_data_indexing_wait_and_refresh"),

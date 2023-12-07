@@ -7,5 +7,5 @@ for /F "usebackq delims=" %%A in (`python -m poetry env info --path`) do call %%
 color 60
 echo Starting Recording Screen...
 
-python "%~dp0\recordScreen.py"
+python "%~dp0\record_screen.py"
 pause
