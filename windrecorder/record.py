@@ -1,6 +1,9 @@
 import os
+import shutil
 import subprocess
+import time
 
+import pandas as pd
 from pyshortcuts import make_shortcut
 from send2trash import send2trash
 
@@ -33,20 +36,6 @@ def is_recording():
         state_is_recording = False
         print(f"record: state_is_recording:{state_is_recording}")
         return False
-
-    # 试图使用据说可以自动更新的组件来强制刷新状态
-    # (https://towardsdatascience.com/creating-dynamic-dashboards-with-streamlit-747b98a68ab5)
-    # placeholder.text(
-    #     f"state_is_recording:{state_is_recording}")
-
-
-# 用另外的线程虽然能持续检测到服务有没有运行，但是byd streamlit就是没法自动更新，state只能在主线程访问；
-# 用了这个（https://github.com/streamlit/streamlit/issues/1326）讨论中的临时措施
-# 虽然可以自动更新了，但还是无法动态更新页面
-# 目的：让它可以自动检测服务是否在运行，并且在页面中更新显示状态
-# timer_repeat_check_recording = RepeatingTimer(5, repeat_check_recording)
-# add_script_run_ctx(timer_repeat_check_recording)
-# timer_repeat_check_recording.start()
 
 
 # 检查开机启动项中是否已存在某快捷方式
@@ -106,14 +95,27 @@ def get_scale_screen_res_strategy(origin_width=1920, origin_height=1080):
     return target_scale_width, target_scale_height
 
 
+# 获取视频的原始分辨率
+def get_video_res(video_path):
+    cmd = f"ffprobe -v error -select_streams v:0 -show_entries stream=width,height -of csv=p=0 {video_path}"
+    output = subprocess.check_output(cmd, shell=True).decode("utf-8").strip()
+    width, height = map(int, output.split(","))
+    return width, height
+
+
+# 压缩视频 CLI
+def compress_video_CLI(video_path, target_width, target_height, encoder, crf_flag, crf, output_path):
+    cmd = f"ffmpeg -i {video_path} -vf scale={target_width}:{target_height} -c:v {encoder} {crf_flag} {crf} {output_path}"
+    print(cmd)
+    subprocess.call(cmd, shell=True)
+
+
 # 压缩视频分辨率到输入倍率
 def compress_video_resolution(video_path, scale_factor):
     scale_factor = float(scale_factor)
 
     # 获取视频的原始分辨率
-    cmd = f"ffprobe -v error -select_streams v:0 -show_entries stream=width,height -of csv=p=0 {video_path}"
-    output = subprocess.check_output(cmd, shell=True).decode("utf-8").strip()
-    width, height = map(int, output.split(","))
+    width, height = get_video_res(video_path)
 
     # 计算压缩视频的目标分辨率
     target_width = int(width * scale_factor)
@@ -146,9 +148,16 @@ def compress_video_resolution(video_path, scale_factor):
         if os.path.exists(output_path):
             send2trash(output_path)
 
-        cmd = f"ffmpeg -i {video_path} -vf scale={target_width}:{target_height} -c:v {encoder} {crf_flag} {crf} {output_path}"
-        print(cmd)
-        subprocess.call(cmd, shell=True)
+        compress_video_CLI(
+            video_path=video_path,
+            target_width=target_width,
+            target_height=target_height,
+            encoder=encoder,
+            crf_flag=crf_flag,
+            crf=crf,
+            output_path=output_path,
+        )
+
         return output_path
 
     # 如果系统不支持编码、导致输出的文件不正常或无输出，fallback 到默认参数
@@ -163,3 +172,82 @@ def compress_video_resolution(video_path, scale_factor):
         output_path = encode_video(encoder=encoder_default, crf_flag=crf_flag_default, crf=crf_default)
 
     return output_path
+
+
+# 测试所有的压制参数，由 webui 指定缩放系数与 crf 压缩质量
+def encode_preset_benchmark_test(scale_factor, crf):
+    # 准备测试视频
+    test_video_filepath = "__assets__\\test_video_compress.mp4"
+    if not os.path.exists(test_video_filepath):
+        print("test_video_filepath not found.")
+        return
+
+    # 准备测试环境
+    test_env_folder = "cache\\encode_preset_benchmark_test"
+    if os.path.exists(test_env_folder):
+        shutil.rmtree(test_env_folder)
+    os.makedirs(test_env_folder)
+
+    # 执行测试压缩
+    def encode_test_video(video_path, encoder, crf_flag):
+        # 获取视频的原始分辨率
+        width, height = get_video_res(video_path)
+
+        # 计算压缩视频的目标分辨率
+        target_width = int(width * scale_factor)
+        target_height = int(height * scale_factor)
+
+        output_newname = "compressed_" + encoder + "_" + str(crf) + "_" + os.path.basename(video_path)
+        output_path = os.path.join(test_env_folder, output_newname)
+
+        compress_video_CLI(
+            video_path=video_path,
+            target_width=target_width,
+            target_height=target_height,
+            encoder=encoder,
+            crf_flag=crf_flag,
+            crf=crf,
+            output_path=output_path,
+        )
+
+        return output_path
+
+    # 检查是否压制成功
+    def check_encode_result(filepath):
+        if os.path.exists(filepath):
+            if os.stat(filepath).st_size < 1024:
+                return False
+            return True
+        else:
+            return False
+
+    origin_video_filesize = os.stat(test_video_filepath).st_size
+    df_result = pd.DataFrame(columns=["encoder", "accelerator", "result", "compress_ratio", "compress_time"])
+
+    # 测试所有参数预设
+    for encoder_name, encoder in config.compress_preset.items():
+        print(f"Testing {encoder}")
+        for encode_accelerator_name, encode_accelerator in encoder.items():
+            print(f"Testing {encode_accelerator}")
+            time_cost = time.time()
+            videofile_output_path = encode_test_video(
+                video_path=test_video_filepath, encoder=encode_accelerator["encoder"], crf_flag=encode_accelerator["crf_flag"]
+            )
+            time_cost = time.time() - time_cost
+
+            if check_encode_result(videofile_output_path):
+                # 压制成功
+                compress_video_filesize = os.stat(videofile_output_path).st_size
+                compress_ratio = compress_video_filesize / origin_video_filesize
+                df_result.loc[len(df_result)] = [
+                    encoder_name,
+                    encode_accelerator_name,
+                    True,
+                    format(compress_ratio, ".2f"),
+                    format(time_cost, ".2f"),
+                ]
+            else:
+                # 压制失败
+                df_result.loc[len(df_result)] = [encoder_name, encode_accelerator_name, False, 0, 0]
+
+    return df_result
