@@ -146,7 +146,10 @@ def compress_video_resolution(video_path, scale_factor):
         if os.path.exists(output_path):
             send2trash(output_path)
 
-        cmd = f"ffmpeg -i {video_path} -vf scale={target_width}:{target_height} -c:v {encoder} {crf_flag} {crf} {output_path}"
+        if config.used_firefox:
+            cmd = f"ffmpeg -i {video_path} -vf scale={target_width}:{target_height} -c:v {encoder} {crf_flag} {crf} -pix_fmt yuv420p {output_path}"
+        else:
+            cmd = f"ffmpeg -i {video_path} -vf scale={target_width}:{target_height} -c:v {encoder} {crf_flag} {crf} {output_path}"
         print(cmd)
         subprocess.call(cmd, shell=True)
         return output_path
