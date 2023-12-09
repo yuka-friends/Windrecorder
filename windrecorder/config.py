@@ -4,9 +4,11 @@ import shutil
 
 config_name = "config_user.json"
 config_name_default = "src\\config_default.json"
+config_name_video_compress_preset = "src\\video_compress_preset.json"
 config_dir = "config"
 default_config_path = os.path.join(config_dir, config_name_default)
 user_config_path = os.path.join(config_dir, config_name)
+video_compress_preset_config_path = os.path.join(config_dir, config_name_video_compress_preset)
 
 
 class Config:
@@ -83,6 +85,7 @@ class Config:
         self.compress_encoder = compress_encoder
         self.compress_accelerator = compress_accelerator
         self.compress_quality = compress_quality
+        self.compress_preset = get_video_compress_preset_json()
 
     def set_and_save_config(self, attr: str, value):
         if not hasattr(self, attr):
@@ -139,6 +142,12 @@ def get_config_json():
     initialize_config()
     update_config_files_from_default_to_user()
     with open(user_config_path, "r", encoding="utf-8") as f:
+        config_json = json.load(f)
+    return config_json
+
+
+def get_video_compress_preset_json():
+    with open(video_compress_preset_config_path, "r", encoding="utf-8") as f:
         config_json = json.load(f)
     return config_json
 
