@@ -120,7 +120,7 @@ def render():
                 help=_t("rs_input_vid_compress_time_help"),
             )
         with col3d:
-            video_compress_selectbox_dict = {"0.75": 0, "0.5": 1, "0.25": 2}
+            video_compress_selectbox_dict = {"1": 0, "0.75": 1, "0.5": 2, "0.25": 3}
             video_compress_rate_selectbox = st.selectbox(
                 _t("rs_selectbox_compress_ratio"),
                 list(video_compress_selectbox_dict.keys()),
