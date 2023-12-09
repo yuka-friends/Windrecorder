@@ -84,7 +84,9 @@ def create_startup_shortcut(is_create=True):
             current_dir = os.getcwd()
             bat_path = os.path.join(current_dir, "start_record.bat")
             make_shortcut(bat_path, folder=startup_folder)
-            print("record: The shortcut has been created and added to the startup items")
+            print(
+                "record: The shortcut has been created and added to the startup items"
+            )
 
     else:
         # 移除快捷方式
@@ -99,7 +101,9 @@ def get_scale_screen_res_strategy(origin_width=1920, origin_height=1080):
     target_scale_width = origin_width
     target_scale_height = origin_height
 
-    if origin_height > 1500 and config.record_screen_enable_half_res_while_hidpi:  # 高分屏缩放至四分之一策略
+    if (
+        origin_height > 1500 and config.record_screen_enable_half_res_while_hidpi
+    ):  # 高分屏缩放至四分之一策略
         target_scale_width = int(origin_width / 2)
         target_scale_height = int(origin_height / 2)
 
@@ -107,7 +111,7 @@ def get_scale_screen_res_strategy(origin_width=1920, origin_height=1080):
 
 
 # 压缩视频分辨率到输入倍率
-def compress_video_resolution(video_path, scale_factor):
+def compress_video_resolution(video_path, scale_factor, config=config):
     scale_factor = float(scale_factor)
 
     # 获取视频的原始分辨率
@@ -119,13 +123,44 @@ def compress_video_resolution(video_path, scale_factor):
     target_width = int(width * scale_factor)
     target_height = int(height * scale_factor)
 
+    # 获取编码器和加速器
+    if config.compress_encoder == "x265":
+        encoder = "libx265"
+        crf_flag = "-crf "
+        if config.compress_accelerator == "qsv":
+            encoder = "hevc_qsv"
+            crf_flag = "-global_quality:v "
+        elif config.compress_accelerator == "nvenc":
+            encoder = "hevc_nvenc"
+            crf_flag = "-cq "
+    elif config.compress_encoder == "x264":
+        encoder = "libx264"
+        crf_flag = "-crf "
+        if config.compress_accelerator == "qsv":
+            encoder = "h264_qsv"
+            crf_flag = "-global_quality:v "
+        elif config.compress_accelerator == "nvenc":
+            encoder = "h264_nvenc"
+            crf_flag = "-cq "
+    elif config.compress_encoder == "av1":
+        encoder = "libaom-av1"
+        crf_flag = "-cpu-used 5 -row-mt 1 -tile-columns 2 -tile-rows 2 -crf "
+
+    crf = int(config.compress_quality)
+
     # 压缩视频分辨率
     # output_path = f'compressed_{target_width}x{target_height}.mp4'
     output_newname = os.path.basename(video_path).replace("-OCRED", "-COMPRESS-OCRED")
+    # output_newname = os.path.basename(video_path).replace(
+    # "-OCRED", f"-COMPRESS-OCRED-{encoder}-{crf}"
+    # )
     output_path = os.path.join(os.path.dirname(video_path), output_newname)
     if os.path.exists(output_path):
         send2trash(output_path)
-    cmd = f"ffmpeg -i {video_path} -vf scale={target_width}:{target_height} -c:v libx264 -crf 39 {output_path}"
+
+    cmd = f"ffmpeg -i {video_path} -vf scale={target_width}:{target_height} -c:v {encoder} {crf_flag}{crf} {output_path}"
+
+    print(cmd)
     subprocess.call(cmd, shell=True)
 
     return output_path

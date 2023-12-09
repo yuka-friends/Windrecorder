@@ -39,6 +39,9 @@ class Config:
         video_compress_rate,
         oneday_timeline_pic_num,
         enable_ocr_chineseocr_lite_onnx,
+        compress_encoder,
+        compress_accelerator,
+        compress_quality,
         maintain_lock_path="cache\\LOCK_MAINTAIN",
         record_lock_path="cache\\LOCK_FILE_RECORD.MD",
         last_idle_maintain_file_path="cache\\LAST_IDLE_MAINTAIN.MD",
@@ -77,6 +80,9 @@ class Config:
         self.record_lock_path = record_lock_path
         self.last_idle_maintain_file_path = last_idle_maintain_file_path
         self.iframe_dir = iframe_dir
+        self.compress_encoder = compress_encoder
+        self.compress_accelerator = compress_accelerator
+        self.compress_quality = compress_quality
 
     def set_and_save_config(self, attr: str, value):
         if not hasattr(self, attr):

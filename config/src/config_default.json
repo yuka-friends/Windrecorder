@@ -36,5 +36,8 @@
   "video_compress_rate":"0.75",
   "oneday_timeline_pic_num":50,
   "enable_ocr_chineseocr_lite_onnx":false,
-  "record_screen_enable_half_res_while_hidpi": false
+  "record_screen_enable_half_res_while_hidpi": false,
+  "compress_encoder": "x264",
+  "compress_accelerator": "cpu",
+  "compress_quality": 39
 }
