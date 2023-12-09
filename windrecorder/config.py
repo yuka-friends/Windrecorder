@@ -44,6 +44,7 @@ class Config:
         compress_encoder,
         compress_accelerator,
         compress_quality,
+        used_firefox=False,
         maintain_lock_path="cache\\LOCK_MAINTAIN",
         record_lock_path="cache\\LOCK_FILE_RECORD.MD",
         last_idle_maintain_file_path="cache\\LAST_IDLE_MAINTAIN.MD",
@@ -86,6 +87,7 @@ class Config:
         self.compress_accelerator = compress_accelerator
         self.compress_quality = compress_quality
         self.compress_preset = get_video_compress_preset_json()
+        self.used_firefox = used_firefox
 
     def set_and_save_config(self, attr: str, value):
         if not hasattr(self, attr):
