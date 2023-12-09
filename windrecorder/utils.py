@@ -491,7 +491,7 @@ with open("config\\src\\languages.json", encoding="utf-8") as f:
 
 
 def get_text(text_key):
-    return d_lang[config.lang].get(text_key, "")
+    return d_lang[config.lang].get(text_key, "Text here not found in i18n, please feedback to contributors.")
 
 
 # 查找db字典中最早一项的key值
