@@ -182,6 +182,7 @@ def compress_video_resolution(video_path, scale_factor):
 
 # 测试所有的压制参数，由 webui 指定缩放系数与 crf 压缩质量
 def encode_preset_benchmark_test(scale_factor, crf):
+    scale_factor = float(scale_factor)
     # 准备测试视频
     test_video_filepath = "__assets__\\test_video_compress.mp4"
     if not os.path.exists(test_video_filepath):
@@ -228,7 +229,7 @@ def encode_preset_benchmark_test(scale_factor, crf):
             return False
 
     origin_video_filesize = os.stat(test_video_filepath).st_size
-    df_result = pd.DataFrame(columns=["encoder", "accelerator", "result", "compress_ratio", "compress_time"])
+    df_result = pd.DataFrame(columns=["encoder", "accelerator", "support", "compress_ratio", "compress_time"])
 
     # 测试所有参数预设
     for encoder_name, encoder in config.compress_preset.items():

@@ -565,3 +565,10 @@ def is_system_awake():
         return ctypes.windll.User32.GetLastInputInfo() == 0
     except Exception:
         return True
+
+
+# 查询 key 在有序的 dict 中的第几项
+def find_key_position_in_dict(dictionary, key):
+    keys = list(dictionary.keys())  # 获取字典的键列表
+    position = keys.index(key) + 1 if key in keys else 1  # 查找键的位置，没有则返回1
+    return position
