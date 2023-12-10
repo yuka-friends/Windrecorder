@@ -122,6 +122,9 @@ def record_screen(
         # 默认码率为 200kbps
         "-b:v",
         "200k",
+        # firefox 不支持 yuv444p
+        "-pix_fmt" if config.used_firefox else "",
+        "yuv420p" if config.used_firefox else "",
         "-bf",
         "8",
         "-g",

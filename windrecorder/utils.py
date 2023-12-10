@@ -491,7 +491,7 @@ with open("config\\src\\languages.json", encoding="utf-8") as f:
 
 
 def get_text(text_key):
-    return d_lang[config.lang].get(text_key, "")
+    return d_lang[config.lang].get(text_key, "Text here not found in i18n, please feedback to contributors.")
 
 
 # 查找db字典中最早一项的key值
@@ -565,3 +565,10 @@ def is_system_awake():
         return ctypes.windll.User32.GetLastInputInfo() == 0
     except Exception:
         return True
+
+
+# 查询 key 在有序的 dict 中的第几项
+def find_key_position_in_dict(dictionary, key):
+    keys = list(dictionary.keys())  # 获取字典的键列表
+    position = keys.index(key) if key in keys else 0  # 查找键的位置，没有则返回 0
+    return position
