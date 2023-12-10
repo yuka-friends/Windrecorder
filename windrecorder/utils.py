@@ -570,5 +570,5 @@ def is_system_awake():
 # 查询 key 在有序的 dict 中的第几项
 def find_key_position_in_dict(dictionary, key):
     keys = list(dictionary.keys())  # 获取字典的键列表
-    position = keys.index(key) if key in keys else 0  # 查找键的位置，没有则返回1
+    position = keys.index(key) if key in keys else 0  # 查找键的位置，没有则返回 0
     return position

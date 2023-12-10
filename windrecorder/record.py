@@ -112,7 +112,7 @@ def compress_video_CLI(
     else:
         cmd = f"ffmpeg -i {video_path} -vf scale={target_width}:{target_height} -c:v {encoder} {crf_flag} {crf} {output_path}"
 
-    print(f"[compress_video_CLI] {cmd}")
+    print(f"[compress_video_CLI] {cmd=}")
     subprocess.call(cmd, shell=True)
 
 
