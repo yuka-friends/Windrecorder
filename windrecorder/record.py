@@ -112,7 +112,7 @@ def compress_video_CLI(
     else:
         cmd = f"ffmpeg -i {video_path} -vf scale={target_width}:{target_height} -c:v {encoder} {crf_flag} {crf} {output_path}"
 
-    print(cmd)
+    print(f"[compress_video_CLI] {cmd}")
     subprocess.call(cmd, shell=True)
 
 
@@ -147,7 +147,7 @@ def compress_video_resolution(video_path, scale_factor):
         if "-OCRED" in os.path.basename(video_path):
             output_newname = os.path.basename(video_path).replace("-OCRED", "-COMPRESS-OCRED")
         else:  # 其他用途下的压缩用（如测试）
-            output_newname = "compressed_" + encoder + "_" + str(crf) + "_" + os.path.basename(video_path)
+            output_newname = f"compressed_{encoder}_{crf}_{os.path.basename(video_path)}"
         output_path = os.path.join(os.path.dirname(video_path), output_newname)
 
         # 如果输出目的已存在，将其移至回收站
@@ -204,7 +204,7 @@ def encode_preset_benchmark_test(scale_factor, crf):
         target_width = int(width * scale_factor)
         target_height = int(height * scale_factor)
 
-        output_newname = "compressed_" + encoder + "_" + str(crf) + "_" + os.path.basename(video_path)
+        output_newname = f"compressed_{encoder}_{crf}_{os.path.basename(video_path)}"
         output_path = os.path.join(test_env_folder, output_newname)
 
         compress_video_CLI(

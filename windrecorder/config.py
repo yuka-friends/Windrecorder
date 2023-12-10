@@ -1,7 +1,6 @@
 import json
 import os
 import shutil
-from typing import Dict
 
 config_name = "config_user.json"
 config_name_default = "src\\config_default.json"
@@ -87,7 +86,7 @@ class Config:
         self.compress_encoder = compress_encoder
         self.compress_accelerator = compress_accelerator
         self.compress_quality = compress_quality
-        self.compress_preset: Dict = get_video_compress_preset_json()
+        self.compress_preset = get_video_compress_preset_json()
         self.used_firefox = used_firefox
 
     def set_and_save_config(self, attr: str, value):

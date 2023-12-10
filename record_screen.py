@@ -123,8 +123,8 @@ def record_screen(
         "-b:v",
         "200k",
         # firefox 不支持 yuv444p
-        "-pix_fmt" if {config.used_firefox} else "",
-        "yuv420p" if {config.used_firefox} else "",
+        "-pix_fmt" if config.used_firefox else "",
+        "yuv420p" if config.used_firefox else "",
         "-bf",
         "8",
         "-g",
