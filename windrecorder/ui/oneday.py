@@ -550,6 +550,8 @@ def render():
 
                 # 展示词云
                 try:
+                    print('展示词云')
+                    print(f'{current_day_cloud_img_path=}')
                     image = Image.open(current_day_cloud_img_path)
                     st.image(image)
                 except Exception as e:
