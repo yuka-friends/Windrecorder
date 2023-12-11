@@ -33,8 +33,8 @@ class OneDay:
             second=59,
             microsecond=0,
         )
-        print(f'{search_date_range_in=}')
-        print(f'{search_date_range_out=}')
+        print(f"{search_date_range_in=}")
+        print(f"{search_date_range_out=}")
         df, _, _ = db_manager.db_search_data(
             search_content, search_date_range_in, search_date_range_out
         )
@@ -65,7 +65,7 @@ class OneDay:
             return False, noocred_count, 0, None, None, None
         else:
             # 有结果 - 返回其中最早、最晚的结果，以写入slider；提供总索引数目、未索引数量
-            print(f'{df["videofile_time"]=}')
+            # print(f'{df["videofile_time"]=}')
             min_timestamp = df["videofile_time"].min()
             max_timestamp = df["videofile_time"].max()
             min_timestamp_dt = utils.seconds_to_datetime(min_timestamp)
@@ -91,12 +91,16 @@ class OneDay:
         df_C = pd.DataFrame(columns=["hour", "data"])
         # print(f'{start_dt=}')
         # print(f'{end_dt=}')
-        for step in pd.date_range(start=start_dt, end=end_dt, freq='6min'):
+        for step in pd.date_range(start=start_dt, end=end_dt, freq="6min"):
             filtered = df_B[
-                (df_B["videofile_time"] >= step.timestamp()) & (df_B["videofile_time"] < (step + pd.Timedelta(minutes=6)).timestamp())
+                (df_B["videofile_time"] >= step.timestamp())
+                & (
+                    df_B["videofile_time"]
+                    < (step + pd.Timedelta(minutes=6)).timestamp()
+                )
             ]
             df_C.loc[len(df_C)] = [step, len(filtered)]
-        df_C["hour"] = df_C["hour"].dt.round('1min')
+        df_C["hour"] = df_C["hour"].dt.round("1min")
         # df_C['hour'] = df_C['hour'].apply(int)
         # print(f'{df_C=}')
         return df_C
@@ -106,7 +110,8 @@ class OneDay:
     def find_closest_video_by_filesys(self, target_datetime):
         # 获取视频文件名列表
         # video_files = os.listdir(config.record_videos_dir)
-        print(f'{target_datetime=}')
+        print(f"{target_datetime=}")
+
         # 提取视频文件名中的时间信息
         file_times = []
         for root, dirs, files in os.walk(config.record_videos_dir):
@@ -117,7 +122,7 @@ class OneDay:
                         match.group(1), "%Y-%m-%d_%H-%M-%S"
                     )
                     # print(f'{file_dt=}')
-                    if file_dt.time() < target_datetime.time():
+                    if file_dt < target_datetime:
                         file_times.append((file, file_dt))
         # print(f'{file_times=}')
         # 寻找时间距离target_datetime最近的先前时间的视频文件

@@ -186,14 +186,14 @@ def render():
                     label_visibility="collapsed",
                     disabled=not st.session_state.day_time_slider_disable,
                     on_change=update_slider(
-                        utils.set_full_datetime_to_day_time(
+                        # utils.set_full_datetime_to_day_time(
                             utils.seconds_to_datetime(
                                 st.session_state.df_day_search_result.loc[
                                     st.session_state.day_search_result_index_num,
                                     "videofile_time",
                                 ]
                             )
-                        )
+                        # )
                     ),
                 )
         with refresh_col:
@@ -206,6 +206,7 @@ def render():
             str(datetime.datetime.today().strftime("%Y-%m-%d")) + "-today-.png"
         )
         # real_today_day_cloud_and_TL_img_name = str(datetime.datetime.today().date().year) + "-" + str(datetime.datetime.today().date().month) + "-" + str(datetime.datetime.today().date().day) + "-today-.png"
+        print(f"{st.session_state.day_date_input=}")
         if st.session_state.day_date_input == datetime.datetime.today().date():
             # 如果是今天的结果，以-today结尾，以使次日回溯时词云能被自动更新
             # current_day_cloud_and_TL_img_name = str(st.session_state.day_date_input.year) + "-" + str(st.session_state.day_date_input.month) + "-" + str(st.session_state.day_date_input.day) + "-today-" + ".png"
@@ -233,16 +234,18 @@ def render():
             )
 
         # 时间滑动控制杆
-        start_time = datetime.time(
-            day_min_timestamp_dt.hour, day_min_timestamp_dt.minute
-        )
-        end_time = datetime.time(day_max_timestamp_dt.hour, day_max_timestamp_dt.minute)
+        # start_time = datetime.time(
+        #     day_min_timestamp_dt.hour, day_min_timestamp_dt.minute
+        # )
+        # end_time = datetime.time(day_max_timestamp_dt.hour, day_max_timestamp_dt.minute)
 
         # if end_time < start_time:
         #     end_time = datetime.time(day_max_timestamp_dt.hour + 24, day_max_timestamp_dt.minute)
-        print(f"{start_time=}")
-        print(f"{end_time=}")
-
+        # print(f"{start_time=}")
+        # print(f"{end_time=}")
+        print(f"词云{day_min_timestamp_dt=}")
+        print(f"词云{day_max_timestamp_dt=}")
+        print('要来了哦st.session_state.day_time_select_24h')
         st.session_state.day_time_select_24h = st.slider(
             "Time Rewind",
             label_visibility="collapsed",
@@ -254,6 +257,7 @@ def render():
             disabled=st.session_state.day_time_slider_disable,
             key="day_time_select_slider",
         )
+        print(f"时间滑动控制杆{st.session_state.day_time_select_24h=}")
 
         # 展示时间轴缩略图
         def update_day_timeline_thumbnail():
@@ -330,6 +334,7 @@ def render():
                 st.session_state.day_is_search_data
                 and not st.session_state.df_day_search_result.empty
             ):
+                print("居左部分")
                 # 如果是搜索视图，这里展示全部的搜索结果
                 df_day_search_result_refine = db_manager.db_refine_search_data_day(
                     st.session_state.df_day_search_result,
@@ -404,6 +409,7 @@ def render():
                 st.empty()
 
         with col2a:
+            print(f"{st.session_state.day_is_search_data=}")
             # 居中部分：视频结果显示区域
             if (
                 st.session_state.day_is_search_data
@@ -445,8 +451,8 @@ def render():
 
             else:
                 # 【时间线速查功能】
-                print(f'{st.session_state.day_date_input=}')
-                print(f'{st.session_state.day_time_select_24h=}')
+                print(f"{st.session_state.day_date_input=}")
+                print(f"【时间线速查功能】{st.session_state.day_time_select_24h=}")
                 # 获取选择的时间，查询对应时间下有无视频，有则换算与定位
                 day_full_select_datetime = st.session_state.day_time_select_24h
                 # day_full_select_datetime = utils.merge_date_day_datetime_together(
