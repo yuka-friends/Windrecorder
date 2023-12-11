@@ -445,11 +445,14 @@ def render():
 
             else:
                 # 【时间线速查功能】
+                print(f'{st.session_state.day_date_input=}')
+                print(f'{st.session_state.day_time_select_24h=}')
                 # 获取选择的时间，查询对应时间下有无视频，有则换算与定位
-                day_full_select_datetime = utils.merge_date_day_datetime_together(
-                    st.session_state.day_date_input,
-                    st.session_state.day_time_select_24h,
-                )  # 合并时间为datetime
+                day_full_select_datetime = st.session_state.day_time_select_24h
+                # day_full_select_datetime = utils.merge_date_day_datetime_together(
+                #     st.session_state.day_date_input,
+                #     st.session_state.day_time_select_24h,
+                # )  # 合并时间为datetime
                 (
                     day_is_result_exist,
                     day_video_file_name,
