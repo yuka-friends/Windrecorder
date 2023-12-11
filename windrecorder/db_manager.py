@@ -210,8 +210,10 @@ class _DBManager:
         # 初始化查询数据
         # date_in/date_out : 类型为datetime.datetime
         self.db_update_read_config(config)
-        date_in_ts = int(utils.date_to_seconds(date_in.strftime("%Y-%m-%d_00-00-00")))
-        date_out_ts = int(utils.date_to_seconds(date_out.strftime("%Y-%m-%d_23-59-59")))
+        date_in_ts = int(utils.date_to_seconds(date_in.strftime("%Y-%m-%d_%H-%M-%S")))
+        date_out_ts = int(utils.date_to_seconds(date_out.strftime("%Y-%m-%d_%H-%M-%S")))
+        # date_in_ts = int(utils.date_to_seconds(date_in.strftime("%Y-%m-%d_00-00-00")))
+        # date_out_ts = int(utils.date_to_seconds(date_out.strftime("%Y-%m-%d_23-59-59")))
 
         if date_in_ts == date_out_ts:
             date_out_ts += 1
@@ -220,6 +222,8 @@ class _DBManager:
         datetime_start = utils.seconds_to_datetime(date_in_ts)
         datetime_end = utils.seconds_to_datetime(date_out_ts)
         query_db_name_list = self.db_get_dbfilename_by_datetime(datetime_start, datetime_end)
+        print(f'{datetime_start=}')
+        print(f'{datetime_end=}')
 
         # 遍历查询所有数据库信息
         df_all = pd.DataFrame()
@@ -372,6 +376,7 @@ class _DBManager:
 
     # 优化一天之时数据结果的展示
     def db_refine_search_data_day(self, df, cache_videofile_ondisk_list=None):
+        print(f'{df=}')
         df["locate_time"] = df.apply(
             lambda row: utils.convert_seconds_to_hhmmss(
                 utils.get_video_timestamp_by_filename_and_abs_timestamp(row["videofile_name"], row["videofile_time"])

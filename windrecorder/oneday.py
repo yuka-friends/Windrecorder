@@ -22,9 +22,22 @@ class OneDay:
     # 在数据库中搜索当天所有关于xx的数据
     def search_day_data(self, dt_in, search_content=""):
         # 入参：查询时间，搜索内容
-        search_date_range_in = dt_in.replace(hour=0, minute=0, second=0, microsecond=0)
-        search_date_range_out = dt_in.replace(hour=23, minute=59, second=59, microsecond=0)
-        df, _, _ = db_manager.db_search_data(search_content, search_date_range_in, search_date_range_out)
+        begin_day = config.begin_day
+        search_date_range_in = dt_in.replace(
+            hour=begin_day // 60, minute=begin_day % 60, second=0, microsecond=0
+        )
+        search_date_range_out = dt_in.replace(
+            day=dt_in.day + (1 if begin_day > 0 else 0),
+            hour=(23 + begin_day // 60) % 24,
+            minute=(59 + begin_day % 60) % 60,
+            second=59,
+            microsecond=0,
+        )
+        print(f'{search_date_range_in=}')
+        print(f'{search_date_range_out=}')
+        df, _, _ = db_manager.db_search_data(
+            search_content, search_date_range_in, search_date_range_out
+        )
         return df
 
     # 检查当天数据索引情况
@@ -46,15 +59,20 @@ class OneDay:
 
         if search_result_num < 2:
             # 没有结果的处理
-            _, noocred_count = file_utils.get_videos_and_ocred_videos_count(config.record_videos_dir)
+            _, noocred_count = file_utils.get_videos_and_ocred_videos_count(
+                config.record_videos_dir
+            )
             return False, noocred_count, 0, None, None, None
         else:
             # 有结果 - 返回其中最早、最晚的结果，以写入slider；提供总索引数目、未索引数量
+            print(f'{df["videofile_time"]=}')
             min_timestamp = df["videofile_time"].min()
             max_timestamp = df["videofile_time"].max()
             min_timestamp_dt = utils.seconds_to_datetime(min_timestamp)
             max_timestamp_dt = utils.seconds_to_datetime(max_timestamp)
-            _, noocred_count = file_utils.get_videos_and_ocred_videos_count(config.record_videos_dir)
+            _, noocred_count = file_utils.get_videos_and_ocred_videos_count(
+                config.record_videos_dir
+            )
             return (
                 True,
                 noocred_count - 1,
@@ -68,25 +86,19 @@ class OneDay:
     # 获得当天表中的时间轴统计数据
     def get_day_statistic_chart_overview(self, df, start_dt, end_dt):
         # 入参：df、开始小时数、结束小时数
-        start = utils.datetime_to_24numfloat(start_dt)
-        end = utils.datetime_to_24numfloat(end_dt)
-
-        if start == end:
-            end += 1
-
-        # 复制一份表，然后把视频文件名对应时间戳都转成x.x的格式用于统计
         df_B = df.copy()
-        df_B["videofile_time"] = df_B["videofile_time"].apply(utils.seconds_to_24numfloat)
-
         # 新建一份表，统计每个时间段中有多少视频
         df_C = pd.DataFrame(columns=["hour", "data"])
-        for step in np.arange(float(start), float(end), 0.1):
-            filtered = df_B[(df_B["videofile_time"] >= step) & (df_B["videofile_time"] < step + 0.1)]
+        # print(f'{start_dt=}')
+        # print(f'{end_dt=}')
+        for step in pd.date_range(start=start_dt, end=end_dt, freq='6min'):
+            filtered = df_B[
+                (df_B["videofile_time"] >= step.timestamp()) & (df_B["videofile_time"] < (step + pd.Timedelta(minutes=6)).timestamp())
+            ]
             df_C.loc[len(df_C)] = [step, len(filtered)]
-
-        df_C["hour"] = df_C["hour"].round(1)
+        df_C["hour"] = df_C["hour"].dt.round('1min')
         # df_C['hour'] = df_C['hour'].apply(int)
-
+        # print(f'{df_C=}')
         return df_C
 
     # 当输入时间戳时，查询最近的视频文件，同时检查是否为合法的对应范围（通过config 录制视频时间长度来比对）
@@ -101,7 +113,9 @@ class OneDay:
             for file in files:
                 match = re.match(r"(\d{4}-\d{2}-\d{2}_\d{2}-\d{2}-\d{2})", file)
                 if match:
-                    file_dt = datetime.datetime.strptime(match.group(1), "%Y-%m-%d_%H-%M-%S")
+                    file_dt = datetime.datetime.strptime(
+                        match.group(1), "%Y-%m-%d_%H-%M-%S"
+                    )
                     if file_dt < target_datetime:
                         file_times.append((file, file_dt))
 
@@ -118,7 +132,11 @@ class OneDay:
     # 同上功能，但以搜索数据库的方式
     def find_closest_video_by_database(self, df, time):
         # Find the closest previous time in the dataframe
-        prev_time = df["videofile_time"].iloc[(df["videofile_time"] - time).abs().argsort()[:1]].values[0]
+        prev_time = (
+            df["videofile_time"]
+            .iloc[(df["videofile_time"] - time).abs().argsort()[:1]]
+            .values[0]
+        )
         # Check if difference is less than CONFIG seconds
         if time - prev_time < config.record_seconds:
             # Return video name if difference is small enough
@@ -152,10 +170,35 @@ class OneDay:
     ):
         file_utils.check_and_create_folder(img_saved_folder)
 
-        date_in = datetime.datetime(day_datetime.year, day_datetime.month, day_datetime.day, 0, 0, 1)
-        date_out = datetime.datetime(day_datetime.year, day_datetime.month, day_datetime.day, 23, 23, 59)
+        # if config.late_night_poets:
+        #     date_in = datetime.datetime(
+        #         day_datetime.year, day_datetime.month, day_datetime.day, 0, 0, 1
+        #     )
+        #     date_out = datetime.datetime(
+        #         day_datetime.year, day_datetime.month, day_datetime.day, 23, 59, 59
+        #     )
+        # else:
+        begin_day = config.begin_day
+        date_in = datetime.datetime(
+            day_datetime.year,
+            day_datetime.month,
+            day_datetime.day,
+            begin_day // 60,
+            begin_day % 60,
+            1,
+        )
+        date_out = datetime.datetime(
+            day_datetime.year,
+            day_datetime.month,
+            day_datetime.day + (1 if begin_day > 0 else 0),
+            (23 + begin_day // 60) % 24,
+            (59 + begin_day % 60) % 60,
+            59,
+        )
 
-        image_list = db_manager.db_get_day_thumbnail_by_timeavg(date_in, date_out, config.oneday_timeline_pic_num)
+        image_list = db_manager.db_get_day_thumbnail_by_timeavg(
+            date_in, date_out, config.oneday_timeline_pic_num
+        )
 
         if image_list is None:
             return False
@@ -175,7 +218,9 @@ class OneDay:
         # 创建一个新的空白图像，用于拼贴图片
         result_width = target_width * len(image_list) + (len(image_list) - 1)  # 考虑到间隔像素
         result_height = target_height
-        result = Image.new("RGBA", (result_width, result_height), (0, 0, 0, 0))  # 透明色为 (0, 0, 0, 0)
+        result = Image.new(
+            "RGBA", (result_width, result_height), (0, 0, 0, 0)
+        )  # 透明色为 (0, 0, 0, 0)
 
         # 按顺序拼贴图片
         x_offset = 0
