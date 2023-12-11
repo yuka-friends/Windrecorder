@@ -46,6 +46,8 @@ class Config:
         compress_encoder,
         compress_accelerator,
         compress_quality,
+        begin_day,
+        late_night_poets=False,
         lock_file_dir,
         maintain_lock_subdir,
         record_lock_name,
@@ -121,6 +123,8 @@ class Config:
         self.enable_img_embed_search = enable_img_embed_search
         self.img_embed_search_recall_result_per_db = img_embed_search_recall_result_per_db
         self.img_embed_module_install = img_embed_module_install
+        self.late_night_poets = late_night_poets
+        self.begin_day = begin_day
 
     def set_and_save_config(self, attr: str, value):
         if not hasattr(self, attr):
@@ -189,3 +193,8 @@ def get_video_compress_preset_json():
 
 
 config = Config(**get_config_json())
+
+# main 函数，输出 config 内容
+if __name__ == "__main__":
+    print(vars(config))
+    print(config)
