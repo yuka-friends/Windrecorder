@@ -50,6 +50,11 @@ def render():
     with today_col:
         if st.button(_t("oneday_btn_today"), use_container_width=True):
             st.session_state.day_date_input = datetime.date.today()
+            if (datetime.datetime.now().hour < config.begin_day // 60) or (
+                datetime.datetime.now().hour == config.begin_day // 60
+                and datetime.datetime.now().minute < config.begin_day % 60
+            ):
+                st.session_state.day_date_input -= datetime.timedelta(days=1)
     with date_col:
         st.session_state.day_date_input = st.date_input(
             "Today Date",
@@ -187,12 +192,12 @@ def render():
                     disabled=not st.session_state.day_time_slider_disable,
                     on_change=update_slider(
                         # utils.set_full_datetime_to_day_time(
-                            utils.seconds_to_datetime(
-                                st.session_state.df_day_search_result.loc[
-                                    st.session_state.day_search_result_index_num,
-                                    "videofile_time",
-                                ]
-                            )
+                        utils.seconds_to_datetime(
+                            st.session_state.df_day_search_result.loc[
+                                st.session_state.day_search_result_index_num,
+                                "videofile_time",
+                            ]
+                        )
                         # )
                     ),
                 )
@@ -245,7 +250,7 @@ def render():
         # print(f"{end_time=}")
         print(f"词云{day_min_timestamp_dt=}")
         print(f"词云{day_max_timestamp_dt=}")
-        print('要来了哦st.session_state.day_time_select_24h')
+        print("要来了哦st.session_state.day_time_select_24h")
         st.session_state.day_time_select_24h = st.slider(
             "Time Rewind",
             label_visibility="collapsed",
@@ -550,8 +555,8 @@ def render():
 
                 # 展示词云
                 try:
-                    print('展示词云')
-                    print(f'{current_day_cloud_img_path=}')
+                    print("展示词云")
+                    print(f"{current_day_cloud_img_path=}")
                     image = Image.open(current_day_cloud_img_path)
                     st.image(image)
                 except Exception as e:
