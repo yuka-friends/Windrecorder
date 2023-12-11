@@ -257,7 +257,7 @@ def render():
             min_value=day_min_timestamp_dt,
             max_value=day_max_timestamp_dt,
             value=day_max_timestamp_dt,
-            format="MM/DD - hh:mm",
+            format="MM/DD - HH:mm",
             step=datetime.timedelta(seconds=30),
             disabled=st.session_state.day_time_slider_disable,
             key="day_time_select_slider",
@@ -559,6 +559,7 @@ def render():
                     print(f"{current_day_cloud_img_path=}")
                     image = Image.open(current_day_cloud_img_path)
                     st.image(image)
+                    print("展示词云完毕")
                 except Exception as e:
                     st.exception(_t("text_cannot_open_img") + e)
 

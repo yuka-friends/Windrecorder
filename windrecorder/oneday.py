@@ -102,7 +102,7 @@ class OneDay:
             df_C.loc[len(df_C)] = [step, len(filtered)]
         df_C["hour"] = df_C["hour"].dt.round("1min")
         # df_C['hour'] = df_C['hour'].apply(int)
-        # print(f'{df_C=}')
+        print(f'df_C["hour"]={df_C["hour"]}')
         return df_C
 
     # 当输入时间戳时，查询最近的视频文件，同时检查是否为合法的对应范围（通过config 录制视频时间长度来比对）
