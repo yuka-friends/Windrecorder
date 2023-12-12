@@ -159,7 +159,8 @@
         "tray_version_info": "🚀 It is currently the latest version {version}",
         "tray_exit": "❌ Exit",
         "tray_notify_title": "Windrecorder is running",
-        "tray_notify_text": "Pause recording and search memories through the tray menu"
+        "tray_notify_text": "Pause recording and search memories through the tray menu",
+        "tray_notify_text_start_without_record": "Start recording and search memories through the tray menu"
     },
   
     "sc": {  
@@ -316,13 +317,15 @@
         "tray_webui_start": "🦝 启动搜索/设置界面",
         "tray_webui_exit": "🦝 关闭搜索/设置界面",
         "tray_webui_address": "🦝 浏览器访问 {address_port} 进入页面",
+        "tray_webui_address_network": "　 局域网访问：{address_port}",
         "tray_record_start": "▶️ 开始记录",
         "tray_record_stop": "⏸️ 暂停记录",
         "tray_update_cta": "🚀 更新到新版本：{version}",
         "tray_version_info": "🚀 当前已是最新版 {version}",
         "tray_exit": "❌ 退出",
         "tray_notify_title": "Windrecorder 正在运行",
-        "tray_notify_text": "通过托盘右键菜单来「暂停记录」与「搜索回忆」"
+        "tray_notify_text": "通过托盘右键菜单来「暂停记录」与「搜索回忆」",
+        "tray_notify_text_start_without_record": "通过托盘右键菜单来「开始记录」与「搜索回忆」"
 
     },
 
@@ -486,7 +489,8 @@
         "tray_version_info": "🚀 現在は最新バージョン {version} です",
         "tray_exit": "❌ 終了",
         "tray_notify_title": "Windrecorder が実行中です",
-        "tray_notify_text": "録画を一時停止し、トレイ メニューから思い出を検索します"
+        "tray_notify_text": "録画を一時停止し、トレイ メニューから思い出を検索します",
+        "tray_notify_text_start_without_record": "トレイの右クリック メニューを使用して、「記録の開始」と「メモリの検索」を実行します。"
     },
 
     "lang_map": {

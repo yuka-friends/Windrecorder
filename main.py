@@ -57,7 +57,10 @@ def open_webui(icon: pystray.Icon, item: pystray.MenuItem):
 
 def setup(icon: pystray.Icon):
     icon.visible = True
-    icon.notify(message=_t("tray_notify_text"), title=_t("tray_notify_title"))
+    if config.start_recording_on_startup:
+        icon.notify(message=_t("tray_notify_text"), title=_t("tray_notify_title"))
+    else:
+        icon.notify(message=_t("tray_notify_text_start_without_record"), title=_t("tray_notify_title"))
 
 
 # 启动/停止 webui 服务
@@ -196,6 +199,7 @@ def main():
     pystray.Icon(
         "Windrecorder",
         get_tray_icon(),
+        title="Windrecorder",
         menu=pystray.Menu(menu_callback),
     ).run(setup=setup)
 
