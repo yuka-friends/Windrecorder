@@ -221,8 +221,6 @@ def get_day_ocr_result(timestamp):
         (59 + begin_day % 60) % 60,
         59,
     )
-    print(f'{date_in=}')
-    print(f'{date_out=}')
     df, _, _ = db_manager.db_search_data("", date_in, date_out)
     ocr_text_data = "".join(df["ocr_text"].tolist())
     ocr_text_data = utils.delete_short_lines(ocr_text_data, less_than=10)
@@ -232,7 +230,6 @@ def get_day_ocr_result(timestamp):
     # 输出到文件
     file_utils.check_and_create_folder("cache")
     text_file_path = "cache/get_day_ocr_result_out.txt"
-    print(f'{ocr_text_data=}')
     with open(text_file_path, "w", encoding="utf-8") as file:
         file.write(ocr_text_data)
     return text_file_path
@@ -256,8 +253,6 @@ def generate_word_cloud_in_month(timestamp, img_save_name="default"):
 # 根据某时数据生成当天的词云
 def generate_word_cloud_in_day(timestamp, img_save_name="default"):
     # 取得当天内所有ocr结果
-    print('取得当天内所有ocr结果')
-    print(f'{timestamp=}')
     text_file_path = get_day_ocr_result(timestamp)
 
     img_save_dir = config.wordcloud_result_dir

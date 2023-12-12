@@ -376,7 +376,6 @@ class _DBManager:
 
     # 优化一天之时数据结果的展示
     def db_refine_search_data_day(self, df, cache_videofile_ondisk_list=None):
-        print(f'{df=}')
         df["locate_time"] = df.apply(
             lambda row: utils.convert_seconds_to_hhmmss(
                 utils.get_video_timestamp_by_filename_and_abs_timestamp(row["videofile_name"], row["videofile_time"])
