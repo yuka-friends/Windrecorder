@@ -30,9 +30,15 @@ def render():
     if "day_date_input" not in st.session_state:
         st.session_state["day_date_input"] = datetime.date.today()
 
-    title_col, yesterday_col, tomorrow_col, today_col, date_col, spacing_col, search_col = st.columns(
-        [0.4, 0.25, 0.25, 0.15, 0.25, 0.2, 1]
-    )
+    (
+        title_col,
+        yesterday_col,
+        tomorrow_col,
+        today_col,
+        date_col,
+        spacing_col,
+        search_col,
+    ) = st.columns([0.4, 0.25, 0.25, 0.15, 0.25, 0.2, 1])
     with title_col:
         st.markdown(_t("oneday_title"))
     with yesterday_col:
@@ -44,6 +50,11 @@ def render():
     with today_col:
         if st.button(_t("oneday_btn_today"), use_container_width=True):
             st.session_state.day_date_input = datetime.date.today()
+            if (datetime.datetime.now().hour < config.begin_day // 60) or (
+                datetime.datetime.now().hour == config.begin_day // 60
+                and datetime.datetime.now().minute < config.begin_day % 60
+            ):
+                st.session_state.day_date_input -= datetime.timedelta(days=1)
     with date_col:
         st.session_state.day_date_input = st.date_input(
             "Today Date",
@@ -53,12 +64,13 @@ def render():
 
         # 获取输入的日期
         # 清理格式到HMS
+        begin_day = config.begin_day
         dt_in = datetime.datetime(
             st.session_state.day_date_input.year,
             st.session_state.day_date_input.month,
             st.session_state.day_date_input.day,
-            0,
-            0,
+            begin_day // 60,
+            begin_day % 60,
             0,
         )
         # 检查数据库中关于今天的数据
@@ -70,6 +82,8 @@ def render():
             day_max_timestamp_dt,
             day_df,
         ) = OneDay().checkout(dt_in)
+        print(f"{day_min_timestamp_dt=}")
+        print(f"{day_max_timestamp_dt=}")
     with spacing_col:
         st.empty()
     with search_col:
@@ -81,9 +95,17 @@ def render():
         if "day_search_query_page_index" not in st.session_state:
             st.session_state["day_search_query_page_index"] = 0
 
-        toggle_col, keyword_col, result_cnt_col, turn_page_col, refresh_col = st.columns([1, 1.5, 1, 1, 0.5])
+        (
+            toggle_col,
+            keyword_col,
+            result_cnt_col,
+            turn_page_col,
+            refresh_col,
+        ) = st.columns([1, 1.5, 1, 1, 0.5])
         with toggle_col:
-            if st.toggle(_t("oneday_toggle_search"), help=_t("oneday_toggle_search_help")):
+            if st.toggle(
+                _t("oneday_toggle_search"), help=_t("oneday_toggle_search_help")
+            ):
                 st.session_state.day_time_slider_disable = True
                 st.session_state.day_is_search_data = True
             else:
@@ -106,11 +128,15 @@ def render():
                 # 搜索前清除状态
                 st.session_state.day_search_result_index_num = 0  # 条目检索
                 if (
-                    st.session_state.day_search_keyword_lazy == st.session_state.day_search_keyword
-                    and st.session_state.day_date_input_lazy == st.session_state.day_date_input
+                    st.session_state.day_search_keyword_lazy
+                    == st.session_state.day_search_keyword
+                    and st.session_state.day_date_input_lazy
+                    == st.session_state.day_date_input
                 ):
                     return
-                st.session_state.day_search_keyword_lazy = st.session_state.day_search_keyword
+                st.session_state.day_search_keyword_lazy = (
+                    st.session_state.day_search_keyword
+                )
                 st.session_state.day_date_input_lazy = st.session_state.day_date_input
                 st.session_state.df_day_search_result = OneDay().search_day_data(
                     utils.complete_datetime(st.session_state.day_date_input),
@@ -165,14 +191,14 @@ def render():
                     label_visibility="collapsed",
                     disabled=not st.session_state.day_time_slider_disable,
                     on_change=update_slider(
-                        utils.set_full_datetime_to_day_time(
-                            utils.seconds_to_datetime(
-                                st.session_state.df_day_search_result.loc[
-                                    st.session_state.day_search_result_index_num,
-                                    "videofile_time",
-                                ]
-                            )
+                        # utils.set_full_datetime_to_day_time(
+                        utils.seconds_to_datetime(
+                            st.session_state.df_day_search_result.loc[
+                                st.session_state.day_search_result_index_num,
+                                "videofile_time",
+                            ]
                         )
+                        # )
                     ),
                 )
         with refresh_col:
@@ -181,30 +207,51 @@ def render():
     # 判断数据库中有无今天的数据，有则启用功能：
     if day_has_data:
         # 准备词云与时间轴（timeline）所需要的文件命名规范与变量，文件名用同一种命名方式，但放到不同的路径下
-        real_today_day_cloud_and_TL_img_name = str(datetime.datetime.today().strftime("%Y-%m-%d")) + "-today-.png"
+        real_today_day_cloud_and_TL_img_name = (
+            str(datetime.datetime.today().strftime("%Y-%m-%d")) + "-today-.png"
+        )
         # real_today_day_cloud_and_TL_img_name = str(datetime.datetime.today().date().year) + "-" + str(datetime.datetime.today().date().month) + "-" + str(datetime.datetime.today().date().day) + "-today-.png"
         if st.session_state.day_date_input == datetime.datetime.today().date():
             # 如果是今天的结果，以-today结尾，以使次日回溯时词云能被自动更新
             # current_day_cloud_and_TL_img_name = str(st.session_state.day_date_input.year) + "-" + str(st.session_state.day_date_input.month) + "-" + str(st.session_state.day_date_input.day) + "-today-" + ".png"
-            current_day_cloud_and_TL_img_name = str(st.session_state.day_date_input.strftime("%Y-%m-%d")) + "-today-.png"
+            current_day_cloud_and_TL_img_name = (
+                str(st.session_state.day_date_input.strftime("%Y-%m-%d"))
+                + "-today-.png"
+            )
             # 太邪门了，.png前不能是alphabet/数字字符，否则词云的.to_file会莫名其妙自己多添加一个.png
-            current_day_cloud_img_path = os.path.join(config.wordcloud_result_dir, current_day_cloud_and_TL_img_name)
-            current_day_TL_img_path = os.path.join(config.timeline_result_dir, current_day_cloud_and_TL_img_name)
+            current_day_cloud_img_path = os.path.join(
+                config.wordcloud_result_dir, current_day_cloud_and_TL_img_name
+            )
+            current_day_TL_img_path = os.path.join(
+                config.timeline_result_dir, current_day_cloud_and_TL_img_name
+            )
         else:
             # current_day_cloud_and_TL_img_name = str(st.session_state.day_date_input.year) + "-" + str(st.session_state.day_date_input.month) + "-" + str(st.session_state.day_date_input.day) + ".png"
-            current_day_cloud_and_TL_img_name = str(st.session_state.day_date_input.strftime("%Y-%m-%d")) + ".png"
-            current_day_cloud_img_path = os.path.join(config.wordcloud_result_dir, current_day_cloud_and_TL_img_name)
-            current_day_TL_img_path = os.path.join(config.timeline_result_dir, current_day_cloud_and_TL_img_name)
+            current_day_cloud_and_TL_img_name = (
+                str(st.session_state.day_date_input.strftime("%Y-%m-%d")) + ".png"
+            )
+            current_day_cloud_img_path = os.path.join(
+                config.wordcloud_result_dir, current_day_cloud_and_TL_img_name
+            )
+            current_day_TL_img_path = os.path.join(
+                config.timeline_result_dir, current_day_cloud_and_TL_img_name
+            )
 
         # 时间滑动控制杆
-        start_time = datetime.time(day_min_timestamp_dt.hour, day_min_timestamp_dt.minute)
-        end_time = datetime.time(day_max_timestamp_dt.hour, day_max_timestamp_dt.minute)
+        # start_time = datetime.time(
+        #     day_min_timestamp_dt.hour, day_min_timestamp_dt.minute
+        # )
+        # end_time = datetime.time(day_max_timestamp_dt.hour, day_max_timestamp_dt.minute)
+
+        # if end_time < start_time:
+        #     end_time = datetime.time(day_max_timestamp_dt.hour + 24, day_max_timestamp_dt.minute)
         st.session_state.day_time_select_24h = st.slider(
             "Time Rewind",
             label_visibility="collapsed",
-            min_value=start_time,
-            max_value=end_time,
-            value=end_time,
+            min_value=day_min_timestamp_dt,
+            max_value=day_max_timestamp_dt,
+            value=day_max_timestamp_dt,
+            format="MM/DD - HH:mm",
             step=datetime.timedelta(seconds=30),
             disabled=st.session_state.day_time_slider_disable,
             key="day_time_select_slider",
@@ -227,7 +274,10 @@ def render():
             get_generate_result = update_day_timeline_thumbnail()
             # 移除非今日的-today.png
             for filename in os.listdir(config.timeline_result_dir):
-                if filename.endswith("-today-.png") and filename != real_today_day_cloud_and_TL_img_name:
+                if (
+                    filename.endswith("-today-.png")
+                    and filename != real_today_day_cloud_and_TL_img_name
+                ):
                     file_path = os.path.join(config.timeline_result_dir, filename)
                     try:
                         os.remove(file_path)
@@ -267,14 +317,21 @@ def render():
         )
 
         # 初始化懒加载状态
-        if "cache_videofile_ondisk_list_oneday" not in st.session_state:  # 减少io查询，预拿视频文件列表供比对是否存在
-            st.session_state.cache_videofile_ondisk_list_oneday = file_utils.get_file_path_list(config.record_videos_dir)
+        if (
+            "cache_videofile_ondisk_list_oneday" not in st.session_state
+        ):  # 减少io查询，预拿视频文件列表供比对是否存在
+            st.session_state.cache_videofile_ondisk_list_oneday = (
+                file_utils.get_file_path_list(config.record_videos_dir)
+            )
 
         # 视频展示区域
         col1a, col2a, col3a = st.columns([1, 3, 1])
         with col1a:
             # 居左部分
-            if st.session_state.day_is_search_data and not st.session_state.df_day_search_result.empty:
+            if (
+                st.session_state.day_is_search_data
+                and not st.session_state.df_day_search_result.empty
+            ):
                 # 如果是搜索视图，这里展示全部的搜索结果
                 df_day_search_result_refine = db_manager.db_refine_search_data_day(
                     st.session_state.df_day_search_result,
@@ -350,7 +407,10 @@ def render():
 
         with col2a:
             # 居中部分：视频结果显示区域
-            if st.session_state.day_is_search_data and not st.session_state.df_day_search_result.empty:
+            if (
+                st.session_state.day_is_search_data
+                and not st.session_state.df_day_search_result.empty
+            ):
                 # 【搜索功能】
                 # 获取关键词，搜索出所有结果的dt，然后使用上下翻页来定位，定位后展示对应的视频
                 (
@@ -362,12 +422,22 @@ def render():
                     st.session_state.day_search_result_index_num,
                 )
                 if day_is_video_ondisk:
-                    show_and_locate_video_timestamp_by_filename_and_time(day_video_file_name, shown_timestamp)
-                    st.markdown(_t("oneday_md_rewinding_video_name").format(day_video_file_name=day_video_file_name))
+                    show_and_locate_video_timestamp_by_filename_and_time(
+                        day_video_file_name, shown_timestamp
+                    )
+                    st.markdown(
+                        _t("oneday_md_rewinding_video_name").format(
+                            day_video_file_name=day_video_file_name
+                        )
+                    )
                 else:
                     st.info(_t("oneday_text_not_found_vid_but_has_data"), icon="🎐")
                     found_row = (
-                        st.session_state.df_day_search_result.loc[st.session_state.day_search_result_index_num].to_frame().T
+                        st.session_state.df_day_search_result.loc[
+                            st.session_state.day_search_result_index_num
+                        ]
+                        .to_frame()
+                        .T
                     )
                     found_row = db_manager.db_refine_search_data_day(
                         found_row,
@@ -378,10 +448,11 @@ def render():
             else:
                 # 【时间线速查功能】
                 # 获取选择的时间，查询对应时间下有无视频，有则换算与定位
-                day_full_select_datetime = utils.merge_date_day_datetime_together(
-                    st.session_state.day_date_input,
-                    st.session_state.day_time_select_24h,
-                )  # 合并时间为datetime
+                day_full_select_datetime = st.session_state.day_time_select_24h
+                # day_full_select_datetime = utils.merge_date_day_datetime_together(
+                #     st.session_state.day_date_input,
+                #     st.session_state.day_time_select_24h,
+                # )  # 合并时间为datetime
                 (
                     day_is_result_exist,
                     day_video_file_name,
@@ -392,11 +463,21 @@ def render():
 
                 if day_is_result_exist:
                     # 换算时间、定位播放视频
-                    vidfile_timestamp = utils.calc_vid_name_to_timestamp(day_video_file_name)
-                    select_timestamp = utils.datetime_to_seconds(day_full_select_datetime)
+                    vidfile_timestamp = utils.calc_vid_name_to_timestamp(
+                        day_video_file_name
+                    )
+                    select_timestamp = utils.datetime_to_seconds(
+                        day_full_select_datetime
+                    )
                     shown_timestamp = select_timestamp - vidfile_timestamp
-                    show_and_locate_video_timestamp_by_filename_and_time(day_video_file_name, shown_timestamp)
-                    st.markdown(_t("oneday_md_rewinding_video_name").format(day_video_file_name=day_video_file_name))
+                    show_and_locate_video_timestamp_by_filename_and_time(
+                        day_video_file_name, shown_timestamp
+                    )
+                    st.markdown(
+                        _t("oneday_md_rewinding_video_name").format(
+                            day_video_file_name=day_video_file_name
+                        )
+                    )
                 else:
                     # 没有对应的视频，查一下有无索引了的数据
                     is_data_found, found_row = OneDay().find_closest_video_by_database(
@@ -412,7 +493,10 @@ def render():
                     else:
                         # 如果是当天第一次打开但数据库正在索引因而无法访问
                         if (
-                            st.session_state.day_date_input == utils.set_full_datetime_to_YYYY_MM_DD(datetime.datetime.today())
+                            st.session_state.day_date_input
+                            == utils.set_full_datetime_to_YYYY_MM_DD(
+                                datetime.datetime.today()
+                            )
                             and utils.is_maintain_lock_valid()
                         ):
                             st.warning(
@@ -448,8 +532,13 @@ def render():
                     update_day_word_cloud()
                     # 移除非今日的-today.png
                     for filename in os.listdir(config.wordcloud_result_dir):
-                        if filename.endswith("-today-.png") and filename != real_today_day_cloud_and_TL_img_name:
-                            file_path = os.path.join(config.wordcloud_result_dir, filename)
+                        if (
+                            filename.endswith("-today-.png")
+                            and filename != real_today_day_cloud_and_TL_img_name
+                        ):
+                            file_path = os.path.join(
+                                config.wordcloud_result_dir, filename
+                            )
                             os.remove(file_path)
                             print(f"webui: Deleted file: {file_path}")
 
@@ -467,7 +556,9 @@ def render():
                     _t("oneday_btn_update_word_cloud"),
                     key="refresh_day_cloud",
                     use_container_width=True,
-                    disabled=st.session_state.get("update_wordcloud_button_disabled", False),
+                    disabled=st.session_state.get(
+                        "update_wordcloud_button_disabled", False
+                    ),
                     on_click=update_wordcloud_btn_clicked,
                 ):
                     try:
@@ -483,7 +574,9 @@ def render():
     else:
         # 数据库中没有今天的记录
         # 判断videos下有无今天的视频文件
-        if file_utils.find_filename_in_dir("videos", utils.datetime_to_dateDayStr(dt_in)):
+        if file_utils.find_filename_in_dir(
+            "videos", utils.datetime_to_dateDayStr(dt_in)
+        ):
             st.info(_t("oneday_text_has_vid_but_not_index"), icon="📎")
         else:
             st.info(_t("oneday_text_vid_and_data_not_found"), icon="🎐")
@@ -493,8 +586,12 @@ def render():
 def show_and_locate_video_timestamp_by_filename_and_time(video_file_name, timestamp):
     st.session_state.day_timestamp = int(timestamp)
     # 合并视频文件路径
-    videofile_path_month_dir = file_utils.convert_vid_filename_as_YYYY_MM(video_file_name)  # 获取对应的日期目录
-    videofile_path = os.path.join(config.record_videos_dir, videofile_path_month_dir, video_file_name)
+    videofile_path_month_dir = file_utils.convert_vid_filename_as_YYYY_MM(
+        video_file_name
+    )  # 获取对应的日期目录
+    videofile_path = os.path.join(
+        config.record_videos_dir, videofile_path_month_dir, video_file_name
+    )
     print("webui: videofile_path: " + videofile_path)
     # 打开并展示定位视频文件
     video_file = open(videofile_path, "rb")

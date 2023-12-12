@@ -44,6 +44,8 @@ class Config:
         compress_encoder,
         compress_accelerator,
         compress_quality,
+        begin_day,
+        late_night_poets=False,
         used_firefox=False,
         maintain_lock_path="cache\\LOCK_MAINTAIN",
         record_lock_path="cache\\LOCK_FILE_RECORD.MD",
@@ -88,6 +90,8 @@ class Config:
         self.compress_quality = compress_quality
         self.compress_preset = get_video_compress_preset_json()
         self.used_firefox = used_firefox
+        self.late_night_poets = late_night_poets
+        self.begin_day = begin_day
 
     def set_and_save_config(self, attr: str, value):
         if not hasattr(self, attr):
@@ -156,3 +160,8 @@ def get_video_compress_preset_json():
 
 
 config = Config(**get_config_json())
+
+# main 函数，输出 config 内容
+if __name__ == "__main__":
+    print(vars(config))
+    print(config)
