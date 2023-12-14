@@ -46,6 +46,10 @@ class Config:
         iframe_dir,
         log_dir,
         start_recording_on_startup,
+        userdata_dir,
+        flag_mark_note_filename,
+        thumbnail_generation_size_width,
+        thumbnail_generation_jpg_quality,
         **other_field,
     ) -> None:
         self.db_path = db_path
@@ -83,6 +87,10 @@ class Config:
         self.log_dir = log_dir
         self.start_recording_on_startup = start_recording_on_startup
         self.lock_file_dir = lock_file_dir
+        self.userdata_dir = userdata_dir
+        self.flag_mark_note_filename = flag_mark_note_filename
+        self.thumbnail_generation_size_width = thumbnail_generation_size_width
+        self.thumbnail_generation_jpg_quality = thumbnail_generation_jpg_quality
 
     def set_and_save_config(self, attr: str, value):
         if not hasattr(self, attr):
