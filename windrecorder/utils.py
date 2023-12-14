@@ -381,6 +381,21 @@ def image_to_base64(image_path):
     return base64_image
 
 
+def resize_image_as_base64(img: Image.Image, target_width=config.thumbnail_generation_size_width):
+    """
+    将图片缩小到等比例、宽度为70px的thumbnail，并返回base64
+    """
+    # 计算缩放比例
+    target_height = int((float(img.size[1]) * float(target_width) / float(img.size[0])))
+
+    img = img.resize((target_width, target_height))
+    output_buffer = BytesIO()
+    img.save(output_buffer, format="JPEG", quality=config.thumbnail_generation_jpg_quality, optimize=True)
+    img_b64 = base64.b64encode(output_buffer.getvalue()).decode("utf-8")
+
+    return img_b64
+
+
 # 检查db是否是有合法的、正在维护中的锁（超过一定时间则解锁）
 def is_maintain_lock_valid(timeout=datetime.timedelta(minutes=16)):
     if os.path.exists(config.maintain_lock_path):
