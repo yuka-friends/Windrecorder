@@ -9,7 +9,7 @@ import time
 from os import getpid
 
 import numpy as np
-import pyautogui
+import mss
 
 from windrecorder import file_utils, ocr_manager, record, utils, wordcloud
 from windrecorder.config import config
@@ -196,38 +196,44 @@ def continuously_record_screen():
 
 # 每隔一段截图对比是否屏幕内容缺少变化
 def monitor_compare_screenshot():
-    while True:
-        if utils.is_screen_locked() or not utils.is_system_awake():
-            print("Windrecorder: Screen locked / System not awaked")
-        else:
-            try:
-                global monitor_idle_minutes
-                global last_screenshot_array
+    with mss.mss() as sct:
+        while True:
+            if utils.is_screen_locked() or not utils.is_system_awake():
+                print("Windrecorder: Screen locked / System not awaked")
+            else:
+                try:
+                    global monitor_idle_minutes
+                    global last_screenshot_array
 
-                while True:
-                    similarity = None
-                    screenshot = pyautogui.screenshot()
-                    screenshot_array = np.array(screenshot)
+                    while True:
+                        similarity = None
+                        screenshot_array = []
+                        for monitor in sct.monitors[1:]:
+                            screenshot = sct.grab(monitor)
+                            print(f'{monitor=}')
+                            screenshot_array.append(np.array(screenshot))
 
-                    if last_screenshot_array is not None:
-                        similarity = ocr_manager.compare_image_similarity_np(last_screenshot_array, screenshot_array)
+                        if last_screenshot_array is not None:
+                            similarity = []
+                            for last_screen, now_screen in zip(last_screenshot_array, screenshot_array):
+                                similarity.append(ocr_manager.compare_image_similarity_np(last_screen, now_screen))
 
-                        if similarity > 0.9:  # 对比检测阈值
-                            monitor_idle_minutes += 0.5
-                        else:
-                            monitor_idle_minutes = 0
+                            if all(sim > 0.90 for sim in similarity):  # 对比检测阈值
+                                monitor_idle_minutes += 0.5
+                            else:
+                                monitor_idle_minutes = 0
 
-                    last_screenshot_array = screenshot_array.copy()
-                    print(f"Windrecorder: monitor_idle_minutes:{monitor_idle_minutes}, similarity:{similarity}")
-                    time.sleep(30)
-            except Exception as e:
-                print("Windrecorder: Error occurred:", str(e))
-                if "batchDistance" in str(e):  # 如果是抓不到画面导致出错，可以认为是进入了休眠等情况
-                    monitor_idle_minutes += 0.5
-                else:
-                    monitor_idle_minutes = 0
+                        last_screenshot_array = screenshot_array.copy()
+                        print(f"Windrecorder: monitor_idle_minutes:{monitor_idle_minutes}, similarity:{similarity}")
+                        time.sleep(30)
+                except Exception as e:
+                    print("Windrecorder: Error occurred:", str(e))
+                    if "batchDistance" in str(e):  # 如果是抓不到画面导致出错，可以认为是进入了休眠等情况
+                        monitor_idle_minutes += 0.5
+                    else:
+                        monitor_idle_minutes = 0
 
-        time.sleep(5)
+            time.sleep(5)
 
 
 def main():
