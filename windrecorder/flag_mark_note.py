@@ -29,7 +29,7 @@ def add_new_flag_record_from_tray(datetime_created=datetime.datetime.now()):
     current_screenshot = pyautogui.screenshot()
     img_b64 = utils.resize_image_as_base64(current_screenshot)
 
-    new_data = {"thumbnail": img_b64, "datetime": datetime_created, "mark": False}
+    new_data = {"thumbnail": img_b64, "datetime": datetime_created, "mark": 0}
 
     df.loc[len(df)] = new_data
     file_utils.save_dataframe_to_path(df, FLAG_MARK_NOTE_FILEPATH)

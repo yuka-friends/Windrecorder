@@ -81,6 +81,7 @@ def seconds_to_date(seconds):
 def seconds_to_date_goodlook_formart(seconds):
     start_time = 0
     dt = datetime.datetime.utcfromtimestamp(start_time + seconds)
+    # todo: 这里时间格式需要封为统一的可配置项
     return dt.strftime("%Y/%m/%d   %H:%M:%S")
 
 
