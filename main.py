@@ -1,3 +1,4 @@
+import datetime
 import os
 import re
 import signal
@@ -14,6 +15,7 @@ from PIL import Image
 PROJECT_ROOT = os.path.abspath(os.path.dirname(__file__))
 os.chdir(PROJECT_ROOT)
 
+import windrecorder.flag_mark_note as flag_mark_note  # NOQA: E402
 from windrecorder import file_utils, utils  # NOQA: E402
 from windrecorder.config import config  # NOQA: E402
 from windrecorder.utils import get_text as _t  # NOQA: E402
@@ -130,6 +132,14 @@ def start_stop_recording(icon: pystray.Icon | None = None, item: pystray.MenuIte
             )
 
 
+# 记录当下的时间标记
+def create_timestamp_flag_mark_note(icon: pystray.Icon, item: pystray.MenuItem):
+    datetime_created = datetime.datetime.now()
+    flag_mark_note.add_new_flag_record_from_tray(datetime_created=datetime_created)
+    app = flag_mark_note.Flag_mark_window(datetime_input=datetime_created)
+    app.mainloop()
+
+
 # 生成系统托盘菜单
 def menu_callback():
     try:
@@ -141,6 +151,10 @@ def menu_callback():
 
     # 返回生成的菜单项列表
     return (
+        # 记录当下的时间标记
+        pystray.MenuItem(lambda item: "🚩 为现在添加标记", create_timestamp_flag_mark_note),
+        # 分隔线
+        pystray.Menu.SEPARATOR,
         # 开始或停止 Web UI
         pystray.MenuItem(
             lambda item: _t("tray_webui_exit") if streamlit_process else _t("tray_webui_start"), start_stop_webui
