@@ -346,6 +346,51 @@ def render():
                 # st.session_state.day_date_input
                 # st.session_state.day_time_select_24h
                 # st.session_state.timeline_select_dt
+
+                FLAG_MARK_NOTE_FILEPATH = os.path.join(config.userdata_dir, config.flag_mark_note_filename)
+
+                def save_flag_mark_note_from_editor(df_origin, df_editor):
+                    num_rows_origin = df_origin.shape[0]  # 获取原表行数
+                    df_editor_subset = df_editor.iloc[:num_rows_origin]  # 只保留编辑后的原表行数
+                    df_origin["note"] = df_editor_subset["note"]
+                    df_origin["mark"] = df_editor_subset["mark"]
+                    file_utils.save_dataframe_to_path(df_origin, FLAG_MARK_NOTE_FILEPATH)
+
+                if st.toggle("🚩 时间标记清单"):
+                    # if "df_flag_mark_note" not in st.session_state:
+                    #     st.session_state["df_flag_mark_note"] = pd.DataFrame()
+
+                    # todo: 倒序排列
+                    # todo: 处理无数据时的情况
+                    df = file_utils.read_dataframe_from_path(FLAG_MARK_NOTE_FILEPATH)
+                    df_tweak = df.copy()
+                    df_tweak["thumbnail"] = "data:image/png;base64," + df_tweak["thumbnail"]
+                    # todo: 这里时间格式需要封为统一的可配置项
+                    df_tweak["datetime"] = df_tweak.apply(
+                        lambda row: datetime.datetime.strftime(
+                            datetime.datetime.strptime(row["datetime"], "%Y-%m-%d %H:%M:%S.%f"), "%Y/%m/%d   %H:%M:%S"
+                        ),
+                        axis=1,
+                    )
+                    df_change = st.data_editor(
+                        df_tweak,
+                        column_config={
+                            "thumbnail": st.column_config.ImageColumn(
+                                "thumbnail",
+                            ),
+                            "note": st.column_config.TextColumn("note", width="large"),
+                            "mark": st.column_config.CheckboxColumn(
+                                "mark",
+                                default=False,
+                            ),
+                        },
+                        disabled=["thumbnail", "datetime"],
+                        hide_index=True,
+                        use_container_width=True,
+                        height=800,
+                        on_change=lambda: save_flag_mark_note_from_editor(df, df_change),  # 回调需要再看看怎么写才是对的
+                    )
+
                 st.empty()
 
         with col2a:
