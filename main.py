@@ -158,7 +158,7 @@ def menu_callback():
     # 返回生成的菜单项列表
     return (
         # 记录当下的时间标记
-        pystray.MenuItem(lambda item: "🚩 为现在添加标记", create_timestamp_flag_mark_note),
+        pystray.MenuItem(lambda item: "🚩 为现在时间添加标记", create_timestamp_flag_mark_note),
         # 分隔线
         pystray.Menu.SEPARATOR,
         # 开始或停止 Web UI
