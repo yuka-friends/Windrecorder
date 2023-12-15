@@ -132,9 +132,9 @@ class Flag_mark_window(customtkinter.CTk):
         删除对应时间的记录
         """
         df = file_utils.read_dataframe_from_path(FLAG_MARK_NOTE_FILEPATH)
-        df = df.drop([df["datetime"] == str(datetime_input)].index)
+        df = df.drop(df[df["datetime"] == str(datetime_input)].index)
         file_utils.save_dataframe_to_path(df, FLAG_MARK_NOTE_FILEPATH)
-        pass
+        self.destroy()
 
 
 # app = Flag_mark_window()
