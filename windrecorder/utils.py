@@ -4,9 +4,11 @@ import ctypes
 import datetime
 import json
 import os
+import platform
 import random
 import re
 import subprocess
+import sys
 import threading
 import time
 from datetime import timedelta
@@ -624,3 +626,11 @@ def change_startup_shortcut(is_create=True):
             print("record: Shortcut already exists")
             os.remove(shortcut_path)
             print("record: Delete shortcut")
+
+
+def is_win11():
+    return sys.getwindowsversion().build >= 22000
+
+
+def get_windows_edition():
+    return platform.win32_edition()
