@@ -10,6 +10,9 @@ All notable changes to this project will be documented in this file.
 
 - 修复若干 bug，治理重构了大量代码。
 
+### Added
+- 添加系统托盘入口
+
 ### Fixed
 - Bug 1: #42 执行install_update_setting.bat报错Type error
 - Bug 2: #33 random walk功能失效

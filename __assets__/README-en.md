@@ -13,17 +13,37 @@ This is a tool that can continuously record screen images and retrieve relevant 
 ![Windrecorder](https://github.com/yuka-friends/Windrecorder/blob/main/__assets__/product-preview-cn.jpg)
 
 > [!WARNING]
-> 🤯 This project is still in the early stages of development, and you may encounter some minor problems in experience and use. If you encounter it, you are welcome to submit issue feedback and pay attention to updates.
+> 🤯 This project is still in the early stages of development, and you may encounter some minor problems in experience and use. If you encounter it, you are welcome to submit issue feedback, follow updates, and initiate discussions in the Discussions forum.
 
 > [!IMPORTANT]
-> The project is adding features and making architectural changes, which may cause problems such as users of earlier versions being unable to upgrade and update normally.
-> Don't worry! Bring your `videos`, `db`, `config\config_user.json` folders and files and you can migrate to the latest version at any time.
+> The project is adding functions and making architectural changes, which may cause problems such as users of earlier versions being unable to upgrade and update normally.
+> Don't worry! Bring your own `videos`, `db`, `config\config_user.json` and other directories and files, and you can migrate to the latest version at any time.
 
-# 🦝 Installation
+## 🦝🎉 0.1.0 new trailer (coming soon)
 
-## Automatic installation (not ready)
+![Windrecorder](https://github.com/yuka-friends/Windrecorder/blob/main/__assets__/product-update-0.1.0.jpg)
 
-Download the integration package from [Releases](https://github.com/yuka-friends/Windrecorder/releases), unzip it to the directory where you want to store the data and use it.
+- Now that we have integrated the tool into the system tray and will release a ready-to-run integration package, Wind Recorder will be more intuitive and easier to use than ever before. Say goodbye to complicated manual installation, `start_record.bat` & `start_webui.bat`! 👋
+- Added time mark function: When you want to mark important meetings, emergencies, live broadcasts, gaming and movie-watching highlights, etc. to facilitate future review, you can mark the present moment through the tray, or you can Add records of important events when reviewing;
+- Added more format and parameter support for compressed video;
+- Refactored a large number of code structures, fixed some bugs and improved performance;
+- For more upgrades and changes, please check the [Update Log](https://github.com/yuka-friends/Windrecorder/blob/main/CHANGELOG.md)
+
+
+If you've been using a windlogger before, thank you! You can update to the latest version through the following methods:
+
+- Method A: Download the integration package from [Releases](https://github.com/yuka-friends/Windrecorder/releases) and unzip it, then:
+     - Create a new `userdata` folder in the tool directory, and move the original `videos`, `db`, `result_lightbox`, `result_timeline`, `result_wordcloud` folders to `userdata`;
+     - Move the original `config\config_user.json` file to the `userdata` folder;
+     - Open `windrecorder.exe` to use 🎉
+- Method B: Execute `git pull` in the directory, and then open `install_update_setting.bat` to upgrade;
+
+
+# 🦝 First time installation
+
+## Automatic installation (almost ready)
+
+Download the integration package from [Releases](https://github.com/yuka-friends/Windrecorder/releases), unzip it to the directory where you want to store the data, open `windrecorder.exe` and start using it.
 
 
 ## Manual installation
@@ -56,19 +76,19 @@ Currently, you need to open the batch script in the directory to use the tool:
 
 ---
 ### Roadmap:
-- [x] Stable and continuous screen recording with smaller file size
+- [x] Record screen stably and continuously with smaller file size
 - [x] Only identify changed pictures and store the index in the database
 - [x] Complete graphical interface (webui)
 - [x] Data summary of word cloud, timeline, light box, scatter plot
 - [x] Automatically identify clips after recording, and automatically maintain, clean and compress videos in your spare time
 - [x] Multi-language support: i18n support for interface and OCR recognition completed
 - [ ] Refactor the code to make it more standardized, easier to develop, and have better performance
-- [ ] Packaging tools, providing a more convenient usage mode, making it user-friendly
+- [-] Package tools and provide a more convenient usage mode to make it user-friendly
 - [ ] Add recognition of screen modalities to enable search for screen content descriptions
 - [ ] Add database encryption function
 - [ ] Record the foreground process name and record the corresponding position of the OCR word to present it as a clue during search
 - [ ] Add word embedding index, local/API LLM query
-- [ ] Add multi-screen recording support (depends on future features of pyautogui)
+- [-] Add multi-screen recording support (depends on future features of pyautogui)
 - [ ] 🤔
 
 
