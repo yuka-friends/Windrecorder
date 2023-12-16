@@ -38,6 +38,10 @@
         "oneday_md_word_cloud_turn_off": "<p align='center' style='color:rgba(0,0,0,.3)'> Daily word cloud disabled, go to settings to enable. </p>",
         "oneday_text_has_vid_but_not_index": "No data index in the database for this day. However, there is a video on the disk that has not been indexed yet, please go to 'Settings' to index. →",
         "oneday_text_vid_and_data_not_found": "Data index and video file not found for this day.",
+        "oneday_text_flag_mark_help": "When you want to add a mark to an important meeting, emergency situation, certain live broadcast, game or movie viewing highlight moment, etc. to facilitate future review, you can add a mark to the present moment through the tray menu - in the long river of time. You can also carve a boat and ask for a sword.",
+        "oneday_toggle_flag_mark": "Time mark list",
+        "oneday_btn_add_flag_mark_from_select_time": "Add a mark to the currently positioned time",
+        "oneday_btn_flag_mark_save_df": "Save changes",
 
         "gs_md_search_title": "### 🔎 Search",
         "gs_input_exclude": "Exclude",
@@ -161,7 +165,12 @@
         "tray_exit": "❌ Exit",
         "tray_notify_title": "Windrecorder is running",
         "tray_notify_text": "Pause recording and search memories through the tray menu",
-        "tray_notify_text_start_without_record": "Start recording and search memories through the tray menu"
+        "tray_notify_text_start_without_record": "Start recording and search memories through the tray menu",
+
+        "flag_text_mark_added": "The mark at this time has been added.",
+        "flag_input_note": "Note:",
+        "flag_btn_remove_mark": "Remove mark",
+        "flag_btn_add_note": "Add note"
     },
   
     "sc": {  
@@ -203,6 +212,10 @@
         "oneday_md_word_cloud_turn_off": "<p align='center' style='color:rgba(0,0,0,.3)'> 每日词云已关闭，可前往设置页开启。 </p>",
         "oneday_text_has_vid_but_not_index": "数据库中没有这一天的数据索引。不过，磁盘上有这一天的视频还未索引，请前往「设置」进行索引。→",
         "oneday_text_vid_and_data_not_found": "没有找到这一天的数据索引和视频文件。",
+        "oneday_text_flag_mark_help": "当想为正在经历的重要会议、突发情况、某场直播、游戏与观影高光时刻……等添加标记、以方便未来回顾时，可以通过托盘菜单为当下添加一个标记——在时间长河中也可以刻舟求剑。",
+        "oneday_toggle_flag_mark": "查看时间标记清单",
+        "oneday_btn_add_flag_mark_from_select_time": "为当前定位的时间添加标记",
+        "oneday_btn_flag_mark_save_df": "保存修改",
 
         "gs_md_search_title": "### 🔎 搜索",
         "gs_input_exclude": "排除",
@@ -326,7 +339,12 @@
         "tray_exit": "❌ 退出",
         "tray_notify_title": "Windrecorder 正在运行",
         "tray_notify_text": "通过托盘右键菜单来「暂停记录」与「搜索回忆」",
-        "tray_notify_text_start_without_record": "通过托盘右键菜单来「开始记录」与「搜索回忆」"
+        "tray_notify_text_start_without_record": "通过托盘右键菜单来「开始记录」与「搜索回忆」",
+
+        "flag_text_mark_added": "已添加此时的标记。",
+        "flag_input_note": "备注：",
+        "flag_btn_remove_mark": "移除标记",
+        "flag_btn_add_note": "添加备注"
 
     },
 
@@ -369,6 +387,11 @@
         "oneday_md_word_cloud_turn_off": "<p align='center' style='color:rgba(0,0,0,.3)'> 日毎のワードクラウドがオフになっています。設定ページで有効にすることができます。 </p>",
         "oneday_text_has_vid_but_not_index": "この日のデータインデックスがデータベースにありません。しかし、インデックスされていないその日のビデオがディスクにあります。設定ページに移動してインデックスを実行してください。→",
         "oneday_text_vid_and_data_not_found": "データインデックスとビデオファイルがその日見つかりませんでした。",
+        "oneday_text_flag_mark_help": "重要な会議、緊急事態、特定の生放送、ゲームや映画の視聴ハイライトの瞬間などにマークを追加して、将来の見直しを容易にしたい場合、トレイメニューから現在の瞬間にマークを追加できます。時の川、船を彫って剣を求めることもできます。",
+        "oneday_toggle_flag_mark": "タイムマークリスト",
+        "oneday_btn_add_flag_mark_from_select_time": "現在位置している時間にマークを追加します",
+        "oneday_btn_flag_mark_save_df": "変更を保存",
+        
 
         "gs_md_search_title": "### 🔎 検索",
         "gs_input_exclude": "除外",
@@ -492,7 +515,12 @@
         "tray_exit": "❌ 終了",
         "tray_notify_title": "Windrecorder が実行中です",
         "tray_notify_text": "録画を一時停止し、トレイ メニューから思い出を検索します",
-        "tray_notify_text_start_without_record": "トレイの右クリック メニューを使用して、「記録の開始」と「メモリの検索」を実行します。"
+        "tray_notify_text_start_without_record": "トレイの右クリック メニューを使用して、「記録の開始」と「メモリの検索」を実行します。",
+
+        "flag_text_mark_added": "今回のマークが追加されました。",
+        "flag_input_note": "メモ:",
+        "flag_btn_remove_mark": "マークを削除",
+        "flag_btn_add_note": "メモを追加"
     },
 
     "lang_map": {
