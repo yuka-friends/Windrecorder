@@ -14,17 +14,37 @@
 ![Windrecorder](https://github.com/yuka-friends/Windrecorder/blob/main/__assets__/product-preview-cn.jpg)
 
 > [!WARNING]
-> 🤯 该项目仍在较早期开发阶段，体验与使用上可能会遇上些小问题。如果遇到，欢迎提出 issue 反馈、关注更新。
+> 🤯 该项目仍在较早期开发阶段，体验与使用上可能会遇上些小问题。如果遇到，欢迎提出 issue 反馈、关注更新，也欢迎在 Discussions 讨论区发起讨论。
 
 > [!IMPORTANT]  
 > 该项目正在添加功能与进行架构改动，可能导致早期版本用户无法正常升级更新等问题。
-> 别担心！带上属于你的 `videos`、 `db`、 `config\config_user.json`目录与文件，随时可以迁移到最新的版本上。
+> 别担心！带上属于你的 `videos`、 `db`、 `config\config_user.json` 等目录与文件，随时可以迁移到最新的版本上。
 
-# 🦝 安装
+## 🦝🎉 0.1.0 上新预告（即将发布）
 
-## 自动安装（未就绪）
+![Windrecorder](https://github.com/yuka-friends/Windrecorder/blob/main/__assets__/product-update-0.1.0.jpg)
 
-从 [Releases](https://github.com/yuka-friends/Windrecorder/releases) 下载整合包，将其解压到希望存储数据的目录下即可使用。
+- 现在，我们将工具集成到系统托盘中了，并将发布可直接运行的整合包，捕风记录仪将前所未有地更加直观易用。和繁杂的手动安装、`start_record.bat` & `start_webui.bat` 说拜拜！👋
+- 添加了时间标记功能：当想为正在经历的重要会议、突发情况、某场直播、游戏与观影高光时刻……等添加标记、以方便未来回顾时，可以通过托盘标记当下，也可以在回顾时为重要事件添加记录；
+- 为压缩视频添加了更多的格式与参数支持；
+- 重构大量代码结构，修复部分 bug 与提升了性能；
+- 更多的升级与改动，敬请查阅[更新日志](https://github.com/yuka-friends/Windrecorder/blob/main/CHANGELOG.md)
+
+
+如果你之前已经在使用捕风记录仪了，谢谢你！可以通过如下方法更新到最新版本：
+
+- 方法 A：从 [Releases](https://github.com/yuka-friends/Windrecorder/releases) 下载整合包并解压，接着：
+    - 在工具目录下新建 `userdata` 文件夹，将原先的 `videos`、`db`、`result_lightbox`、`result_timeline`、`result_wordcloud` 文件夹移动到 `userdata` 中；
+    - 将原先的 `config\config_user.json` 文件移动到 `userdata` 文件夹中；
+    - 打开 `windrecorder.exe` 即可使用 🎉
+- 方法 B：在目录下执行 `git pull`，然后打开 `install_update_setting.bat` 进行升级；
+
+
+# 🦝 首次使用安装
+
+## 自动安装（即将就绪）
+
+从 [Releases](https://github.com/yuka-friends/Windrecorder/releases) 下载整合包，将其解压到希望存储数据的目录下，打开 `windrecorder.exe` 即可开始使用。
 
 
 ## 手动安装
@@ -36,11 +56,11 @@
 
 - 导航到想要安装此工具的目录下（推荐放在空间富足的分区中），通过终端命令 `git clone https://github.com/yuka-friends/Windrecorder` 下载该工具；
 
-    - 可以打开想要安装的文件夹，在路径栏输入`cmd`并回车，进入当前目录终端，将以上命令贴入、回车执行；
+    - 可以打开想要安装的文件夹，在路径栏输入`cmd` 并回车，进入当前目录终端，将以上命令贴入、回车执行；
 
-- 打开目录下的`install_update_setting.bat`进行工具安装与配置，顺利的话就可以开始使用了！
+- 打开目录下的 `install_update_setting.bat` 进行工具安装与配置，顺利的话就可以开始使用了！
 
-    - 如因网络原因报错，可在脚本安装依赖前添加代理`set https_proxy=http://127.0.0.1:xxxx`、或添加大陆[镜像源](https://mirrors.tuna.tsinghua.edu.cn/help/pypi/)；
+    - 如因网络原因报错，可在脚本安装依赖前添加代理 `set https_proxy=http://127.0.0.1:xxxx`、或添加大陆[镜像源](https://mirrors.tuna.tsinghua.edu.cn/help/pypi/)；
 
 
 # 🦝 如何使用
@@ -64,16 +84,17 @@
 - [x] 录制完片段后自动识别，闲时自动维护、清理与压缩视频
 - [x] 多语言支持：已完成界面与 OCR 识别的 i18n 支持
 - [ ] 重构代码，使其更规范与易于开发、具有更好性能
-- [ ] 打包工具、提供更便利的使用模式，使之用户友好
+- [-] 打包工具、提供更便利的使用模式，使之用户友好
 - [ ] 添加画面模态的识别，以实现对画面内容描述的搜索
 - [ ] 添加数据库加密功能
 - [ ] 记录前台进程名与记录OCR词语对应位置，以在搜索时作为线索呈现
 - [ ] 添加词嵌入索引、本地/API LLM 查询
-- [ ] 添加多屏幕的记录支持（取决于 pyautogui 未来特性加入）
+- [-] 添加多屏幕的记录支持（取决于 pyautogui 未来特性加入）
 - [ ] 🤔
 
 
 # 🦝 Q&A | 常见问题
+
 Q: 打开 webui 时没有近期一段时间的数据。
 
 - A: 当 start_record.bat 正在索引数据时，webui 将不会创建最新的临时数据库文件。
