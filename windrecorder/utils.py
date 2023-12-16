@@ -14,7 +14,7 @@ from datetime import timedelta
 from io import BytesIO
 
 import cv2
-import pyautogui
+import mss
 import requests
 from PIL import Image
 
@@ -52,7 +52,14 @@ def empty_directory(path):
 
 # 获得屏幕分辨率
 def get_screen_resolution():
-    return pyautogui.size()
+    with mss.mss() as mss_instance:
+        return mss_instance.monitors[0]["width"], mss_instance.monitors[0]["height"]
+
+
+# 获得屏幕数量
+def get_screen_count():
+    with mss.mss() as mss_instance:
+        return len(mss_instance.monitors) - 1
 
 
 # 将输入的文件（ %Y-%m-%d_%H-%M-%S str）时间转为时间戳秒数

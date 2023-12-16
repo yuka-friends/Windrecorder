@@ -108,8 +108,9 @@ def record_screen(
         ffmpeg_path,
         "-f",
         "gdigrab",
-        "-video_size",
-        f"{screen_width}x{screen_height}",
+        # 记录整块屏幕
+        # "-video_size",
+        # f"{screen_width}x{screen_height}",
         "-framerate",
         "2",
         "-i",
@@ -121,7 +122,7 @@ def record_screen(
         "libx264",
         # 默认码率为 200kbps
         "-b:v",
-        "200k",
+        str(200*utils.get_screen_count()) + "k",
         # firefox 不支持 yuv444p
         "-pix_fmt" if config.used_firefox else "",
         "yuv420p" if config.used_firefox else "",
@@ -135,6 +136,7 @@ def record_screen(
         str(record_time),
         out_path,
     ]
+    print(f"{ffmpeg_cmd=}")
 
     # 执行命令
     try:
