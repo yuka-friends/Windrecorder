@@ -136,7 +136,7 @@ def record_screen(
         str(record_time),
         out_path,
     ]
-    print(f"{ffmpeg_cmd=}")
+    print(f"{' '.join(ffmpeg_cmd)=}")
 
     # 执行命令
     try:
