@@ -137,6 +137,8 @@ def create_timestamp_flag_mark_note(icon: pystray.Icon, item: pystray.MenuItem):
     datetime_created = datetime.datetime.now()
     flag_mark_note.add_new_flag_record_from_tray(datetime_created=datetime_created)
     app = flag_mark_note.Flag_mark_window(datetime_input=datetime_created)
+    app.update()
+    app.textbox.focus_set()
     app.mainloop()
 
 
