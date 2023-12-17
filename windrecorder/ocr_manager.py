@@ -369,64 +369,35 @@ def rollback_data(video_path, vid_file_name):
 def ocr_core_logic(file_path, vid_file_name, iframe_path):
     # - 提取i帧
     extract_iframe(file_path, iframe_path)
+
+    img1_path_temp = ""
+    img2_path_temp = ""
+    is_first_process_image_similarity = 1
+    # 先清理一波看起来重复的图像
+    for img_file_name in os.listdir(iframe_path):
+        print("processing IMG - compare:" + img_file_name)
+        img = os.path.join(iframe_path, img_file_name)
+        print("img=" + img)
+
+        # 填充用于对比的slot队列
+        if is_first_process_image_similarity == 1:
+            img1_path_temp = img
+            is_first_process_image_similarity = 2
+        elif is_first_process_image_similarity == 2:
+            img2_path_temp = img
+            is_first_process_image_similarity = 3
+        else:
+            is_img_same = compare_image_similarity(img1_path_temp, img2_path_temp)
+            if is_img_same:
+                os.remove(img2_path_temp)
+                img1_path_temp = img1_path_temp
+                img2_path_temp = img
+            else:
+                img1_path_temp = img2_path_temp
+                img2_path_temp = img
+
     # 裁剪图片
     crop_iframe(iframe_path)
-
-    img1_path_temp = ""
-    img2_path_temp = ""
-    is_first_process_image_similarity = 1
-    # 先清理一波看起来重复的图像
-    for img_file_name in os.listdir(iframe_path):
-        if "_cropped" not in img_file_name:
-            continue
-        print("processing IMG - compare:" + img_file_name)
-        img = os.path.join(iframe_path, img_file_name)
-        print("img=" + img)
-
-        # 填充用于对比的slot队列
-        if is_first_process_image_similarity == 1:
-            img1_path_temp = img
-            is_first_process_image_similarity = 2
-        elif is_first_process_image_similarity == 2:
-            img2_path_temp = img
-            is_first_process_image_similarity = 3
-        else:
-            is_img_same = compare_image_similarity(img1_path_temp, img2_path_temp)
-            if is_img_same:
-                os.remove(img2_path_temp)
-                img1_path_temp = img1_path_temp
-                img2_path_temp = img
-            else:
-                img1_path_temp = img2_path_temp
-                img2_path_temp = img
-
-    img1_path_temp = ""
-    img2_path_temp = ""
-    is_first_process_image_similarity = 1
-    # 先清理一波看起来重复的图像
-    for img_file_name in os.listdir(iframe_path):
-        if "_cropped" in img_file_name:
-            continue
-        print("processing IMG - compare:" + img_file_name)
-        img = os.path.join(iframe_path, img_file_name)
-        print("img=" + img)
-
-        # 填充用于对比的slot队列
-        if is_first_process_image_similarity == 1:
-            img1_path_temp = img
-            is_first_process_image_similarity = 2
-        elif is_first_process_image_similarity == 2:
-            img2_path_temp = img
-            is_first_process_image_similarity = 3
-        else:
-            is_img_same = compare_image_similarity(img1_path_temp, img2_path_temp)
-            if is_img_same:
-                os.remove(img2_path_temp)
-                img1_path_temp = img1_path_temp
-                img2_path_temp = img
-            else:
-                img1_path_temp = img2_path_temp
-                img2_path_temp = img
 
     # - OCR所有i帧图像
     ocr_result_stringA = ""
