@@ -3,18 +3,23 @@ import os
 import subprocess
 import time
 
-import windrecorder.record as record
-import windrecorder.utils as utils
-from windrecorder import ocr_manager
+import windrecorder.upgrade_migration_routine as upgrade_migration_routine
+from windrecorder import file_utils, ocr_manager, record, utils
 from windrecorder.config import config
 from windrecorder.utils import get_text as _t
+
+# 清理早期版本的旧设定
+upgrade_migration_routine.main()
 
 # 全部向导的步骤数
 ALLSTEPS = 5
 
 # 清理缓存
 if os.path.exists("cache"):
-    utils.empty_directory("cache")
+    try:
+        file_utils.empty_directory("cache")
+    except PermissionError:
+        pass
 
 
 # 画分割线的

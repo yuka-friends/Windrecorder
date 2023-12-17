@@ -20,3 +20,4 @@ config/config_user.json
 test.png
 env
 random_lexicon
+logs

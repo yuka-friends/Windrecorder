@@ -6,7 +6,6 @@ import json
 import os
 import random
 import re
-import shutil
 import subprocess
 import threading
 import time
@@ -17,8 +16,9 @@ import cv2
 import pyautogui
 import requests
 from PIL import Image
+from pyshortcuts import make_shortcut
 
-from windrecorder import UPDATE_DATETIME, __version__, file_utils
+from windrecorder import __version__, file_utils
 from windrecorder.config import config
 
 
@@ -38,16 +38,6 @@ class RepeatingTimer(threading.Thread):
 
     def stop(self):
         self.running = False
-
-
-# 清空指定目录下的所有文件和子目录
-def empty_directory(path):
-    with os.scandir(path) as it:
-        for entry in it:
-            if entry.is_dir():
-                shutil.rmtree(entry.path)
-            else:
-                os.remove(entry.path)
 
 
 # 获得屏幕分辨率
@@ -419,15 +409,6 @@ def get_random_word_from_lexicon():
             if word:
                 words.append(word)
 
-    # 读取全部后随机抽取
-    # for filename in file_list:
-    #     file_path = os.path.join(directory, filename)
-    #     with open(file_path, "r", encoding='utf-8') as file:
-    #         for line in file:
-    #             word = line.strip()
-    #             if word:
-    #                 words.append(word)
-
     if not words:
         return None
 
@@ -435,22 +416,34 @@ def get_random_word_from_lexicon():
     return random_word
 
 
-# 更新提醒
-def get_github_version_and_date(
+def get_github_version(
     url="https://raw.githubusercontent.com/yuka-friends/Windrecorder/main/windrecorder/__init__.py",
 ):
     response = requests.get(url)
     exec(response.text)
     version = __version__
-    update_date = UPDATE_DATETIME
-    return version, update_date
+    return version
 
 
-# 获得当前版本号与时间
-def get_current_version_and_update():
+# 获得当前版本号
+def get_current_version():
     local_version = __version__
-    local_update_date = UPDATE_DATETIME
-    return local_version, local_update_date
+    return local_version
+
+
+def get_new_version_if_available():
+    remote_version = get_github_version()
+    current_version = get_current_version()
+    remote_list = remote_version.split(".")
+    current_list = current_version.split(".")
+    for i, j in zip(remote_list, current_list):
+        try:
+            if int(i) > int(j):
+                return remote_version
+        except ValueError:
+            if i.split("b") > j.split("b"):
+                return remote_version
+    return None
 
 
 # 输入cmd命令，返回结果回显内容
@@ -572,3 +565,47 @@ def find_key_position_in_dict(dictionary, key):
     keys = list(dictionary.keys())  # 获取字典的键列表
     position = keys.index(key) if key in keys else 0  # 查找键的位置，没有则返回 0
     return position
+
+
+# 检查开机启动项中是否已存在某快捷方式
+def is_file_already_in_startup(filename):
+    startup_folder = os.path.join(
+        os.getenv("APPDATA"),
+        "Microsoft",
+        "Windows",
+        "Start Menu",
+        "Programs",
+        "Startup",
+    )
+    shortcut_path = os.path.join(startup_folder, filename)
+    if os.path.exists(shortcut_path):
+        return True
+    else:
+        return False
+
+
+# 将应用设置为开机启动
+def change_startup_shortcut(is_create=True):
+    startup_folder = os.path.join(
+        os.getenv("APPDATA"),
+        "Microsoft",
+        "Windows",
+        "Start Menu",
+        "Programs",
+        "Startup",
+    )
+    shortcut_path = os.path.join(startup_folder, "start_app.bat.lnk")
+
+    if is_create:
+        # 创建快捷方式
+        if not os.path.exists(shortcut_path):
+            current_dir = os.getcwd()
+            bat_path = os.path.join(current_dir, "start_app.bat")
+            make_shortcut(bat_path, folder=startup_folder)
+            print("record: The shortcut has been created and added to the startup items")
+    else:
+        # 移除快捷方式
+        if os.path.exists(shortcut_path):
+            print("record: Shortcut already exists")
+            os.remove(shortcut_path)
+            print("record: Delete shortcut")

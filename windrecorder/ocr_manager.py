@@ -412,7 +412,7 @@ def ocr_process_single_video(video_path, vid_file_name, iframe_path):
             os.rename(file_path, new_file_path)
             file_path = new_file_path
 
-        file_utils.check_and_create_folder(iframe_sub_path)
+        file_utils.ensure_dir(iframe_sub_path)
         try:
             ocr_core_logic(file_path, vid_file_name, iframe_sub_path)
         except Exception as e:
@@ -426,7 +426,6 @@ def ocr_process_single_video(video_path, vid_file_name, iframe_path):
             new_name_dir = os.path.dirname(file_path)
             os.rename(file_path, os.path.join(new_name_dir, new_name))
 
-            file_utils.check_and_create_folder("cache")
             with open(f"cache\\LOG_ERROR_{new_name}.MD", "w", encoding="utf-8") as f:
                 f.write(f'{datetime.datetime.now().strftime("%Y-%m-%d_%H-%M-%S")}\n{e}')
         else:
@@ -520,7 +519,7 @@ def backup_dbfile(db_filepath, keep_items_num=15, make_new_backup_timegap=dateti
         return False
 
     db_backup_filepath = "cache\\db_backup"
-    file_utils.check_and_create_folder(db_backup_filepath)
+    file_utils.ensure_dir(db_backup_filepath)
     db_filelist_name = file_utils.get_file_path_list_first_level(db_backup_filepath)
     make_new_backup_state = False
 
@@ -567,7 +566,7 @@ def backup_dbfile(db_filepath, keep_items_num=15, make_new_backup_timegap=dateti
 
 
 def acquire_ocr_lock(file_name: str):
-    file_utils.check_and_create_folder(config.maintain_lock_path)
+    file_utils.ensure_dir(config.maintain_lock_path)
     file_name = file_name.replace(".mp4", ".md")
     return FileLock(os.path.join(config.maintain_lock_path, file_name), datetime.datetime.now().strftime("%Y-%m-%d_%H-%M-%S"))
 
@@ -580,8 +579,8 @@ def ocr_manager_main():
     record_videos_dir = config.record_videos_dir
     i_frames_dir = config.iframe_dir
 
-    file_utils.check_and_create_folder(i_frames_dir)
-    file_utils.check_and_create_folder(record_videos_dir)
+    file_utils.ensure_dir(i_frames_dir)
+    file_utils.ensure_dir(record_videos_dir)
 
     # 对目录下所有视频进行OCR提取处理
     ocr_process_videos(record_videos_dir, i_frames_dir)

@@ -38,7 +38,7 @@
 
     - 可以打开想要安装的文件夹，在路径栏输入`cmd`并回车，进入当前目录终端，将以上命令贴入、回车执行；
 
-- 打开目录下的`install_update_setting.bat`进行工具安装与配置，顺利的话就可以开始使用了！
+- 打开目录下的`install_update.bat`进行工具安装与配置，顺利的话就可以开始使用了！
 
     - 如因网络原因报错，可在脚本安装依赖前添加代理`set https_proxy=http://127.0.0.1:xxxx`、或添加大陆[镜像源](https://mirrors.tuna.tsinghua.edu.cn/help/pypi/)；
 

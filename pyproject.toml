@@ -1,6 +1,6 @@
 [tool.poetry]
 name = "windrecorder"
-version = "0.0.4b3"
+version = "0.0.4b4"
 description = "MacOS App Rewind's alternative on Windows platform, your personal memorize search engine. It can continuously recording your screen locally in small file size, and OCR the content so you can backtrack and query memory any time."
 authors = ["yuka-friends"]
 license = "GPL-2.0"
@@ -23,6 +23,7 @@ Shapely = "~2.0.1"
 streamlit = "^1.28.2"
 pillow = "^10.1.0"
 wordcloud = "^1.9.2"
+pystray = "^0.19.5"
 
 [tool.poetry.group.dev.dependencies]
 pre-commit = "^3.5.0"

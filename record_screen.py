@@ -36,7 +36,7 @@ try:
         time_read = f.read()
         last_idle_maintain_time = datetime.datetime.strptime(time_read, "%Y-%m-%d_%H-%M-%S")
 except FileNotFoundError:
-    file_utils.check_and_create_folder("cache")
+    file_utils.ensure_dir("cache")
     with open(config.last_idle_maintain_file_path, "w", encoding="utf-8") as f:
         f.write(last_idle_maintain_time.strftime("%Y-%m-%d_%H-%M-%S"))
 
@@ -92,10 +92,9 @@ def record_screen(
     video_out_name = now.strftime("%Y-%m-%d_%H-%M-%S") + ".mp4"
     output_dir_with_date = now.strftime("%Y-%m")  # 将视频存储在日期月份子目录下
     video_saved_dir = os.path.join(output_dir, output_dir_with_date)
-    file_utils.check_and_create_folder(video_saved_dir)
+    file_utils.ensure_dir(video_saved_dir)
+    file_utils.ensure_dir(output_dir)
     out_path = os.path.join(video_saved_dir, video_out_name)
-
-    file_utils.check_and_create_folder(output_dir)
 
     # 获取屏幕分辨率并根据策略决定缩放
     screen_width, screen_height = utils.get_screen_resolution()
@@ -103,6 +102,11 @@ def record_screen(
         origin_width=screen_width, origin_height=screen_height
     )
     print(f"Origin screen resolution: {screen_width}x{screen_height}, Resized to {target_scale_width}x{target_scale_height}.")
+
+    pix_fmt_args = []
+    # firefox 不支持 yuv444p
+    if config.used_firefox:
+        pix_fmt_args = ["-pix_fmt", "yuv420p"]
 
     ffmpeg_cmd = [
         ffmpeg_path,
@@ -122,9 +126,7 @@ def record_screen(
         # 默认码率为 200kbps
         "-b:v",
         "200k",
-        # firefox 不支持 yuv444p
-        "-pix_fmt" if config.used_firefox else "",
-        "yuv420p" if config.used_firefox else "",
+        *pix_fmt_args,
         "-bf",
         "8",
         "-g",
@@ -138,8 +140,7 @@ def record_screen(
 
     # 执行命令
     try:
-        # 添加服务监测信息
-        file_utils.check_and_create_folder("cache")
+        print("record_screen: ffmpeg cmd: ", ffmpeg_cmd)
         # 运行ffmpeg
         subprocess.run(ffmpeg_cmd, check=True)
         print("Windrecorder: Start Recording via FFmpeg")
