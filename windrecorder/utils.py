@@ -62,6 +62,12 @@ def get_screen_count():
         return len(mss_instance.monitors) - 1
 
 
+# 获得屏幕具体数值
+def get_screen():
+    with mss.mss() as mss_instance:
+        return mss_instance.monitors
+
+
 # 将输入的文件（ %Y-%m-%d_%H-%M-%S str）时间转为时间戳秒数
 def date_to_seconds(date_str):
     # 这里我们先定义了时间格式,然后设置一个epoch基准时间为1970年1月1日。使用strptime()将输入的字符串解析为datetime对象,然后计算这个时间和epoch时间的时间差,转换为秒数返回。
