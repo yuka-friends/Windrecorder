@@ -74,7 +74,7 @@ def start_stop_webui(icon: pystray.Icon, item: pystray.MenuItem):
     else:
         with open(WEBUI_STDOUT_PATH, "w", encoding="utf-8") as out, open(WEBUI_STDERR_PATH, "w", encoding="utf-8") as err:
             streamlit_process = Popen(
-                [sys.executable, "-m", "streamlit", "run", "webui.py"],
+                [sys.executable, "-u", "-m", "streamlit", "run", "webui.py"],
                 stdout=out,
                 stderr=err,
                 encoding="utf-8",
@@ -127,7 +127,7 @@ def start_stop_recording(icon: pystray.Icon | None = None, item: pystray.MenuIte
             RECORDING_STDERR_PATH, "w", encoding="utf-8"
         ) as err:
             recording_process = Popen(
-                [sys.executable, "record_screen.py"],
+                [sys.executable, "-u", "record_screen.py"],
                 stdout=out,
                 stderr=err,
                 encoding="utf-8",
