@@ -510,7 +510,7 @@ class _DBManager:
         closest_timestamp = df[np.abs(df["videofile_time"] - timestamp) <= time_threshold][
             "videofile_time"
         ].max()  # 差距阈值:second
-        if closest_timestamp != closest_timestamp:  # 如果无结果为 NaN
+        if math.isnan(closest_timestamp):  # 如果无结果为 NaN
             return None
         thumbnail = df[df["videofile_time"] == closest_timestamp]["thumbnail"].values
         return thumbnail[0]

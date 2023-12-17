@@ -100,6 +100,7 @@ class Config:
         self.lock_file_dir = lock_file_dir
         self.userdata_dir = userdata_dir
         self.flag_mark_note_filename = flag_mark_note_filename
+        self.flag_mark_note_filepath = os.path.join(self.userdata_dir, self.flag_mark_note_filename)
         self.thumbnail_generation_size_width = thumbnail_generation_size_width
         self.thumbnail_generation_jpg_quality = thumbnail_generation_jpg_quality
 

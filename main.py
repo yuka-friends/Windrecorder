@@ -15,8 +15,7 @@ from PIL import Image
 PROJECT_ROOT = os.path.abspath(os.path.dirname(__file__))
 os.chdir(PROJECT_ROOT)
 
-import windrecorder.flag_mark_note as flag_mark_note  # NOQA: E402
-from windrecorder import file_utils, utils  # NOQA: E402
+from windrecorder import file_utils, flag_mark_note, utils  # NOQA: E402
 from windrecorder.config import config  # NOQA: E402
 from windrecorder.utils import get_text as _t  # NOQA: E402
 
