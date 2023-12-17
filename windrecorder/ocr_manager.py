@@ -62,23 +62,39 @@ def is_file_in_use(file_path):
 def extract_iframe(video_file, iframe_path, iframe_interval=4000):
     print("ocr_manager: extracting video i-frame")
     print(video_file)
-    cap = cv2.VideoCapture(video_file)
-    fps = cap.get(cv2.CAP_PROP_FPS)
+    if config.diy_record:
+        ffmpeg_cmd = [
+            "ffmpeg",
+            "-i",
+            video_file,
+            "-vf",
+            "select='eq(pict_type\\,I)'",
+            "-r",
+            "1",
+            "-f",
+            "image2",
+            os.path.join(iframe_path, "%d.jpg"),
+        ]
+        print("ocr_manager: extract frame cut:" + ' '.join(ffmpeg_cmd))
+        subprocess.run(' '.join(ffmpeg_cmd), shell=True, check=True)
+    else:
+        cap = cv2.VideoCapture(video_file)
+        fps = cap.get(cv2.CAP_PROP_FPS)
 
-    frame_step = int(fps * iframe_interval / 1000)
-    frame_cnt = 0
-    while cap.isOpened():
-        ret, frame = cap.read()
-        if not ret:
-            break
+        frame_step = int(fps * iframe_interval / 1000)
+        frame_cnt = 0
+        while cap.isOpened():
+            ret, frame = cap.read()
+            if not ret:
+                break
 
-        if frame_cnt % frame_step == 0:
-            print("ocr_manager: extract frame cut:" + str(frame_cnt))
-            cv2.imwrite(os.path.join(iframe_path, f"{frame_cnt}.jpg"), frame)
+            if frame_cnt % frame_step == 0:
+                print("ocr_manager: extract frame cut:" + str(frame_cnt))
+                cv2.imwrite(os.path.join(iframe_path, f"{frame_cnt}.jpg"), frame)
 
-        frame_cnt += 1
+            frame_cnt += 1
 
-    cap.release()
+        cap.release()
 
 
 # 根据config配置裁剪图片
