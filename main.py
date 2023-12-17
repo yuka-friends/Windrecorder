@@ -24,13 +24,15 @@ WEBUI_STDERR_PATH = os.path.join(config.log_dir, "webui.err")
 RECORDING_STDOUT_PATH = os.path.join(config.log_dir, "recording.log")
 RECORDING_STDERR_PATH = os.path.join(config.log_dir, "recording.err")
 
-STREAMLIT_URL_REGEX = re.compile("Local URL: (.+)")  # 正则表达式，从 Streamlit 的标准输出中提取 webui_url
+STREAMLIT_LOCAL_URL_REGEX = re.compile("Local URL: (.+)")  # 正则表达式，从 Streamlit 的标准输出中提取 webui_local_url
+STREAMLIT_NETWORK_URL_REGEX = re.compile("Network URL: (.+)")
 STREAMLIT_OPEN_TIMEOUT = 10  # Streamlit 启动的超时时间，单位为秒
 RECORDING_STOP_TIMEOUT = 5  # 停止录制的超时时间，单位为秒
 
 streamlit_process: Popen | None = None  # 存储 Streamlit 进程的实例，表示是否正在运行 Streamlit Web UI。初始值为 None，表示没有正在运行的进程。
 recording_process: Popen | None = None  # 存储录制进程的实例，表示是否正在进行屏幕录制。初始值为 None，表示没有正在运行的录制进程。
-webui_url = ""
+webui_local_url = ""
+webui_network_url = ""
 
 
 def get_tray_icon():
@@ -39,8 +41,8 @@ def get_tray_icon():
     return image
 
 
-def update():
-    pass
+def update(icon: pystray.Icon, item: pystray.MenuItem):
+    webbrowser.open(os.path.join(PROJECT_ROOT, "install_update.bat"))
 
 
 file_utils.ensure_dir("cache")
@@ -52,7 +54,7 @@ file_utils.empty_directory(config.lock_file_dir)
 
 # 调用浏览器打开 web ui
 def open_webui(icon: pystray.Icon, item: pystray.MenuItem):
-    webbrowser.open(webui_url)
+    webbrowser.open(webui_local_url)
 
 
 def setup(icon: pystray.Icon):
@@ -65,7 +67,7 @@ def setup(icon: pystray.Icon):
 
 # 启动/停止 webui 服务
 def start_stop_webui(icon: pystray.Icon, item: pystray.MenuItem):
-    global streamlit_process, webui_url
+    global streamlit_process, webui_local_url, webui_network_url
     if streamlit_process:
         streamlit_process.kill()
         streamlit_process = None
@@ -82,9 +84,13 @@ def start_stop_webui(icon: pystray.Icon, item: pystray.MenuItem):
         while time_spent < STREAMLIT_OPEN_TIMEOUT:
             # 从标准输出中寻找 streamlit 启动的地址
             with open(WEBUI_STDOUT_PATH, "r", encoding="utf-8") as f:
-                m = STREAMLIT_URL_REGEX.search(f.read())
+                content = f.read()
+            m = STREAMLIT_NETWORK_URL_REGEX.search(content)
             if m:
-                webui_url = m[1]
+                webui_network_url = m[1]
+            m = STREAMLIT_LOCAL_URL_REGEX.search(content)
+            if m:
+                webui_local_url = m[1]
                 break
 
             # 若找不到匹配结果，等待后重试
@@ -147,10 +153,17 @@ def menu_callback():
         ),
         # 使用浏览器打开 Web UI
         pystray.MenuItem(
-            lambda item: _t("tray_webui_address").format(address_port=webui_url),
+            lambda item: _t("tray_webui_address").format(address_port=webui_local_url),
             open_webui,
             visible=lambda item: streamlit_process,
             default=True,
+        ),
+        # 局域网 URL 显示
+        pystray.MenuItem(
+            lambda item: _t("tray_webui_address_network").format(address_port=webui_network_url),
+            None,
+            visible=lambda item: bool(webui_network_url),
+            enabled=False,
         ),
         # 开始或停止录制选项
         pystray.MenuItem(

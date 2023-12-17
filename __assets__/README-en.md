@@ -37,7 +37,7 @@ Download the integration package from [Releases](https://github.com/yuka-friends
 
      - You can open the folder you want to install, enter `cmd` in the path bar and press Enter, enter the current directory terminal, paste the above command and press Enter to execute;
 
-- Open `install_update_setting.bat` in the directory to install and configure the tool. If everything goes well, you can start using it!
+- Open `install_update.bat` in the directory to install and configure the tool. If everything goes well, you can start using it!
 
      - If an error is reported due to network reasons, you can add proxy `set https_proxy=http://127.0.0.1:xxxx` or add mainland [mirror source] (https://mirrors.tuna.tsinghua.edu. cn/help/pypi/);
 
