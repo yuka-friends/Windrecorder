@@ -249,7 +249,8 @@ def ocr_image_ms(img_input):
             pass
 
     text = str(text.encode("utf-8").decode("utf-8"))
-
+    # print("ocr_manager: ocr_sentence_result:")
+    # print(text)
     return text
 
 
@@ -414,7 +415,9 @@ def ocr_core_logic(file_path, vid_file_name, iframe_path):
     dataframe_all = pd.DataFrame(columns=dataframe_column_names)
 
     # todo: os.listdir 应该进行正确的数字排序、以确保是按视频顺序索引的
-    for img_file_name in os.listdir(iframe_path):
+    sotred_file = sorted(os.listdir(iframe_path), key=lambda x: int(''.join(filter(str.isdigit, x))))
+    for img_file_name in sotred_file:
+        # for img_file_name in os.listdir(iframe_path):
         if "_cropped" not in img_file_name:
             continue
         img_file_name_origin = img_file_name.replace("_cropped", "")
@@ -446,6 +449,7 @@ def ocr_core_logic(file_path, vid_file_name, iframe_path):
                 img_thumbnail = resize_imahe_as_base64(img_origin)
                 # 清理ocr数据
                 ocr_result_write = utils.clean_dirty_text(ocr_result_stringB)
+                print(f'{ocr_result_write=}')
                 # 为准备写入数据库dataframe添加记录
                 dataframe_all.loc[len(dataframe_all.index)] = [
                     vid_file_name,
