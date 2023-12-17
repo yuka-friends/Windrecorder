@@ -37,7 +37,7 @@
     - 在工具目录下新建 `userdata` 文件夹，将原先的 `videos`、`db`、`result_lightbox`、`result_timeline`、`result_wordcloud` 文件夹移动到 `userdata` 中；
     - 将原先的 `config\config_user.json` 文件移动到 `userdata` 文件夹中；
     - 打开 `windrecorder.exe` 即可使用 🎉
-- 方法 B：在目录下执行 `git pull`，然后打开 `install_update_setting.bat` 进行升级；
+- 方法 B：在目录下执行 `git pull`，然后打开 `install_update.bat` 进行升级；
 
 
 # 🦝 首次使用安装
@@ -60,8 +60,6 @@
 
 - 打开目录下的 `install_update.bat` 进行工具安装与配置，顺利的话就可以开始使用了！
 
-    - 如因网络原因报错，可在脚本安装依赖前添加代理 `set https_proxy=http://127.0.0.1:xxxx`、或添加大陆[镜像源](https://mirrors.tuna.tsinghua.edu.cn/help/pypi/)；
-
 
 # 🦝 如何使用
 
@@ -83,13 +81,13 @@
 - [x] 词云、时间轴、光箱、散点图的数据总结
 - [x] 录制完片段后自动识别，闲时自动维护、清理与压缩视频
 - [x] 多语言支持：已完成界面与 OCR 识别的 i18n 支持
-- [ ] 重构代码，使其更规范与易于开发、具有更好性能
-- [-] 打包工具、提供更便利的使用模式，使之用户友好
+- [ ] 【正在进行】打包工具、提供更便利的使用模式，使之用户友好
+- [ ] 【正在进行】添加多屏幕的记录支持
+- [ ] 【正在进行】重构代码，使其更规范与易于开发、具有更好性能
 - [ ] 添加画面模态的识别，以实现对画面内容描述的搜索
 - [ ] 添加数据库加密功能
 - [ ] 记录前台进程名与记录OCR词语对应位置，以在搜索时作为线索呈现
 - [ ] 添加词嵌入索引、本地/API LLM 查询
-- [-] 添加多屏幕的记录支持（取决于 pyautogui 未来特性加入）
 - [ ] 🤔
 
 
