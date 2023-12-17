@@ -103,6 +103,11 @@ def record_screen(
     )
     print(f"Origin screen resolution: {screen_width}x{screen_height}, Resized to {target_scale_width}x{target_scale_height}.")
 
+    pix_fmt_args = []
+    # firefox 不支持 yuv444p
+    if config.used_firefox:
+        pix_fmt_args = ["-pix_fmt", "yuv420p"]
+
     ffmpeg_cmd = [
         ffmpeg_path,
         "-f",
@@ -121,6 +126,7 @@ def record_screen(
         # 默认码率为 200kbps
         "-b:v",
         "200k",
+        *pix_fmt_args,
         "-bf",
         "8",
         "-g",
@@ -134,6 +140,7 @@ def record_screen(
 
     # 执行命令
     try:
+        print("record_screen: ffmpeg cmd: ", ffmpeg_cmd)
         # 运行ffmpeg
         subprocess.run(ffmpeg_cmd, check=True)
         print("Windrecorder: Start Recording via FFmpeg")

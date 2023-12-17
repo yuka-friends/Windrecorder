@@ -3,8 +3,9 @@ import time
 import streamlit as st
 from PIL import Image
 
-from windrecorder import utils
+from windrecorder import record, utils
 from windrecorder.config import config
+from windrecorder.utils import find_key_position_in_dict
 from windrecorder.utils import get_text as _t
 
 
@@ -36,6 +37,12 @@ def render():
             _t("rs_checkbox_enable_half_res_while_hidpi"),
             help=_t("rs_text_enable_half_res_while_hidpi"),
             value=config.record_screen_enable_half_res_while_hidpi,
+        )
+
+        firefox_optimization = st.checkbox(
+            _t("rs_checkbox_optimization_firefox"),
+            help=_t("rs_text_optimization_firefox_help"),
+            value=config.used_firefox,
         )
 
         screentime_not_change_to_pause_record = st.number_input(
@@ -74,7 +81,7 @@ def render():
                 help=_t("rs_input_vid_compress_time_help"),
             )
         with col3d:
-            video_compress_selectbox_dict = {"0.75": 0, "0.5": 1, "0.25": 2}
+            video_compress_selectbox_dict = {"1": 0, "0.75": 1, "0.5": 2, "0.25": 3}
             video_compress_rate_selectbox = st.selectbox(
                 _t("rs_selectbox_compress_ratio"),
                 list(video_compress_selectbox_dict.keys()),
@@ -82,15 +89,62 @@ def render():
                 help=_t("rs_selectbox_compress_ratio_help"),
             )
 
+        col1_encode, col2_encode, col3_encode = st.columns([1, 1, 1])
+        with col1_encode:
+            video_compress_encoder = st.selectbox(
+                _t("rs_text_compress_encoder"),
+                list(config.compress_preset.keys()),
+                index=find_key_position_in_dict(config.compress_preset, config.compress_encoder),
+            )
+        with col2_encode:
+            video_compress_accelerator = st.selectbox(
+                _t("rs_text_compress_accelerator"),
+                list(config.compress_preset[video_compress_encoder].keys()),
+                index=find_key_position_in_dict(config.compress_preset[video_compress_encoder], config.compress_accelerator),
+            )
+        with col3_encode:
+            video_compress_crf = st.number_input(
+                _t("rs_text_compress_CRF"),
+                value=config.compress_quality,
+                min_value=0,
+                max_value=50,
+                help=_t("rs_text_compress_CRF_help"),
+            )
+
+        if st.button(_t("rs_btn_encode_benchmark")):
+            with st.spinner(_t("rs_text_encode_benchmark_loading")):
+                result_df = record.encode_preset_benchmark_test(
+                    scale_factor=video_compress_rate_selectbox, crf=video_compress_crf
+                )
+                st.dataframe(
+                    result_df,
+                    column_config={
+                        "encoder": st.column_config.TextColumn(_t("rs_text_compress_encoder")),
+                        "accelerator": st.column_config.TextColumn(_t("rs_text_compress_accelerator")),
+                        "support": st.column_config.CheckboxColumn(_t("rs_text_support"), default=False),
+                        "compress_ratio": st.column_config.TextColumn(
+                            _t("rs_text_compress_ratio"), help=_t("rs_text_compress_ratio_help")
+                        ),
+                        "compress_time": st.column_config.TextColumn(_t("rs_text_compress_time")),
+                    },
+                )
+
         st.divider()
 
         if st.button("Save and Apple All Change / 保存并应用所有更改", type="primary", key="SaveBtnRecord"):
             config.set_and_save_config("screentime_not_change_to_pause_record", screentime_not_change_to_pause_record)
             config.set_and_save_config("record_screen_enable_half_res_while_hidpi", record_screen_enable_half_res_while_hidpi)
             config.set_and_save_config("OCR_index_strategy", ocr_strategy_option_dict[ocr_strategy_option])
+            config.set_and_save_config("used_firefox", firefox_optimization)
+
             config.set_and_save_config("vid_store_day", vid_store_day)
             config.set_and_save_config("vid_compress_day", vid_compress_day)
             config.set_and_save_config("video_compress_rate", video_compress_rate_selectbox)
+
+            config.set_and_save_config("compress_encoder", video_compress_encoder)
+            config.set_and_save_config("compress_accelerator", video_compress_accelerator)
+            config.set_and_save_config("compress_quality", video_compress_crf)
+
             st.toast(_t("utils_toast_setting_saved"), icon="🦝")
             time.sleep(2)
             st.experimental_rerun()

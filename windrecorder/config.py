@@ -4,9 +4,11 @@ import shutil
 
 config_name = "config_user.json"
 config_name_default = "src\\config_default.json"
+config_name_video_compress_preset = "src\\video_compress_preset.json"
 config_dir = "config"
 default_config_path = os.path.join(config_dir, config_name_default)
 user_config_path = os.path.join(config_dir, config_name)
+video_compress_preset_config_path = os.path.join(config_dir, config_name_video_compress_preset)
 
 
 class Config:
@@ -39,6 +41,10 @@ class Config:
         video_compress_rate,
         oneday_timeline_pic_num,
         enable_ocr_chineseocr_lite_onnx,
+        compress_encoder,
+        compress_accelerator,
+        compress_quality,
+        used_firefox,
         lock_file_dir,
         maintain_lock_subdir,
         record_lock_name,
@@ -84,6 +90,11 @@ class Config:
         self.record_lock_path = os.path.join(lock_file_dir, record_lock_name)
         self.last_idle_maintain_file_path = last_idle_maintain_file_path
         self.iframe_dir = iframe_dir
+        self.compress_encoder = compress_encoder
+        self.compress_accelerator = compress_accelerator
+        self.compress_quality = compress_quality
+        self.compress_preset = get_video_compress_preset_json()
+        self.used_firefox = used_firefox
         self.log_dir = log_dir
         self.start_recording_on_startup = start_recording_on_startup
         self.lock_file_dir = lock_file_dir
@@ -113,6 +124,7 @@ class Config:
 
     def filter_unwanted_field(self, config_json):
         del config_json["db_filepath"]
+        del config_json["compress_preset"]
         return config_json
 
 
@@ -147,6 +159,12 @@ def get_config_json():
     initialize_config()
     update_config_files_from_default_to_user()
     with open(user_config_path, "r", encoding="utf-8") as f:
+        config_json = json.load(f)
+    return config_json
+
+
+def get_video_compress_preset_json():
+    with open(video_compress_preset_config_path, "r", encoding="utf-8") as f:
         config_json = json.load(f)
     return config_json
 

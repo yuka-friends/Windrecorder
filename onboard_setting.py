@@ -16,7 +16,10 @@ ALLSTEPS = 5
 
 # 清理缓存
 if os.path.exists("cache"):
-    file_utils.empty_directory("cache")
+    try:
+        file_utils.empty_directory("cache")
+    except PermissionError:
+        pass
 
 
 # 画分割线的
