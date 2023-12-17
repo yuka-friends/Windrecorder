@@ -6,8 +6,6 @@ cd /d %~dp0
 echo -git: updating repository
 git pull
 
-pause
-
 echo -updating dependencies
 python -m pip install poetry==1.7.1
 python -m poetry install
