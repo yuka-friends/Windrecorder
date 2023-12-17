@@ -101,7 +101,7 @@ def start_stop_webui(icon: pystray.Icon, item: pystray.MenuItem):
             streamlit_process.kill()
             streamlit_process = None
             icon.notify(
-                f"Webui started timeout, check 'cache\\logs' for more information. (It takes more than {STREAMLIT_OPEN_TIMEOUT} seconds to launch.)"
+                f"Webui started timeout, check '{config.log_dir}' for more information. (It takes more than {STREAMLIT_OPEN_TIMEOUT} seconds to launch.)"
             )
 
 
