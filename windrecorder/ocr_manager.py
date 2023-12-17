@@ -8,7 +8,7 @@ import cv2
 import numpy as np
 import pandas as pd
 import win32file
-from PIL import Image
+from PIL import Image, ImageDraw
 from send2trash import send2trash
 
 import windrecorder.record as record
@@ -83,38 +83,93 @@ def extract_iframe(video_file, iframe_path, iframe_interval=4000):
 
 # 根据config配置裁剪图片
 def crop_iframe(directory):
-    top_percent = config.ocr_image_crop_URBL[0] * 0.01
-    bottom_percent = config.ocr_image_crop_URBL[1] * 0.01
-    left_percent = config.ocr_image_crop_URBL[2] * 0.01
-    right_percent = config.ocr_image_crop_URBL[3] * 0.01
+    monitors_cnt = utils.get_screen_count()
+    monitors = utils.get_screen()
+    monitor_all_in1 = monitors[0]
+    monitors = monitors[1:]
+    top_percent = []
+    bottom_percent = []
+    left_percent = []
+    right_percent = []
+    for i in range(monitors_cnt):
+        top_percent.append(config.ocr_image_crop_URBL[i * 4 + 0] * 0.01)
+        bottom_percent.append(config.ocr_image_crop_URBL[i * 4 + 1] * 0.01)
+        left_percent.append(config.ocr_image_crop_URBL[i * 4 + 2] * 0.01)
+        right_percent.append(config.ocr_image_crop_URBL[i * 4 + 3] * 0.01)
 
     # 获取目录下所有图片文件
-    image_files = [f for f in os.listdir(directory) if f.endswith((".jpg", ".jpeg", ".png"))]
+    image_files = [
+        f for f in os.listdir(directory) if f.endswith((".jpg", ".jpeg", ".png"))
+    ]
 
     # 循环处理每个图片文件
     for file_name in image_files:
         # 构建图片文件的完整路径
         file_path = os.path.join(directory, file_name)
+        # print(f'{file_path=}')
 
+        if "_cropped" in file_name:
+            continue
         # 打开图片文件
         image = Image.open(file_path)
+        draw = ImageDraw.Draw(image)
 
         # 获取图片的原始尺寸
         width, height = image.size
 
-        # 计算裁剪区域的像素值
-        top = int(height * top_percent)
-        bottom = int(height * (1 - bottom_percent))
-        left = int(width * left_percent)
-        right = int(width * (1 - right_percent))
+        for i, monitor in enumerate(monitors):
+            # print(f'{monitor=}')
+            # 计算裁剪区域的像素值
+            top = top_percent[i]
+            bottom = bottom_percent[i]
+            left = left_percent[i]
+            right = right_percent[i]
+            left_boundary = monitor["left"] - monitor_all_in1["left"]
+            top_boundary = monitor["top"] - monitor_all_in1["top"]
+            right_boundary = left_boundary + monitor["width"]
+            bottom_boundary = top_boundary + monitor["height"]
 
-        # 裁剪图片
-        cropped_image = image.crop((left, top, right, bottom))
+            # 计算涂黑的区域
+            top_black = (
+                left_boundary,
+                top_boundary,
+                right_boundary,
+                top_boundary + int(monitor["height"] * top),
+            )
+            bottom_black = (
+                left_boundary,
+                bottom_boundary - int(monitor["height"] * bottom),
+                right_boundary,
+                bottom_boundary,
+            )
+            left_black = (
+                left_boundary,
+                top_boundary,
+                left_boundary + int(monitor["width"] * left),
+                bottom_boundary,
+            )
+            right_black = (
+                right_boundary - int(monitor["width"] * right),
+                top_boundary,
+                right_boundary,
+                bottom_boundary,
+            )
+
+            # 在对应区域涂黑
+            draw.rectangle(top_black, fill="black")
+            draw.rectangle(bottom_black, fill="black")
+            draw.rectangle(left_black, fill="black")
+            draw.rectangle(right_black, fill="black")
+
+            # 裁剪图片
+            # cropped_image = image.crop((left, top, right, bottom))
 
         # 保存裁剪后的图片
-        # cropped_file_path = os.path.splitext(file_path)[0] + '_cropped' + os.path.splitext(file_path)[1]
-        cropped_file_path = file_path
-        cropped_image.save(cropped_file_path)
+        cropped_file_path = (
+            os.path.splitext(file_path)[0] + "_cropped" + os.path.splitext(file_path)[1]
+        )
+        # cropped_file_path = file_path
+        image.save(cropped_file_path)
 
         # 关闭图片文件
         image.close()
@@ -306,6 +361,36 @@ def ocr_core_logic(file_path, vid_file_name, iframe_path):
     is_first_process_image_similarity = 1
     # 先清理一波看起来重复的图像
     for img_file_name in os.listdir(iframe_path):
+        if "_cropped" not in img_file_name:
+            continue
+        print("processing IMG - compare:" + img_file_name)
+        img = os.path.join(iframe_path, img_file_name)
+        print("img=" + img)
+
+        # 填充用于对比的slot队列
+        if is_first_process_image_similarity == 1:
+            img1_path_temp = img
+            is_first_process_image_similarity = 2
+        elif is_first_process_image_similarity == 2:
+            img2_path_temp = img
+            is_first_process_image_similarity = 3
+        else:
+            is_img_same = compare_image_similarity(img1_path_temp, img2_path_temp)
+            if is_img_same:
+                os.remove(img2_path_temp)
+                img1_path_temp = img1_path_temp
+                img2_path_temp = img
+            else:
+                img1_path_temp = img2_path_temp
+                img2_path_temp = img
+
+    img1_path_temp = ""
+    img2_path_temp = ""
+    is_first_process_image_similarity = 1
+    # 先清理一波看起来重复的图像
+    for img_file_name in os.listdir(iframe_path):
+        if "_cropped" in img_file_name:
+            continue
         print("processing IMG - compare:" + img_file_name)
         img = os.path.join(iframe_path, img_file_name)
         print("img=" + img)
@@ -343,6 +428,9 @@ def ocr_core_logic(file_path, vid_file_name, iframe_path):
 
     # todo: os.listdir 应该进行正确的数字排序、以确保是按视频顺序索引的
     for img_file_name in os.listdir(iframe_path):
+        if "_cropped" not in img_file_name:
+            continue
+        img_file_name_origin = img_file_name.replace("_cropped", "")
         print("_____________________")
         print("processing IMG - OCR:" + img_file_name)
 
@@ -362,18 +450,19 @@ def ocr_core_logic(file_path, vid_file_name, iframe_path):
             else:
                 print("Writing to database.")
                 # 使用os.path.splitext()可以把文件名和文件扩展名分割开来，os.path.splitext(file_name)会返回一个元组,元组的第一个元素是文件名,第二个元素是扩展名
+                img_origin = os.path.join(iframe_path, img_file_name_origin)
                 calc_to_sec_vidname = os.path.splitext(vid_file_name)[0]
                 calc_to_sec_vidname = calc_to_sec_vidname.replace("-INDEX", "")
-                calc_to_sec_picname = round(int(os.path.splitext(img_file_name)[0]) / 2)
+                calc_to_sec_picname = round(int(os.path.splitext(img_file_name_origin)[0]) / 2)
                 calc_to_sec_data = date_to_seconds(calc_to_sec_vidname) + calc_to_sec_picname
                 # 计算图片预览图
-                img_thumbnail = resize_imahe_as_base64(img)
+                img_thumbnail = resize_imahe_as_base64(img_origin)
                 # 清理ocr数据
                 ocr_result_write = utils.clean_dirty_text(ocr_result_stringB)
                 # 为准备写入数据库dataframe添加记录
                 dataframe_all.loc[len(dataframe_all.index)] = [
                     vid_file_name,
-                    img_file_name,
+                    img_file_name_origin,
                     calc_to_sec_data,
                     ocr_result_write,
                     True,

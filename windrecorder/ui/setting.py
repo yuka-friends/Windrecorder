@@ -118,12 +118,12 @@ def render():
 
         if "ocr_padding_top" not in st.session_state:
             st.session_state.ocr_padding_top = config.ocr_image_crop_URBL[0]
-        if "ocr_padding_right" not in st.session_state:
-            st.session_state.ocr_padding_right = config.ocr_image_crop_URBL[1]
         if "ocr_padding_bottom" not in st.session_state:
-            st.session_state.ocr_padding_bottom = config.ocr_image_crop_URBL[2]
+            st.session_state.ocr_padding_bottom = config.ocr_image_crop_URBL[1]
         if "ocr_padding_left" not in st.session_state:
-            st.session_state.ocr_padding_left = config.ocr_image_crop_URBL[3]
+            st.session_state.ocr_padding_left = config.ocr_image_crop_URBL[2]
+        if "ocr_padding_right" not in st.session_state:
+            st.session_state.ocr_padding_right = config.ocr_image_crop_URBL[3]
 
         col1pa, col2pa, col3pa = st.columns([0.5, 0.5, 1])
         with col1pa:
