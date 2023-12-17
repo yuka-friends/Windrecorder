@@ -42,5 +42,7 @@
   "compress_quality": 39,
   "used_firefox": false,
   "late_night_poets": false,
-  "begin_day": 0
+  "begin_day": 0,
+  "diy_record": false,
+  "diy_record_cmd": ""
 }

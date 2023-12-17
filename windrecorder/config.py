@@ -45,8 +45,10 @@ class Config:
         compress_accelerator,
         compress_quality,
         begin_day,
+        diy_record,
         late_night_poets=False,
         used_firefox=False,
+        diy_record_cmd=None,
         maintain_lock_path="cache\\LOCK_MAINTAIN",
         record_lock_path="cache\\LOCK_FILE_RECORD.MD",
         last_idle_maintain_file_path="cache\\LAST_IDLE_MAINTAIN.MD",
@@ -92,6 +94,8 @@ class Config:
         self.used_firefox = used_firefox
         self.late_night_poets = late_night_poets
         self.begin_day = begin_day
+        self.diy_record = diy_record
+        self.diy_record_cmd = diy_record_cmd
 
     def set_and_save_config(self, attr: str, value):
         if not hasattr(self, attr):

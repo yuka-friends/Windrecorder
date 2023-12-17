@@ -104,38 +104,59 @@ def record_screen(
     )
     print(f"Origin screen resolution: {screen_width}x{screen_height}, Resized to {target_scale_width}x{target_scale_height}.")
 
-    ffmpeg_cmd = [
-        ffmpeg_path,
-        "-f",
-        "gdigrab",
-        # 记录整块屏幕
-        # "-video_size",
-        # f"{screen_width}x{screen_height}",
-        "-framerate",
-        "2",
-        "-i",
-        "desktop",
-        "-vf",
-        f"scale={target_scale_width}:{target_scale_height}",
-        # 默认使用编码成 h264 格式
-        "-c:v",
-        "libx264",
-        # 默认码率为 200kbps
-        "-b:v",
-        str(200*utils.get_screen_count()) + "k",
-        # firefox 不支持 yuv444p
-        "-pix_fmt" if config.used_firefox else "",
-        "yuv420p" if config.used_firefox else "",
-        "-bf",
-        "8",
-        "-g",
-        "600",
-        "-sc_threshold",
-        "10",
-        "-t",
-        str(record_time),
-        out_path,
-    ]
+    if config.diy_record:
+        ffmpeg_cmd = [
+            ffmpeg_path,
+            "-f",
+            "gdigrab",
+            # 记录整块屏幕
+            # "-video_size",
+            # f"{screen_width}x{screen_height}",
+            "-i",
+            "desktop",
+            "-vf",
+            f"scale={target_scale_width}:{target_scale_height}",
+            # firefox 不支持 yuv444p
+            "-pix_fmt" if config.used_firefox else "",
+            "yuv420p" if config.used_firefox else "",
+            "-t",
+            str(record_time),
+            config.diy_record_cmd,   # + str(200*utils.get_screen_count()) + "k",
+            out_path,
+        ]
+    else:
+        ffmpeg_cmd = [
+            ffmpeg_path,
+            "-f",
+            "gdigrab",
+            # 记录整块屏幕
+            # "-video_size",
+            # f"{screen_width}x{screen_height}",
+            "-framerate",
+            "2",
+            "-i",
+            "desktop",
+            "-vf",
+            f"scale={target_scale_width}:{target_scale_height}",
+            # 默认使用编码成 h264 格式
+            "-c:v",
+            "libx264",
+            # 默认码率为 200kbps
+            "-b:v",
+            str(200*utils.get_screen_count()) + "k",
+            # firefox 不支持 yuv444p
+            "-pix_fmt" if config.used_firefox else "",
+            "yuv420p" if config.used_firefox else "",
+            "-bf",
+            "8",
+            "-g",
+            "600",
+            "-sc_threshold",
+            "10",
+            "-t",
+            str(record_time),
+            out_path,
+        ]
     print(f"{' '.join(ffmpeg_cmd)=}")
 
     # 执行命令
@@ -143,7 +164,7 @@ def record_screen(
         # 添加服务监测信息
         file_utils.check_and_create_folder("cache")
         # 运行ffmpeg
-        subprocess.run(ffmpeg_cmd, check=True)
+        subprocess.run(' '.join(ffmpeg_cmd), check=True, shell=True)
         print("Windrecorder: Start Recording via FFmpeg")
         return video_saved_dir, video_out_name
     except subprocess.CalledProcessError as ex:
