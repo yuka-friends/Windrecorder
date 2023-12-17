@@ -3,7 +3,7 @@ import time
 import streamlit as st
 from PIL import Image
 
-from windrecorder import utils
+from windrecorder import record, utils
 from windrecorder.config import config
 from windrecorder.utils import find_key_position_in_dict
 from windrecorder.utils import get_text as _t
