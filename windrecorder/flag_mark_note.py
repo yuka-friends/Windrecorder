@@ -125,14 +125,16 @@ class Flag_mark_window(customtkinter.CTk):
         window_width = 400
         window_height = 190
         # win11 之前返回的分辨率为 hidpi 分辨率，需要处理为物理分辨率
-        if utils.is_win11():
-            target_x = int((screen_width * 4 / 5))
-            target_y = int((screen_height * 3 / 5))
-        else:
-            target_x = int((screen_width * 4 / 5) * SCALE_FACTOR)
-            target_y = int((screen_height * 3 / 5) * SCALE_FACTOR)
+        # if utils.is_win11():
+        #     target_x = int((screen_width * 4 / 5))
+        #     target_y = int((screen_height * 3 / 5))
+        # else:
+        #     target_x = int((screen_width * 4 / 5) * SCALE_FACTOR)
+        #     target_y = int((screen_height * 3 / 5) * SCALE_FACTOR)
+        target_x = int((screen_width * 4 / 5))
+        target_y = int((screen_height * 3 / 5))
 
-        # print(f"DEBUG: \n{dpi=}\n{SCALE_FACTOR=}\n{screen_width=}\n{screen_height=}\n{target_x=}\n{target_y=}")
+        print(f"DEBUG: \n{dpi=}\n{SCALE_FACTOR=}\n{screen_width=}\n{screen_height=}\n{target_x=}\n{target_y=}")
 
         # 窗口配置项
         self.geometry(f"{window_width}x{window_height}+{target_x}+{target_y}")
