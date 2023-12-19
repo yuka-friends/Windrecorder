@@ -25,6 +25,7 @@ pillow = "^10.1.0"
 wordcloud = "^1.9.2"
 pystray = "^0.19.5"
 customtkinter = "^5.2.1"
+psutil = "^5.9.5"
 
 [tool.poetry.group.dev.dependencies]
 pre-commit = "^3.5.0"

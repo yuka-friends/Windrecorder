@@ -15,6 +15,7 @@ from datetime import timedelta
 from io import BytesIO
 
 import cv2
+import psutil
 import pyautogui
 import requests
 from PIL import Image
@@ -635,3 +636,12 @@ def is_win11():
 
 def get_windows_edition():
     return platform.win32_edition()
+
+
+def is_process_running(pid):
+    pid = int(pid)
+    try:
+        process = psutil.Process(pid)
+        return process.is_running()
+    except psutil.NoSuchProcess:
+        return False

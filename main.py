@@ -6,6 +6,7 @@ import subprocess
 import sys
 import time
 import webbrowser
+from os import getpid
 from subprocess import Popen
 
 import pystray
@@ -15,8 +16,10 @@ from PIL import Image
 PROJECT_ROOT = os.path.abspath(os.path.dirname(__file__))
 os.chdir(PROJECT_ROOT)
 
-from windrecorder import file_utils, flag_mark_note, utils  # NOQA: E402
+from windrecorder import file_utils, flag_mark_note, utils, win_ui  # NOQA: E402
 from windrecorder.config import config  # NOQA: E402
+from windrecorder.exceptions import LockExistsException  # NOQA: E402
+from windrecorder.lock import FileLock  # NOQA: E402
 from windrecorder.utils import get_text as _t  # NOQA: E402
 
 # 定义存储标准输出的日志文件路径
@@ -232,5 +235,28 @@ def main():
     ).run(setup=setup)
 
 
+def interrupt_start():
+    win_ui.show_popup(
+        "Another Windrecorder is running in system tray.\n\n「捕风记录仪」已在系统托盘中运行。", "Windrecorder is already running", "infomation"
+    )
+    sys.exit()
+
+
 if __name__ == "__main__":
-    main()
+    try:
+        tray_lock = FileLock(config.tray_lock_path, str(getpid()), timeout_s=None)
+    except LockExistsException:
+        with open(config.tray_lock_path, encoding="utf-8") as f:
+            check_pid = int(f.read())
+
+        tray_is_running = utils.is_process_running(check_pid)
+        if tray_is_running:
+            interrupt_start()
+        else:
+            try:
+                os.remove(config.tray_lock_path)
+            except FileNotFoundError:
+                pass
+
+    with tray_lock:
+        main()
