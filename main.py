@@ -1,3 +1,4 @@
+import datetime
 import os
 import re
 import signal
@@ -5,6 +6,7 @@ import subprocess
 import sys
 import time
 import webbrowser
+from os import getpid
 from subprocess import Popen
 
 import pystray
@@ -14,8 +16,10 @@ from PIL import Image
 PROJECT_ROOT = os.path.abspath(os.path.dirname(__file__))
 os.chdir(PROJECT_ROOT)
 
-from windrecorder import file_utils, utils  # NOQA: E402
+from windrecorder import file_utils, flag_mark_note, utils, win_ui  # NOQA: E402
 from windrecorder.config import config  # NOQA: E402
+from windrecorder.exceptions import LockExistsException  # NOQA: E402
+from windrecorder.lock import FileLock  # NOQA: E402
 from windrecorder.utils import get_text as _t  # NOQA: E402
 
 # 定义存储标准输出的日志文件路径
@@ -136,6 +140,16 @@ def start_stop_recording(icon: pystray.Icon | None = None, item: pystray.MenuIte
             )
 
 
+# 记录当下的时间标记
+def create_timestamp_flag_mark_note(icon: pystray.Icon, item: pystray.MenuItem):
+    datetime_created = datetime.datetime.now()
+    flag_mark_note.add_new_flag_record_from_tray(datetime_created=datetime_created)
+    app = flag_mark_note.Flag_mark_window(datetime_input=datetime_created)
+    app.update()
+    app.textbox.focus_set()
+    app.mainloop()
+
+
 # 生成系统托盘菜单
 def menu_callback():
     try:
@@ -147,6 +161,10 @@ def menu_callback():
 
     # 返回生成的菜单项列表
     return (
+        # 记录当下的时间标记
+        pystray.MenuItem(lambda item: "🚩 为现在时间添加标记", create_timestamp_flag_mark_note),
+        # 分隔线
+        pystray.Menu.SEPARATOR,
         # 开始或停止 Web UI
         pystray.MenuItem(
             lambda item: _t("tray_webui_exit") if streamlit_process else _t("tray_webui_start"), start_stop_webui
@@ -217,5 +235,28 @@ def main():
     ).run(setup=setup)
 
 
+def interrupt_start():
+    win_ui.show_popup(
+        "Another Windrecorder is running in system tray.\n\n「捕风记录仪」已在系统托盘中运行。", "Windrecorder is already running", "infomation"
+    )
+    sys.exit()
+
+
 if __name__ == "__main__":
-    main()
+    try:
+        tray_lock = FileLock(config.tray_lock_path, str(getpid()), timeout_s=None)
+    except LockExistsException:
+        with open(config.tray_lock_path, encoding="utf-8") as f:
+            check_pid = int(f.read())
+
+        tray_is_running = utils.is_process_running(check_pid)
+        if tray_is_running:
+            interrupt_start()
+        else:
+            try:
+                os.remove(config.tray_lock_path)
+            except FileNotFoundError:
+                pass
+
+    with tray_lock:
+        main()

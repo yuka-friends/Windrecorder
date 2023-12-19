@@ -5,6 +5,10 @@
   "record_videos_dir": "videos",
   "db_path": "./db",
   "db_filename": "ocrSaved.db",
+  "userdata_dir": "userdata",
+  "flag_mark_note_filename": "flag_mark_note.csv",
+  "thumbnail_generation_size_width": 70,
+  "thumbnail_generation_jpg_quality": 30,
   "search_max_num": "50",
   "lang": "sc",
   "ocr_lang": "zh-Hans-CN",
@@ -45,6 +49,7 @@
   "lock_file_dir": "cache\\locks",
   "maintain_lock_subdir": "LOCK_MAINTAIN",
   "record_lock_name": "LOCK_FILE_RECORD.MD",
+  "tray_lock_name": "LOCK_FILE_TRAY.MD",
   "last_idle_maintain_file_path": "cache\\LAST_IDLE_MAINTAIN.MD",
   "iframe_dir": "cache\\i_frames",
   "log_dir": "cache\\logs"

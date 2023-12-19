@@ -4,15 +4,18 @@ import ctypes
 import datetime
 import json
 import os
+import platform
 import random
 import re
 import subprocess
+import sys
 import threading
 import time
 from datetime import timedelta
 from io import BytesIO
 
 import cv2
+import psutil
 import pyautogui
 import requests
 from PIL import Image
@@ -79,6 +82,7 @@ def seconds_to_date(seconds):
 def seconds_to_date_goodlook_formart(seconds):
     start_time = 0
     dt = datetime.datetime.utcfromtimestamp(start_time + seconds)
+    # todo: 这里时间格式需要封为统一的可配置项
     return dt.strftime("%Y/%m/%d   %H:%M:%S")
 
 
@@ -381,6 +385,21 @@ def image_to_base64(image_path):
     return base64_image
 
 
+def resize_image_as_base64(img: Image.Image, target_width=config.thumbnail_generation_size_width):
+    """
+    将图片缩小到等比例、宽度为70px的thumbnail，并返回base64
+    """
+    # 计算缩放比例
+    target_height = int((float(img.size[1]) * float(target_width) / float(img.size[0])))
+
+    img = img.resize((target_width, target_height))
+    output_buffer = BytesIO()
+    img.save(output_buffer, format="JPEG", quality=config.thumbnail_generation_jpg_quality, optimize=True)
+    img_b64 = base64.b64encode(output_buffer.getvalue()).decode("utf-8")
+
+    return img_b64
+
+
 # 检查db是否是有合法的、正在维护中的锁（超过一定时间则解锁）
 def is_maintain_lock_valid(timeout=datetime.timedelta(minutes=16)):
     if os.path.exists(config.maintain_lock_path):
@@ -609,3 +628,20 @@ def change_startup_shortcut(is_create=True):
             print("record: Shortcut already exists")
             os.remove(shortcut_path)
             print("record: Delete shortcut")
+
+
+def is_win11():
+    return sys.getwindowsversion().build >= 22000
+
+
+def get_windows_edition():
+    return platform.win32_edition()
+
+
+def is_process_running(pid):
+    pid = int(pid)
+    try:
+        process = psutil.Process(pid)
+        return process.is_running()
+    except psutil.NoSuchProcess:
+        return False

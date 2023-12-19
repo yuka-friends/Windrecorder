@@ -20,10 +20,12 @@ pyshortcuts = "^1.9.0"
 pywin32 = "~306"
 Send2Trash = "^1.8.2"
 Shapely = "~2.0.1"
-streamlit = "^1.28.2"
+streamlit = "^1.29.0"
 pillow = "^10.1.0"
 wordcloud = "^1.9.2"
 pystray = "^0.19.5"
+customtkinter = "^5.2.1"
+psutil = "^5.9.5"
 
 [tool.poetry.group.dev.dependencies]
 pre-commit = "^3.5.0"

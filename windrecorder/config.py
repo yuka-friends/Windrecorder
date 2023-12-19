@@ -48,10 +48,15 @@ class Config:
         lock_file_dir,
         maintain_lock_subdir,
         record_lock_name,
+        tray_lock_name,
         last_idle_maintain_file_path,
         iframe_dir,
         log_dir,
         start_recording_on_startup,
+        userdata_dir,
+        flag_mark_note_filename,
+        thumbnail_generation_size_width,
+        thumbnail_generation_jpg_quality,
         **other_field,
     ) -> None:
         self.db_path = db_path
@@ -84,6 +89,7 @@ class Config:
         self.enable_ocr_chineseocr_lite_onnx = enable_ocr_chineseocr_lite_onnx
         self.maintain_lock_path = os.path.join(lock_file_dir, maintain_lock_subdir)
         self.record_lock_path = os.path.join(lock_file_dir, record_lock_name)
+        self.tray_lock_path = os.path.join(lock_file_dir, tray_lock_name)
         self.last_idle_maintain_file_path = last_idle_maintain_file_path
         self.iframe_dir = iframe_dir
         self.compress_encoder = compress_encoder
@@ -94,6 +100,11 @@ class Config:
         self.log_dir = log_dir
         self.start_recording_on_startup = start_recording_on_startup
         self.lock_file_dir = lock_file_dir
+        self.userdata_dir = userdata_dir
+        self.flag_mark_note_filename = flag_mark_note_filename
+        self.flag_mark_note_filepath = os.path.join(self.userdata_dir, self.flag_mark_note_filename)
+        self.thumbnail_generation_size_width = thumbnail_generation_size_width
+        self.thumbnail_generation_jpg_quality = thumbnail_generation_jpg_quality
 
     def set_and_save_config(self, attr: str, value):
         if not hasattr(self, attr):
