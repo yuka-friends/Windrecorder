@@ -19,7 +19,7 @@ This is a tool that can continuously record screen images and retrieve relevant 
 > The project is adding functions and making architectural changes, which may cause problems such as users of earlier versions being unable to upgrade and update normally.
 > Don't worry! Bring your own `videos`, `db`, `config\config_user.json` and other directories and files, and you can migrate to the latest version at any time.
 
-## 🦝🎉 0.1.0 new trailer (coming soon)
+## 🦝🎉 0.1.0 What's new (coming soon)
 
 ![Windrecorder](https://github.com/yuka-friends/Windrecorder/blob/main/__assets__/product-update-0.1.0.jpg)
 
@@ -66,13 +66,11 @@ Download the integration package from [Releases](https://github.com/yuka-friends
 
 Currently, you need to open the batch script in the directory to use the tool:
 
-- Start recording the screen by opening `start_record.bat` in the directory;
+- Start recording the screen by opening `start_app.bat` in the directory;
 
 > Note: You need to keep the terminal window minimized and run in the background to record. Likewise, simply close the terminal window when you need to pause recording.
 
-- Open `start_webui.bat` in the directory to trace back, query memory, and make settings;
-
-> Best practice: Set `start_record.bat` to start automatically at boot in the webui, so that everything can be recorded without any fuss. When the computer is idle and no one is using it, `start_record.bat` will automatically pause recording, compress and clean up expired videos; Just set it and forget it!
+> Best practice: Set auto-start in webui to record everything without any fuss. Recording will be automatically paused when there is no change in the picture or the screen is in sleep mode. When the computer is idle and no one is using it, the tool will automatically maintain the database, compress, and clean up expired videos; Just set it and forget it!
 
 ---
 ### Roadmap:
@@ -95,13 +93,13 @@ Currently, you need to open the batch script in the directory to use the tool:
 # 🦝 Q&A | Frequently Asked Questions
 Q: There is no data in the recent period when opening webui.
 
-- A: When start_record.bat is indexing data, webui will not create the latest temporary database file.
-Solution: After start_record.bat indexing is completed, refresh the webui interface, or delete the database file with the suffix _TEMP_READ.db in the db directory and refresh it. This strategy will be fixed and refactored in the future. [#26](https://github.com/yuka-friends/Windrecorder/issues/26)
+- A: When the tool is indexing data, webui will not create the latest temporary database file.
+Solution: Try to wait for a while, wait for the tool index to be completed, refresh the webui interface, or delete the database file with the suffix _TEMP_READ.db in the db directory and refresh it (if there is a database file damage prompt, don’t worry, it may be The tool is still in the index, please try refreshing/removing it after some time). This strategy will be fixed and refactored in the future. [#26](https://github.com/yuka-friends/Windrecorder/issues/26)
 
 Q: When opening webui, it prompts: `FileNotFoundError: [WinError 2] The system cannot find the file specified: './db\\user_2023-10_wind.db-journal'`
 
-- A: Usually occurs when the webui is accessed for the first time, while start_record.bat is still indexing data.
-Solution: After the start_record.bat background indexing is completed, delete the corresponding database file with the suffix _TEMP_READ.db in the db folder and refresh it.
+- A: Usually occurs when accessing the webui for the first time, while the tool is still indexing data.
+Solution: After the tool background indexing is completed, delete the corresponding database file with the suffix _TEMP_READ.db in the db folder and refresh it.
 
 Q: The mouse flashes during recording
 

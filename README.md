@@ -65,13 +65,11 @@
 
 目前暂时需要通过打开目录下的批处理脚本来使用工具：
 
-- 通过打开目录下的`start_record.bat`开始记录屏幕；
+- 通过打开目录下的`start_app.bat`开始记录屏幕；
 
 > 注意：需要一直将终端窗口最小化放在后台运行来记录。同样地，当需要暂停录制时只需关闭终端窗口即可。
 
-- 通过打开目录下的`start_webui.bat`来回溯、查询记忆、进行设置；
-
-> 最佳实践：在webui中设置开机自启动`start_record.bat`，即可无感记录下一切。当电脑空闲无人使用时，`start_record.bat`会自动暂停录制并压缩、清理过期视频；Just set it and forget it！
+> 最佳实践：在webui中设置开机自启动，即可无感记录下一切。当画面没有变化、或屏幕睡眠时将自动暂停记录。当电脑空闲无人使用时，工具会自动维护数据库、压缩、清理过期视频；Just set it and forget it！
 
 ---
 ### Roadmap:
@@ -95,13 +93,13 @@
 
 Q: 打开 webui 时没有近期一段时间的数据。
 
-- A: 当 start_record.bat 正在索引数据时，webui 将不会创建最新的临时数据库文件。
-解决方法：在 start_record.bat 索引完毕后，刷新 webui 界面，或删除 db 目录下后缀为 _TEMP_READ.db 的数据库文件后刷新即可。此项策略未来将会修复重构。 [#26](https://github.com/yuka-friends/Windrecorder/issues/26)
+- A: 当工具正在索引数据时，webui 将不会创建最新的临时数据库文件。
+解决方法：尝试稍等一段时间，等待工具索引完毕后，刷新 webui 界面，或删除 db 目录下后缀为 _TEMP_READ.db 的数据库文件后刷新即可（若出现数据库文件损坏提示，不必担心，可能是工具仍然在索引中，请尝试过段时间刷新/删除）。此项策略未来将会修复重构。 [#26](https://github.com/yuka-friends/Windrecorder/issues/26)
 
 Q: 在打开webui时提示：`FileNotFoundError: [WinError 2] The system cannot find the file specified: './db\\user_2023-10_wind.db-journal'`
 
-- A: 通常在初次访问 webui 时、start_record.bat 仍正在索引数据时出现。
-解决方法：在 start_record.bat 后台索引完毕后，删除 db 文件夹下对应后缀为 _TEMP_READ.db 的数据库文件后刷新即可。
+- A: 通常在初次访问 webui 时、工具仍正在索引数据时出现。
+解决方法：在工具后台索引完毕后，删除 db 文件夹下对应后缀为 _TEMP_READ.db 的数据库文件后刷新即可。
 
 Q: 录制过程中鼠标闪烁
 
