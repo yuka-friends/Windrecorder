@@ -167,6 +167,7 @@
         "qs_end_slogan": "> Capture and preserve the fleeting moments of the wind, as seen through your eyes.",
         "qs_end_feedback": "> Encountered a problem or have suggestions? Feel free to submit issues and PRs at https://github.com/yuka-friends/Windrecorder.",
 
+        "tray_add_flag_mark_note_for_now": "🚩 Add a mark for now time",
         "tray_webui_start": "🦝 Start the search/setting interface",
         "tray_webui_exit": "🦝 Close the search/settings interface",
         "tray_webui_address": "🦝 Browser access {address_port} to enter the page",
@@ -353,6 +354,7 @@
         "qs_end_slogan": "> 一起捕捉贮藏风一般掠过的、你的目之所见。",
         "qs_end_feedback": "> 遇到问题、想反馈建议？欢迎在 https://github.com/yuka-friends/Windrecorder 提交 issue 与 PR。",
         
+        "tray_add_flag_mark_note_for_now": "🚩 为现在时间添加标记",
         "tray_webui_start": "🦝 启动搜索/设置界面",
         "tray_webui_exit": "🦝 关闭搜索/设置界面",
         "tray_webui_address": "🦝 浏览器访问 {address_port} 进入页面",
@@ -542,6 +544,7 @@
         "qs_end_slogan": "> 一緒に、あなたの目が見た、風のように過ぎ去るものをキャプチャしましょう。",
         "qs_end_feedback": "> 問題が発生した場合やフィードバックの提案がある場合は、https://github.com/yuka-friends/Windrecorder でissueやPRを提出してください。",
 
+        "tray_add_flag_mark_note_for_now": "🚩 とりあえずマークを追加",
         "tray_webui_start": "🦝 検索/設定インターフェイスを開始します",
         "tray_webui_exit": "🦝 検索/設定インターフェイスを閉じます",
         "tray_webui_address": "🦝 ページに入るにはブラウザから {address_port} にアクセスしてください",
