@@ -5,9 +5,9 @@ import windrecorder.utils as utils
 
 
 def main():
-    # - 0.0.4 更新操作
+    # - 0.0.5 更新操作
     # 如果原先用户开机启动中存在 start_record.bat，替换创建为新的 start_app.bat
-    print("- 0.0.4")
+    print("- 0.0.5")
     startup_folder = os.path.join(
         os.getenv("APPDATA"),
         "Microsoft",
