@@ -13,17 +13,37 @@ This is a tool that can continuously record screen images and retrieve relevant 
 ![Windrecorder](https://github.com/yuka-friends/Windrecorder/blob/main/__assets__/product-preview-cn.jpg)
 
 > [!WARNING]
-> 🤯 This project is still in the early stages of development, and you may encounter some minor problems in experience and use. If you encounter it, you are welcome to submit issue feedback and pay attention to updates.
+> 🤯 This project is still in the early stages of development, and you may encounter some minor problems in experience and use. If you encounter it, you are welcome to submit issue feedback, follow updates, and initiate discussions in the Discussions forum.
 
 > [!IMPORTANT]
-> The project is adding features and making architectural changes, which may cause problems such as users of earlier versions being unable to upgrade and update normally.
-> Don't worry! Bring your `videos`, `db`, `config\config_user.json` folders and files and you can migrate to the latest version at any time.
+> The project is adding functions and making architectural changes, which may cause problems such as users of earlier versions being unable to upgrade and update normally.
+> Don't worry! Bring your own `videos`, `db`, `config\config_user.json` and other directories and files, and you can migrate to the latest version at any time.
 
-# 🦝 Installation
+## 🦝🎉 0.1.0 What's new (coming soon)
 
-## Automatic installation (not ready)
+![Windrecorder](https://github.com/yuka-friends/Windrecorder/blob/main/__assets__/product-update-0.1.0.jpg)
 
-Download the integration package from [Releases](https://github.com/yuka-friends/Windrecorder/releases), unzip it to the directory where you want to store the data and use it.
+- Now that we have integrated the tool into the system tray and will release a ready-to-run integration package, Wind Recorder will be more intuitive and easier to use than ever before. Say goodbye to complicated manual installation, `start_record.bat` & `start_webui.bat`! 👋
+- Added time mark function: When you want to mark important meetings, emergencies, live broadcasts, gaming and movie-watching highlights, etc. to facilitate future review, you can mark the present moment through the tray, or you can Add records of important events when reviewing;
+- Added more format and parameter support for compressed video;
+- Refactored a large number of code structures, fixed some bugs and improved performance;
+- For more upgrades and changes, please check the [Update Log](https://github.com/yuka-friends/Windrecorder/blob/main/CHANGELOG.md)
+
+
+If you've been using a windlogger before, thank you! You can update to the latest version through the following methods:
+
+- Method A: Download the integration package from [Releases](https://github.com/yuka-friends/Windrecorder/releases) and unzip it, then:
+     - Create a new `userdata` folder in the tool directory, and move the original `videos`, `db`, `result_lightbox`, `result_timeline`, `result_wordcloud` folders to `userdata`;
+     - Move the original `config\config_user.json` file to the `userdata` folder;
+     - Open `windrecorder.exe` to use 🎉
+- Method B: Execute `git pull` in the directory, and then open `install_update_setting.bat` to upgrade;
+
+
+# 🦝 First time installation
+
+## Automatic installation (almost ready)
+
+Download the integration package from [Releases](https://github.com/yuka-friends/Windrecorder/releases), unzip it to the directory where you want to store the data, open `windrecorder.exe` and start using it.
 
 
 ## Manual installation
@@ -46,42 +66,40 @@ Download the integration package from [Releases](https://github.com/yuka-friends
 
 Currently, you need to open the batch script in the directory to use the tool:
 
-- Start recording the screen by opening `start_record.bat` in the directory;
+- Start recording the screen by opening `start_app.bat` in the directory;
 
 > Note: You need to keep the terminal window minimized and run in the background to record. Likewise, simply close the terminal window when you need to pause recording.
 
-- Open `start_webui.bat` in the directory to trace back, query memory, and make settings;
-
-> Best practice: Set `start_record.bat` to start automatically at boot in the webui, so that everything can be recorded without any fuss. When the computer is idle and no one is using it, `start_record.bat` will automatically pause recording, compress and clean up expired videos; Just set it and forget it!
+> Best practice: Set auto-start in webui to record everything without any fuss. Recording will be automatically paused when there is no change in the picture or the screen is in sleep mode. When the computer is idle and no one is using it, the tool will automatically maintain the database, compress, and clean up expired videos; Just set it and forget it!
 
 ---
 ### Roadmap:
-- [x] Stable and continuous screen recording with smaller file size
+- [x] Record screen stably and continuously with smaller file size
 - [x] Only identify changed pictures and store the index in the database
 - [x] Complete graphical interface (webui)
 - [x] Data summary of word cloud, timeline, light box, scatter plot
 - [x] Automatically identify clips after recording, and automatically maintain, clean and compress videos in your spare time
 - [x] Multi-language support: i18n support for interface and OCR recognition completed
 - [ ] Refactor the code to make it more standardized, easier to develop, and have better performance
-- [ ] Packaging tools, providing a more convenient usage mode, making it user-friendly
+- [-] Package tools and provide a more convenient usage mode to make it user-friendly
 - [ ] Add recognition of screen modalities to enable search for screen content descriptions
 - [ ] Add database encryption function
 - [ ] Record the foreground process name and record the corresponding position of the OCR word to present it as a clue during search
 - [ ] Add word embedding index, local/API LLM query
-- [ ] Add multi-screen recording support (depends on future features of pyautogui)
+- [-] Add multi-screen recording support (depends on future features of pyautogui)
 - [ ] 🤔
 
 
 # 🦝 Q&A | Frequently Asked Questions
 Q: There is no data in the recent period when opening webui.
 
-- A: When start_record.bat is indexing data, webui will not create the latest temporary database file.
-Solution: After start_record.bat indexing is completed, refresh the webui interface, or delete the database file with the suffix _TEMP_READ.db in the db directory and refresh it. This strategy will be fixed and refactored in the future. [#26](https://github.com/yuka-friends/Windrecorder/issues/26)
+- A: When the tool is indexing data, webui will not create the latest temporary database file.
+Solution: Try to wait for a while, wait for the tool index to be completed, refresh the webui interface, or delete the database file with the suffix _TEMP_READ.db in the db directory and refresh it (if there is a database file damage prompt, don’t worry, it may be The tool is still in the index, please try refreshing/removing it after some time). This strategy will be fixed and refactored in the future. [#26](https://github.com/yuka-friends/Windrecorder/issues/26)
 
 Q: When opening webui, it prompts: `FileNotFoundError: [WinError 2] The system cannot find the file specified: './db\\user_2023-10_wind.db-journal'`
 
-- A: Usually occurs when the webui is accessed for the first time, while start_record.bat is still indexing data.
-Solution: After the start_record.bat background indexing is completed, delete the corresponding database file with the suffix _TEMP_READ.db in the db folder and refresh it.
+- A: Usually occurs when accessing the webui for the first time, while the tool is still indexing data.
+Solution: After the tool background indexing is completed, delete the corresponding database file with the suffix _TEMP_READ.db in the db folder and refresh it.
 
 Q: The mouse flashes during recording
 
