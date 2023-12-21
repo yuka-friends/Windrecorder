@@ -48,7 +48,7 @@ Download the integration package from [Releases](https://github.com/yuka-friends
 
 ## Manual installation
 
-- Download [ffmpeg](https://www.gyan.dev/ffmpeg/builds/ffmpeg-release-essentials.zip) and extract ffmpeg.exe in the bin directory to `C:\Windows\System32` ( or other directories located in PATH)
+- Download [ffmpeg](https://www.gyan.dev/ffmpeg/builds/ffmpeg-release-essentials.zip) and extract ffmpeg.exe & ffprobe.exe in the bin directory to `C:\Windows\System32` ( or other directories located in PATH)
 
 - Install [Git](https://git-scm.com/downloads), [Python](https://www.python.org/ftp/python/3.10.11/python-3.10.11-amd64.exe ) (check Add python.exe to PATH during installation), [Pip](https://pip.pypa.io/en/stable/installation/);
      - **Notice! Currently, python 3.12** is not supported. It is recommended to use python 3.10, which is the version pointed to by the link above.

@@ -49,7 +49,7 @@
 
 ## 手动安装
 
-- 下载 [ffmpeg](https://www.gyan.dev/ffmpeg/builds/ffmpeg-release-essentials.zip) ，将其中bin目录下的ffmpeg.exe解压至 `C:\Windows\System32` 下（或其他位于 PATH 的目录下）
+- 下载 [ffmpeg](https://www.gyan.dev/ffmpeg/builds/ffmpeg-release-essentials.zip) ，将其中 bin 目录下的ffmpeg.exe、ffprobe.exe 解压至 `C:\Windows\System32` 下（或其他位于 PATH 的目录下）
 
 - 安装 [Git](https://git-scm.com/downloads)、[Python](https://www.python.org/ftp/python/3.10.11/python-3.10.11-amd64.exe)（安装时勾选 Add python.exe to PATH）、[Pip](https://pip.pypa.io/en/stable/installation/)；
     - **注意！目前暂未支持 python 3.12**，推荐使用 python 3.10，即上面链接指向的版本
