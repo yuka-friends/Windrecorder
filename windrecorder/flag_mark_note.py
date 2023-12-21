@@ -16,17 +16,19 @@ from windrecorder.utils import get_text as _t
 CSV_TEMPLATE_DF = pd.DataFrame(columns=["thumbnail", "datetime", "note"])
 
 
-def check_and_create_csv_if_not_exist():
+def ensure_flag_mark_note_csv_exist():
     if not os.path.exists(config.flag_mark_note_filepath):
         file_utils.ensure_dir(config.userdata_dir)
         file_utils.save_dataframe_to_path(CSV_TEMPLATE_DF, file_path=config.flag_mark_note_filepath)
 
 
-def add_new_flag_record_from_tray(datetime_created=datetime.datetime.now()):
+def add_new_flag_record_from_tray(datetime_created=None):
     """
     从托盘添加旗标时，将当前时间、屏幕缩略图记录进去
     """
-    check_and_create_csv_if_not_exist()
+    if datetime_created is None:
+        datetime_created=datetime.datetime.now()
+    ensure_flag_mark_note_csv_exist()
     df = file_utils.read_dataframe_from_path(config.flag_mark_note_filepath)
     current_screenshot = pyautogui.screenshot()
     img_b64 = utils.resize_image_as_base64(current_screenshot)
@@ -45,7 +47,7 @@ def add_note_to_csv_by_datetime(note, datetime_created):
     """
     根据输入的datetime，更新其记录的备注信息
     """
-    check_and_create_csv_if_not_exist()
+    ensure_flag_mark_note_csv_exist()
     if not note:
         note = "_"
     df = file_utils.read_dataframe_from_path(config.flag_mark_note_filepath)
@@ -60,7 +62,7 @@ def add_visual_mark_on_oneday_timeline_thumbnail(df, image_filepath):
     # 旗标表中是否有今天的数据，有的话绘制
     # 查询当天最早记录时间与最晚记录时间，获取图像宽度中百分比位置
     # 绘制上去，然后存为 -flag 文件返回
-    img_saved_name = os.path.basename(image_filepath).split(".")[0] + "-flag-" + ".png"  # 新的临时存储文件名
+    img_saved_name = f"{os.path.basename(image_filepath).split('.')[0]}-flag-.png"  # 新的临时存储文件名
     img_saved_folder = config.timeline_result_dir
     img_saved_filepath = os.path.join(img_saved_folder, img_saved_name)
 
