@@ -35,8 +35,12 @@ webui_local_url = ""
 webui_network_url = ""
 
 
-def get_tray_icon():
-    image = Image.open("__assets__\\icon-tray.png")
+def get_tray_icon(state="recording"):
+    image_state = {
+        "recording": "icon-tray.png",
+        "record_pause": "icon-tray-pause.png"
+    }
+    image = Image.open(os.path.join("__assets__", image_state[state]))
     image = image.convert("RGBA")
     return image
 
@@ -121,6 +125,10 @@ def start_stop_recording(icon: pystray.Icon | None = None, item: pystray.MenuIte
                 icon.notify("Failed to exit the recording service gracefully. Killing it.")
             recording_process.kill()
         recording_process = None  # 清空录制进程变量
+        if icon is not None:
+            icon.icon = get_tray_icon(state="record_pause")
+            icon.title = "Windrecorder - Recording Paused"
+            icon.notify(message="Recording Paused.", title="Recording Paused.")
     else:
         # 如果录制进程不存在，则启动录制进程
         with open(RECORDING_STDOUT_PATH, "w", encoding="utf-8") as out, open(
@@ -134,6 +142,9 @@ def start_stop_recording(icon: pystray.Icon | None = None, item: pystray.MenuIte
                 cwd=PROJECT_ROOT,
                 creationflags=subprocess.CREATE_NEW_PROCESS_GROUP,
             )
+        if icon is not None:
+            icon.icon = get_tray_icon(state="recording")
+            icon.title = "Windrecorder"
 
 
 # 生成系统托盘菜单
@@ -206,13 +217,17 @@ def on_exit(icon: pystray.Icon, item: pystray.MenuItem):
 
 
 def main():
+    tray_icon_init = get_tray_icon(state="record_pause")
+    tray_title_init = "Windrecorder - Recording Paused"
     if config.start_recording_on_startup:
         start_stop_recording()
+        tray_icon_init = get_tray_icon(state="recording")
+        tray_title_init = "Windrecorder"
 
     pystray.Icon(
         "Windrecorder",
-        get_tray_icon(),
-        title="Windrecorder",
+        tray_icon_init,
+        title=tray_title_init,
         menu=pystray.Menu(menu_callback),
     ).run(setup=setup)
 
