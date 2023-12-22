@@ -36,10 +36,7 @@ webui_network_url = ""
 
 
 def get_tray_icon(state="recording"):
-    image_state = {
-        "recording": "icon-tray.png",
-        "record_pause": "icon-tray-pause.png"
-    }
+    image_state = {"recording": "icon-tray.png", "record_pause": "icon-tray-pause.png"}
     image = Image.open(os.path.join("__assets__", image_state[state]))
     image = image.convert("RGBA")
     return image
@@ -174,7 +171,7 @@ def menu_callback():
         pystray.MenuItem(
             lambda item: _t("tray_webui_address_network").format(address_port=webui_network_url),
             None,
-            visible=lambda item: bool(webui_network_url),
+            visible=lambda item: bool(webui_network_url) and streamlit_process,
             enabled=False,
         ),
         # 开始或停止录制选项
