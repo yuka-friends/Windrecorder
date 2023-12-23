@@ -2,6 +2,6 @@
 
 Current Version: **{version}** - {update_info}
 
-Encountered any issues? Have suggestions or feedback? Feel free to raise an Issue, PR or Discussions for improvement on [Github](https://github.com/yuka-friends/Windrecorder).
+Encountered any issues? Have suggestions or feedback? Feel free to raise an Issue / PR / Discussions for improvement on [Github](https://github.com/yuka-friends/Windrecorder).
 
-Love this tool? Also check out **YUKA NAGASE**, who creates gentle and healing music, on [Youtube](https://www.youtube.com/channel/UCf-PcSHzYAtfcoiBr5C9DZA) and [streaming music platforms](https://stlink.to/YUKA-NAGASE_DSP_YT). Thank ya! 🥰🧡
+Like this tool? Show your support for **YUKA NAGASE**, who creates gentle and healing music, on [Youtube](https://www.youtube.com/channel/UCf-PcSHzYAtfcoiBr5C9DZA) and [streaming music platforms](https://stlink.to/YUKA-NAGASE_DSP_YT). Thank ya! 🥰🧡

@@ -16,17 +16,19 @@ from windrecorder.utils import get_text as _t
 CSV_TEMPLATE_DF = pd.DataFrame(columns=["thumbnail", "datetime", "note"])
 
 
-def check_and_create_csv_if_not_exist():
+def ensure_flag_mark_note_csv_exist():
     if not os.path.exists(config.flag_mark_note_filepath):
         file_utils.ensure_dir(config.userdata_dir)
         file_utils.save_dataframe_to_path(CSV_TEMPLATE_DF, file_path=config.flag_mark_note_filepath)
 
 
-def add_new_flag_record_from_tray(datetime_created=datetime.datetime.now()):
+def add_new_flag_record_from_tray(datetime_created=None):
     """
     从托盘添加旗标时，将当前时间、屏幕缩略图记录进去
     """
-    check_and_create_csv_if_not_exist()
+    if datetime_created is None:
+        datetime_created = datetime.datetime.now()
+    ensure_flag_mark_note_csv_exist()
     df = file_utils.read_dataframe_from_path(config.flag_mark_note_filepath)
     current_screenshot = pyautogui.screenshot()
     img_b64 = utils.resize_image_as_base64(current_screenshot)
@@ -45,7 +47,7 @@ def add_note_to_csv_by_datetime(note, datetime_created):
     """
     根据输入的datetime，更新其记录的备注信息
     """
-    check_and_create_csv_if_not_exist()
+    ensure_flag_mark_note_csv_exist()
     if not note:
         note = "_"
     df = file_utils.read_dataframe_from_path(config.flag_mark_note_filepath)
@@ -60,7 +62,7 @@ def add_visual_mark_on_oneday_timeline_thumbnail(df, image_filepath):
     # 旗标表中是否有今天的数据，有的话绘制
     # 查询当天最早记录时间与最晚记录时间，获取图像宽度中百分比位置
     # 绘制上去，然后存为 -flag 文件返回
-    img_saved_name = os.path.basename(image_filepath).split(".")[0] + "-flag-" + ".png"  # 新的临时存储文件名
+    img_saved_name = f"{os.path.basename(image_filepath).split('.')[0]}-flag-.png"  # 新的临时存储文件名
     img_saved_folder = config.timeline_result_dir
     img_saved_filepath = os.path.join(img_saved_folder, img_saved_name)
 
@@ -70,10 +72,10 @@ def add_visual_mark_on_oneday_timeline_thumbnail(df, image_filepath):
     # 从 df 中提取源文件名包含的当天时间（日期一致）
     datetime_str_list = df["datetime"].tolist()
     datetime_str_list_filtered = [item for item in datetime_str_list if item.startswith(img_datetime_str)]
-    datetime_obj = [datetime.datetime.strptime(date_str, "%Y-%m-%d %H:%M:%S") for date_str in datetime_str_list_filtered]
+    datetime_obj_list = [datetime.datetime.strptime(date_str, "%Y-%m-%d %H:%M:%S") for date_str in datetime_str_list_filtered]
 
     # 如果有当天时间的记录
-    if len(datetime_obj) > 0:
+    if datetime_obj_list:
         # tl = timeline, pos = position
         img_tl = Image.open(image_filepath)
         img_tl_width, img_tl_height = img_tl.size
@@ -96,10 +98,10 @@ def add_visual_mark_on_oneday_timeline_thumbnail(df, image_filepath):
         mark_img.paste(mark_img_rectangle, (0, 0), mark_img_rectangle)
 
         # 逐个往时间轴中添加旗标图像
-        for item in datetime_obj:
+        for item in datetime_obj_list:
             record_second = utils.datetime_to_seconds(item)
             # 当旗标时间范围在已记录的时间范围中时
-            if record_second > day_min_datetime and record_second < day_max_datetime:
+            if day_min_datetime < record_second < day_max_datetime:
                 position_ratio = (record_second - day_min_datetime) / (day_max_datetime - day_min_datetime)
                 draw_start_pos_x = int(img_tl_width * position_ratio)
                 img_tl.paste(mark_img, (draw_start_pos_x, 0), mark_img)
@@ -125,14 +127,16 @@ class Flag_mark_window(customtkinter.CTk):
         window_width = 400
         window_height = 190
         # win11 之前返回的分辨率为 hidpi 分辨率，需要处理为物理分辨率
-        if utils.is_win11():
-            target_x = int((screen_width * 4 / 5))
-            target_y = int((screen_height * 3 / 5))
-        else:
-            target_x = int((screen_width * 4 / 5) * SCALE_FACTOR)
-            target_y = int((screen_height * 3 / 5) * SCALE_FACTOR)
+        # if utils.is_win11():
+        #     target_x = int((screen_width * 4 / 5))
+        #     target_y = int((screen_height * 3 / 5))
+        # else:
+        #     target_x = int((screen_width * 4 / 5) * SCALE_FACTOR)
+        #     target_y = int((screen_height * 3 / 5) * SCALE_FACTOR)
+        target_x = int((screen_width * 4 / 5))
+        target_y = int((screen_height * 3 / 5))
 
-        # print(f"DEBUG: \n{dpi=}\n{SCALE_FACTOR=}\n{screen_width=}\n{screen_height=}\n{target_x=}\n{target_y=}")
+        print(f"DEBUG: \n{dpi=}\n{SCALE_FACTOR=}\n{screen_width=}\n{screen_height=}\n{target_x=}\n{target_y=}")
 
         # 窗口配置项
         self.geometry(f"{window_width}x{window_height}+{target_x}+{target_y}")

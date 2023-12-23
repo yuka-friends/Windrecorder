@@ -346,25 +346,6 @@ url = "https://pypi.tuna.tsinghua.edu.cn/simple"
 reference = "tsinghua"
 
 [[package]]
-name = "customtkinter"
-version = "5.2.1"
-description = "Create modern looking GUIs with Python"
-optional = false
-python-versions = ">=3.7"
-files = [
-    {file = "customtkinter-5.2.1-py3-none-any.whl", hash = "sha256:8a284d035ccd5537730bc83816bf6c456538ae81594749a946c86470cab6e87b"},
-    {file = "customtkinter-5.2.1.tar.gz", hash = "sha256:eddc1c416063e1ce1aa2793959b0814e95e22d3de3f2a940bd84828f7301f555"},
-]
-
-[package.dependencies]
-darkdetect = "*"
-
-[package.source]
-type = "legacy"
-url = "https://pypi.tuna.tsinghua.edu.cn/simple"
-reference = "tsinghua"
-
-[[package]]
 name = "cycler"
 version = "0.12.1"
 description = "Composable style cycles"
@@ -378,25 +359,6 @@ files = [
 [package.extras]
 docs = ["ipython", "matplotlib", "numpydoc", "sphinx"]
 tests = ["pytest", "pytest-cov", "pytest-xdist"]
-
-[package.source]
-type = "legacy"
-url = "https://pypi.tuna.tsinghua.edu.cn/simple"
-reference = "tsinghua"
-
-[[package]]
-name = "darkdetect"
-version = "0.8.0"
-description = "Detect OS Dark Mode from Python"
-optional = false
-python-versions = ">=3.6"
-files = [
-    {file = "darkdetect-0.8.0-py3-none-any.whl", hash = "sha256:a7509ccf517eaad92b31c214f593dbcf138ea8a43b2935406bbd565e15527a85"},
-    {file = "darkdetect-0.8.0.tar.gz", hash = "sha256:b5428e1170263eb5dea44c25dc3895edd75e6f52300986353cd63533fe7df8b1"},
-]
-
-[package.extras]
-macos-listener = ["pyobjc-framework-Cocoa"]
 
 [package.source]
 type = "legacy"
@@ -1417,39 +1379,6 @@ files = [
     {file = "protobuf-4.25.1-py3-none-any.whl", hash = "sha256:a19731d5e83ae4737bb2a089605e636077ac001d18781b3cf489b9546c7c80d6"},
     {file = "protobuf-4.25.1.tar.gz", hash = "sha256:57d65074b4f5baa4ab5da1605c02be90ac20c8b40fb137d6a8df9f416b0d0ce2"},
 ]
-
-[package.source]
-type = "legacy"
-url = "https://pypi.tuna.tsinghua.edu.cn/simple"
-reference = "tsinghua"
-
-[[package]]
-name = "psutil"
-version = "5.9.7"
-description = "Cross-platform lib for process and system monitoring in Python."
-optional = false
-python-versions = ">=2.7, !=3.0.*, !=3.1.*, !=3.2.*, !=3.3.*, !=3.4.*, !=3.5.*"
-files = [
-    {file = "psutil-5.9.7-cp27-cp27m-macosx_10_9_x86_64.whl", hash = "sha256:0bd41bf2d1463dfa535942b2a8f0e958acf6607ac0be52265ab31f7923bcd5e6"},
-    {file = "psutil-5.9.7-cp27-cp27m-manylinux2010_i686.whl", hash = "sha256:5794944462509e49d4d458f4dbfb92c47539e7d8d15c796f141f474010084056"},
-    {file = "psutil-5.9.7-cp27-cp27m-manylinux2010_x86_64.whl", hash = "sha256:fe361f743cb3389b8efda21980d93eb55c1f1e3898269bc9a2a1d0bb7b1f6508"},
-    {file = "psutil-5.9.7-cp27-cp27mu-manylinux2010_i686.whl", hash = "sha256:e469990e28f1ad738f65a42dcfc17adaed9d0f325d55047593cb9033a0ab63df"},
-    {file = "psutil-5.9.7-cp27-cp27mu-manylinux2010_x86_64.whl", hash = "sha256:3c4747a3e2ead1589e647e64aad601981f01b68f9398ddf94d01e3dc0d1e57c7"},
-    {file = "psutil-5.9.7-cp27-none-win32.whl", hash = "sha256:1d4bc4a0148fdd7fd8f38e0498639ae128e64538faa507df25a20f8f7fb2341c"},
-    {file = "psutil-5.9.7-cp27-none-win_amd64.whl", hash = "sha256:4c03362e280d06bbbfcd52f29acd79c733e0af33d707c54255d21029b8b32ba6"},
-    {file = "psutil-5.9.7-cp36-abi3-macosx_10_9_x86_64.whl", hash = "sha256:ea36cc62e69a13ec52b2f625c27527f6e4479bca2b340b7a452af55b34fcbe2e"},
-    {file = "psutil-5.9.7-cp36-abi3-manylinux_2_12_i686.manylinux2010_i686.manylinux_2_17_i686.manylinux2014_i686.whl", hash = "sha256:1132704b876e58d277168cd729d64750633d5ff0183acf5b3c986b8466cd0284"},
-    {file = "psutil-5.9.7-cp36-abi3-manylinux_2_12_x86_64.manylinux2010_x86_64.manylinux_2_17_x86_64.manylinux2014_x86_64.whl", hash = "sha256:fe8b7f07948f1304497ce4f4684881250cd859b16d06a1dc4d7941eeb6233bfe"},
-    {file = "psutil-5.9.7-cp36-cp36m-win32.whl", hash = "sha256:b27f8fdb190c8c03914f908a4555159327d7481dac2f01008d483137ef3311a9"},
-    {file = "psutil-5.9.7-cp36-cp36m-win_amd64.whl", hash = "sha256:44969859757f4d8f2a9bd5b76eba8c3099a2c8cf3992ff62144061e39ba8568e"},
-    {file = "psutil-5.9.7-cp37-abi3-win32.whl", hash = "sha256:c727ca5a9b2dd5193b8644b9f0c883d54f1248310023b5ad3e92036c5e2ada68"},
-    {file = "psutil-5.9.7-cp37-abi3-win_amd64.whl", hash = "sha256:f37f87e4d73b79e6c5e749440c3113b81d1ee7d26f21c19c47371ddea834f414"},
-    {file = "psutil-5.9.7-cp38-abi3-macosx_11_0_arm64.whl", hash = "sha256:032f4f2c909818c86cea4fe2cc407f1c0f0cde8e6c6d702b28b8ce0c0d143340"},
-    {file = "psutil-5.9.7.tar.gz", hash = "sha256:3f02134e82cfb5d089fddf20bb2e03fd5cd52395321d1c8458a9e58500ff417c"},
-]
-
-[package.extras]
-test = ["enum34", "ipaddress", "mock", "pywin32", "wmi"]
 
 [package.source]
 type = "legacy"
@@ -2792,4 +2721,4 @@ reference = "tsinghua"
 [metadata]
 lock-version = "2.0"
 python-versions = "~3.10"
-content-hash = "0689c742447d47b94d43c109aa8424ab5d3241c83ada9d103be92e0ce860e548"
+content-hash = "450a9372b227a112d70966461179712e4c7f854dfcd27192e11e4eebc51701cb"

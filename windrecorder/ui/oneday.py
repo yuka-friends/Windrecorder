@@ -381,7 +381,7 @@ def render():
                     """
                     为一日之时正在选择的时间创建时间戳
                     """
-                    flag_mark_note.check_and_create_csv_if_not_exist()
+                    flag_mark_note.ensure_flag_mark_note_csv_exist()
                     # 合并控件选择的时间为 datetime
                     datetime_created = utils.merge_date_day_datetime_together(
                         st.session_state.day_date_input,
