@@ -639,10 +639,22 @@ def get_windows_edition():
     return platform.win32_edition()
 
 
-def is_process_running(pid):
+def is_process_running(pid, compare_process_name="python.exe"):
     pid = int(pid)
     try:
         process = psutil.Process(pid)
-        return process.is_running()
+        # 确保 PID 与进程名一致
+        if process.is_running():
+            if process.name() == compare_process_name:
+                return True
+        return False
     except psutil.NoSuchProcess:
         return False
+
+
+def get_process_id(process_name):
+    """通过进程名称获取进程ID"""
+    for proc in psutil.process_iter(["pid", "name"]):
+        if proc.info["name"] == process_name:
+            return proc.info["pid"]
+    return None
