@@ -36,8 +36,9 @@ webui_local_url = ""
 webui_network_url = ""
 
 
-def get_tray_icon():
-    image = Image.open("__assets__\\icon-tray.png")
+def get_tray_icon(state="recording"):
+    image_state = {"recording": "icon-tray.png", "record_pause": "icon-tray-pause.png"}
+    image = Image.open(os.path.join("__assets__", image_state[state]))
     image = image.convert("RGBA")
     return image
 
@@ -63,7 +64,7 @@ def setup(icon: pystray.Icon):
     if config.start_recording_on_startup:
         icon.notify(message=_t("tray_notify_text"), title=_t("tray_notify_title"))
     else:
-        icon.notify(message=_t("tray_notify_text_start_without_record"), title=_t("tray_notify_title"))
+        icon.notify(message=_t("tray_notify_text_start_without_record"), title=_t("tray_notify_title_record_pause"))
 
 
 # 启动/停止 webui 服务
@@ -122,6 +123,10 @@ def start_stop_recording(icon: pystray.Icon | None = None, item: pystray.MenuIte
                 icon.notify("Failed to exit the recording service gracefully. Killing it.")
             recording_process.kill()
         recording_process = None  # 清空录制进程变量
+        if icon is not None:
+            icon.icon = get_tray_icon(state="record_pause")
+            icon.title = _t("tray_tip_record_pause")
+            icon.notify(message=_t("tray_notify_text_start_without_record"), title=_t("tray_notify_title_record_pause"))
     else:
         # 如果录制进程不存在，则启动录制进程
         with open(RECORDING_STDOUT_PATH, "w", encoding="utf-8") as out, open(
@@ -135,6 +140,10 @@ def start_stop_recording(icon: pystray.Icon | None = None, item: pystray.MenuIte
                 cwd=PROJECT_ROOT,
                 creationflags=subprocess.CREATE_NEW_PROCESS_GROUP,
             )
+        if icon is not None:
+            icon.icon = get_tray_icon(state="recording")
+            icon.title = _t("tray_tip_record")
+            icon.notify(message=_t("tray_notify_text"), title=_t("tray_notify_title"))
 
 
 # 记录当下的时间标记
@@ -177,7 +186,7 @@ def menu_callback():
         pystray.MenuItem(
             lambda item: _t("tray_webui_address_network").format(address_port=webui_network_url),
             None,
-            visible=lambda item: bool(webui_network_url),
+            visible=lambda item: bool(webui_network_url) and streamlit_process,
             enabled=False,
         ),
         # 开始或停止录制选项
@@ -221,13 +230,17 @@ def on_exit(icon: pystray.Icon, item: pystray.MenuItem):
 
 
 def main():
+    tray_icon_init = get_tray_icon(state="record_pause")
+    tray_title_init = _t("tray_tip_record_pause")
     if config.start_recording_on_startup:
         start_stop_recording()
+        tray_icon_init = get_tray_icon(state="recording")
+        tray_title_init = _t("tray_tip_record")
 
     pystray.Icon(
         "Windrecorder",
-        get_tray_icon(),
-        title="Windrecorder",
+        tray_icon_init,
+        title=tray_title_init,
         menu=pystray.Menu(menu_callback),
     ).run(setup=setup)
 

@@ -37,7 +37,7 @@
     - 在工具目录下新建 `userdata` 文件夹，将原先的 `videos`、`db`、`result_lightbox`、`result_timeline`、`result_wordcloud` 文件夹移动到 `userdata` 中；
     - 将原先的 `config\config_user.json` 文件移动到 `userdata` 文件夹中；
     - 打开 `windrecorder.exe` 即可使用 🎉
-- 方法 B：在目录下执行 `git pull`，然后打开 `install_update_setting.bat` 进行升级；
+- 方法 B：在目录下执行 `git pull`，然后打开 `install_update.bat` 进行升级；
 
 
 # 🦝 首次使用安装
@@ -49,7 +49,7 @@
 
 ## 手动安装
 
-- 下载 [ffmpeg](https://www.gyan.dev/ffmpeg/builds/ffmpeg-release-essentials.zip) ，将其中bin目录下的ffmpeg.exe解压至 `C:\Windows\System32` 下（或其他位于 PATH 的目录下）
+- 下载 [ffmpeg](https://www.gyan.dev/ffmpeg/builds/ffmpeg-release-essentials.zip) ，将其中 bin 目录下的ffmpeg.exe、ffprobe.exe 解压至 `C:\Windows\System32` 下（或其他位于 PATH 的目录下）
 
 - 安装 [Git](https://git-scm.com/downloads)、[Python](https://www.python.org/ftp/python/3.10.11/python-3.10.11-amd64.exe)（安装时勾选 Add python.exe to PATH）、[Pip](https://pip.pypa.io/en/stable/installation/)；
     - **注意！目前暂未支持 python 3.12**，推荐使用 python 3.10，即上面链接指向的版本
@@ -60,20 +60,16 @@
 
 - 打开目录下的 `install_update.bat` 进行工具安装与配置，顺利的话就可以开始使用了！
 
-    - 如因网络原因报错，可在脚本安装依赖前添加代理 `set https_proxy=http://127.0.0.1:xxxx`、或添加大陆[镜像源](https://mirrors.tuna.tsinghua.edu.cn/help/pypi/)；
-
 
 # 🦝 如何使用
 
 目前暂时需要通过打开目录下的批处理脚本来使用工具：
 
-- 通过打开目录下的`start_record.bat`开始记录屏幕；
+- 通过打开目录下的`start_app.bat`开始记录屏幕；
 
-> 注意：需要一直将终端窗口最小化放在后台运行来记录。同样地，当需要暂停录制时只需关闭终端窗口即可。
+> 注意：需要一直将终端窗口最小化放在后台运行来记录。
 
-- 通过打开目录下的`start_webui.bat`来回溯、查询记忆、进行设置；
-
-> 最佳实践：在webui中设置开机自启动`start_record.bat`，即可无感记录下一切。当电脑空闲无人使用时，`start_record.bat`会自动暂停录制并压缩、清理过期视频；Just set it and forget it！
+> 最佳实践：在 webui 中设置开机自启动，即可无感记录下一切。当画面没有变化、或屏幕睡眠时将自动暂停记录。当电脑空闲无人使用时，工具会自动维护数据库、压缩、清理过期视频；Just set it and forget it！
 
 ---
 ### Roadmap:
@@ -83,13 +79,13 @@
 - [x] 词云、时间轴、光箱、散点图的数据总结
 - [x] 录制完片段后自动识别，闲时自动维护、清理与压缩视频
 - [x] 多语言支持：已完成界面与 OCR 识别的 i18n 支持
-- [ ] 重构代码，使其更规范与易于开发、具有更好性能
-- [-] 打包工具、提供更便利的使用模式，使之用户友好
+- [ ] 【正在进行】打包工具、提供更便利的使用模式，使之用户友好
+- [ ] 【正在进行】添加多屏幕的记录支持
+- [ ] 【正在进行】重构代码，使其更规范与易于开发、具有更好性能
 - [ ] 添加画面模态的识别，以实现对画面内容描述的搜索
 - [ ] 添加数据库加密功能
 - [ ] 记录前台进程名与记录OCR词语对应位置，以在搜索时作为线索呈现
 - [ ] 添加词嵌入索引、本地/API LLM 查询
-- [-] 添加多屏幕的记录支持（取决于 pyautogui 未来特性加入）
 - [ ] 🤔
 
 
@@ -97,13 +93,13 @@
 
 Q: 打开 webui 时没有近期一段时间的数据。
 
-- A: 当 start_record.bat 正在索引数据时，webui 将不会创建最新的临时数据库文件。
-解决方法：在 start_record.bat 索引完毕后，刷新 webui 界面，或删除 db 目录下后缀为 _TEMP_READ.db 的数据库文件后刷新即可。此项策略未来将会修复重构。 [#26](https://github.com/yuka-friends/Windrecorder/issues/26)
+- A: 当工具正在索引数据时，webui 将不会创建最新的临时数据库文件。
+解决方法：尝试稍等一段时间，等待工具索引完毕后，刷新 webui 界面，或删除 db 目录下后缀为 _TEMP_READ.db 的数据库文件后刷新即可（若出现数据库文件损坏提示，不必担心，可能是工具仍然在索引中，请尝试过段时间刷新/删除）。此项策略未来将会修复重构。 [#26](https://github.com/yuka-friends/Windrecorder/issues/26)
 
 Q: 在打开webui时提示：`FileNotFoundError: [WinError 2] The system cannot find the file specified: './db\\user_2023-10_wind.db-journal'`
 
-- A: 通常在初次访问 webui 时、start_record.bat 仍正在索引数据时出现。
-解决方法：在 start_record.bat 后台索引完毕后，删除 db 文件夹下对应后缀为 _TEMP_READ.db 的数据库文件后刷新即可。
+- A: 通常在初次访问 webui 时、工具仍正在索引数据时出现。
+解决方法：在工具后台索引完毕后，删除 db 文件夹下对应后缀为 _TEMP_READ.db 的数据库文件后刷新即可。
 
 Q: 录制过程中鼠标闪烁
 
