@@ -553,7 +553,6 @@ def backup_dbfile(db_filepath, keep_items_num=15, make_new_backup_timegap=dateti
 
 
 def acquire_ocr_lock(file_name: str):
-    file_utils.ensure_dir(config.maintain_lock_path)
     file_name = file_name.replace(".mp4", ".md")
     return FileLock(os.path.join(config.maintain_lock_path, file_name), datetime.datetime.now().strftime("%Y-%m-%d_%H-%M-%S"))
 

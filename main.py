@@ -53,8 +53,9 @@ def update(icon: pystray.Icon, item: pystray.MenuItem):
 file_utils.ensure_dir("cache")
 file_utils.ensure_dir(config.log_dir)
 file_utils.ensure_dir(config.lock_file_dir)
+file_utils.ensure_dir(config.maintain_lock_path)
 
-file_utils.empty_directory(config.lock_file_dir)
+file_utils.empty_directory(config.maintain_lock_path)
 
 
 # 调用浏览器打开 web ui

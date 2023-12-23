@@ -402,6 +402,7 @@ def resize_image_as_base64(img: Image.Image, target_width=config.thumbnail_gener
 
 # 检查db是否是有合法的、正在维护中的锁（超过一定时间则解锁）
 def is_maintain_lock_valid(timeout=datetime.timedelta(minutes=16)):
+    # FIXME: maintain_lock_path is a directory now
     if os.path.exists(config.maintain_lock_path):
         with open(config.maintain_lock_path, "r", encoding="utf-8") as f:
             last_maintain_locktime = date_to_datetime(f.read())
