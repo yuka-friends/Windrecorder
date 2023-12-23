@@ -27,7 +27,7 @@ def add_new_flag_record_from_tray(datetime_created=None):
     从托盘添加旗标时，将当前时间、屏幕缩略图记录进去
     """
     if datetime_created is None:
-        datetime_created=datetime.datetime.now()
+        datetime_created = datetime.datetime.now()
     ensure_flag_mark_note_csv_exist()
     df = file_utils.read_dataframe_from_path(config.flag_mark_note_filepath)
     current_screenshot = pyautogui.screenshot()
@@ -72,10 +72,10 @@ def add_visual_mark_on_oneday_timeline_thumbnail(df, image_filepath):
     # 从 df 中提取源文件名包含的当天时间（日期一致）
     datetime_str_list = df["datetime"].tolist()
     datetime_str_list_filtered = [item for item in datetime_str_list if item.startswith(img_datetime_str)]
-    datetime_obj = [datetime.datetime.strptime(date_str, "%Y-%m-%d %H:%M:%S") for date_str in datetime_str_list_filtered]
+    datetime_obj_list = [datetime.datetime.strptime(date_str, "%Y-%m-%d %H:%M:%S") for date_str in datetime_str_list_filtered]
 
     # 如果有当天时间的记录
-    if len(datetime_obj) > 0:
+    if datetime_obj_list:
         # tl = timeline, pos = position
         img_tl = Image.open(image_filepath)
         img_tl_width, img_tl_height = img_tl.size
@@ -98,10 +98,10 @@ def add_visual_mark_on_oneday_timeline_thumbnail(df, image_filepath):
         mark_img.paste(mark_img_rectangle, (0, 0), mark_img_rectangle)
 
         # 逐个往时间轴中添加旗标图像
-        for item in datetime_obj:
+        for item in datetime_obj_list:
             record_second = utils.datetime_to_seconds(item)
             # 当旗标时间范围在已记录的时间范围中时
-            if record_second > day_min_datetime and record_second < day_max_datetime:
+            if day_min_datetime < record_second < day_max_datetime:
                 position_ratio = (record_second - day_min_datetime) / (day_max_datetime - day_min_datetime)
                 draw_start_pos_x = int(img_tl_width * position_ratio)
                 img_tl.paste(mark_img, (draw_start_pos_x, 0), mark_img)

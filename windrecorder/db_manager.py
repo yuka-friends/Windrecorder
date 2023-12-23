@@ -546,7 +546,8 @@ class _DBManager:
         closest_timestamp_result = []
         for timestamp in timestamp_list:
             closest_timestamp = df[np.abs(df["videofile_time"] - timestamp) <= 300]["videofile_time"].max()  # 差距阈值:second
-            if closest_timestamp != closest_timestamp:  # 如果无结果为 NaN
+
+            if math.isnan(closest_timestamp):  # 如果无结果为 NaN
                 closest_timestamp = 0
             closest_timestamp_result.append(closest_timestamp)
 
