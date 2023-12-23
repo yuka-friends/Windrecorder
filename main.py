@@ -250,9 +250,7 @@ def main():
 
 
 def interrupt_start():
-    win_ui.show_popup(
-        "Another Windrecorder is running in system tray.\n\n「捕风记录仪」已在系统托盘中运行。", "Windrecorder is already running", "infomation"
-    )
+    win_ui.show_popup(_t("tray_text_already_run"), "Windrecorder is already running.", "infomation")
     sys.exit()
 
 

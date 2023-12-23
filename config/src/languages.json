@@ -183,6 +183,7 @@
         "tray_notify_text_start_without_record": "Use the tray right-click menu to Start Recording and Rewind Memories",
         "tray_tip_record": "Windrecorder - Recording",
         "tray_tip_record_pause": "Windrecorder - Recording Pause",
+        "tray_text_already_run": "Another Windrecorder is running in system tray.",
 
         "flag_text_mark_added": "The mark at this time has been added.",
         "flag_input_note": "Note:",
@@ -373,6 +374,7 @@
         "tray_notify_text_start_without_record": "通过托盘右键菜单来「开始记录」与「搜索回忆」",
         "tray_tip_record": "捕风记录仪 - 正在记录",
         "tray_tip_record_pause": "捕风记录仪 - 暂停记录",
+        "tray_text_already_run": "「捕风记录仪」已在系统托盘中运行。",
 
         "flag_text_mark_added": "已添加此时的标记。",
         "flag_input_note": "备注：",
@@ -566,6 +568,7 @@
         "tray_notify_text_start_without_record": "トレイの右クリック メニューを使用して記録を開始し、メモリを巻き戻します",
         "tray_tip_record": "Windrecorder - Recording",
         "tray_tip_record_pause": "Windrecorder - Recording Pause",
+        "tray_text_already_run": "Windrecorder はシステムトレイですでに実行されています。",
 
         "flag_text_mark_added": "今回のマークが追加されました。",
         "flag_input_note": "メモ:",
