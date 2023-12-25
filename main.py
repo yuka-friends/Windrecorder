@@ -46,8 +46,10 @@ def get_tray_icon(state="recording"):
     return image
 
 
+# 更新操作
 def update(icon: pystray.Icon, item: pystray.MenuItem):
     webbrowser.open(os.path.join(PROJECT_ROOT, "install_update.bat"))
+    on_exit()
 
 
 file_utils.ensure_dir("cache")
@@ -215,7 +217,7 @@ def menu_callback():
 
 
 # 处理退出操作
-def on_exit(icon: pystray.Icon, item: pystray.MenuItem):
+def on_exit(icon: pystray.Icon | None = None, item: pystray.MenuItem | None = None):
     # 如果存在 Web UI 进程，则强制终止它
     if streamlit_process:
         streamlit_process.kill()
@@ -229,8 +231,11 @@ def on_exit(icon: pystray.Icon, item: pystray.MenuItem):
         except subprocess.TimeoutExpired:
             recording_process.kill()
 
-    # 停止系统托盘图标
-    icon.stop()
+    if icon is not None:
+        # 停止系统托盘图标
+        icon.stop()
+    else:
+        sys.exit()
 
 
 def main():
