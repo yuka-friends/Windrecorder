@@ -58,6 +58,9 @@ def add_note_to_csv_by_datetime(note, datetime_created):
 def add_visual_mark_on_oneday_timeline_thumbnail(df, image_filepath):
     """
     在一日之时的时间轴缩略图上添加旗标
+
+    :param df: 将记录时间戳与备注的 csv 以 DataFrame 形态传入
+    :param image_filepath: 原始的一日之时时间缩略图
     """
     # 旗标表中是否有今天的数据，有的话绘制
     # 查询当天最早记录时间与最晚记录时间，获取图像宽度中百分比位置
@@ -114,7 +117,7 @@ def add_visual_mark_on_oneday_timeline_thumbnail(df, image_filepath):
 
 
 class Flag_mark_window(customtkinter.CTk):
-    # 绘制托盘弹窗
+    """绘制托盘备注记录弹窗"""
 
     def __init__(self, datetime_input):
         super().__init__()
@@ -126,7 +129,7 @@ class Flag_mark_window(customtkinter.CTk):
         screen_height = self.winfo_screenheight()
         window_width = 400
         window_height = 190
-        # win11 之前返回的分辨率为 hidpi 分辨率，需要处理为物理分辨率
+        # win11 之前返回的分辨率为 hidpi 分辨率，需要处理为物理分辨率（在最新的 win10 似乎已通过补丁修复）
         # if utils.is_win11():
         #     target_x = int((screen_width * 4 / 5))
         #     target_y = int((screen_height * 3 / 5))
@@ -166,7 +169,7 @@ class Flag_mark_window(customtkinter.CTk):
         self.textbox.grid(row=2, column=0, columnspan=4, padx=5, pady=5, sticky="ew")
         self.textbox.insert("0.0", _t("flag_input_note"))
 
-        # 移除标记按钮
+        # 移除标记 按钮
         self.button_remove = customtkinter.CTkButton(
             self,
             text="❌ " + _t("flag_btn_remove_mark"),
@@ -179,7 +182,7 @@ class Flag_mark_window(customtkinter.CTk):
         )
         self.button_remove.grid(row=3, column=0, padx=5, pady=5, columnspan=1, sticky="ew")
 
-        # 添加标记按钮
+        # 添加标记 按钮
         self.button_add_note = customtkinter.CTkButton(
             self,
             text="✔ " + _t("flag_btn_add_note"),

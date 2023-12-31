@@ -37,8 +37,8 @@ webui_network_url = ""
 
 
 def get_tray_icon(state="recording"):
-    image_state = {"recording": "icon-tray.png", "record_pause": "icon-tray-pause.png"}
-    image = Image.open(os.path.join("__assets__", image_state[state]))
+    IMAGE_STATE = {"recording": "icon-tray.png", "record_pause": "icon-tray-pause.png"}
+    image = Image.open(os.path.join("__assets__", IMAGE_STATE[state]))
     image = image.convert("RGBA")
     return image
 
@@ -152,8 +152,8 @@ def create_timestamp_flag_mark_note(icon: pystray.Icon, item: pystray.MenuItem):
     flag_mark_note.add_new_flag_record_from_tray(datetime_created=datetime_created)
     app = flag_mark_note.Flag_mark_window(datetime_input=datetime_created)
     app.update()
-    app.textbox.focus_set()
-    app.mainloop()
+    app.textbox.focus_set()  # 将光标定位到输入框
+    app.mainloop()  # 启动备注记录弹窗
 
 
 # 生成系统托盘菜单
@@ -230,6 +230,7 @@ def on_exit(icon: pystray.Icon, item: pystray.MenuItem):
 
 
 def main():
+    # 初始化最开始的icon和提示横幅
     tray_icon_init = get_tray_icon(state="record_pause")
     tray_title_init = _t("tray_tip_record_pause")
     if config.start_recording_on_startup:
