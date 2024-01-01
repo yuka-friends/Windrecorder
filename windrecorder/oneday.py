@@ -91,7 +91,6 @@ class OneDay:
             df_C.loc[len(df_C)] = [step, len(filtered)]
 
         df_C["hour"] = df_C["hour"].round(1)
-        # df_C['hour'] = df_C['hour'].apply(int)
 
         return df_C
 
@@ -139,15 +138,15 @@ class OneDay:
     def get_result_df_video_time(self, df, index):
         video_name = df.loc[index, "videofile_name"]
         video_search_result_timestamp = df.loc[index, "videofile_time"]
-        check_on_disk_path = file_utils.check_video_exist_in_videos_dir(video_name)
-        if check_on_disk_path is None:
+        video_filename = file_utils.check_video_exist_in_videos_dir(video_name)
+        if video_filename is None:
             # 磁盘上没有文件
             return False, video_name, None
         else:
             # 磁盘上有视频文件
             video_name_timestamp = utils.calc_vid_name_to_timestamp(video_name)
             local_video_timestamp = video_search_result_timestamp - video_name_timestamp
-            return True, check_on_disk_path, local_video_timestamp
+            return True, video_filename, local_video_timestamp
 
     # 生成当天时间线预览图
     def generate_preview_timeline_img(

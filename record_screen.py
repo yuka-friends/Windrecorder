@@ -23,10 +23,17 @@ from windrecorder.config import config
 from windrecorder.exceptions import LockExistsException
 from windrecorder.lock import FileLock
 
+if config.img_embed_module_install:
+    try:
+        from windrecorder import img_embed_manager
+    except ModuleNotFoundError:
+        config.set_and_save_config("img_embed_module_install", False)
+        pass   #TODO log here
+
 # 全局状态变量
 monitor_idle_minutes = 0
 last_screenshot_array = None
-idle_maintain_time_gap = datetime.timedelta(hours=8)  # 与上次闲时维护至少相隔
+idle_maintain_time_gap = datetime.timedelta(minutes=40)  # 与上次闲时维护至少相隔
 idle_maintaining_in_process = False  # 维护中的锁
 
 last_idle_maintain_time = datetime.datetime.now()
@@ -56,12 +63,21 @@ def idle_maintain_process_main():
     idle_maintaining_in_process = True
     try:
         threading.Thread(target=ocr_manager.ocr_manager_main, daemon=True).start()
+        # 图像语义嵌入
+        if config.enable_img_embed_search and config.img_embed_module_install:
+            try:
+                img_emb_lock = FileLock(config.img_emb_lock_path, str(getpid()), timeout_s=30*60)
+                with img_emb_lock:
+                    img_embed_manager.all_videofile_do_img_embedding_routine()
+            except LockExistsException:
+                print('another img embedding indexing is running.')
+
         # 清理过时视频
         ocr_manager.remove_outdated_videofiles()
         # 压缩过期视频
         ocr_manager.compress_outdated_videofiles()
         # 生成随机词表
-        wordcloud.generate_all_word_lexicon_by_month()
+        # wordcloud.generate_all_word_lexicon_by_month()
     except Exception as e:
         print(f"Error on idle maintain: {e}")
     finally:

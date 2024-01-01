@@ -11,6 +11,7 @@
   "flag_mark_note_filename": "flag_mark_note.csv",
   "thumbnail_generation_size_width": 70,
   "thumbnail_generation_jpg_quality": 30,
+  "vdb_img_path": "./db_imgemb",
   "search_max_num": "50",
   "lang": "sc",
   "ocr_lang": "zh-Hans-CN",
@@ -50,10 +51,14 @@
   "maintain_lock_subdir": "LOCK_MAINTAIN",
   "record_lock_name": "LOCK_FILE_RECORD.MD",
   "tray_lock_name": "LOCK_FILE_TRAY.MD",
+  "img_emb_lock_name": "LOCK_FILE_IMG_EMB.MD",
   "last_idle_maintain_file_path": "cache\\LAST_IDLE_MAINTAIN.MD",
   "iframe_dir": "cache\\i_frames",
   "log_dir": "cache\\logs",
   "win_title_dir": "cache\\win_title",
   "show_oneday_left_side_stat": true,
-  "webui_access_password_md5": ""
+  "webui_access_password_md5": "",
+  "enable_img_embed_search": true,
+  "img_embed_search_recall_result_per_db": 20,
+  "img_embed_module_install": false
 }

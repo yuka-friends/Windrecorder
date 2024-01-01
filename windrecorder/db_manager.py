@@ -4,6 +4,7 @@ import os
 import shutil
 import sqlite3
 from itertools import product
+from subprocess import CalledProcessError
 
 import numpy as np
 import pandas as pd
@@ -457,6 +458,56 @@ class _DBManager:
 
         return df
 
+    # 根据视频文件名字返回对应行列 dataframe (rowid included)
+    def db_get_row_from_vid_filename(self, vid_filename):
+        vid_filepath = file_utils.convert_vid_filename_as_vid_filepath(vid_filename)
+        vid_datetime_start = utils.date_to_datetime(vid_filename[:19])
+        if os.path.exists(vid_filepath):   # 视频文件存在情况下，尝试拿其真实时长，若无用 config 录制值兜底
+            try:
+                vid_datetime_end = vid_datetime_start + datetime.timedelta(
+                    seconds=int(float(utils.get_vidfilepath_info(vid_filepath)["duration"]))
+                )
+            except CalledProcessError:
+                vid_datetime_end = vid_datetime_start + datetime.timedelta(seconds=config.record_seconds)
+        else:
+            vid_datetime_end = vid_datetime_start + datetime.timedelta(seconds=config.record_seconds)
+        # 根据datetime定位数据库（考虑需跨数据库情况）
+        db_name_list = self.db_get_dbfilename_by_datetime(vid_datetime_start, vid_datetime_end)
+
+        df_origin = pd.DataFrame()
+        for item in db_name_list:
+            db_filepath = os.path.join(self.db_path, item)
+            db_filepath = self.get_temp_dbfilepath(db_filepath)
+            conn = sqlite3.connect(db_filepath)
+
+            # 使用pandas的read_sql_query函数执行查询并将结果转换为DataFrame
+            query = f"SELECT rowid, * FROM video_text WHERE videofile_name LIKE '%{vid_filename[:19]}%'"
+            df = pd.read_sql_query(query, conn)
+
+            conn.close()
+            df_origin = pd.concat([df_origin, df])
+
+        return df_origin
+
+    def db_get_rowid_and_similar_tuple_list_rows(self, rowid_probs_list, db_filename):
+        """
+        根据 rowid - 相似度 元组构成的 list 提取数据库文件对应行与标注对应相似度，合在以 dataframe 形式返回
+        """
+        db_filepath = os.path.join(self.db_path, db_filename)
+        db_filepath = self.get_temp_dbfilepath(db_filepath)
+        conn = sqlite3.connect(db_filepath)
+        rowid_list = [tuple[0] for tuple in rowid_probs_list]
+        probs_list = [tuple[1] for tuple in rowid_probs_list]
+        rowid_str = ','.join(map(str, rowid_list))   # 将 rowid 列表转换为逗号分隔的字符串
+        
+        # 构建SQL查询语句
+        query = f"SELECT * FROM video_text WHERE rowid IN ({rowid_str})"        
+        result_df = pd.read_sql_query(query, conn)
+        conn.close()
+
+        result_df["probs"] = probs_list
+        return result_df
+
     # 列出所有数据
     def db_print_all_data(self):
         print("dbManager: List all data in all databases")
@@ -661,7 +712,7 @@ class _DBManager:
 
         maintaining = os.path.isfile(config.maintain_lock_path)
 
-        if not db_filename.endswith("_TEMP_READ.db"):
+        if not "_TEMP_READ" in db_filename:
             db_filename_temp = os.path.splitext(db_filename)[0] + "_TEMP_READ.db"  # 创建临时文件名
             filepath_temp_read = os.path.join(self.db_path, db_filename_temp)  # 创建读取的临时路径
             if os.path.exists(filepath_temp_read):  # 检测是否已存在临时数据库

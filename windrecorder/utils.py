@@ -48,6 +48,25 @@ def get_screen_resolution():
     return pyautogui.size()
 
 
+# 获取视频文件信息
+def get_vidfilepath_info(vid_filepath) -> dict:
+    """
+    获取视频文件信息
+
+    常用：
+    - duration（持续时长 秒）
+    - width height
+
+    当获取失败时，可能抛出错误：CalledProcessError: Command 'ffprobe' returned non-zero exit status 1.
+    """
+    result = subprocess.check_output(
+        f'ffprobe -v quiet -show_streams -select_streams v:0 -of json "{vid_filepath}"', shell=True
+    ).decode()
+
+    fields = json.loads(result)["streams"][0]
+    return fields
+
+
 # 将输入的文件（ %Y-%m-%d_%H-%M-%S str）时间转为时间戳秒数
 def date_to_seconds(date_str):
     # 这里我们先定义了时间格式,然后设置一个epoch基准时间为1970年1月1日。使用strptime()将输入的字符串解析为datetime对象,然后计算这个时间和epoch时间的时间差,转换为秒数返回。
@@ -200,7 +219,7 @@ def set_full_datetime_to_day_time(dt):
 
 # 将完整的datetime只保留年月的datetime
 def set_full_datetime_to_YYYY_MM(dt):
-    return dt.replace(day=1, hour=0, minute=0, second=0, microsecond=0)
+    return datetime.datetime(year=dt.year, month=dt.month, day=1, hour=0, minute=0, second=0, microsecond=0)
 
 
 # 将完整的datetime只保留年月日的datetime
@@ -267,10 +286,8 @@ def kill_recording():
 # 通过数据库内项目计算视频对应时间戳
 def calc_vid_inside_time(df, num):
     fulltime = df.iloc[num]["videofile_time"]
-    vidfilename = os.path.splitext(df.iloc[num]["videofile_name"])[0]
+    vidfilename = os.path.splitext(df.iloc[num]["videofile_name"])[0][:19]
     # 用记录时的总时间减去视频文件时间（开始记录的时间）即可得到相对的时间
-    vidfilename = vidfilename.replace("-INDEX", "")
-    vidfilename = vidfilename.replace("-ERROR", "")
     vid_timestamp = fulltime - date_to_seconds(vidfilename)
     print(f"utils: video file fulltime:{fulltime}\n" f" vidfilename:{vidfilename}\n" f" vid_timestamp:{vid_timestamp}\n")
     return vid_timestamp
@@ -561,8 +578,6 @@ def extract_date_from_db_filename(db_file_name, user_name=config.user_name):
         db_file_name = db_file_name[len(prefix) :]
 
     db_file_name = db_file_name[:7]
-    # if db_file_name.endswith(suffix):
-    # db_file_name = db_file_name[:-(len(suffix))]
 
     db_file_name_datetime = datetime.datetime.strptime(db_file_name, "%Y-%m")
     db_file_name_datetime = set_full_datetime_to_YYYY_MM(db_file_name_datetime)
@@ -668,3 +683,12 @@ def get_process_id(process_name):
         if proc.info["name"] == process_name:
             return proc.info["pid"]
     return None
+
+
+# 查找列表项中包含字符串的项
+def find_strings_list_with_substring(string_list, substring):
+    result = []
+    for string in string_list:
+        if substring in string:
+            result.append(string)
+    return result

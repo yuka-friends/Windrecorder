@@ -12,7 +12,7 @@ from windrecorder.utils import get_text as _t
 upgrade_migration_routine.main()
 
 # 全部向导的步骤数
-ALLSTEPS = 5
+ALLSTEPS = 6
 
 # 清理缓存
 if os.path.exists("cache"):
@@ -250,9 +250,20 @@ while True:
 divider()
 subprocess.run("pause", shell=True)
 
+# 扩展介绍
+while True:
+    print_header(step=5)
+    print(_t("qs_et_describe"))
+    print()
+    for key, value in file_utils.get_extension().items():
+        print(f"   - {key}")
+    break
+
+divider()
+subprocess.run("pause", shell=True)
 
 # 完成初始化设定
-print_header(step=5)
+print_header(step=6)
 print(_t("qs_end_describe"))
 print(_t("qs_end_slogan"))
 print(_t("qs_end_feedback"))

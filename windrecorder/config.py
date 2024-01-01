@@ -15,7 +15,7 @@ class Config:
     def __init__(
         self,
         db_path,
-        db_filename,
+        vdb_img_path,
         record_videos_dir,
         record_seconds,
         record_framerate,
@@ -50,6 +50,7 @@ class Config:
         maintain_lock_subdir,
         record_lock_name,
         tray_lock_name,
+        img_emb_lock_name,
         last_idle_maintain_file_path,
         iframe_dir,
         log_dir,
@@ -61,11 +62,13 @@ class Config:
         thumbnail_generation_jpg_quality,
         show_oneday_left_side_stat,
         webui_access_password_md5,
+        enable_img_embed_search,
+        img_embed_search_recall_result_per_db,
+        img_embed_module_install,
         **other_field,
     ) -> None:
         self.db_path = db_path
-        self.db_filename = db_filename
-        self.db_filepath = os.path.join(self.db_path, self.db_filename)
+        self.vdb_img_path = vdb_img_path
         self.record_videos_dir = record_videos_dir
         self.record_seconds = record_seconds
         self.record_framerate = record_framerate
@@ -97,6 +100,7 @@ class Config:
         self.maintain_lock_path = os.path.join(lock_file_dir, maintain_lock_subdir)
         self.record_lock_path = os.path.join(lock_file_dir, record_lock_name)
         self.tray_lock_path = os.path.join(lock_file_dir, tray_lock_name)
+        self.img_emb_lock_path = os.path.join(lock_file_dir, img_emb_lock_name)
         self.last_idle_maintain_file_path = last_idle_maintain_file_path
         self.iframe_dir = iframe_dir
         self.compress_encoder = compress_encoder
@@ -114,10 +118,15 @@ class Config:
         self.thumbnail_generation_jpg_quality = thumbnail_generation_jpg_quality
         self.show_oneday_left_side_stat = show_oneday_left_side_stat
         self.webui_access_password_md5 = webui_access_password_md5
+        self.enable_img_embed_search = enable_img_embed_search
+        self.img_embed_search_recall_result_per_db = img_embed_search_recall_result_per_db
+        self.img_embed_module_install = img_embed_module_install
 
     def set_and_save_config(self, attr: str, value):
         if not hasattr(self, attr):
-            raise AttributeError("{} not exist in config!".format(attr))
+            print("{} not exist in config!".format(attr))
+            return
+            # raise AttributeError("{} not exist in config!".format(attr))
         setattr(self, attr, value)
         self.save_config()
 
@@ -135,8 +144,6 @@ class Config:
             json.dump(config_json, f, indent=2, ensure_ascii=False)
 
     def filter_unwanted_field(self, config_json):
-        del config_json["db_filepath"]
-        del config_json["compress_preset"]
         return config_json
 
 
