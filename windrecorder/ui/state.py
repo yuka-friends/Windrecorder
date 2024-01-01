@@ -25,15 +25,24 @@ def render():
         if "stat_db_latest_datetime" not in st.session_state:
             st.session_state["stat_db_latest_datetime"] = utils.seconds_to_datetime(db_manager.db_latest_record_time())
 
-        if st.session_state.stat_db_latest_datetime.year > st.session_state.stat_db_earliest_datetime.year:
-            # 当记录时间超过一年
-            selector_month_min = 1
-            selector_month_max = 12
-        else:
-            selector_month_min = st.session_state.stat_db_earliest_datetime.month
-            selector_month_max = st.session_state.stat_db_latest_datetime.month
+        def get_year_db_earliest_month_and_latest_month(year: int) -> int:
+            """
+            根据传入的年份，返回当年最早与最晚有数据的月份 (int)
+            """
+            earliest_datetime = (
+                st.session_state.stat_db_earliest_datetime
+                if year == st.session_state.stat_db_earliest_datetime.year
+                else datetime.datetime(year, 1, 1)
+            )
+            latest_datetime = (
+                st.session_state.stat_db_latest_datetime
+                if year == st.session_state.stat_db_latest_datetime.year
+                else datetime.datetime(year, 12, 31)
+            )
+            return earliest_datetime.month, latest_datetime.month
 
         st.markdown(_t("stat_md_month_title"))
+        # 年月时间选择器
         col1a, col2a, col3a = st.columns([0.5, 0.5, 1])
         with col1a:
             st.session_state.Stat_query_Year = st.number_input(
@@ -46,9 +55,9 @@ def render():
         with col2a:
             st.session_state.Stat_query_Month = st.number_input(
                 label="Stat_query_Month",
-                min_value=selector_month_min,
-                max_value=selector_month_max,
-                value=st.session_state.stat_db_latest_datetime.month,
+                min_value=get_year_db_earliest_month_and_latest_month(st.session_state.Stat_query_Year)[0],
+                max_value=get_year_db_earliest_month_and_latest_month(st.session_state.Stat_query_Year)[1],
+                value=get_year_db_earliest_month_and_latest_month(st.session_state.Stat_query_Year)[1],
                 label_visibility="collapsed",
             )
         with col3a:
