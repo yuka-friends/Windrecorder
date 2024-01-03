@@ -23,6 +23,8 @@ def render():
         # 通用状态
         if "db_global_search_result" not in st.session_state:
             st.session_state["db_global_search_result"] = pd.DataFrame()
+        if "page_index" not in st.session_state:
+            st.session_state.page_index = 1
         if "max_page_count" not in st.session_state:
             st.session_state.max_page_count = 1
         if "all_result_counts" not in st.session_state:
@@ -84,9 +86,7 @@ def render():
             )
         with random_word_btn_col:
             # TODO 也为图像语义搜索提供支持、或在图像语义搜索下禁用该方式
-            if st.button(
-                "🎲", use_container_width=True, help=_t("gs_text_randomwalk"), disabled=wordcloud.check_if_word_lexicon_empty()
-            ):
+            if st.toggle("🎲", help=_t("gs_text_randomwalk"), disabled=wordcloud.check_if_word_lexicon_empty()):
                 try:
                     st.session_state.search_content = utils.get_random_word_from_lexicon()
                     st.session_state.use_random_search = True
@@ -153,6 +153,45 @@ def render():
             st.empty()
 
 
+# 搜索页的 UI 通用输入组件
+def ui_component_date_range_selector():
+    """
+    组件-日期选择器
+    """
+    try:
+        (
+            st.session_state.search_date_range_in,
+            st.session_state.search_date_range_out,
+        ) = st.date_input(
+            _t("text_search_daterange"),
+            (
+                datetime.datetime(1970, 1, 2)
+                + datetime.timedelta(seconds=st.session_state.search_earlist_record_time_int)
+                - datetime.timedelta(seconds=86400),
+                datetime.datetime(1970, 1, 2)
+                + datetime.timedelta(seconds=st.session_state.search_latest_record_time_int)
+                - datetime.timedelta(seconds=86400),
+            ),
+            format="YYYY-MM-DD",
+        )
+    except Exception:
+        # 处理没选择完整选择时间段
+        st.warning(_t("gs_text_pls_choose_full_date_range"))
+
+
+def ui_component_pagination():
+    """
+    组件-搜索结果翻页器
+    """
+    st.session_state.page_index = st.number_input(
+        _t("gs_input_result_page"),
+        min_value=1,
+        step=1,
+        max_value=st.session_state.max_page_count + 1,
+    )
+
+
+# UI 布局
 def ui_ocr_text_search():
     """
     使用文本进行全局 OCR 搜索
@@ -191,43 +230,18 @@ def ui_ocr_text_search():
         )
 
     # 文本搜索 UI
-    keyword_col, exclude_col, date_range_col, page_col = st.columns([2, 1, 2, 1.5])
-    with keyword_col:  # 输入搜索关键词
+    col_keyword, col_exclude, col_date_range, col_page = st.columns([2, 1, 2, 1.5])
+    with col_keyword:  # 输入搜索关键词
         input_value = st.text_input(_t("text_search_keyword"), help=_t("gs_input_search_help"))
         st.session_state.search_content = (
             st.session_state.search_content if st.session_state.use_random_search else input_value
         )
-    with exclude_col:  # 排除关键词
+    with col_exclude:  # 排除关键词
         st.session_state.search_content_exclude = st.text_input(_t("gs_input_exclude"), "", help=_t("gs_input_exclude_help"))
-    with date_range_col:  # 选择时间范围
-        try:
-            (
-                st.session_state.search_date_range_in,
-                st.session_state.search_date_range_out,
-            ) = st.date_input(
-                _t("text_search_daterange"),
-                (
-                    datetime.datetime(1970, 1, 2)
-                    + datetime.timedelta(seconds=st.session_state.search_earlist_record_time_int)
-                    - datetime.timedelta(seconds=86400),
-                    datetime.datetime(1970, 1, 2)
-                    + datetime.timedelta(seconds=st.session_state.search_latest_record_time_int)
-                    - datetime.timedelta(seconds=86400),
-                ),
-                format="YYYY-MM-DD",
-            )
-        except Exception:
-            # 处理没选择完整选择时间段
-            st.warning(_t("gs_text_pls_choose_full_date_range"))
-
-    with page_col:
-        # 结果翻页器
-        st.session_state.page_index = st.number_input(
-            _t("gs_input_result_page"),
-            min_value=1,
-            step=1,
-            max_value=st.session_state.max_page_count + 1,
-        )
+    with col_date_range:  # 选择时间范围
+        ui_component_date_range_selector()
+    with col_page:  # 搜索结果翻页
+        ui_component_pagination()
 
     do_global_keyword_search()
 
@@ -236,7 +250,20 @@ def ui_vector_img_search():
     """
     图像语义搜索：使用自然语言匹配检索图像
     """
-    st.empty()
+
+    # 获得全局图像语义搜索结果
+    def do_global_vector_img_search():
+        # 如果搜索所需入参状态改变了，进行搜索
+        pass
+
+    # 图像语义搜索 UI
+    col_text_query_content, col_date_range, col_page = st.columns([3, 2, 1.5])
+    with col_text_query_content:  # 用自然语言描述图像
+        st.text_input("用自然语言描述图像")
+    with col_date_range:  # 选择时间范围
+        ui_component_date_range_selector()
+    with col_page:  # 搜索结果翻页
+        ui_component_pagination()
 
 
 # 选择播放视频的行数 的滑杆组件
@@ -245,10 +272,6 @@ def result_selector(df, result_cnt):
         # 如果结果只有一个，直接显示结果而不显示滑杆
         return 0
     elif result_cnt > 1:
-        # shape是一个元组,索引0对应行数,索引1对应列数。
-        # df.shape[0]
-        # print("webui: total_raw:" + str(total_raw))
-
         slider_min_num_display = df.index.min()
         slider_max_num_display = df.index.max()
         select_num = slider_min_num_display
