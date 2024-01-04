@@ -452,7 +452,7 @@ def ocr_process_videos(video_path, iframe_path):
             print("processing VID:" + full_file_path)
 
             # 检查视频文件是否已被索引
-            if not file.endswith(".mp4") or file.endswith("-OCRED.mp4") or file.endswith("-ERROR.mp4"):
+            if not file.endswith(".mp4") or "-OCRED" in file or "-ERROR" in file:
                 continue
 
             # 判断文件是否正在被占用
@@ -506,7 +506,7 @@ def compress_outdated_videofiles():
 
     if len(video_filepath_list_outdate) > 0:
         for item in video_filepath_list_outdate:
-            if not item.endswith("-COMPRESS-OCRED.mp4") and item.endswith("-OCRED.mp4"):
+            if not "-COMPRESS" in item and "-OCRED" in item:
                 print(f"ocr_manager: compressing {item}")
                 record.compress_video_resolution(item, config.video_compress_rate)
                 send2trash(item)

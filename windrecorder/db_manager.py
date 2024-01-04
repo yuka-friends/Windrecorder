@@ -417,6 +417,11 @@ class _DBManager:
 
         return df
 
+    # 根据视频文件名字返回对应列
+    def db_get_row_from_vid_filename(self, vid_filename):
+        pass
+
+
     # 列出所有数据
     def db_print_all_data(self):
         print("dbManager: List all data in all databases")

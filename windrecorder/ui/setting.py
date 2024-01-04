@@ -3,6 +3,7 @@ import time
 from pathlib import Path
 
 import pyautogui
+import torch
 import streamlit as st
 from PIL import Image
 
@@ -27,6 +28,10 @@ def set_config_lang(lang_name):
 
 
 def render():
+    # 初始化全局状态
+    if "is_cuda_available" not in st.session_state:
+        st.session_state["is_cuda_available"] = torch.cuda.is_available()
+
     st.markdown(_t("set_md_title"))
 
     col1b, col2b, col3b = st.columns([1, 0.5, 1.5])
@@ -84,6 +89,11 @@ def render():
                 help=_t("set_input_exclude_word_help"),
             )
 
+            option_enable_img_embed_search = st.checkbox("启用图像语义检索", help="WIP", value=config.enable_img_embed_search)
+        
+        if not st.session_state.is_cuda_available and option_enable_img_embed_search:
+            st.warning("你的设备似乎不支持 cuda，在使用 CPU 对图像语义索引时可能会遇到性能上的问题。")
+
         # 更新数据库按钮
         if update_db_btn:
             try:
@@ -110,6 +120,8 @@ def render():
                 st.button(_t("set_btn_got_it"), key="setting_reset")
 
         st.divider()
+
+        # OCR 时忽略屏幕四边的区域范围
         col1pb, col2pb = st.columns([1, 1])
         with col1pb:
             st.markdown(_t("set_md_ocr_ignore_area"), help=_t("set_md_ocr_ignore_area_help"))
@@ -226,6 +238,7 @@ def render():
             # config.set_and_save_config("ocr_engine", config_ocr_engine)
             config.set_and_save_config("ocr_lang", config_ocr_lang)
             config.set_and_save_config("exclude_words", utils.string_to_list(exclude_words))
+            config.set_and_save_config("enable_img_embed_search", option_enable_img_embed_search)
             config.set_and_save_config("show_oneday_wordcloud", option_show_oneday_wordcloud)
             config.set_and_save_config("use_similar_ch_char_to_search", config_use_similar_ch_char_to_search)
             config.set_and_save_config(

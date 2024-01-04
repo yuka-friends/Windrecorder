@@ -52,6 +52,7 @@ class Config:
         iframe_dir,
         log_dir,
         start_recording_on_startup,
+        enable_img_embed_search,
         **other_field,
     ) -> None:
         self.db_path = db_path
@@ -94,6 +95,7 @@ class Config:
         self.log_dir = log_dir
         self.start_recording_on_startup = start_recording_on_startup
         self.lock_file_dir = lock_file_dir
+        self.enable_img_embed_search = enable_img_embed_search
 
     def set_and_save_config(self, attr: str, value):
         if not hasattr(self, attr):

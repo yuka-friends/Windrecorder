@@ -11,6 +11,9 @@ import torch
 import uform
 from PIL import Image
 
+from windrecorder.config import config
+from windrecorder.db_manager import db_manager
+
 device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
 is_cuda_available = torch.cuda.is_available()
 
@@ -114,8 +117,20 @@ def embed_img_in_iframe_by_rowid_dict(model: uform.models.VLM, img_dict: dict, i
     for rowid, img_filename in img_dict.items():
         print(f"Embedding {rowid=}, {img_filename=}")
         vdb.add_vector(vector=embed_img(model, os.path.join(img_dir_filepath, img_filename)), rowid=rowid)
-        # time.sleep(0.01)
     vdb.save_to_file()
+
+
+def embed_vid_filepath(vid_file_name, video_saved_dir=config.record_videos_dir, iframe_path=config.iframe_dir):
+    """
+    流程：输入一个视频文件路径，获得其在对应 sqlite 中的 picturefile_name、ROWID
+    """
+    # 确认视频没含有-IMGEMB标签
+    if "-IMGEMB" in vid_file_name:
+        return
+    # 不用添加回滚机制因为是原子操作，完成了所有的索引才写入faiss index db file
+    vid_filepath = os.path.join(video_saved_dir, vid_file_name)
+
+
 
 
 # 测试用例
