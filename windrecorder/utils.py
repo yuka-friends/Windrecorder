@@ -45,6 +45,26 @@ def get_screen_resolution():
     return pyautogui.size()
 
 
+# 获取视频文件信息
+def get_vidfilepath_info(vid_filepath) -> dict:
+    """
+    获取视频文件信息
+
+    常用：
+    - duration（持续时长 秒）
+    - width height
+    """
+    if not os.path.exists(vid_filepath):
+        return None
+
+    result = subprocess.check_output(
+        f'ffprobe -v quiet -show_streams -select_streams v:0 -of json "{vid_filepath}"', shell=True
+    ).decode()
+
+    fields = json.loads(result)["streams"][0]
+    return fields
+
+
 # 将输入的文件（ %Y-%m-%d_%H-%M-%S str）时间转为时间戳秒数
 def date_to_seconds(date_str):
     # 这里我们先定义了时间格式,然后设置一个epoch基准时间为1970年1月1日。使用strptime()将输入的字符串解析为datetime对象,然后计算这个时间和epoch时间的时间差,转换为秒数返回。

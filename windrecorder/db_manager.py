@@ -417,6 +417,32 @@ class _DBManager:
 
         return df
 
+    # 根据视频文件名字返回对应行列区块
+    def db_get_row_from_vid_filename(self, vid_filename):
+        # TODO: 处理边缘情况抛错
+        vid_filepath = file_utils.convert_vid_filename_as_vid_filepath(vid_filename)
+        vid_datetime_start = utils.date_to_datetime(vid_filename[:19])
+        vid_datetime_end = vid_datetime_start + datetime.timedelta(
+            seconds=int(float(utils.get_vidfilepath_info(vid_filepath)["duration"]))
+        )
+        # 根据datetime定位数据库（考虑需跨数据库情况）
+        db_name_list = self.db_get_dbfilename_by_datetime(vid_datetime_start, vid_datetime_end)
+
+        df_origin = pd.DataFrame()
+        for item in db_name_list:
+            db_filepath = os.path.join(self.db_path, item)
+            db_filepath = self.get_temp_dbfilepath(db_filepath)
+            conn = sqlite3.connect(db_filepath)
+
+            # 使用pandas的read_sql_query函数执行查询并将结果转换为DataFrame
+            query = f"SELECT * FROM video_text WHERE videofile_name LIKE '%{vid_filename[:19]}%'"
+            df = pd.read_sql_query(query, conn)
+
+            conn.close()
+            df_origin = pd.concat([df_origin, df])
+
+        return df_origin
+
     # 列出所有数据
     def db_print_all_data(self):
         print("dbManager: List all data in all databases")

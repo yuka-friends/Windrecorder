@@ -47,5 +47,6 @@
   "record_lock_name": "LOCK_FILE_RECORD.MD",
   "last_idle_maintain_file_path": "cache\\LAST_IDLE_MAINTAIN.MD",
   "iframe_dir": "cache\\i_frames",
-  "log_dir": "cache\\logs"
+  "log_dir": "cache\\logs",
+  "enable_img_embed_search": true
 }
