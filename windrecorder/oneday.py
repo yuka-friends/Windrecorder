@@ -92,10 +92,7 @@ class OneDay:
     # 当输入时间戳时，查询最近的视频文件，同时检查是否为合法的对应范围（通过config 录制视频时间长度来比对）
     # 以寻找视频文件的方式
     def find_closest_video_by_filesys(self, target_datetime):
-        # 获取视频文件名列表
-        # video_files = os.listdir(config.record_videos_dir)
-
-        # 提取视频文件名中的时间信息
+        # 获取视频文件名列表，提取视频文件名中的时间信息
         file_times = []
         for root, dirs, files in os.walk(config.record_videos_dir):
             for file in files:
@@ -105,7 +102,7 @@ class OneDay:
                     if file_dt < target_datetime:
                         file_times.append((file, file_dt))
 
-        # 寻找时间距离target_datetime最近的先前时间的视频文件
+        # 寻找时间距离target_datetime最近的先前时间的视频文件，得到一个（文件名，datetime）的元组
         closest_file = max(file_times, key=lambda x: x[1])
 
         # 判断时间差是否在阈值内
@@ -113,7 +110,11 @@ class OneDay:
         if time_diff > config.record_seconds:
             return False, None
         else:
-            return True, closest_file[0]
+            if os.path.exists(file_utils.convert_vid_filename_as_vid_filepath(closest_file[0])):
+                return True, closest_file[0]
+            else:
+                return False, None
+            
 
     # 同上功能，但以搜索数据库的方式
     def find_closest_video_by_database(self, df, time):

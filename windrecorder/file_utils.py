@@ -53,6 +53,11 @@ def convert_vid_filename_as_YYYY_MM(vid_filename):
     return vid_filename[:7]
 
 
+# 输入一个视频文件名，返回其完整的相对路径
+def convert_vid_filename_as_vid_filepath(vid_filename):
+    return os.path.join(config.record_videos_dir, convert_vid_filename_as_YYYY_MM(vid_filename), vid_filename)
+
+
 # 查询videos文件夹下的文件数量、未被ocr的文件数量
 def get_videos_and_ocred_videos_count(folder_path):
     count = 0
@@ -82,10 +87,9 @@ def find_filename_in_dir(dir, search_str):
 
 # 检查视频文件是否存在
 def check_video_exist_in_videos_dir(video_name):
-    videofile_path_month_dir = convert_vid_filename_as_YYYY_MM(video_name)
-    video_path = os.path.join(config.record_videos_dir, videofile_path_month_dir, video_name)
+    video_path = convert_vid_filename_as_vid_filepath(video_name)
     ocred_video_name = os.path.splitext(video_name)[0] + "-OCRED" + os.path.splitext(video_name)[1]
-    ocred_path = os.path.join(config.record_videos_dir, videofile_path_month_dir, ocred_video_name)
+    ocred_path = convert_vid_filename_as_vid_filepath(ocred_video_name)
 
     if os.path.exists(video_path):
         return video_name
