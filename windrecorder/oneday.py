@@ -110,6 +110,7 @@ class OneDay:
         if time_diff > config.record_seconds:
             return False, None
         else:
+            # 处理当视频文件在videos中、但却不在正确路径位置下的情况
             if os.path.exists(file_utils.convert_vid_filename_as_vid_filepath(closest_file[0])):
                 return True, closest_file[0]
             else:
