@@ -25,17 +25,10 @@ def render():
         if "stat_db_latest_datetime" not in st.session_state:
             st.session_state["stat_db_latest_datetime"] = utils.seconds_to_datetime(db_manager.db_latest_record_time())
 
-        if st.session_state.stat_db_latest_datetime.year > st.session_state.stat_db_earliest_datetime.year:
-            # 当记录时间超过一年
-            selector_month_min = 1
-            selector_month_max = 12
-        else:
-            selector_month_min = st.session_state.stat_db_earliest_datetime.month
-            selector_month_max = st.session_state.stat_db_latest_datetime.month
-
         st.markdown(_t("stat_md_month_title"))
-        col1a, col2a, col3a = st.columns([0.5, 0.5, 1])
-        with col1a:
+        # 年月时间选择器
+        col_year_selector, col_month_selector, col_blank = st.columns([0.5, 0.5, 1])
+        with col_year_selector:
             st.session_state.Stat_query_Year = st.number_input(
                 label="Stat_query_Year",
                 min_value=st.session_state.stat_db_earliest_datetime.year,
@@ -43,15 +36,28 @@ def render():
                 value=st.session_state.stat_db_latest_datetime.year,
                 label_visibility="collapsed",
             )
-        with col2a:
+
+        # 根据传入的年份，计算当年最早与最晚有数据的月份
+        select_year_earliest_datetime = (
+            st.session_state.stat_db_earliest_datetime
+            if st.session_state.Stat_query_Year == st.session_state.stat_db_earliest_datetime.year
+            else datetime.datetime(st.session_state.Stat_query_Year, 1, 1)
+        )
+        select_year_latest_datetime = (
+            st.session_state.stat_db_latest_datetime
+            if st.session_state.Stat_query_Year == st.session_state.stat_db_latest_datetime.year
+            else datetime.datetime(st.session_state.Stat_query_Year, 12, 31)
+        )
+
+        with col_month_selector:
             st.session_state.Stat_query_Month = st.number_input(
                 label="Stat_query_Month",
-                min_value=selector_month_min,
-                max_value=selector_month_max,
-                value=st.session_state.stat_db_latest_datetime.month,
+                min_value=select_year_earliest_datetime.month,
+                max_value=select_year_latest_datetime.month,
+                value=select_year_latest_datetime.month,
                 label_visibility="collapsed",
             )
-        with col3a:
+        with col_blank:
             st.empty()
 
         st.session_state.stat_select_month_datetime = datetime.datetime(
