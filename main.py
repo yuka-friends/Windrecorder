@@ -1,3 +1,4 @@
+import datetime
 import os
 import re
 import signal
@@ -14,7 +15,7 @@ from PIL import Image
 PROJECT_ROOT = os.path.abspath(os.path.dirname(__file__))
 os.chdir(PROJECT_ROOT)
 
-from windrecorder import file_utils, utils  # NOQA: E402
+from windrecorder import file_utils, flag_mark_note, utils  # NOQA: E402
 from windrecorder.config import config  # NOQA: E402
 from windrecorder.utils import get_text as _t  # NOQA: E402
 
@@ -36,8 +37,8 @@ webui_network_url = ""
 
 
 def get_tray_icon(state="recording"):
-    image_state = {"recording": "icon-tray.png", "record_pause": "icon-tray-pause.png"}
-    image = Image.open(os.path.join("__assets__", image_state[state]))
+    IMAGE_STATE = {"recording": "icon-tray.png", "record_pause": "icon-tray-pause.png"}
+    image = Image.open(os.path.join("__assets__", IMAGE_STATE[state]))
     image = image.convert("RGBA")
     return image
 
@@ -145,6 +146,16 @@ def start_stop_recording(icon: pystray.Icon | None = None, item: pystray.MenuIte
             icon.notify(message=_t("tray_notify_text"), title=_t("tray_notify_title"))
 
 
+# 记录当下的时间标记
+def create_timestamp_flag_mark_note(icon: pystray.Icon, item: pystray.MenuItem):
+    datetime_created = datetime.datetime.now()
+    flag_mark_note.add_new_flag_record_from_tray(datetime_created=datetime_created)
+    app = flag_mark_note.Flag_mark_window(datetime_input=datetime_created)
+    app.update()
+    app.textbox.focus_set()  # 将光标定位到输入框
+    app.mainloop()  # 启动备注记录弹窗
+
+
 # 生成系统托盘菜单
 def menu_callback():
     try:
@@ -156,6 +167,10 @@ def menu_callback():
 
     # 返回生成的菜单项列表
     return (
+        # 记录当下的时间标记
+        pystray.MenuItem(lambda item: _t("tray_add_flag_mark_note_for_now"), create_timestamp_flag_mark_note),
+        # 分隔线
+        pystray.Menu.SEPARATOR,
         # 开始或停止 Web UI
         pystray.MenuItem(
             lambda item: _t("tray_webui_exit") if streamlit_process else _t("tray_webui_start"), start_stop_webui
@@ -215,6 +230,7 @@ def on_exit(icon: pystray.Icon, item: pystray.MenuItem):
 
 
 def main():
+    # 初始化最开始的icon和提示横幅
     tray_icon_init = get_tray_icon(state="record_pause")
     tray_title_init = _t("tray_tip_record_pause")
     if config.start_recording_on_startup:

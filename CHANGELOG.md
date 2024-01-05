@@ -19,6 +19,9 @@
 
 - 修复若干 bug，治理重构了大量代码。
 
+### Added
+- 添加系统托盘入口
+
 ### Fixed
 - https://github.com/yuka-friends/Windrecorder/issues/42 执行install_update_setting.bat报错Type error
 - https://github.com/yuka-friends/Windrecorder/issues/33 random walk功能失效

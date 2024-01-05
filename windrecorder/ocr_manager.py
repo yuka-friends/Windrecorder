@@ -1,4 +1,3 @@
-import base64
 import datetime
 import os
 import shutil
@@ -269,22 +268,10 @@ def compare_image_similarity_np(img1, img2):
 
 
 # 将图片缩小到等比例、宽度为70px的thumbnail，并返回base64
-def resize_imahe_as_base64(img_path):
-    img = cv2.imread(img_path)
+def resize_image_as_base64(img_path):
+    img = Image.open(img_path)
+    img_b64 = utils.resize_image_as_base64(img)
 
-    # 计算缩放比例,使宽度为70
-    ratio = 70 / img.shape[1]
-    dim = (70, int(img.shape[0] * ratio))
-
-    # 进行缩放
-    resized = cv2.resize(img, dim, interpolation=cv2.INTER_AREA)
-
-    # 编码为JPEG格式,质量为30
-    encode_param = [int(cv2.IMWRITE_JPEG_QUALITY), 10]
-    _, encimg = cv2.imencode(".jpg", resized, encode_param)
-
-    # 转为base64字符串
-    img_b64 = base64.b64encode(encimg).decode("utf-8")
     return img_b64
 
 
@@ -367,7 +354,7 @@ def ocr_core_logic(file_path, vid_file_name, iframe_path):
                 calc_to_sec_picname = round(int(os.path.splitext(img_file_name)[0]) / 2)
                 calc_to_sec_data = date_to_seconds(calc_to_sec_vidname) + calc_to_sec_picname
                 # 计算图片预览图
-                img_thumbnail = resize_imahe_as_base64(img)
+                img_thumbnail = resize_image_as_base64(img)
                 # 清理ocr数据
                 ocr_result_write = utils.clean_dirty_text(ocr_result_stringB)
                 # 为准备写入数据库dataframe添加记录

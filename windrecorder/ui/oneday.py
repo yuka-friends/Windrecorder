@@ -3,11 +3,11 @@ import os
 
 import pandas as pd
 import streamlit as st
+from pandas.testing import assert_frame_equal
 from PIL import Image
+from send2trash import send2trash
 
-import windrecorder.utils as utils
-import windrecorder.wordcloud as wordcloud
-from windrecorder import file_utils
+from windrecorder import file_utils, flag_mark_note, utils, wordcloud
 from windrecorder.config import config
 from windrecorder.db_manager import db_manager
 from windrecorder.oneday import OneDay
@@ -242,9 +242,20 @@ def render():
 
         # 展示时间轴缩略图
         if get_generate_result:
-            # TODO: 不知道这里是因为什么问题没用上，以后搞清楚原因再看看
-            image_thumbnail = Image.open(current_day_TL_img_path)  # noqa: F841
-            daily_timeline_html(utils.image_to_base64(current_day_TL_img_path))
+            # 添加时间标记
+            flag_mark_timeline_img_filepath = None
+            if os.path.exists(config.flag_mark_note_filepath):  # 读取标记数据
+                df_flag_mark_for_timeline = file_utils.read_dataframe_from_path(config.flag_mark_note_filepath)
+                if len(df_flag_mark_for_timeline) > 0:  # 绘制旗标图
+                    flag_mark_timeline_img_filepath = flag_mark_note.add_visual_mark_on_oneday_timeline_thumbnail(
+                        df=df_flag_mark_for_timeline, image_filepath=current_day_TL_img_path
+                    )
+
+            if flag_mark_timeline_img_filepath:
+                daily_timeline_html(utils.image_to_base64(flag_mark_timeline_img_filepath))
+            else:
+                daily_timeline_html(utils.image_to_base64(current_day_TL_img_path))
+
             # st.image(image_thumbnail,use_column_width="always")
         else:
             st.markdown(
@@ -282,70 +293,169 @@ def render():
                 )  # 优化下数据展示
                 components.video_dataframe(df_day_search_result_refine)
             else:
-                # # 时间轴拖动视图 - 切换前后视频片段
-                # # 初始化状态
-                # if 'btn_last_vid_disable' not in st.session_state:
-                #     st.session_state['btn_last_vid_disable'] = False
-                # if 'btn_next_vid_disable' not in st.session_state:
-                #     st.session_state['btn_next_vid_disable'] = False
-                # if 'all_video_filepath_dict' not in st.session_state:   # 获取所有视频的文件-dt词典
-                #     st.session_state['all_video_filepath_dict'] = file_utils.get_videofile_path_dict_datetime(file_utils.get_videofile_path_list_by_time_range(file_utils.get_file_path_list(config.record_videos_dir)))
-                # if 'timeline_select_dt' not in st.session_state:   # 当前选择的时间
-                #     st.session_state['timeline_select_dt'] = utils.merge_date_day_datetime_together(st.session_state.day_date_input,st.session_state.day_time_select_24h) #合并时间为datetime
+                # 时间标记清单
 
-                # # 找到最近的上一项/下一项时间
-                # def find_closest_dict_key(sorted_dict, target_datetime, return_mode = 'last'):
-                #     closest_datetime = None
+                def update_df_flag_mark_note():
+                    """
+                    更新 streamlit 状态中，时间标记清单表的状态
+                    """
+                    st.session_state.df_flag_mark_note_origin = file_utils.read_dataframe_from_path(
+                        config.flag_mark_note_filepath
+                    )  # 取得原表
+                    st.session_state.df_flag_mark_note = tweak_df_flag_mark_note_to_display(
+                        st.session_state.df_flag_mark_note_origin
+                    )  # 调整数据后，给编辑器的表
+                    st.session_state.df_flag_mark_note_last_change = st.session_state.df_flag_mark_note  # 同步 diff 更改对照
 
-                #     for key, value in sorted_dict.items():
-                #         if return_mode == 'last':
-                #             if value < target_datetime:
-                #                 closest_datetime = value
-                #         elif return_mode == 'next':
-                #             if value > target_datetime:
-                #                 closest_datetime = value
-                #         else:
-                #             break
+                def save_flag_mark_note_from_editor(df_origin, df_editor):
+                    """
+                    保存操作：删除用户选择条目，将 streamlit 编辑器的表还原为原表状态，将编辑完成的内容写回 csv
+                    """
+                    df_editor = df_editor.iloc[::-1]  # 还原编辑器展示的倒序
 
-                #     if closest_datetime is not None:
-                #         closest_datetime = closest_datetime + datetime.timedelta(seconds=1)
-                #     return closest_datetime
+                    # 删除用户在编辑器选中的数据
+                    if (df_editor["delete"] == 1).all():  # 如果全选，则直接删除记录文件
+                        send2trash(config.flag_mark_note_filepath)
+                        return
 
-                # # 切换到上个视频片段
-                # def switch_to_last_vid():
-                #     new_datetime_select = find_closest_dict_key(st.session_state.all_video_filepath_dict, st.session_state.timeline_select_dt, return_mode='last')
-                #     if new_datetime_select is None:
-                #         st.session_state.btn_last_vid_disable = True
-                #         st.session_state.btn_next_vid_disable = False
-                #     else:
-                #         st.session_state.day_time_slider_disable = True
-                #         st.session_state.day_date_input = utils.set_full_datetime_to_YYYY_MM_DD(new_datetime_select)
-                #         st.session_state.day_time_select_24h = utils.set_full_datetime_to_day_time(new_datetime_select)
-                #         st.session_state.timeline_select_dt = utils.merge_date_day_datetime_together(st.session_state.day_date_input,st.session_state.day_time_select_24h) # 更新时间
-                #     return
+                    condition = df_editor["delete"] != 1
+                    selected_rows = df_editor[condition]
+                    df_editor = selected_rows.reset_index(drop=True)
 
-                # # 切换到下个视频片段
-                # def switch_to_next_vid():
-                #     new_datetime_select = find_closest_dict_key(st.session_state.all_video_filepath_dict, st.session_state.timeline_select_dt, return_mode='next')
-                #     if new_datetime_select is None:
-                #         st.session_state.btn_last_vid_disable = False
-                #         st.session_state.btn_next_vid_disable = True
-                #     else:
-                #         st.session_state.day_time_slider_disable = True
-                #         st.session_state.day_date_input = utils.set_full_datetime_to_YYYY_MM_DD(new_datetime_select)
-                #         st.session_state.day_time_select_24h = utils.set_full_datetime_to_day_time(new_datetime_select)
-                #         st.session_state.timeline_select_dt = utils.merge_date_day_datetime_together(st.session_state.day_date_input,st.session_state.day_time_select_24h) # 更新时间
-                #     return
+                    # 将编辑器表中数据还原为原始的数据格式
+                    df_origin["thumbnail"] = df_editor["thumbnail"].str.replace("data:image/png;base64,", "")
+                    df_editor["datetime"] = df_editor.apply(
+                        lambda row: datetime.datetime.strftime(
+                            datetime.datetime.strptime(row["datetime"], "%Y/%m/%d   %H:%M:%S"), "%Y-%m-%d %H:%M:%S"
+                        ),
+                        axis=1,
+                    )
+                    df_origin["datetime"] = df_editor["datetime"]
+                    df_origin["note"] = df_editor["note"]
+                    df_origin = df_origin.dropna(how="all")  # 删除 dataframe 中包含缺失值的行
+                    file_utils.save_dataframe_to_path(df_origin, config.flag_mark_note_filepath)
 
-                # col1_switchvid, col2_switchvid = st.columns([1,1])
-                # with col1_switchvid:
-                #     st.button("← 上个视频片段", use_container_width=True, disabled=st.session_state.btn_last_vid_disable, on_click=switch_to_last_vid)
-                # with col2_switchvid:
-                #     st.button("下个视频片段 →", use_container_width=True, disabled=st.session_state.btn_next_vid_disable, on_click=switch_to_next_vid)
+                    # 更新 streamlit 表控件状态
+                    update_df_flag_mark_note()
 
-                # st.session_state.day_date_input
-                # st.session_state.day_time_select_24h
-                # st.session_state.timeline_select_dt
+                def is_df_equal(df1, df2):
+                    """
+                    比对两个 dataframe 是否一致
+                    """
+                    try:
+                        assert_frame_equal(df1, df2)
+                        return True
+                    except AssertionError:
+                        return False
+
+                def tweak_df_flag_mark_note_to_display(df_origin):
+                    """
+                    将原始的数据调整为适合编辑器展示的数据
+                    """
+                    df_tweak = df_origin.copy()
+
+                    # 为缩略图添加解析前缀
+                    def process_thumbnail(thumbnail_value):
+                        if thumbnail_value is not None:
+                            return "data:image/png;base64," + str(thumbnail_value)
+                        else:
+                            return thumbnail_value
+
+                    # 缩略图添加解析前缀
+                    df_tweak["thumbnail"] = df_tweak["thumbnail"].apply(process_thumbnail)
+                    # 将时间转化为容易阅读的格式
+                    df_tweak["datetime"] = df_tweak.apply(
+                        lambda row: datetime.datetime.strftime(
+                            datetime.datetime.strptime(row["datetime"], "%Y-%m-%d %H:%M:%S"),
+                            "%Y/%m/%d   %H:%M:%S",  # todo: 这里时间展示格式需要封为统一的可配置项，全局搜索的也是
+                        ),
+                        axis=1,
+                    )
+                    # 添加可执行选择删除操作的列
+                    df_tweak.insert(3, "delete", 0)
+                    # 将 dataframe 倒序排列，使用户新增的内容排在前面
+                    df_tweak = df_tweak.iloc[::-1]
+                    return df_tweak
+
+                def create_timestamp_flag_mark_note_from_oneday_timeselect():
+                    """
+                    为一日之时正在选择的时间创建时间戳
+                    """
+                    flag_mark_note.ensure_flag_mark_note_csv_exist()
+                    # 合并控件选择的时间为 datetime
+                    datetime_created = utils.merge_date_day_datetime_together(
+                        st.session_state.day_date_input,
+                        st.session_state.day_time_select_24h,
+                    )
+                    # 获取选择时间附近的缩略图
+                    thumbnail = db_manager.db_get_closest_thumbnail_around_by_datetime(datetime_created)
+                    # 添加数据
+                    new_data = {"thumbnail": thumbnail, "datetime": datetime_created, "note": "_"}
+                    df = file_utils.read_dataframe_from_path(config.flag_mark_note_filepath)
+                    df.loc[len(df)] = new_data
+                    file_utils.save_dataframe_to_path(df, config.flag_mark_note_filepath)
+                    # 更新 streamlit 表控件状态
+                    update_df_flag_mark_note()
+
+                if st.toggle(" 🚩" + _t("oneday_toggle_flag_mark")):  # 显示时间标记清单
+                    st.button(
+                        "🚩" + _t("oneday_btn_add_flag_mark_from_select_time"),
+                        use_container_width=True,
+                        on_click=create_timestamp_flag_mark_note_from_oneday_timeselect,
+                    )
+
+                    if not os.path.exists(config.flag_mark_note_filepath):
+                        # 未使用过此功能，展示 onboard 介绍
+                        st.success("💡" + _t("oneday_text_flag_mark_help"))
+                    elif len(file_utils.read_dataframe_from_path(config.flag_mark_note_filepath)) == 0:  # csv 表内无数据
+                        # 未使用过此功能，展示 onboard 介绍
+                        send2trash(config.flag_mark_note_filepath)
+                        st.success(_t("oneday_text_flag_mark_help"))
+                    else:  # 有数据情况下
+                        # 初始化状态
+                        if "df_flag_mark_note" not in st.session_state:  # 获取编辑器表数据
+                            if "df_flag_mark_note_origin" not in st.session_state:  # 取得原表
+                                st.session_state["df_flag_mark_note_origin"] = file_utils.read_dataframe_from_path(
+                                    config.flag_mark_note_filepath
+                                )
+                            st.session_state["df_flag_mark_note"] = tweak_df_flag_mark_note_to_display(
+                                st.session_state.df_flag_mark_note_origin
+                            )  # 给编辑器的表
+                        if "df_flag_mark_note_last_change" not in st.session_state:  # 建立更改对照
+                            st.session_state["df_flag_mark_note_last_change"] = st.session_state.df_flag_mark_note
+
+                        update_df_flag_mark_note()  # 打开 toggle 时刷新，确保表内容为最新
+
+                        # 表编辑器部分
+                        st.session_state.df_flag_mark_note = st.data_editor(
+                            st.session_state.df_flag_mark_note,
+                            column_config={
+                                "thumbnail": st.column_config.ImageColumn(
+                                    "thumbnail",
+                                ),
+                                "note": st.column_config.TextColumn("note", width="large"),
+                                "delete": st.column_config.CheckboxColumn(
+                                    "delete",
+                                    default=False,
+                                ),
+                            },
+                            disabled=["thumbnail", "datetime"],
+                            hide_index=True,
+                            use_container_width=True,
+                            height=600,
+                        )
+                        st.markdown(f"`{config.flag_mark_note_filepath}`")
+
+                        # 点击保存按钮后，当编辑与输入不一致时，更新文件
+                        if st.button("✔️" + _t("oneday_btn_flag_mark_save_df"), use_container_width=True) and not is_df_equal(
+                            st.session_state.df_flag_mark_note, st.session_state.df_flag_mark_note_last_change
+                        ):
+                            save_flag_mark_note_from_editor(
+                                st.session_state.df_flag_mark_note_origin, st.session_state.df_flag_mark_note
+                            )
+                            st.session_state.df_flag_mark_note_last_change = st.session_state.df_flag_mark_note  # 更新 diff
+                            st.experimental_rerun()
+
                 st.empty()
 
         with col2a:
