@@ -1,5 +1,14 @@
 # Changelog
 
+## 0.0.6
+> 2023-01-
+
+- 添加时间标记功能，可以为当下时间、回溯中的时间进行标记和备注，方便回忆查找；
+
+### Fixed
+- https://github.com/yuka-friends/Windrecorder/issues/87 bug: 当存在跨年的数据，“记忆摘要”tab 下的月份选择器范围约束会失效
+- https://github.com/yuka-friends/Windrecorder/issues/77 bug: 在托盘关闭 webui 服务后，菜单残留局域网提示项
+
 
 ## 0.0.5
 > 2023-12-22
@@ -17,9 +26,6 @@
 ## 0.0.4 
 > 2023-11-25
 
-- 修复若干 bug，治理重构了大量代码。
-
-### Added
 - 添加系统托盘入口
 
 ### Fixed
