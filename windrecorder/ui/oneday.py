@@ -3,7 +3,6 @@ import os
 
 import pandas as pd
 import streamlit as st
-from pandas.testing import assert_frame_equal
 from PIL import Image
 from send2trash import send2trash
 
@@ -256,7 +255,6 @@ def render():
             else:
                 daily_timeline_html(utils.image_to_base64(current_day_TL_img_path))
 
-            # st.image(image_thumbnail,use_column_width="always")
         else:
             st.markdown(
                 _t("oneday_md_no_enough_thunmbnail_for_timeline"),
@@ -264,7 +262,6 @@ def render():
             )
 
         # 可视化数据时间轴
-        # day_chart_data_overview = OneDay().get_day_statistic_chart_overview(df = day_df, start = day_min_timestamp_dt.hour, end = day_max_timestamp_dt.hour+1)
         day_chart_data_overview = OneDay().get_day_statistic_chart_overview(
             df=day_df, start_dt=day_min_timestamp_dt, end_dt=day_max_timestamp_dt
         )
@@ -295,21 +292,39 @@ def render():
             else:
                 # 时间标记清单
 
-                def update_df_flag_mark_note():
+                def _update_df_flag_mark_note():
                     """
                     更新 streamlit 状态中，时间标记清单表的状态
                     """
                     st.session_state.df_flag_mark_note_origin = file_utils.read_dataframe_from_path(
                         config.flag_mark_note_filepath
                     )  # 取得原表
-                    st.session_state.df_flag_mark_note = tweak_df_flag_mark_note_to_display(
+                    st.session_state.df_flag_mark_note = _tweak_df_flag_mark_note_to_display(
                         st.session_state.df_flag_mark_note_origin
                     )  # 调整数据后，给编辑器的表
                     st.session_state.df_flag_mark_note_last_change = st.session_state.df_flag_mark_note  # 同步 diff 更改对照
 
-                def save_flag_mark_note_from_editor(df_origin, df_editor):
+                def _save_flag_mark_note_from_editor(df_origin, df_editor):
                     """
-                    保存操作：删除用户选择条目，将 streamlit 编辑器的表还原为原表状态，将编辑完成的内容写回 csv
+                    保存操作：删除用户选择条目，然后将 streamlit 编辑器的表还原为原表状态，将编辑完成的内容写回 csv
+
+                    原表结构：
+                    ```csv
+                    thumbnail, datetime, note
+                    无解析头的base64, 较早的时间(%Y-%m-%d %H:%M:%S), 用户笔记
+                    ......
+                    无解析头的base64, 较晚的时间(%Y-%m-%d %H:%M:%S), 用户笔记
+                    ```
+
+                    ↑ ↓
+
+                    streamlit 编辑器的表结构：
+                    ```dataframe
+                    thumbnail, datetime, note, delete
+                    带图片解析头的base64, 较晚的时间("%Y/%m/%d   %H:%M:%S"), 用户笔记, False
+                    ......
+                    带图片解析头的base64, 较早的时间("%Y/%m/%d   %H:%M:%S"), 用户笔记, False
+                    ```
                     """
                     df_editor = df_editor.iloc[::-1]  # 还原编辑器展示的倒序
 
@@ -336,19 +351,9 @@ def render():
                     file_utils.save_dataframe_to_path(df_origin, config.flag_mark_note_filepath)
 
                     # 更新 streamlit 表控件状态
-                    update_df_flag_mark_note()
+                    _update_df_flag_mark_note()
 
-                def is_df_equal(df1, df2):
-                    """
-                    比对两个 dataframe 是否一致
-                    """
-                    try:
-                        assert_frame_equal(df1, df2)
-                        return True
-                    except AssertionError:
-                        return False
-
-                def tweak_df_flag_mark_note_to_display(df_origin):
+                def _tweak_df_flag_mark_note_to_display(df_origin):
                     """
                     将原始的数据调整为适合编辑器展示的数据
                     """
@@ -367,7 +372,7 @@ def render():
                     df_tweak["datetime"] = df_tweak.apply(
                         lambda row: datetime.datetime.strftime(
                             datetime.datetime.strptime(row["datetime"], "%Y-%m-%d %H:%M:%S"),
-                            "%Y/%m/%d   %H:%M:%S",  # todo: 这里时间展示格式需要封为统一的可配置项，全局搜索的也是
+                            "%Y/%m/%d   %H:%M:%S",  # TODO: 这里时间展示格式需要封为统一的可配置项，全局搜索的也是
                         ),
                         axis=1,
                     )
@@ -377,7 +382,7 @@ def render():
                     df_tweak = df_tweak.iloc[::-1]
                     return df_tweak
 
-                def create_timestamp_flag_mark_note_from_oneday_timeselect():
+                def _create_timestamp_flag_mark_note_from_oneday_timeselect():
                     """
                     为一日之时正在选择的时间创建时间戳
                     """
@@ -389,25 +394,27 @@ def render():
                     )
                     # 获取选择时间附近的缩略图
                     thumbnail = db_manager.db_get_closest_thumbnail_around_by_datetime(datetime_created)
-                    # 添加数据
+                    # 添加数据到原始 csv 中
                     new_data = {"thumbnail": thumbnail, "datetime": datetime_created, "note": "_"}
                     df = file_utils.read_dataframe_from_path(config.flag_mark_note_filepath)
                     df.loc[len(df)] = new_data
                     file_utils.save_dataframe_to_path(df, config.flag_mark_note_filepath)
                     # 更新 streamlit 表控件状态
-                    update_df_flag_mark_note()
+                    _update_df_flag_mark_note()
 
+                # UI 部分
                 if st.toggle(" 🚩" + _t("oneday_toggle_flag_mark")):  # 显示时间标记清单
                     st.button(
                         "🚩" + _t("oneday_btn_add_flag_mark_from_select_time"),
                         use_container_width=True,
-                        on_click=create_timestamp_flag_mark_note_from_oneday_timeselect,
-                    )
+                        on_click=_create_timestamp_flag_mark_note_from_oneday_timeselect,
+                    )   # 按钮：为一日之时正在选择的时间创建时间戳
 
+                    # 表格编辑器展示区
                     if not os.path.exists(config.flag_mark_note_filepath):
-                        # 未使用过此功能，展示 onboard 介绍
+                        # 没有数据文件，认为未使用过此功能，展示 onboard 介绍
                         st.success("💡" + _t("oneday_text_flag_mark_help"))
-                    elif len(file_utils.read_dataframe_from_path(config.flag_mark_note_filepath)) == 0:  # csv 表内无数据
+                    elif len(file_utils.read_dataframe_from_path(config.flag_mark_note_filepath)) == 0:  # 有 csv 但表内无数据
                         # 未使用过此功能，展示 onboard 介绍
                         send2trash(config.flag_mark_note_filepath)
                         st.success(_t("oneday_text_flag_mark_help"))
@@ -418,13 +425,13 @@ def render():
                                 st.session_state["df_flag_mark_note_origin"] = file_utils.read_dataframe_from_path(
                                     config.flag_mark_note_filepath
                                 )
-                            st.session_state["df_flag_mark_note"] = tweak_df_flag_mark_note_to_display(
+                            st.session_state["df_flag_mark_note"] = _tweak_df_flag_mark_note_to_display(
                                 st.session_state.df_flag_mark_note_origin
                             )  # 给编辑器的表
                         if "df_flag_mark_note_last_change" not in st.session_state:  # 建立更改对照
                             st.session_state["df_flag_mark_note_last_change"] = st.session_state.df_flag_mark_note
 
-                        update_df_flag_mark_note()  # 打开 toggle 时刷新，确保表内容为最新
+                        _update_df_flag_mark_note()  # 打开 toggle 时刷新，确保表内容为最新
 
                         # 表编辑器部分
                         st.session_state.df_flag_mark_note = st.data_editor(
@@ -447,10 +454,8 @@ def render():
                         st.markdown(f"`{config.flag_mark_note_filepath}`")
 
                         # 点击保存按钮后，当编辑与输入不一致时，更新文件
-                        if st.button("✔️" + _t("oneday_btn_flag_mark_save_df"), use_container_width=True) and not is_df_equal(
-                            st.session_state.df_flag_mark_note, st.session_state.df_flag_mark_note_last_change
-                        ):
-                            save_flag_mark_note_from_editor(
+                        if st.button("✔️" + _t("oneday_btn_flag_mark_save_df"), use_container_width=True) and not st.session_state.df_flag_mark_note.equals(st.session_state.df_flag_mark_note_last_change):
+                            _save_flag_mark_note_from_editor(
                                 st.session_state.df_flag_mark_note_origin, st.session_state.df_flag_mark_note
                             )
                             st.session_state.df_flag_mark_note_last_change = st.session_state.df_flag_mark_note  # 更新 diff

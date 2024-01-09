@@ -19,6 +19,7 @@ import pyautogui
 import requests
 from PIL import Image
 from pyshortcuts import make_shortcut
+from pandas.testing import assert_frame_equal
 
 from windrecorder import __version__, file_utils
 from windrecorder.config import config
