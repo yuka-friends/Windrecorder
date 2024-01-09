@@ -5,6 +5,7 @@ import subprocess
 import sys
 import time
 import webbrowser
+from os import getpid
 from subprocess import Popen
 
 import pystray
@@ -14,8 +15,10 @@ from PIL import Image
 PROJECT_ROOT = os.path.abspath(os.path.dirname(__file__))
 os.chdir(PROJECT_ROOT)
 
-from windrecorder import file_utils, utils  # NOQA: E402
+from windrecorder import file_utils, utils, win_ui  # NOQA: E402
 from windrecorder.config import config  # NOQA: E402
+from windrecorder.exceptions import LockExistsException  # NOQA: E402
+from windrecorder.lock import FileLock  # NOQA: E402
 from windrecorder.utils import get_text as _t  # NOQA: E402
 
 # 定义存储标准输出的日志文件路径
@@ -44,13 +47,15 @@ def get_tray_icon(state="recording"):
 
 def update(icon: pystray.Icon, item: pystray.MenuItem):
     webbrowser.open(os.path.join(PROJECT_ROOT, "install_update.bat"))
+    on_exit()
 
 
 file_utils.ensure_dir("cache")
 file_utils.ensure_dir(config.log_dir)
 file_utils.ensure_dir(config.lock_file_dir)
+file_utils.ensure_dir(config.maintain_lock_path)
 
-file_utils.empty_directory(config.lock_file_dir)
+file_utils.empty_directory(config.maintain_lock_path)
 
 
 # 调用浏览器打开 web ui
@@ -196,7 +201,7 @@ def menu_callback():
 
 
 # 处理退出操作
-def on_exit(icon: pystray.Icon, item: pystray.MenuItem):
+def on_exit(icon: pystray.Icon | None = None, item: pystray.MenuItem | None = None):
     # 如果存在 Web UI 进程，则强制终止它
     if streamlit_process:
         streamlit_process.kill()
@@ -211,7 +216,12 @@ def on_exit(icon: pystray.Icon, item: pystray.MenuItem):
             recording_process.kill()
 
     # 停止系统托盘图标
-    icon.stop()
+    if icon is None:
+        # 直接退出
+        sys.exit()
+    else:
+        # 通过菜单选项退出
+        icon.stop()
 
 
 def main():
@@ -230,5 +240,26 @@ def main():
     ).run(setup=setup)
 
 
+def interrupt_start():
+    win_ui.show_popup(_t("tray_text_already_run"), "Windrecorder is already running.", "infomation")
+    sys.exit()
+
+
 if __name__ == "__main__":
-    main()
+    try:
+        tray_lock = FileLock(config.tray_lock_path, str(getpid()), timeout_s=60 * 16)
+    except LockExistsException:
+        with open(config.tray_lock_path, encoding="utf-8") as f:
+            check_pid = int(f.read())
+
+        tray_is_running = utils.is_process_running(check_pid, compare_process_name="python.exe")
+        if tray_is_running:
+            interrupt_start()
+        else:
+            try:
+                os.remove(config.tray_lock_path)
+            except FileNotFoundError:
+                pass
+
+    with tray_lock:
+        main()

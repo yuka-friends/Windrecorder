@@ -4,15 +4,18 @@ import ctypes
 import datetime
 import json
 import os
+import platform
 import random
 import re
 import subprocess
+import sys
 import threading
 import time
 from datetime import timedelta
 from io import BytesIO
 
 import cv2
+import psutil
 import pyautogui
 import requests
 from PIL import Image
@@ -609,3 +612,25 @@ def change_startup_shortcut(is_create=True):
             print("record: Shortcut already exists")
             os.remove(shortcut_path)
             print("record: Delete shortcut")
+
+
+def is_process_running(pid, compare_process_name="python.exe"):
+    """根据进程 PID 与名字比对检测进程是否存在"""
+    pid = int(pid)
+    try:
+        process = psutil.Process(pid)
+        # 确保 PID 与进程名一致
+        if process.is_running():
+            if process.name() == compare_process_name:
+                return True
+        return False
+    except psutil.NoSuchProcess:
+        return False
+
+
+def get_process_id(process_name):
+    """通过进程名称获取进程 ID"""
+    for proc in psutil.process_iter(["pid", "name"]):
+        if proc.info["name"] == process_name:
+            return proc.info["pid"]
+    return None
