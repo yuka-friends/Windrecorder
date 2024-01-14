@@ -14,16 +14,16 @@
 ![Windrecorder](https://github.com/yuka-friends/Windrecorder/blob/main/__assets__/product-preview-cn.jpg)
 
 **Windrecorder 目前可以做到：**
-- 以较小的文件体积稳定持续地录制屏幕，在索引时只识别发生变化的画面，将画面与 OCR 内容更新到数据库；在闲时自动维护、清理与压缩视频文件；
-- 具有完善的 webui 界面，可以对画面回溯、OCR 文本查询；提供词云、时间轴、光箱、散点图的数据总结；支持多语言；
-- 未来将会添加：简化安装、多屏幕支持、画面语义搜索、数据库加密、词嵌入索引与 LLM 查询、更完善的查询体验界面等功能；
+- 以较小的文件体积稳定持续地录制屏幕，只索引有变化的画面，将画面与 OCR 内容更新到数据库；在闲时自动维护、清理与压缩视频文件；
+- 具有完善的 webui 界面，可以对画面回溯、OCR 文本查询；提供词云、时间轴、光箱、散点图的数据摘要；支持多语言；
+- 正在施工特性：简化安装过程、多屏幕支持、画面语义搜索、数据库加密、词嵌入索引与 LLM 查询、更完善的查询体验界面……
 
 ---
 
 > [!WARNING]
 > 该项目仍在较早期开发阶段，体验与使用上可能会遇上些小问题。如果遇到，欢迎提出 issue 反馈、关注更新，也欢迎在 [Discussions 讨论区](https://github.com/yuka-friends/Windrecorder/discussions)发起讨论。
 > 
->  🤯 **如果你擅长 Python / 客户端前端方向、且对项目感兴趣，欢迎通过提出 issue / PR 参与到构建中，在 [Dissuasions](https://github.com/yuka-friends/Windrecorder/discussions) 查看 Roadmap、参与开发讨论！**
+>  🤯 **如果你擅长 Python / 客户端前端方向、且对项目感兴趣，欢迎通过提出 issue / PR / PR review 参与到构建中，在 [Dissuasions](https://github.com/yuka-friends/Windrecorder/discussions) 查看 Roadmap 与讨论！**
 
 > [!IMPORTANT]  
 > 该项目正在添加功能与进行架构改动，可能导致早期版本用户无法正常升级更新等问题。
@@ -84,6 +84,13 @@
 > 
 > _Just set it and forget it！_
 
+
+# 🦝 如何运作
+![Windrecorder](https://github.com/yuka-friends/Windrecorder/blob/main/__assets__/how-it-work-sc.jpg)
+
+当启动记录后，捕风记录仪将逐段录制 15 分钟的视频，在录制完毕后对视频片段进行 OCR 索引（因此，数据的查询可能会有 15 分钟的延迟时间）。当屏幕没有变化、或电脑进入锁屏时，将会自动暂停录制，并进行闲时维护，进行包括压缩与清理视频、进行图像嵌入识别等工作，直到用户回来继续操作电脑。
+
+> 未来可能会改进录制方法，降低 ffmpeg 占用、让回溯不必等待。
 
 
 # 🦝 Q&A | 常见问题

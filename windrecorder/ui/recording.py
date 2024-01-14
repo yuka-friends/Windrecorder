@@ -12,7 +12,7 @@ from windrecorder.utils import get_text as _t
 def render():
     st.markdown(_t("rs_md_title"))
 
-    settings_col, spacing_col, pic_col = st.columns([1, 0.5, 1.5])
+    settings_col, spacing_col, pic_col = st.columns([1, 1, 1])
     with settings_col:
         st.info(_t("rs_text_need_to_restart_after_save_setting"))
 
