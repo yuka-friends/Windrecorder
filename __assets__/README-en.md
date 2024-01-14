@@ -12,8 +12,17 @@ This is a tool that can continuously record screen images and retrieve relevant 
 
 ![Windrecorder](https://github.com/yuka-friends/Windrecorder/blob/main/__assets__/product-preview-cn.jpg)
 
+**Windrecorder currently does:**
+- Record the screen stably and continuously with a smaller file size, only index changed pictures, and update the pictures and OCR content to the database; automatically maintain, clean and compress video files in your spare time;
+- It has a complete webui interface, which can perform screen retrieval and OCR text query; provides data summary of word cloud, timeline, light box, and scatter plot; supports multiple languages;
+- Features under construction: simplified installation process, multi-screen support, screen semantic search, database encryption, word embedding index and LLM query, more complete query experience interface...
+
+---
+
 > [!WARNING]
-> 🤯 This project is still in the early stages of development, and you may encounter some minor problems in experience and use. If you encounter it, you are welcome to submit issue feedback, follow updates, and initiate discussions in the Discussions forum.
+> This project is still in the early stages of development, and you may encounter some minor problems in experience and use. If you encounter it, you are welcome to submit issue feedback, follow updates, and initiate discussions in the [Discussions discussion area](https://github.com/yuka-friends/Windrecorder/discussions).
+>
+> 🤯 **If you are good at Python / client front-end direction and are interested in the project, you are welcome to participate in the construction by raising an issue / PR / PR review at [Dissuasions](https://github.com/yuka-friends /Windrecorder/discussions) Check out the Roadmap and discussions! **
 
 > [!IMPORTANT]
 > The project is adding functions and making architectural changes, which may cause problems such as users of earlier versions being unable to upgrade and update normally.
@@ -72,22 +81,13 @@ Currently, you need to open the batch script in the directory to use the tool:
 
 > Best practice: Set auto-start in webui to record everything without any fuss. Recording will be automatically paused when there is no change in the picture or the screen is in sleep mode. When the computer is idle and no one is using it, the tool will automatically maintain the database, compress, and clean up expired videos; Just set it and forget it!
 
----
-### Roadmap:
-- [x] Record screen stably and continuously with smaller file size
-- [x] Only identify changed pictures and store the index in the database
-- [x] Complete graphical interface (webui)
-- [x] Data summary of word cloud, timeline, light box, scatter plot
-- [x] Automatically identify clips after recording, and automatically maintain, clean and compress videos in your spare time
-- [x] Multi-language support: i18n support for interface and OCR recognition completed
-- [ ] Refactor the code to make it more standardized, easier to develop, and have better performance
-- [-] Package tools and provide a more convenient usage mode to make it user-friendly
-- [ ] Add recognition of screen modalities to enable search for screen content descriptions
-- [ ] Add database encryption function
-- [ ] Record the foreground process name and record the corresponding position of the OCR word to present it as a clue during search
-- [ ] Add word embedding index, local/API LLM query
-- [-] Add multi-screen recording support (depends on future features of pyautogui)
-- [ ] 🤔
+
+# 🦝 How it works
+![Windrecorder](https://github.com/yuka-friends/Windrecorder/blob/main/__assets__/how-it-work-en.jpg)
+
+When recording is started, the Wind Capture Recorder will record 15 minutes of video segment by segment, and OCR index the video segments after the recording is completed (therefore, there may be a 15-minute delay in querying the data). When the screen does not change or the computer enters the lock screen, recording will be automatically paused and idle maintenance will be performed, including compressing and cleaning videos, image embedding and recognition, etc., until the user comes back to continue operating the computer.
+
+> In the future, the recording method may be improved to reduce ffmpeg usage and eliminate the need to wait for traceback.
 
 
 # 🦝 Q&A | Frequently Asked Questions

@@ -159,7 +159,7 @@
         "qs_mo_describe": "Note: Due to the lack of official support for multiple monitors in pyautogui, Windrecorder will only record the screen set as the 'primary display' in Windows.\n",
         "qs_mo_detect": "The detected resolution of the primary display is: {monitor_width}x{monitor_height}",
         "qs_mo_cta": "This setting will be automatically detected each time you start recording, so you don't need to choose or set it separately.",
-        "qs_end_describe": "Congratulations! You have completed all the initial settings. Don't worry, you can open 'start_webui.bat' at any time to adjust the settings!\n\nNow, you can open 'start_app.bat' in the directory to start recording the screen content.\nUse 'start_webui.bat' in the directory to index your data and adjust more personalized options.\n",
+        "qs_end_describe": "Congratulations! You have completed all initial settings. Don’t worry, you can adjust the settings anytime within the app! \n\nNow, you can open [start_app.bat] in the directory to start using it. \n",
         "qs_end_slogan": "> Capture and preserve the fleeting moments of the wind, as seen through your eyes.",
         "qs_end_feedback": "> Encountered a problem or have suggestions? Feel free to submit issues and PRs at https://github.com/yuka-friends/Windrecorder.",
 
@@ -339,7 +339,7 @@
         "qs_mo_describe": "注意：由于 pyautogui 暂未官方支持多显示器，捕风记录仪将只记录 Windows 下设置的【主显示器】\n",
         "qs_mo_detect": "当前检测到的主显示器分辨率为：{monitor_width}x{monitor_height}",
         "qs_mo_cta": "此项设定将在每次录屏时自动识别，无需额外选择与设定。",
-        "qs_end_describe": "恭喜！你已完成所有初始设定。别担心，你可以随时打开 【start_webui.bat】 来调整设置！\n\n现在，你可以打开目录下的 【start_app.bat】 来开始记录屏幕内容啦。\n通过打开目录下的 【start_webui.bat】 来索引你的数据、调整更多个性化选项。\n",
+        "qs_end_describe": "恭喜！你已完成所有初始设定。别担心，你可以随时在应用内调整设置！\n\n现在，你可以打开目录下的 【start_app.bat】 来开始使用啦。\n",
         "qs_end_slogan": "> 一起捕捉贮藏风一般掠过的、你的目之所见。",
         "qs_end_feedback": "> 遇到问题、想反馈建议？欢迎在 https://github.com/yuka-friends/Windrecorder 提交 issue 与 PR。",
         
@@ -521,7 +521,7 @@
         "qs_mo_describe": "注意：pyautoguiは公式に複数のディスプレイをサポートしていないため、WindrecorderはWindowsで設定された【メインディスプレイ】のみを記録します。\n",
         "qs_mo_detect": "現在検出されたメインディスプレイの解像度は{monitor_width}x{monitor_height}",
         "qs_mo_cta": "この設定は画面録画時に自動的に識別され、追加の選択や設定は必要ありません。",
-        "qs_end_describe": "おめでとうございます！すべての初期設定が完了しました。心配しないでください、設定を調整するためにいつでも【start_webui.bat】を開くことができます！\n\nさあ、ディレクトリ内の【start_app.bat】を開いて画面の記録を開始しましょう。\nデータを索引化し、より多くのパーソナライズオプションを調整するには、ディレクトリ内の【start_webui.bat】を開いてください。\n",
+        "qs_end_describe": "おめでとう！ すべての初期設定が完了しました。 心配しないでください。設定はアプリ内でいつでも調整できます。 \n\nこれで、ディレクトリ内の [start_app.bat] を開いて使用を開始できます。 \n",
         "qs_end_slogan": "> 一緒に、あなたの目が見た、風のように過ぎ去るものをキャプチャしましょう。",
         "qs_end_feedback": "> 問題が発生した場合やフィードバックの提案がある場合は、https://github.com/yuka-friends/Windrecorder でissueやPRを提出してください。",
 
