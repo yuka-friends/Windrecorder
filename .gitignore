@@ -22,3 +22,6 @@ env
 random_lexicon
 logs
 userdata
+windrecorder.spec
+build
+dist

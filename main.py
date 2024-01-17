@@ -11,8 +11,13 @@ import pystray
 import requests
 from PIL import Image
 
-PROJECT_ROOT = os.path.abspath(os.path.dirname(__file__))
-os.chdir(PROJECT_ROOT)
+# 确定应用程序是脚本文件还是冻结的可执行文件
+if getattr(sys, 'frozen', False):
+    project_root = os.path.dirname(sys.executable)
+else:
+    project_root = os.path.abspath(os.path.dirname(__file__))
+# PROJECT_ROOT = os.path.abspath(os.path.dirname(__file__))
+os.chdir(project_root)
 
 from windrecorder import file_utils, utils  # NOQA: E402
 from windrecorder.config import config  # NOQA: E402
@@ -43,7 +48,7 @@ def get_tray_icon(state="recording"):
 
 
 def update(icon: pystray.Icon, item: pystray.MenuItem):
-    webbrowser.open(os.path.join(PROJECT_ROOT, "install_update.bat"))
+    webbrowser.open(os.path.join(project_root, "install_update.bat"))
 
 
 file_utils.ensure_dir("cache")
@@ -79,7 +84,7 @@ def start_stop_webui(icon: pystray.Icon, item: pystray.MenuItem):
                 stdout=out,
                 stderr=err,
                 encoding="utf-8",
-                cwd=PROJECT_ROOT,
+                cwd=project_root,
             )
         time_spent = 0  # 记录启动服务以来已等待的时间
         while time_spent < STREAMLIT_OPEN_TIMEOUT:
@@ -136,7 +141,7 @@ def start_stop_recording(icon: pystray.Icon | None = None, item: pystray.MenuIte
                 stdout=out,
                 stderr=err,
                 encoding="utf-8",
-                cwd=PROJECT_ROOT,
+                cwd=project_root,
                 creationflags=subprocess.CREATE_NEW_PROCESS_GROUP,
             )
         if icon is not None:
