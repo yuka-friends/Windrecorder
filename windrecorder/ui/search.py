@@ -36,9 +36,11 @@ def render():
             st.session_state.search_date_range_out = datetime.datetime.today()
         if "cache_videofile_ondisk_list" not in st.session_state:  # 减少io查询，预拿视频文件列表供比对是否存在
             st.session_state.cache_videofile_ondisk_list = file_utils.get_file_path_list(config.record_videos_dir)
+        if "timeCost_globalSearch" not in st.session_state:  # 统计搜索使用时长
+            st.session_state.timeCost_globalSearch = 0
 
         # 获得全局搜索结果
-        def do_global_keyword_search():
+        def _do_global_keyword_search():
             # 如果搜索所需入参状态改变了，进行搜索
             if (
                 st.session_state.search_content_lazy == st.session_state.search_content
@@ -47,6 +49,8 @@ def render():
                 and st.session_state.search_date_range_out_lazy == st.session_state.search_date_range_out
             ):
                 return
+
+            st.session_state.timeCost_globalSearch = time.time()   # 预埋搜索用时
 
             # 更新懒状态
             st.session_state.search_content_lazy = st.session_state.search_content
@@ -68,6 +72,9 @@ def render():
                 st.session_state.search_date_range_out,
                 keyword_input_exclude=st.session_state.search_content_exclude,
             )
+
+            st.session_state.timeCost_globalSearch = round(time.time() - st.session_state.timeCost_globalSearch, 5)   # 回收搜索用时
+
 
         title_col, random_word_btn_col = st.columns([10, 1])
         with title_col:
@@ -154,11 +161,10 @@ def render():
                 max_value=st.session_state.max_page_count + 1,
             )
 
-        do_global_keyword_search()
+        _do_global_keyword_search()
 
         # 进行搜索
         if not len(st.session_state.search_content) == 0:
-            timeCost_globalSearch = time.time()  # 预埋计算实际时长
 
             df = db_manager.db_search_data_page_turner(st.session_state.db_global_search_result, st.session_state.page_index)
 
@@ -169,7 +175,6 @@ def render():
                     all_result_counts=st.session_state.all_result_counts,
                     max_page_count=st.session_state.max_page_count,
                     search_content=st.session_state.search_content,
-                    timeCost=timeCost_globalSearch,
                 )
             )
 
@@ -189,8 +194,7 @@ def render():
                 )  # 优化数据显示
                 components.video_dataframe(df, heightIn=800)
 
-            timeCost_globalSearch = round(time.time() - timeCost_globalSearch, 5)
-            st.markdown(_t("gs_md_search_result_below").format(timecost=timeCost_globalSearch))
+            st.markdown(_t("gs_md_search_result_below").format(timecost=st.session_state.timeCost_globalSearch))
 
         else:
             st.info(_t("gs_text_intro"))  # 搜索内容为空时显示指引

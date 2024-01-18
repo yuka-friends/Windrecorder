@@ -579,6 +579,8 @@ class _DBManager:
         similar_chars = list(set(similar_chars))
         if len(similar_chars) == 0:
             similar_chars.append(input_str)
+            
+        similar_chars = list(filter(None, similar_chars))   # 过滤空字符串内容
         return similar_chars
 
     # 遍历得到每种可能性
