@@ -614,16 +614,13 @@ def change_startup_shortcut(is_create=True):
             print("record: Delete shortcut")
 
 
-def is_process_running(pid, compare_process_name="python.exe"):
+def is_process_running(pid, compare_process_name):
     """根据进程 PID 与名字比对检测进程是否存在"""
     pid = int(pid)
     try:
-        process = psutil.Process(pid)
         # 确保 PID 与进程名一致
-        if process.is_running():
-            if process.name() == compare_process_name:
-                return True
-        return False
+        process = psutil.Process(pid)
+        return process.is_running() and process.name() == compare_process_name
     except psutil.NoSuchProcess:
         return False
 
