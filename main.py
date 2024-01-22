@@ -252,6 +252,7 @@ def main():
                 title=tray_title_init,
                 menu=pystray.Menu(menu_callback),
             ).run(setup=setup)
+            break
 
 
 

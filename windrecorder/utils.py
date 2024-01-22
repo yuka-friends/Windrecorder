@@ -423,8 +423,9 @@ def get_github_version(
     url="https://raw.githubusercontent.com/yuka-friends/Windrecorder/main/windrecorder/__init__.py",
 ):
     response = requests.get(url)
-    exec(response.text)
-    version = __version__
+    global_vars = {}
+    exec(response.text, global_vars)
+    version = global_vars['__version__']
     return version
 
 
