@@ -219,11 +219,17 @@ def on_exit(icon: pystray.Icon, item: pystray.MenuItem):
     icon.stop()
 
 
+def interrupt_start():
+    win_ui.show_popup(_t("tray_text_already_run"), "Windrecorder is already running.", "infomation")
+    sys.exit()
+
+
 def main():
     # 启动时加锁，防止重复启动
     while True:
         try:
             tray_lock = FileLock(config.tray_lock_path, str(getpid()), timeout_s=None)
+            break
         except LockExistsException:
             with open(config.tray_lock_path, encoding="utf-8") as f:
                 check_pid = int(f.read())
@@ -238,27 +244,20 @@ def main():
                     pass
                 continue
 
-        with tray_lock:
-            tray_icon_init = get_tray_icon(state="record_pause")
-            tray_title_init = _t("tray_tip_record_pause")
-            if config.start_recording_on_startup:
-                start_stop_recording()
-                tray_icon_init = get_tray_icon(state="recording")
-                tray_title_init = _t("tray_tip_record")
+    with tray_lock:
+        tray_icon_init = get_tray_icon(state="record_pause")
+        tray_title_init = _t("tray_tip_record_pause")
+        if config.start_recording_on_startup:
+            start_stop_recording()
+            tray_icon_init = get_tray_icon(state="recording")
+            tray_title_init = _t("tray_tip_record")
 
-            pystray.Icon(
-                "Windrecorder",
-                tray_icon_init,
-                title=tray_title_init,
-                menu=pystray.Menu(menu_callback),
-            ).run(setup=setup)
-            break
-
-
-
-def interrupt_start():
-    win_ui.show_popup(_t("tray_text_already_run"), "Windrecorder is already running.", "infomation")
-    sys.exit()
+        pystray.Icon(
+            "Windrecorder",
+            tray_icon_init,
+            title=tray_title_init,
+            menu=pystray.Menu(menu_callback),
+        ).run(setup=setup)
 
 
 if __name__ == "__main__":
