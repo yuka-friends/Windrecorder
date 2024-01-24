@@ -7,6 +7,7 @@ import pandas as pd
 from send2trash import send2trash
 
 from windrecorder.config import config
+from windrecorder.utils import is_process_running
 
 
 # 检测是否正在录屏
@@ -18,23 +19,7 @@ def is_recording():
         print("record: Screen recording service file lock does not exist.")
         return False
 
-    check_result = subprocess.run(["tasklist"], stdout=subprocess.PIPE, text=True)
-    check_output = check_result.stdout
-    check_result = subprocess.run(
-        ["findstr", str(check_pid)],
-        input=check_output,
-        stdout=subprocess.PIPE,
-        text=True,
-    )
-    check_output = check_result.stdout
-    if "python" in check_output:
-        state_is_recording = True
-        print(f"record: state_is_recording:{state_is_recording}")
-        return True
-    else:
-        state_is_recording = False
-        print(f"record: state_is_recording:{state_is_recording}")
-        return False
+    return is_process_running(check_pid, "python.exe")
 
 
 # 获取录屏时目标缩放分辨率策略

@@ -48,6 +48,7 @@ class Config:
         lock_file_dir,
         maintain_lock_subdir,
         record_lock_name,
+        tray_lock_name,
         last_idle_maintain_file_path,
         iframe_dir,
         log_dir,
@@ -84,6 +85,7 @@ class Config:
         self.enable_ocr_chineseocr_lite_onnx = enable_ocr_chineseocr_lite_onnx
         self.maintain_lock_path = os.path.join(lock_file_dir, maintain_lock_subdir)
         self.record_lock_path = os.path.join(lock_file_dir, record_lock_name)
+        self.tray_lock_path = os.path.join(lock_file_dir, tray_lock_name)
         self.last_idle_maintain_file_path = last_idle_maintain_file_path
         self.iframe_dir = iframe_dir
         self.compress_encoder = compress_encoder

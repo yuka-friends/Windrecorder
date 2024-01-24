@@ -4,15 +4,18 @@ import ctypes
 import datetime
 import json
 import os
+import platform
 import random
 import re
 import subprocess
+import sys
 import threading
 import time
 from datetime import timedelta
 from io import BytesIO
 
 import cv2
+import psutil
 import pyautogui
 import requests
 from PIL import Image
@@ -420,8 +423,9 @@ def get_github_version(
     url="https://raw.githubusercontent.com/yuka-friends/Windrecorder/main/windrecorder/__init__.py",
 ):
     response = requests.get(url)
-    exec(response.text)
-    version = __version__
+    global_vars = {}
+    exec(response.text, global_vars)
+    version = global_vars['__version__']
     return version
 
 
@@ -609,3 +613,22 @@ def change_startup_shortcut(is_create=True):
             print("record: Shortcut already exists")
             os.remove(shortcut_path)
             print("record: Delete shortcut")
+
+
+def is_process_running(pid, compare_process_name):
+    """根据进程 PID 与名字比对检测进程是否存在"""
+    pid = int(pid)
+    try:
+        # 确保 PID 与进程名一致
+        process = psutil.Process(pid)
+        return process.is_running() and process.name() == compare_process_name
+    except psutil.NoSuchProcess:
+        return False
+
+
+def get_process_id(process_name):
+    """通过进程名称获取进程 ID"""
+    for proc in psutil.process_iter(["pid", "name"]):
+        if proc.info["name"] == process_name:
+            return proc.info["pid"]
+    return None
