@@ -25,7 +25,8 @@ This is a tool that can continuously record screen images and retrieve relevant 
 > 🤯 **If you are good at Python / client front-end direction and are interested in the project, you are welcome to participate in the construction by raising an issue / PR / PR review at [Dissuasions](https://github.com/yuka-friends /Windrecorder/discussions) Check out the Roadmap and discussions! **
 
 > [!IMPORTANT]
-> The project is adding functions and making architectural changes, which may cause problems such as users of earlier versions being unable to upgrade and update normally.
+> Due to minor coding errors, versions prior to `0.0.5` may not be able to detect updates properly or upgrade through install_update.bat. If so, please enter `cmd` in the path box of the `Windrecorder` root directory to open the command line, and enter `git pull` to update. 🙇‍♀️
+>
 > Don't worry! Bring your own `videos`, `db`, `config\config_user.json` and other directories and files, and you can migrate to the latest version at any time.
 
 ## 🦝🎉 0.1.0 What's new (coming soon)
