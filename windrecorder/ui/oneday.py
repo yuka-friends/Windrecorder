@@ -476,7 +476,7 @@ def render():
                         st.exception(ex)
                     finally:
                         st.session_state.update_wordcloud_button_disabled = False
-                        st.experimental_rerun()
+                        st.rerun()
             else:
                 st.markdown(_t("oneday_md_word_cloud_turn_off"), unsafe_allow_html=True)
 

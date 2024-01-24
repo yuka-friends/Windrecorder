@@ -244,7 +244,7 @@ def render():
             config.set_and_save_config("oneday_timeline_pic_num", config_oneday_timeline_num)
             st.toast(_t("utils_toast_setting_saved"), icon="🦝")
             time.sleep(1)
-            st.experimental_rerun()
+            st.rerun()
 
     with col2b:
         st.empty()

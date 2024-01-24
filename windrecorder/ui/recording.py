@@ -147,7 +147,7 @@ def render():
 
             st.toast(_t("utils_toast_setting_saved"), icon="🦝")
             time.sleep(2)
-            st.experimental_rerun()
+            st.rerun()
 
     with spacing_col:
         st.empty()
