@@ -1,6 +1,6 @@
 {
     "en": {  
-        "main_title": "## 🦝 Windrecorder",
+        "main_title": "#### 🦝 Windrecorder",
         
         "tab_name_oneday": "One Day",
         "tab_name_search": "Global Search",
@@ -182,7 +182,7 @@
     },
   
     "sc": {  
-        "main_title": "## 🦝 捕风记录仪",
+        "main_title": "#### 🦝 捕风记录仪",
         
         "tab_name_oneday": "一天之时",
         "tab_name_search": "全局搜索",
@@ -364,7 +364,7 @@
     },
 
     "ja": {  
-        "main_title": "## 🦝 風キャプチャーレコーダー",
+        "main_title": "#### 🦝 Windrecorder",
         
         "tab_name_oneday": "一日",
         "tab_name_search": "グローバルキーワード検索",

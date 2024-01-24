@@ -10,6 +10,7 @@ import pandas as pd
 import win32file
 from PIL import Image
 from send2trash import send2trash
+from skimage.metrics import structural_similarity as ssim
 
 import windrecorder.record as record
 import windrecorder.utils as utils
@@ -210,26 +211,21 @@ def compare_strings(a, b, threshold=70):
 
 
 # 计算两张图片的重合率 - 通过本地文件的方式
-def compare_image_similarity(img_path1, img_path2, threshold=0.7):
+def compare_image_similarity(img_path1, img_path2, threshold=0.85):
     # todo: 将删除操作改为整理为文件列表，降低io开销
     print("ocr_manager: Calculate the coincidence rate of two pictures.")
-    img1 = cv2.imread(img_path1)
-    img2 = cv2.imread(img_path2)
+    imageA = cv2.imread(img_path1)
+    imageB = cv2.imread(img_path2)
 
-    # 将图片转换为灰度图
-    img1_gray = cv2.cvtColor(img1, cv2.COLOR_BGR2GRAY)
-    img2_gray = cv2.cvtColor(img2, cv2.COLOR_BGR2GRAY)
+    # 将图片转换为灰度
+    imageA = cv2.cvtColor(imageA, cv2.COLOR_BGR2GRAY)
+    imageB = cv2.cvtColor(imageB, cv2.COLOR_BGR2GRAY)
 
-    img1_gray = img1_gray.astype(np.float32)
-    img2_gray = img2_gray.astype(np.float32)
-
-    # 计算两个灰度图的Structural Similarity Index
-    # (score, diff) = cv2.compareHist(img1_gray, img2_gray, cv2.HISTCMP_BHATTACHARYYA)
-    score = cv2.compareHist(img1_gray, img2_gray, cv2.HISTCMP_BHATTACHARYYA)
+    # 计算两张图片的SSIM
+    score = ssim(imageA, imageB)
 
     if score >= threshold:
         print(f"Images are similar with score {score}, deleting {img_path2}")
-        # os.remove(img_path2)
         return True
     else:
         print(f"Images are different with score {score}")

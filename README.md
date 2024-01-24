@@ -26,7 +26,8 @@
 >  🤯 **如果你擅长 Python / 客户端前端方向、且对项目感兴趣，欢迎通过提出 issue / PR / PR review 参与到构建中，在 [Dissuasions](https://github.com/yuka-friends/Windrecorder/discussions) 查看 Roadmap 与讨论！**
 
 > [!IMPORTANT]  
-> 该项目正在添加功能与进行架构改动，可能导致早期版本用户无法正常升级更新等问题。
+> 由于代码编写小失误，`0.0.5` 以前版本可能无法正常检测更新、或通过 install_update.bat 进行升级。如是，请在 `Windrecorder` 根目录的路径框输入`cmd`打开命令行，输入`git pull`进行更新。🙇‍♀️
+>
 > 别担心！带上属于你的 `videos`、 `db`、 `config\config_user.json` 等目录与文件，随时可以迁移到最新的版本上。
 
 ## 🦝🎉 0.1.0 上新预告（即将发布）
