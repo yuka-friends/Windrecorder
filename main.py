@@ -220,7 +220,7 @@ def on_exit(icon: pystray.Icon, item: pystray.MenuItem):
 
 
 def interrupt_start():
-    win_ui.show_popup(_t("tray_text_already_run"), "Windrecorder is already running.", "infomation")
+    win_ui.show_popup(_t("tray_text_already_run"), "Windrecorder is already running.", "information")
     sys.exit()
 
 
@@ -242,7 +242,6 @@ def main():
                     os.remove(config.tray_lock_path)
                 except FileNotFoundError:
                     pass
-                continue
 
     with tray_lock:
         tray_icon_init = get_tray_icon(state="record_pause")
