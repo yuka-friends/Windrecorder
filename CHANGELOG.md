@@ -1,5 +1,20 @@
 # Changelog
 
+## 0.0.6
+> 2024-01-25
+
+- **修复了 webui 下重复轮询数据库的 bug，大幅提升使用性能；**
+- 修复全新安装时可能遇到的 db 目录不存在而阻塞的错误；
+- 移除更新 st.experimental.rerun 为 st.rerun；
+- 优先在 Windrecorder 目录下添加虚拟环境；
+
+### Fixed
+- https://github.com/yuka-friends/Windrecorder/issues/103 bug: update check broken, user can never get update remind
+- https://github.com/yuka-friends/Windrecorder/issues/100 bug: “记忆摘要”统计中，翻阅年视图不生效
+- https://github.com/yuka-friends/Windrecorder/issues/87 bug: 当存在跨年的数据，“记忆摘要”tab 下的月份选择器范围约束会失效
+- https://github.com/yuka-friends/Windrecorder/issues/77 bug: 在托盘关闭 webui 服务后，菜单残留局域网提示项
+- https://github.com/yuka-friends/Windrecorder/issues/56 feat: 已有托盘在运行时，阻止托盘重复启动、且提供指引提示
+
 
 ## 0.0.5
 > 2023-12-22

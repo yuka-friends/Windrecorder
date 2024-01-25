@@ -17,7 +17,10 @@ from windrecorder.utils import get_text as _t
 
 def render():
     # onboarding checking
-    if db_manager.check_is_onboarding():
+    if "is_onboarding" not in st.session_state:
+        st.session_state["is_onboarding"] = db_manager.check_is_onboarding()
+
+    if st.session_state.is_onboarding:
         col1, col2 = st.columns([1, 2])
         with col1:
             components.web_onboarding()
