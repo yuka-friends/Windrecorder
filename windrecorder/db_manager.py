@@ -15,9 +15,8 @@ from windrecorder.config import config
 
 class _DBManager:
     def __init__(self, db_path, db_max_page_result, user_name):
-        file_utils.ensure_dir(self.db_path)
-
         self.db_path = db_path  # 存放数据库的目录
+        file_utils.ensure_dir(self.db_path)
         self.db_max_page_result = db_max_page_result  # 最大查询页数
         self.user_name = user_name  # 用户名
         self._db_filename_dict = self._init_db_filename_dict()
