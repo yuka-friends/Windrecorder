@@ -40,7 +40,7 @@ def render():
             st.session_state.timeCost_globalSearch = 0
 
         # 获得全局搜索结果
-        def _do_global_keyword_search():
+        def do_global_keyword_search():
             # 如果搜索所需入参状态改变了，进行搜索
             if (
                 st.session_state.search_content_lazy == st.session_state.search_content
@@ -161,7 +161,7 @@ def render():
                 max_value=st.session_state.max_page_count + 1,
             )
 
-        _do_global_keyword_search()
+        do_global_keyword_search()
 
         # 进行搜索
         if not len(st.session_state.search_content) == 0:
