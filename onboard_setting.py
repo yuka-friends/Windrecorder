@@ -147,6 +147,7 @@ if len(os_support_lang) > 1:  # 如果系统安装了超过一种语言
 else:  # 如果系统只安装了一种语言，自动选择
     print_header(step=3)
     print(_t("qs_olang_one_choice_default_set").format(os_support_lang=os_support_lang[0]))
+    config.set_and_save_config("ocr_lang", os_support_lang[0])
     subprocess.run("pause", shell=True)
 
 
