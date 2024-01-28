@@ -18,7 +18,6 @@ numpy = "*"
 packaging = "*"
 pandas = ">=0.25"
 toolz = "*"
-typing-extensions = {version = ">=4.0.1", markers = "python_version < \"3.11\""}
 
 [package.extras]
 dev = ["anywidget", "geopandas", "hatch", "ipython", "m2r", "mypy", "pandas-stubs", "pyarrow (>=11)", "pytest", "pytest-cov", "ruff (>=0.1.3)", "types-jsonschema", "types-setuptools", "vega-datasets", "vegafusion[embed] (>=1.4.0)", "vl-convert-python (>=1.1.0)"]
@@ -1296,7 +1295,7 @@ files = [
 ]
 
 [package.dependencies]
-numpy = {version = ">=1.22.4,<2", markers = "python_version < \"3.11\""}
+numpy = {version = ">=1.23.2,<2", markers = "python_version == \"3.11\""}
 python-dateutil = ">=2.8.2"
 pytz = ">=2020.1"
 tzdata = ">=2022.7"
@@ -1880,7 +1879,7 @@ files = [
 ]
 
 [package.dependencies]
-Pillow = {version = ">=9.2.0", markers = "python_version == \"3.10\""}
+Pillow = {version = ">=9.3.0", markers = "python_version == \"3.11\""}
 
 [package.source]
 type = "legacy"
@@ -2978,5 +2977,5 @@ reference = "tsinghua"
 
 [metadata]
 lock-version = "2.0"
-python-versions = "~3.10"
-content-hash = "30d1b184364d649c37dfccaf60cb22738df8cb3d4900abf862b9c6494edaad71"
+python-versions = "~3.11"
+content-hash = "7395383b79c8f83bc2a653fb5aaf1ca72979c868862411eed90152a1e29bd5e6"
