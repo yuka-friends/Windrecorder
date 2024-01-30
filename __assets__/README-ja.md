@@ -51,8 +51,8 @@
 
 - [ffmpeg](https://www.gyan.dev/ffmpeg/builds/ffmpeg-release-essentials.zip) をダウンロードし、bin ディレクトリ内の ffmpeg.exe、ffprobe.exe を `C:\Windows\System32` (または他のディレクトリ) に解凍します。 PATH にあります)
 
-- [Git](https://git-scm.com/downloads)、[Python](https://www.python.org/ftp/python/3.10.11/python-3.10.11-amd64.exe)をインストール) (インストール中に python.exe を PATH に追加するをチェックします)、[Pip](https://pip.pypa.io/en/stable/installation/);
-     - **知らせ！ 現在、Python 3.12** はサポートされていないため、上記のリンクで示されているバージョンである Python 3.10 を使用することをお勧めします。
+- [Git](https://git-scm.com/downloads)、[Python](https://www.python.org/ftp/python/3.11.7/python-3.11.7-amd64.exe)をインストール) (インストール中に python.exe を PATH に追加するをチェックします)、[Pip](https://pip.pypa.io/en/stable/installation/);
+     - **知らせ！ 現在、Python 3.12** はサポートされていないため、上記のリンクで示されているバージョンである Python 3.11 を使用することをお勧めします。
 
 - このツールをインストールするディレクトリに移動し (十分なスペースのあるパーティションに配置することをお勧めします)、ターミナル コマンド `git clone https://github.com/yuka-friends/ を使用してツールをダウンロードします。ウィンドレコーダー`;
 
