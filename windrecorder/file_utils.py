@@ -147,7 +147,7 @@ def get_file_path_list(dir):
                 file_path = os.path.join(root, file)
                 filepath_list.append(file_path)
 
-    return filepath_list
+        return filepath_list
 
 
 # 取得文件夹下的第一级文件名列表
