@@ -17,3 +17,5 @@ cls
 color 0e
 title Windrecorder - Quick Setup
 python "%~dp0\onboard_setting.py"
+
+pause
