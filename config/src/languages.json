@@ -93,9 +93,6 @@
         "rs_text_compress_ratio": "Compression ratio ❓",
         "rs_text_compress_ratio_help": "Compression ratio = compressed video file volume/original video file volume. The test file here is short, and there may be a large deviation in the presentation of this indicator. As the video time increases, the compression rate will be relatively higher .You can replace the __assets__\\test_video_compress.mp4 file for testing.",
         "rs_text_compress_time": "Compression time (s)",
-        "rs_checkbox_optimization_firefox": "Coding optimization for Firefox",
-        "rs_text_optimization_firefox_help": "Currently, Firefox does not support decoding and playing the default YUV444 video. After turning on this option, the video will be recorded and compressed in YUV420.",
-
 
         "set_md_title": "### ⚙️ Settings",
         "set_md_index_db": "#### Database Index\n",
@@ -275,8 +272,6 @@
         "rs_text_compress_ratio": "压缩率❓",
         "rs_text_compress_ratio_help": "压缩率 = 压缩后的视频文件体积 / 原视频文件体积。此处测试文件时长较短，该项指标呈现可能存在较大偏差。随着视频时间增长，压缩率相对会更高。你可以替换 __assets__\\test_video_compress.mp4 文件来进行测试。",
         "rs_text_compress_time": "压缩耗时（s）",
-        "rs_checkbox_optimization_firefox": "针对火狐浏览器（Firefox）进行编码优化",
-        "rs_text_optimization_firefox_help": "目前火狐浏览器（Firefox）不支持解码播放默认的 YUV444 视频，开启该选项后将以 YUV420 录制与压缩视频。",
 
         "set_md_title": "### ⚙️ 设置",
         "set_md_index_db": "#### 数据库索引\n",
@@ -457,9 +452,6 @@
         "rs_text_compress_ratio": "圧縮率 ❓",
         "rs_text_compress_ratio_help": "圧縮率 = 圧縮ビデオ ファイルの容量 / 元のビデオ ファイルの容量。ここでのテスト ファイルは短いため、このインジケーターの表示には大きな誤差が生じる可能性があります。ビデオ時間が増加するにつれて、圧縮率は比較的高い。テスト用に __assets__\\test_video_compress.mp4 ファイルを置き換えることができます。",
         "rs_text_compress_time": "圧縮時間 (秒)",
-        "rs_checkbox_optimization_firefox": "Firefox のコーディングの最適化",
-        "rs_text_optimization_firefox_help": "現在、Firefox はデフォルトの YUV444 ビデオのデコードと再生をサポートしていません。このオプションをオンにすると、ビデオは YUV420 で録画および圧縮されます。",
-
 
         "set_md_title": "### ⚙️ 設定",
         "set_md_index_db": "#### データベースインデックス\n",
