@@ -12,7 +12,7 @@ from windrecorder.utils import get_text as _t
 def render():
     st.markdown(_t("rs_md_title"))
 
-    settings_col, spacing_col, pic_col = st.columns([1, .5, 1.5])
+    settings_col, spacing_col, pic_col = st.columns([1, 0.5, 1.5])
     with settings_col:
         st.info(_t("rs_text_need_to_restart_after_save_setting"))
 
@@ -37,12 +37,6 @@ def render():
             _t("rs_checkbox_enable_half_res_while_hidpi"),
             help=_t("rs_text_enable_half_res_while_hidpi"),
             value=config.record_screen_enable_half_res_while_hidpi,
-        )
-
-        firefox_optimization = st.checkbox(
-            _t("rs_checkbox_optimization_firefox"),
-            help=_t("rs_text_optimization_firefox_help"),
-            value=config.used_firefox,
         )
 
         screentime_not_change_to_pause_record = st.number_input(
@@ -135,7 +129,6 @@ def render():
             config.set_and_save_config("screentime_not_change_to_pause_record", screentime_not_change_to_pause_record)
             config.set_and_save_config("record_screen_enable_half_res_while_hidpi", record_screen_enable_half_res_while_hidpi)
             config.set_and_save_config("OCR_index_strategy", ocr_strategy_option_dict[ocr_strategy_option])
-            config.set_and_save_config("used_firefox", firefox_optimization)
 
             config.set_and_save_config("vid_store_day", vid_store_day)
             config.set_and_save_config("vid_compress_day", vid_compress_day)

@@ -16,12 +16,6 @@ from windrecorder.config import config
 from windrecorder.exceptions import LockExistsException
 from windrecorder.lock import FileLock
 
-if config.release_ver:
-    # FIXME
-    ffmpeg_path = "env\\ffmpeg.exe"
-else:
-    ffmpeg_path = "ffmpeg"
-
 # 全局状态变量
 monitor_idle_minutes = 0
 last_screenshot_array = None
@@ -43,7 +37,7 @@ except FileNotFoundError:
 
 def assert_ffmpeg():
     try:
-        subprocess.run([ffmpeg_path, "-version"])
+        subprocess.run([config.ffmpeg_path, "-version"])
     except FileNotFoundError:
         print("Error: ffmpeg is not installed! Please ensure ffmpeg is in the PATH.")
         sys.exit(1)
@@ -103,19 +97,16 @@ def record_screen(
     )
     print(f"Origin screen resolution: {screen_width}x{screen_height}, Resized to {target_scale_width}x{target_scale_height}.")
 
-    pix_fmt_args = []
-    # firefox 不支持 yuv444p
-    if config.used_firefox:
-        pix_fmt_args = ["-pix_fmt", "yuv420p"]
+    pix_fmt_args = ["-pix_fmt", "yuv420p"]
 
     ffmpeg_cmd = [
-        ffmpeg_path,
+        config.ffmpeg_path,
         "-f",
         "gdigrab",
         "-video_size",
         f"{screen_width}x{screen_height}",
         "-framerate",
-        "2",
+        f"{config.record_framerate}",
         "-i",
         "desktop",
         "-vf",
@@ -125,14 +116,8 @@ def record_screen(
         "libx264",
         # 默认码率为 200kbps
         "-b:v",
-        "200k",
+        f"{config.record_bitrate}k",
         *pix_fmt_args,
-        "-bf",
-        "8",
-        "-g",
-        "600",
-        "-sc_threshold",
-        "10",
         "-t",
         str(record_time),
         out_path,

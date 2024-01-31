@@ -5,7 +5,6 @@ import shutil
 import subprocess
 
 import cv2
-import numpy as np
 import pandas as pd
 import win32file
 from PIL import Image
@@ -383,7 +382,7 @@ def ocr_core_logic(file_path, vid_file_name, iframe_path):
 
 
 # 对某个视频进行处理的过程
-def ocr_process_single_video(video_path, vid_file_name, iframe_path):
+def ocr_process_single_video(video_path, vid_file_name, iframe_path, optimize_for_high_framerate_vid=False):
     with acquire_ocr_lock(vid_file_name):
         iframe_sub_path = os.path.join(iframe_path, os.path.splitext(vid_file_name)[0])
         # 整合完整路径
@@ -410,7 +409,17 @@ def ocr_process_single_video(video_path, vid_file_name, iframe_path):
 
         file_utils.ensure_dir(iframe_sub_path)
         try:
-            ocr_core_logic(file_path, vid_file_name, iframe_sub_path)
+            if optimize_for_high_framerate_vid:
+                vid_filepath_optimize = convert_temp_optimize_vidfile_for_ocr(file_path)
+                if vid_filepath_optimize is None:
+                    raise FileNotFoundError
+                ocr_core_logic(vid_filepath_optimize, vid_file_name, iframe_sub_path)
+                try:
+                    os.remove(vid_filepath_optimize)
+                except FileNotFoundError:
+                    pass
+            else:
+                ocr_core_logic(file_path, vid_file_name, iframe_sub_path)
         except Exception as e:
             # 记录错误日志
             print(
@@ -432,6 +441,27 @@ def ocr_process_single_video(video_path, vid_file_name, iframe_path):
         finally:
             # 清理文件
             shutil.rmtree(iframe_sub_path)
+
+
+def convert_temp_optimize_vidfile_for_ocr(vid_filepath):
+    """
+    将输入视频转为 2fps 的临时视频，以便于 OCR 拆帧识别
+    """
+    output_temp_vid_filepath = os.path.join(
+        os.path.dirname(vid_filepath), f"{os.path.basename(vid_filepath).split('.')[0]}-2FPS.mp4"
+    )
+    try:
+        os.remove(output_temp_vid_filepath)
+    except FileNotFoundError:
+        pass
+    ffmpeg_cmd = [config.ffmpeg_path, "-i", vid_filepath, "-vf", "fps=2", output_temp_vid_filepath]
+    try:
+        subprocess.run(ffmpeg_cmd, check=True)
+        print(f"convert {vid_filepath} into {output_temp_vid_filepath}")
+        return output_temp_vid_filepath
+    except subprocess.CalledProcessError as ex:
+        print(f"convert_temp_optimize_vidfile_for_ocr: {ex.cmd} failed with return code {ex.returncode}")
+        return None
 
 
 # 处理文件夹内所有视频的主要流程
@@ -456,8 +486,10 @@ def ocr_process_videos(video_path, iframe_path):
                 continue
 
             try:
-                # ocr该文件
-                ocr_process_single_video(root, file, iframe_path)
+                # ocr 该文件。如果使用了超过 2fps 的录制参数，先优化处理视频然后再 ocr
+                ocr_process_single_video(
+                    root, file, iframe_path, optimize_for_high_framerate_vid=(config.record_framerate > 2)
+                )
             except LockExistsException:
                 pass
 
