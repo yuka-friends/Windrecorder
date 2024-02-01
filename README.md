@@ -96,6 +96,14 @@
 
 # 🦝 Q&A | 常见问题
 
+Q: 从托盘打开 webui 失败
+
+- A: 这是由于 streamlit 在第一次启动时、会触发邮箱收集导致的 bug，在 streamlit 修复前，你需要通过在目录下的命令行、执行以下命令后回车跳过第一次运行时的邮箱收集，关闭命令行之后便可正常使用了。 [#109](https://github.com/yuka-friends/Windrecorder/issues/109)
+```
+poetry shell
+streamlit run webui.py
+```
+
 Q: 打开 webui 时没有近期一段时间的数据。
 
 - A: 当工具正在索引数据时，webui 将不会创建最新的临时数据库文件。

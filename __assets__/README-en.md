@@ -92,6 +92,14 @@ When recording is started, the Wind Capture Recorder will record 15 minutes of v
 
 
 # 🦝 Q&A | Frequently Asked Questions
+Q: Open webui from the tray and fail
+
+- A: This is a bug caused by streamlit triggering mailbox collection when it is first started. Before streamlit is fixed, you need to execute the following command on the command line in the directory and press Enter to skip the first run. The mailbox is collected, and it can be used normally after turning off the command line. [#109] (https://github.com/yuka-friends/windRecorder/isSues/109)
+```
+poetry shell
+streamlit run webui.py
+```
+
 Q: There is no data in the recent period when opening webui.
 
 - A: When the tool is indexing data, webui will not create the latest temporary database file.

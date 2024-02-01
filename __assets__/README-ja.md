@@ -93,6 +93,14 @@ Genzai, tsūru o shiyō suru ni wa, direkutori-nai no batchi sukuriput
 
 
 # 🦝 Q&A | よくある質問
+Q: トレイから webui を開けませんでした
+
+- A: これは、最初の開始時に streamlit がメールボックス収集をトリガーすることによって引き起こされるバグです。streamlit が修正される前に、ディレクトリ内のコマンド ラインで次のコマンドを実行し、Enter キーを押して最初の実行をスキップする必要があります。メールボックス収集は可能です。コマンドラインを閉じた後は通常どおり使用できます。 [#109](https://github.com/yuka-friends/Windrecorder/issues/109)
+```
+poetry shell
+streamlit run webui.py
+```
+
 Q: webui を開いたときに最近のデータがありません。
 
 - A: ツールがデータのインデックスを作成しているとき、webui は最新の一時データベース ファイルを作成しません。
