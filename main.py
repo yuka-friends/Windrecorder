@@ -1,5 +1,6 @@
 import os
 import re
+import shutil
 import signal
 import subprocess
 import sys
@@ -11,6 +12,7 @@ from subprocess import Popen
 import pystray
 import requests
 from PIL import Image
+from streamlit.file_util import get_streamlit_file_path
 
 PROJECT_ROOT = os.path.abspath(os.path.dirname(__file__))
 os.chdir(PROJECT_ROOT)
@@ -244,6 +246,10 @@ def main():
                     pass
 
     with tray_lock:
+        credential_path = get_streamlit_file_path("credentials.toml")
+        if not os.path.exists(credential_path):
+            shutil.copyfile(os.path.join(PROJECT_ROOT, ".streamlit\\credentials.toml"), credential_path)
+
         tray_icon_init = get_tray_icon(state="record_pause")
         tray_title_init = _t("tray_tip_record_pause")
         if config.start_recording_on_startup:
