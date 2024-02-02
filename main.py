@@ -11,6 +11,8 @@ from subprocess import Popen
 
 import pystray
 import requests
+import win32con
+import win32gui
 from PIL import Image
 from streamlit.file_util import get_streamlit_file_path
 
@@ -250,6 +252,10 @@ def main():
         if not os.path.exists(credential_path):
             os.makedirs(os.path.dirname(credential_path), exist_ok=True)
             shutil.copyfile(os.path.join(PROJECT_ROOT, ".streamlit\\credentials.toml"), credential_path)
+
+        # 隐藏命令行窗口
+        hide = win32gui.GetForegroundWindow()
+        win32gui.ShowWindow(hide, win32con.SW_HIDE)
 
         tray_icon_init = get_tray_icon(state="record_pause")
         tray_title_init = _t("tray_tip_record_pause")
