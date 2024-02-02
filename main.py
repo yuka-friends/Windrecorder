@@ -248,6 +248,7 @@ def main():
     with tray_lock:
         credential_path = get_streamlit_file_path("credentials.toml")
         if not os.path.exists(credential_path):
+            os.makedirs(os.path.dirname(credential_path), exist_ok=True)
             shutil.copyfile(os.path.join(PROJECT_ROOT, ".streamlit\\credentials.toml"), credential_path)
 
         tray_icon_init = get_tray_icon(state="record_pause")
