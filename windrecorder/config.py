@@ -56,6 +56,7 @@ class Config:
         win_title_dir,
         start_recording_on_startup,
         show_oneday_left_side_stat,
+        webui_access_password_md5,
         **other_field,
     ) -> None:
         self.db_path = db_path
@@ -103,6 +104,7 @@ class Config:
         self.start_recording_on_startup = start_recording_on_startup
         self.lock_file_dir = lock_file_dir
         self.show_oneday_left_side_stat = show_oneday_left_side_stat
+        self.webui_access_password_md5 = webui_access_password_md5
 
     def set_and_save_config(self, attr: str, value):
         if not hasattr(self, attr):

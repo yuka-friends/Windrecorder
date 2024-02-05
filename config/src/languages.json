@@ -139,6 +139,9 @@
         "set_update_new": "\n💫 A new version {tool_version} has been detected. Update by opening `install_update.bat` file in the directory.",
         "set_update_changelog": "\n [What's new](https://github.com/yuka-friends/Windrecorder/blob/main/CHANGELOG.md)",
         "set_update_fail": "Failed to check for updates. {e}",
+        "set_pwd_text": "webui access password (leave blank to disable)",
+        "set_pwd_help": "After enabling this setting, you will be asked to provide a password when accessing webui. This setting will not encrypt your data, but only protects the entrance to webui to avoid access by unfamiliar users in the same LAN.",
+        "set_pwd_forget_help": "Forgot your password? Delete the webui_access_password_md5 item in config_user.json to reset password.",
         
         "qs_config_indicator": "   ← Current options",
         "qs_la_text_same_as_previous": "The interface language remains the same as before: English",
@@ -325,6 +328,9 @@
         "set_update_new": "\n💫 检查到有新版本 {tool_version}，请打开目录下的`install_update.bat`来更新。",
         "set_update_changelog": "\n [更新日志](https://github.com/yuka-friends/Windrecorder/blob/main/CHANGELOG.md)",
         "set_update_fail": "无法检查更新。{e}",
+        "set_pwd_text": "webui 访问密码（留空则不启用）",
+        "set_pwd_help": "启用此项设置后，会在访问 webui 时要求提供密码。此项设置不会加密你的数据，仅保护 webui 的使用入口，以避免同局域网内陌生用户访问。",
+        "set_pwd_forget_help": "忘记密码？请将 config_user.json 中的 webui_access_password_md5 项删除重置。",
 
         "qs_config_indicator": "   ← 当前选项",
         "qs_la_text_same_as_previous": "界面语言保持与先前一致的：简体中文",
@@ -512,6 +518,9 @@
         "set_update_new": "\n💫 新しいバージョン {tool_version} が見つかりました。アップデートするには、ディレクトリ内の `install_update.bat` を開いてください。",
         "set_update_changelog": "\n [変更ログ](https://github.com/yuka-friends/Windrecorder/blob/main/CHANGELOG.md)",
         "set_update_fail": "更新を確認できませんでした。{e}",
+        "set_pwd_text": "webui アクセス パスワード (無効にする場合は空白のままにします)",
+        "set_pwd_help": "この設定を有効にすると、webui にアクセスするときにパスワードの入力を求められます。この設定はデータを暗号化しませんが、同じ LAN 内の見慣れないユーザーによるアクセスを避けるために webui への入り口を保護するだけです。",
+        "set_pwd_forget_help": "パスワードをお忘れですか? config_user.json の webui_access_password_md5 項目を削除してリセットしてください。",
         
         "qs_config_indicator": "   ← 現在のオプション",
         "qs_la_text_same_as_previous": "インターフェイス言語は以前と同じで日本語です。",

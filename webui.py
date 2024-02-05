@@ -1,3 +1,5 @@
+import hashlib
+
 import streamlit as st
 
 import windrecorder.ui.oneday
@@ -72,31 +74,49 @@ def web_footer_state():
 
 
 # 主界面_________________________________________________________
-st.markdown(_t("main_title"))
+def main_webui():
+    st.markdown(_t("main_title"))
 
-oneday_tab, search_tab, state_tab, recording_tab, setting_tab = st.tabs(
-    [
-        _t("tab_name_oneday"),
-        _t("tab_name_search"),
-        _t("tab_name_stat"),
-        _t("tab_name_recording"),
-        _t("tab_name_setting") + st.session_state.update_badge_emoji,
-    ]
-)
+    oneday_tab, search_tab, state_tab, recording_tab, setting_tab = st.tabs(
+        [
+            _t("tab_name_oneday"),
+            _t("tab_name_search"),
+            _t("tab_name_stat"),
+            _t("tab_name_recording"),
+            _t("tab_name_setting") + st.session_state.update_badge_emoji,
+        ]
+    )
 
-with oneday_tab:
-    windrecorder.ui.oneday.render()
+    with oneday_tab:
+        windrecorder.ui.oneday.render()
 
-with search_tab:
-    windrecorder.ui.search.render()
+    with search_tab:
+        windrecorder.ui.search.render()
 
-with state_tab:
-    windrecorder.ui.state.render()
+    with state_tab:
+        windrecorder.ui.state.render()
 
-with recording_tab:
-    windrecorder.ui.recording.render()
+    with recording_tab:
+        windrecorder.ui.recording.render()
 
-with setting_tab:
-    windrecorder.ui.setting.render()
+    with setting_tab:
+        windrecorder.ui.setting.render()
 
-web_footer_state()
+    web_footer_state()
+
+
+# 检查 webui 是否启用密码保护
+if "webui_password_accessed" not in st.session_state:
+    st.session_state["webui_password_accessed"] = False
+
+if config.webui_access_password_md5 and st.session_state.webui_password_accessed is False:
+    col_pwd1, col_pwd2 = st.columns([1, 2])
+    with col_pwd1:
+        password = st.text_input("🔒 Password:", type="password", help=_t("set_pwd_forget_help"))
+    with col_pwd2:
+        st.empty()
+    if hashlib.md5(password.encode("utf-8")).hexdigest() == config.webui_access_password_md5:
+        st.session_state.webui_password_accessed = True
+
+if not config.webui_access_password_md5 or st.session_state.webui_password_accessed is True:
+    main_webui()

@@ -1,3 +1,4 @@
+import hashlib
 import subprocess
 import time
 from pathlib import Path
@@ -208,6 +209,10 @@ def render():
                 help=_t("set_input_oneday_timeline_thumbnail_num_help"),
             )
 
+        config_webui_access_password = st.text_input(
+            f'🔒 {_t("set_pwd_text")}', value=config.webui_access_password_md5, help=_t("set_pwd_help"), type="password"
+        )
+
         # 选择语言
         lang_selection = list(lang_map.values())
         lang_index = lang_selection.index(lang_map[config.lang])
@@ -247,6 +252,14 @@ def render():
                 utils.string_to_list(config_wordcloud_user_stop_words),
             )
             config.set_and_save_config("oneday_timeline_pic_num", config_oneday_timeline_num)
+
+            # 如果有新密码输入，更改；如果留空，关闭功能
+            if config_webui_access_password and config_webui_access_password != config.webui_access_password_md5:
+                config.set_and_save_config(
+                    "webui_access_password_md5", hashlib.md5(config_webui_access_password.encode("utf-8")).hexdigest()
+                )
+            elif len(config_webui_access_password) == 0:
+                config.set_and_save_config("webui_access_password_md5", "")
             st.toast(_t("utils_toast_setting_saved"), icon="🦝")
             time.sleep(1)
             st.rerun()
