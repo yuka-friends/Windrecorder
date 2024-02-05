@@ -3,6 +3,7 @@ venv
 i_frames
 videos
 db
+db_imgemb
 playground.ipynb
 test
 test.jpg
