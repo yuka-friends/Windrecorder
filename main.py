@@ -84,7 +84,16 @@ def start_stop_webui(icon: pystray.Icon, item: pystray.MenuItem):
     else:
         with open(WEBUI_STDOUT_PATH, "w", encoding="utf-8") as out, open(WEBUI_STDERR_PATH, "w", encoding="utf-8") as err:
             streamlit_process = Popen(
-                [sys.executable, "-u", "-m", "streamlit", "run", "webui.py"],
+                [
+                    sys.executable,
+                    "-u",
+                    "-m",
+                    "streamlit",
+                    "run",
+                    "webui.py",
+                    "--server.port",
+                    str(utils.find_available_port(start=8501)),
+                ],
                 stdout=out,
                 stderr=err,
                 encoding="utf-8",

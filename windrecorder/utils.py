@@ -4,11 +4,10 @@ import ctypes
 import datetime
 import json
 import os
-import platform
 import random
 import re
+import socket
 import subprocess
-import sys
 import threading
 import time
 from datetime import timedelta
@@ -425,7 +424,7 @@ def get_github_version(
     response = requests.get(url)
     global_vars = {}
     exec(response.text, global_vars)
-    version = global_vars['__version__']
+    version = global_vars["__version__"]
     return version
 
 
@@ -632,3 +631,15 @@ def get_process_id(process_name):
         if proc.info["name"] == process_name:
             return proc.info["pid"]
     return None
+
+
+def find_available_port(start=8501, end=20000):
+    """找到最小可用于 web 服务的本地端口"""
+    while True:
+        with socket.socket(socket.AF_INET, socket.SOCK_STREAM) as sock:
+            result = sock.connect_ex(("localhost", start))
+            if result == 10061:  # 对应于Windows的 'WSAECONNREFUSED' 错误
+                return start
+        start += 1
+        if start > end:
+            return end
