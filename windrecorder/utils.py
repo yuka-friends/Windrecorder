@@ -4,11 +4,9 @@ import ctypes
 import datetime
 import json
 import os
-import platform
 import random
 import re
 import subprocess
-import sys
 import threading
 import time
 from datetime import timedelta
@@ -290,6 +288,7 @@ def string_to_list(string):
 
 # 判断字符串是否包含列表内的元素
 def is_str_contain_list_word(string, list_items):
+    string = str(string)
     string = string.lower()
     for item in list_items:
         item = item.lower()
@@ -425,7 +424,7 @@ def get_github_version(
     response = requests.get(url)
     global_vars = {}
     exec(response.text, global_vars)
-    version = global_vars['__version__']
+    version = global_vars["__version__"]
     return version
 
 
