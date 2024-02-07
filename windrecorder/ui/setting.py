@@ -173,6 +173,10 @@ def render():
                 _t("set_checkbox_show_wordcloud_under_oneday"),
                 value=config.show_oneday_wordcloud,
             )
+            option_show_oneday_wintitle = st.checkbox(
+                "在「一天之时」下展示页面时间统计",
+                value=config.show_oneday_wintitle_stat,
+            )
             # 使用中文形近字进行搜索
             config_use_similar_ch_char_to_search = st.checkbox(
                 _t("set_checkbox_use_similar_zh_char_to_search"),
@@ -227,6 +231,7 @@ def render():
             config.set_and_save_config("ocr_lang", config_ocr_lang)
             config.set_and_save_config("exclude_words", utils.string_to_list(exclude_words))
             config.set_and_save_config("show_oneday_wordcloud", option_show_oneday_wordcloud)
+            config.set_and_save_config("show_oneday_wintitle_stat", option_show_oneday_wintitle)
             config.set_and_save_config("use_similar_ch_char_to_search", config_use_similar_ch_char_to_search)
             config.set_and_save_config(
                 "ocr_image_crop_URBL",

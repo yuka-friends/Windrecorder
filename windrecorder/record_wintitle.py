@@ -7,6 +7,7 @@ import pygetwindow
 
 from windrecorder import file_utils, utils
 from windrecorder.config import config
+from windrecorder.db_manager import db_manager
 
 CSV_TEMPLATE_DF = pd.DataFrame(columns=["datetime", "window_title"])
 window_title_last_record = ""
@@ -69,3 +70,9 @@ def get_wintitle_by_timestamp(timestamp: int):
             return df.loc[i, "window_title"]
 
     return None
+
+
+def get_statistics_in_day(dt_in: datetime.datetime):
+    search_date_range_in = dt_in.replace(hour=0, minute=0, second=0, microsecond=0)
+    search_date_range_out = dt_in.replace(hour=23, minute=59, second=59, microsecond=0)
+    df, _, _ = db_manager.db_search_data("", search_date_range_in, search_date_range_out)

@@ -22,8 +22,14 @@ class OneDay:
     # 在数据库中搜索当天所有关于xx的数据
     def search_day_data(self, dt_in, search_content=""):
         # 入参：查询时间，搜索内容
-        search_date_range_in = dt_in.replace(hour=0, minute=0, second=0, microsecond=0)
-        search_date_range_out = dt_in.replace(hour=23, minute=59, second=59, microsecond=0)
+        if type(dt_in) is datetime.date:
+            # datetime 对象只包含年月日信息
+            search_date_range_in = datetime.datetime.combine(dt_in, datetime.time(0, 0, 0))
+            search_date_range_out = datetime.datetime.combine(dt_in, datetime.time(23, 59, 59))
+        elif type(dt_in) is datetime.datetime:
+            # datetime 对象包含年月日以及时间信息
+            search_date_range_in = dt_in.replace(hour=0, minute=0, second=0, microsecond=0)
+            search_date_range_out = dt_in.replace(hour=23, minute=59, second=59, microsecond=0)
         df, _, _ = db_manager.db_search_data(search_content, search_date_range_in, search_date_range_out)
         return df
 
@@ -209,3 +215,29 @@ class OneDay:
         img_saved_path = os.path.join(img_saved_folder, img_saved_name)
         result.save(img_saved_path, format="PNG")
         return True
+
+    # 获取当天前台窗口标题统计情况
+    def get_wintitle_stat_in_day(self, dt_in: datetime.datetime):
+        df = self.search_day_data(dt_in, search_content="")
+        df.sort_values(by="videofile_time", ascending=True, inplace=True)
+        df.reset_index(drop=True)
+        stat = {}
+        for index, row in df.iterrows():
+            win_title_name = str(row["win_title"])
+            if win_title_name == "None":
+                continue
+            if win_title_name not in stat:
+                stat[win_title_name] = 0
+            if index == df.index.max() - 1:
+                break
+            stat[win_title_name] += df.loc[index + 1, "videofile_time"] - df.loc[index, "videofile_time"]
+            if stat[win_title_name] < 0:
+                stat[win_title_name] = 0
+        # 清洗数据
+        stat = {key: val for key, val in stat.items() if val > 1}
+        df_show = pd.DataFrame(list(stat.items()), columns=["Page", "Screen Time"])
+        df_show.sort_values(by="Screen Time", ascending=False, inplace=True)
+        df_show.reset_index(drop=True)
+        df_show["Screen Time"] = df_show["Screen Time"].apply(utils.convert_seconds_to_hhmmss)
+
+        return df_show

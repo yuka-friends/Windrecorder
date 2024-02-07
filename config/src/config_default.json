@@ -49,5 +49,6 @@
   "last_idle_maintain_file_path": "cache\\LAST_IDLE_MAINTAIN.MD",
   "iframe_dir": "cache\\i_frames",
   "log_dir": "cache\\logs",
-  "win_title_dir": "cache\\win_title"
+  "win_title_dir": "cache\\win_title",
+  "show_oneday_wintitle_stat": true
 }

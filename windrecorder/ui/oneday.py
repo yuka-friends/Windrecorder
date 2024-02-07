@@ -350,6 +350,21 @@ def render():
                 # st.session_state.day_time_select_24h
                 # st.session_state.timeline_select_dt
                 st.empty()
+                day_wintitle_df_statename_date = st.session_state.day_date_input.strftime("%Y-%m-%d")
+                day_wintitle_df_statename = f"wintitle_stat_{day_wintitle_df_statename_date}"
+                if day_wintitle_df_statename not in st.session_state:
+                    st.session_state[day_wintitle_df_statename] = OneDay().get_wintitle_stat_in_day(
+                        st.session_state.day_date_input
+                    )
+                if len(st.session_state[day_wintitle_df_statename]) > 0 and config.show_oneday_wintitle_stat:
+                    st.markdown("#")
+                    st.dataframe(
+                        st.session_state[day_wintitle_df_statename],
+                        column_config={"Page": st.column_config.TextColumn("⏱️ 页面浏览统计", help="统计可能存在较大偏差，仅供参考。")},
+                        height=650,
+                        hide_index=True,
+                        use_container_width=True,
+                    )
 
         with col2a:
             # 居中部分：视频结果显示区域

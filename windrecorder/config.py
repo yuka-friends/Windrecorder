@@ -55,6 +55,7 @@ class Config:
         log_dir,
         win_title_dir,
         start_recording_on_startup,
+        show_oneday_wintitle_stat,
         **other_field,
     ) -> None:
         self.db_path = db_path
@@ -101,6 +102,7 @@ class Config:
         self.win_title_dir = win_title_dir
         self.start_recording_on_startup = start_recording_on_startup
         self.lock_file_dir = lock_file_dir
+        self.show_oneday_wintitle_stat = show_oneday_wintitle_stat
 
     def set_and_save_config(self, attr: str, value):
         if not hasattr(self, attr):
