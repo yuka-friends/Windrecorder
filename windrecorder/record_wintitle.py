@@ -57,17 +57,21 @@ def get_wintitle_by_timestamp(timestamp: int):
     df["datetime"] = pd.to_datetime(df["datetime"])
 
     # 从dataframe中查找时间戳对应的window_title
-    for i in range(len(df)):
-        if i == 0 and target_time <= df.loc[i, "datetime"]:  # 如果时间戳对应的是第一条记录，直接返回该记录的window_title
-            return df.loc[i, "window_title"]
-        elif target_time >= df.loc[i, "datetime"] and target_time < df.loc[i + 1, "datetime"]:  # 如果时间戳对应的记录在中间
-            # 如果时间早于下一条记录1秒则返回上一条记录的window_title
-            if df.loc[i + 1, "datetime"] - target_time < datetime.timedelta(seconds=1):
-                return df.loc[i + 1, "window_title"]
-            else:  # 否则返回当前记录的window_title
+    try:
+        for i in range(len(df)):
+            if i == 0 and target_time <= df.loc[i, "datetime"]:  # 如果时间戳对应的是第一条记录，直接返回该记录的window_title
                 return df.loc[i, "window_title"]
-        elif i == len(df) - 1 and target_time >= df.loc[i, "datetime"]:  # 如果时间戳对应的是最后一条记录，直接返回该记录的window_title
-            return df.loc[i, "window_title"]
+            elif target_time >= df.loc[i, "datetime"] and target_time < df.loc[i + 1, "datetime"]:  # 如果时间戳对应的记录在中间
+                # 如果时间早于下一条记录1秒则返回上一条记录的window_title
+                if df.loc[i + 1, "datetime"] - target_time < datetime.timedelta(seconds=1):
+                    return df.loc[i + 1, "window_title"]
+                else:  # 否则返回当前记录的window_title
+                    return df.loc[i, "window_title"]
+            elif i == len(df) - 1 and target_time >= df.loc[i, "datetime"]:  # 如果时间戳对应的是最后一条记录，直接返回该记录的window_title
+                return df.loc[i, "window_title"]
+    except (ValueError, KeyError) as e:
+        print(e)
+        pass
 
     return None
 
