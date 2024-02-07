@@ -15,13 +15,12 @@
   "ocr_engine": "Windows.Media.Ocr.Cli",
   "exclude_words": [
     "Windrecorder",
-    "捕风记录仪",
-    "一天之时",
-    "OneDay",
-    "KeePass"
+    "Windrecord - webui",
+    "KeePass",
+    "forget password"
   ],
   "wordcloud_user_stop_words": [
-    "请","替换","为","不想","统计","在","词云","中","的","词语"
+    "login","account","twitter","reddit","youtube"
   ],
   "ocr_image_crop_URBL": [6,6,6,3],
   "vid_store_day": 600,
