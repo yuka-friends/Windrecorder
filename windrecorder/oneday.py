@@ -219,6 +219,9 @@ class OneDay:
     # 获取当天前台窗口标题统计情况
     def get_wintitle_stat_in_day(self, dt_in: datetime.datetime):
         df = self.search_day_data(dt_in, search_content="")
+        # 在生成前清洗数据
+        # from windrecorder import record_wintitle
+        # df["win_title"] = df["win_title"].apply(record_wintitle.optimize_wintitle_name)
         df.sort_values(by="videofile_time", ascending=True, inplace=True)
         df.reset_index(drop=True)
         stat = {}
@@ -233,7 +236,8 @@ class OneDay:
             stat[win_title_name] += df.loc[index + 1, "videofile_time"] - df.loc[index, "videofile_time"]
             if stat[win_title_name] < 0:
                 stat[win_title_name] = 0
-        # 清洗数据
+
+        # 清洗整理数据
         stat = {key: val for key, val in stat.items() if val > 1}
         df_show = pd.DataFrame(list(stat.items()), columns=["Page", "Screen Time"])
         df_show.sort_values(by="Screen Time", ascending=False, inplace=True)

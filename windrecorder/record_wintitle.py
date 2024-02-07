@@ -1,13 +1,13 @@
 # 记录活动前台的窗口标题名
 import datetime
 import os
+import re
 
 import pandas as pd
 import pygetwindow
 
 from windrecorder import file_utils, utils
 from windrecorder.config import config
-from windrecorder.db_manager import db_manager
 
 CSV_TEMPLATE_DF = pd.DataFrame(columns=["datetime", "window_title"])
 window_title_last_record = ""
@@ -72,7 +72,13 @@ def get_wintitle_by_timestamp(timestamp: int):
     return None
 
 
-def get_statistics_in_day(dt_in: datetime.datetime):
-    search_date_range_in = dt_in.replace(hour=0, minute=0, second=0, microsecond=0)
-    search_date_range_out = dt_in.replace(hour=23, minute=59, second=59, microsecond=0)
-    df, _, _ = db_manager.db_search_data("", search_date_range_in, search_date_range_out)
+def optimize_wintitle_name(text):
+    """根据特定策略优化页面名字"""
+    text = str(text)
+
+    # telegram
+    text = re.sub(" – \\(\\d+\\)", "", text)  # 移除最后的总未读消息
+    text = re.sub(" - \\(\\d+\\)", "", text)
+    text = re.sub("^\\(\\d+\\) ", "", text)  # 移除最开始的当前对话未读消息
+
+    return text

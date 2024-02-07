@@ -363,6 +363,7 @@ def ocr_core_logic(file_path, vid_file_name, iframe_path):
                 calc_to_sec_picname = round(int(os.path.splitext(img_file_name)[0]) / 2)
                 calc_to_sec_data = date_to_seconds(calc_to_sec_vidname) + calc_to_sec_picname
                 win_title = record_wintitle.get_wintitle_by_timestamp(calc_to_sec_data)
+                win_title = record_wintitle.optimize_wintitle_name(win_title)
                 # 检查窗口标题是否在跳过词中
                 if utils.is_str_contain_list_word(win_title, config.exclude_words):
                     print("[Skip] The window title name contains exclusion list words and is not written to the database.")
