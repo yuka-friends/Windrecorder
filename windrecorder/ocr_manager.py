@@ -13,7 +13,7 @@ from skimage.metrics import structural_similarity as ssim
 
 import windrecorder.record as record
 import windrecorder.utils as utils
-from windrecorder import file_utils
+from windrecorder import file_utils, record_wintitle
 from windrecorder.config import config
 from windrecorder.db_manager import db_manager
 from windrecorder.exceptions import LockExistsException
@@ -333,6 +333,7 @@ def ocr_core_logic(file_path, vid_file_name, iframe_path):
         "is_videofile_exist",
         "is_videofile_exist",
         "thumbnail",
+        "win_title",
     ]
     dataframe_all = pd.DataFrame(columns=dataframe_column_names)
 
@@ -374,6 +375,7 @@ def ocr_core_logic(file_path, vid_file_name, iframe_path):
                     True,
                     False,
                     img_thumbnail,
+                    record_wintitle.get_csv_filepath(calc_to_sec_data),
                 ]
                 ocr_result_stringA = ocr_result_stringB
 

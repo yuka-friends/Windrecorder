@@ -53,6 +53,7 @@ class Config:
         last_idle_maintain_file_path,
         iframe_dir,
         log_dir,
+        win_title_dir,
         start_recording_on_startup,
         **other_field,
     ) -> None:
@@ -97,6 +98,7 @@ class Config:
         self.compress_quality = compress_quality
         self.compress_preset = get_video_compress_preset_json()
         self.log_dir = log_dir
+        self.win_title_dir = win_title_dir
         self.start_recording_on_startup = start_recording_on_startup
         self.lock_file_dir = lock_file_dir
 
