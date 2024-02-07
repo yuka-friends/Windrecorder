@@ -174,7 +174,7 @@ def render():
                 value=config.show_oneday_wordcloud,
             )
             option_show_oneday_wintitle = st.checkbox(
-                "在「一天之时」下展示页面时间统计",
+                _t("set_checkbox_show_wintitle_stat_under_oneday"),
                 value=config.show_oneday_wintitle_stat,
             )
             # 使用中文形近字进行搜索

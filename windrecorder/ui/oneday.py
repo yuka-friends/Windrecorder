@@ -360,7 +360,7 @@ def render():
                     st.markdown("#")
                     st.dataframe(
                         st.session_state[day_wintitle_df_statename],
-                        column_config={"Page": st.column_config.TextColumn("⏱️ 页面浏览统计", help="统计可能存在较大偏差，仅供参考。")},
+                        column_config={"Page": st.column_config.TextColumn(_t("oneday_wt_text"), help=_t("oneday_wt_help"))},
                         height=650,
                         hide_index=True,
                         use_container_width=True,
