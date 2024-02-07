@@ -375,7 +375,7 @@ def ocr_core_logic(file_path, vid_file_name, iframe_path):
                     True,
                     False,
                     img_thumbnail,
-                    record_wintitle.get_csv_filepath(utils.seconds_to_datetime(calc_to_sec_data)),
+                    record_wintitle.get_wintitle_by_timestamp(calc_to_sec_data),
                 ]
                 ocr_result_stringA = ocr_result_stringB
 
