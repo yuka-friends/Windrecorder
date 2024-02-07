@@ -14,7 +14,7 @@ window_title_last_record = ""
 
 
 def get_csv_filepath(datetime: datetime.datetime):
-    """取得对应 datetime 的 wintitle csv 路径，如不存在则返回 None"""
+    """取得对应 datetime 的 wintitle csv 路径"""
     csv_filename = datetime.strftime("%Y-%m-%d") + ".csv"
     csv_filepath = os.path.join(config.win_title_dir, csv_filename)
     return csv_filepath
@@ -25,7 +25,7 @@ def record_wintitle_now():
     global window_title_last_record
     windowTitle = str(pygetwindow.getActiveWindowTitle())
 
-    # 如果与上次检测结构一致，则跳过
+    # 如果与上次检测结果一致，则跳过
     if windowTitle == window_title_last_record:
         return
 
@@ -76,7 +76,8 @@ def optimize_wintitle_name(text):
     """根据特定策略优化页面名字"""
     text = str(text)
 
-    # telegram
+    # telegram: 只保留对话名
+    # eg. "(1) 大懒趴俱乐部 – (283859)"
     text = re.sub(" – \\(\\d+\\)", "", text)  # 移除最后的总未读消息
     text = re.sub(" - \\(\\d+\\)", "", text)
     text = re.sub("^\\(\\d+\\) ", "", text)  # 移除最开始的当前对话未读消息
