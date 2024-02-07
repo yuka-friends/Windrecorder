@@ -370,7 +370,7 @@ def ocr_core_logic(file_path, vid_file_name, iframe_path):
                 # 计算图片预览图
                 img_thumbnail = resize_imahe_as_base64(img)
                 # 清理ocr数据
-                ocr_result_write = utils.clean_dirty_text(ocr_result_stringB)
+                ocr_result_write = utils.clean_dirty_text(ocr_result_stringB) + "-" + str(win_title)
                 # 为准备写入数据库dataframe添加记录
                 dataframe_all.loc[len(dataframe_all.index)] = [
                     vid_file_name,
