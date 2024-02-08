@@ -23,7 +23,7 @@ def get_csv_filepath(datetime: datetime.datetime):
 def record_wintitle_now():
     """记录当下的前台窗口标题到 csv"""
     global window_title_last_record
-    windowTitle = str(pygetwindow.getActiveWindowTitle())
+    windowTitle = optimize_wintitle_name(str(pygetwindow.getActiveWindowTitle()))
 
     # 如果与上次检测结果一致，则跳过
     if windowTitle == window_title_last_record:

@@ -26,7 +26,7 @@
         "oneday_toggle_search": "Search",
         "oneday_toggle_search_help": "Supports searching with multiple keywords separated by space. Press Enter directly without entering any content to list all data for the day.",
         "oneday_search_md_none": "<p align='center' style='line-height:2.3;'> ⚠ No results found </p>",
-        "oneday_search_md_result": "<p align='center' style='line-height:2.3;'> → Found {result_num} results: </p>",
+        "oneday_search_md_result": "<p align='center' style='line-height:2.3;'> → {result_num} results: </p>",
         "oneday_text_generate_timeline_thumbnail": "Generating timeline thumbnails for day, please wait...",
         "oneday_md_no_enough_thunmbnail_for_timeline": "<p align='center' style='color:rgba(0,0,0,.3)'> Not enough thumbnails to generate a timeline for the day. </p>",
         "oneday_md_rewinding_video_name": "`Rewinding {day_video_file_name}`",
@@ -43,7 +43,7 @@
 
         "gs_md_search_title": "### 🔎 Search",
         "gs_input_exclude": "Exclude",
-        "gs_input_search_help": "Multiple keywords can be separated by space.",
+        "gs_input_search_help": "Multiple keywords can be separated by space. The window title name can also be used as a keyword.",
         "gs_input_exclude_help": "Exclude contents of which keywords, leave blank for no exclusion. Multiple keywords can be separated by space.",
         "gs_text_pls_choose_full_date_range": "Please select a complete time range",
         "gs_input_result_page": "Result pages",
@@ -223,7 +223,7 @@
 
         "gs_md_search_title": "### 🔎 搜索",
         "gs_input_exclude": "排除",
-        "gs_input_search_help": "可使用空格分隔多个关键词。",
+        "gs_input_search_help": "可使用空格分隔多个关键词；窗口标题名也可以作为关键词。",
         "gs_input_exclude_help": "排除哪些关键词的内容，留空为不排除。可使用空格分隔多个关键词。",
         "gs_text_pls_choose_full_date_range": "请选择完整的时间范围",
         "gs_input_result_page": "结果页数",
@@ -404,7 +404,7 @@
 
         "gs_md_search_title": "### 🔎 検索",
         "gs_input_exclude": "除外",
-        "gs_input_search_help": "スペースを使用して複数のキーワードを分離できます。",
+        "gs_input_search_help": "スペースを使用して複数のキーワードを分離できます。ウィンドウタイトル名もキーワードとして使用できます。",
         "gs_input_exclude_help": "どのキーワードのコンテンツを除外するか。空白のままにすると除外されません。複数のキーワードをスペースで区切って指定できます。",
         "gs_text_pls_choose_full_date_range": "完全な日付範囲を選択してください",
         "gs_input_result_page": "結果ページ数",
