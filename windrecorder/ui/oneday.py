@@ -4,9 +4,8 @@ import os
 import pandas as pd
 import streamlit as st
 from PIL import Image
-from send2trash import send2trash
 
-from windrecorder import file_utils, flag_mark_note, utils, wordcloud
+from windrecorder import file_utils, flag_mark_note, record_wintitle, utils, wordcloud
 from windrecorder.config import config
 from windrecorder.db_manager import db_manager
 from windrecorder.oneday import OneDay
@@ -293,206 +292,15 @@ def render():
                 )  # 优化下数据展示
                 components.video_dataframe(df_day_search_result_refine)
             else:
-                # 时间标记清单
-
-                def _update_df_flag_mark_note():
-                    """
-                    更新 streamlit 状态中，时间标记清单表的状态
-                    """
-                    st.session_state.df_flag_mark_note_origin = file_utils.read_dataframe_from_path(
-                        config.flag_mark_note_filepath
-                    )  # 取得原表
-                    st.session_state.df_flag_mark_note = _tweak_df_flag_mark_note_to_display(
-                        st.session_state.df_flag_mark_note_origin
-                    )  # 调整数据后，给编辑器的表
-                    st.session_state.df_flag_mark_note_last_change = st.session_state.df_flag_mark_note  # 同步 diff 更改对照
-
-                def _save_flag_mark_note_from_editor(df_origin, df_editor):
-                    """
-                    保存操作：删除用户选择条目，然后将 streamlit 编辑器的表还原为原表状态，将编辑完成的内容写回 csv
-
-                    原表结构：
-                    ```csv
-                    thumbnail, datetime, note
-                    无解析头的base64, 较早的时间(%Y-%m-%d %H:%M:%S), 用户笔记
-                    ......
-                    无解析头的base64, 较晚的时间(%Y-%m-%d %H:%M:%S), 用户笔记
-                    ```
-
-                    ↑ ↓
-
-                    streamlit 编辑器的表结构：
-                    ```dataframe
-                    thumbnail, datetime, note, delete
-                    带图片解析头的base64, 较晚的时间("%Y/%m/%d   %H:%M:%S"), 用户笔记, False
-                    ......
-                    带图片解析头的base64, 较早的时间("%Y/%m/%d   %H:%M:%S"), 用户笔记, False
-                    ```
-                    """
-                    df_editor = df_editor.iloc[::-1]  # 还原编辑器展示的倒序
-
-                    # 删除用户在编辑器选中的数据
-                    if (df_editor["delete"] == 1).all():  # 如果全选，则直接删除记录文件
-                        send2trash(config.flag_mark_note_filepath)
-                        return
-
-                    condition = df_editor["delete"] != 1
-                    selected_rows = df_editor[condition]
-                    df_editor = selected_rows.reset_index(drop=True)
-
-                    # 将编辑器表中数据还原为原始的数据格式
-                    df_origin["thumbnail"] = df_editor["thumbnail"].str.replace("data:image/png;base64,", "")
-                    df_editor["datetime"] = df_editor.apply(
-                        lambda row: datetime.datetime.strftime(
-                            datetime.datetime.strptime(row["datetime"], "%Y/%m/%d   %H:%M:%S"), "%Y-%m-%d %H:%M:%S"
-                        ),
-                        axis=1,
-                    )
-                    df_origin["datetime"] = df_editor["datetime"]
-                    df_origin["note"] = df_editor["note"]
-                    df_origin = df_origin.dropna(how="all")  # 删除 dataframe 中包含缺失值的行
-                    file_utils.save_dataframe_to_path(df_origin, config.flag_mark_note_filepath)
-
-                    # 更新 streamlit 表控件状态
-                    _update_df_flag_mark_note()
-
-                def _tweak_df_flag_mark_note_to_display(df_origin):
-                    """
-                    将原始的数据调整为适合编辑器展示的数据
-                    """
-                    df_tweak = df_origin.copy()
-
-                    # 为缩略图添加解析前缀
-                    def process_thumbnail(thumbnail_value):
-                        if thumbnail_value is not None:
-                            return "data:image/png;base64," + str(thumbnail_value)
-                        else:
-                            return thumbnail_value
-
-                    # 缩略图添加解析前缀
-                    df_tweak["thumbnail"] = df_tweak["thumbnail"].apply(process_thumbnail)
-                    # 将时间转化为容易阅读的格式
-                    df_tweak["datetime"] = df_tweak.apply(
-                        lambda row: datetime.datetime.strftime(
-                            datetime.datetime.strptime(row["datetime"], "%Y-%m-%d %H:%M:%S"),
-                            "%Y/%m/%d   %H:%M:%S",  # TODO: 这里时间展示格式需要封为统一的可配置项，全局搜索的也是
-                        ),
-                        axis=1,
-                    )
-                    # 添加可执行选择删除操作的列
-                    df_tweak.insert(3, "delete", 0)
-                    # 将 dataframe 倒序排列，使用户新增的内容排在前面
-                    df_tweak = df_tweak.iloc[::-1]
-                    return df_tweak
-
-                def _create_timestamp_flag_mark_note_from_oneday_timeselect():
-                    """
-                    为一日之时正在选择的时间创建时间戳
-                    """
-                    flag_mark_note.ensure_flag_mark_note_csv_exist()
-                    # 合并控件选择的时间为 datetime
-                    datetime_created = utils.merge_date_day_datetime_together(
-                        st.session_state.day_date_input,
-                        st.session_state.day_time_select_24h,
-                    )
-                    # 获取选择时间附近的缩略图
-                    thumbnail = db_manager.db_get_closest_thumbnail_around_by_datetime(datetime_created)
-                    # 添加数据到原始 csv 中
-                    new_data = {"thumbnail": thumbnail, "datetime": datetime_created, "note": "_"}
-                    df = file_utils.read_dataframe_from_path(config.flag_mark_note_filepath)
-                    df.loc[len(df)] = new_data
-                    file_utils.save_dataframe_to_path(df, config.flag_mark_note_filepath)
-                    # 更新 streamlit 表控件状态
-                    _update_df_flag_mark_note()
-
-                # UI 部分
-                if st.toggle(" 🚩" + _t("oneday_toggle_flag_mark")):  # 显示时间标记清单
-                    st.button(
-                        "🚩" + _t("oneday_btn_add_flag_mark_from_select_time"),
-                        use_container_width=True,
-                        on_click=_create_timestamp_flag_mark_note_from_oneday_timeselect,
-                    )  # 按钮：为一日之时正在选择的时间创建时间戳
-
-                    # 表格编辑器展示区
-                    if not os.path.exists(config.flag_mark_note_filepath):
-                        # 没有数据文件，认为未使用过此功能，展示 onboard 介绍
-                        st.success("💡" + _t("oneday_text_flag_mark_help"))
-                    elif len(file_utils.read_dataframe_from_path(config.flag_mark_note_filepath)) == 0:  # 有 csv 但表内无数据
-                        # 未使用过此功能，展示 onboard 介绍
-                        send2trash(config.flag_mark_note_filepath)
-                        st.success(_t("oneday_text_flag_mark_help"))
-                    else:  # 有数据情况下
-                        # 初始化状态
-                        if "df_flag_mark_note" not in st.session_state:  # 获取编辑器表数据
-                            if "df_flag_mark_note_origin" not in st.session_state:  # 取得原表
-                                st.session_state["df_flag_mark_note_origin"] = file_utils.read_dataframe_from_path(
-                                    config.flag_mark_note_filepath
-                                )
-                            st.session_state["df_flag_mark_note"] = _tweak_df_flag_mark_note_to_display(
-                                st.session_state.df_flag_mark_note_origin
-                            )  # 给编辑器的表
-                        if "df_flag_mark_note_last_change" not in st.session_state:  # 建立更改对照
-                            st.session_state["df_flag_mark_note_last_change"] = st.session_state.df_flag_mark_note
-
-                        _update_df_flag_mark_note()  # 打开 toggle 时刷新，确保表内容为最新
-
-                        # 表编辑器部分
-                        st.session_state.df_flag_mark_note = st.data_editor(
-                            st.session_state.df_flag_mark_note,
-                            column_config={
-                                "thumbnail": st.column_config.ImageColumn(
-                                    "thumbnail",
-                                ),
-                                "note": st.column_config.TextColumn("note", width="large"),
-                                "delete": st.column_config.CheckboxColumn(
-                                    "delete",
-                                    default=False,
-                                ),
-                            },
-                            disabled=["thumbnail", "datetime"],
-                            hide_index=True,
-                            use_container_width=True,
-                            height=600,
-                        )
-                        st.markdown(f"`{config.flag_mark_note_filepath}`")
-
-                        # 点击保存按钮后，当编辑与输入不一致时，更新文件
-                        if st.button(
-                            "✔️" + _t("oneday_btn_flag_mark_save_df"), use_container_width=True
-                        ) and not st.session_state.df_flag_mark_note.equals(st.session_state.df_flag_mark_note_last_change):
-                            _save_flag_mark_note_from_editor(
-                                st.session_state.df_flag_mark_note_origin, st.session_state.df_flag_mark_note
-                            )
-                            st.session_state.df_flag_mark_note_last_change = st.session_state.df_flag_mark_note  # 更新 diff
-                            st.experimental_rerun()
-
-                st.empty()
-                # 窗口标题时长统计
+                # 左侧工具栏：活动统计，旗标
                 if config.show_oneday_left_side_stat:
                     lefttab_wintitle, lefttab_flagnote = st.tabs(
                         [_t("oneday_ls_title_wintitle"), _t("oneday_ls_title_flag_note")]
                     )
                     with lefttab_wintitle:
-                        day_wintitle_df_statename_date = st.session_state.day_date_input.strftime("%Y-%m-%d")
-                        day_wintitle_df_statename = f"wintitle_stat_{day_wintitle_df_statename_date}"
-                        if day_wintitle_df_statename not in st.session_state:
-                            st.session_state[day_wintitle_df_statename] = OneDay().get_wintitle_stat_in_day(
-                                st.session_state.day_date_input
-                            )
-                        if len(st.session_state[day_wintitle_df_statename]) > 0:
-                            st.dataframe(
-                                st.session_state[day_wintitle_df_statename],
-                                column_config={
-                                    "Page": st.column_config.TextColumn(_t("oneday_wt_text"), help=_t("oneday_wt_help"))
-                                },
-                                height=650,
-                                hide_index=True,
-                                use_container_width=True,
-                            )
-                        else:
-                            st.markdown(_t("oneday_ls_text_no_wintitle_stat"), unsafe_allow_html=True)
+                        record_wintitle.component_wintitle_stat(st.session_state.day_date_input)
                     with lefttab_flagnote:
-                        st.empty()
+                        flag_mark_note.component_flag_mark()
                 else:
                     st.markdown(_t("oneday_ls_text_disable_leftside"), unsafe_allow_html=True)
 

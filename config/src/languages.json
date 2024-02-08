@@ -45,7 +45,7 @@
         "oneday_wt_text": "Page Title",
         "oneday_wt_help": "The statistics may have large deviations and are for reference only.",
         "oneday_ls_title_wintitle": "⏱️ Activity Statistics",
-        "oneday_ls_title_flag_note": "🚩 Flag Note",
+        "oneday_ls_title_flag_note": "🚩 All Flag Note",
         "oneday_ls_text_no_wintitle_stat": "<p align='left' style='color:rgba(0,0,0,.3)'> No page view data for the day </p>",
         "oneday_ls_text_disable_leftside": "<p align='center' style='color:rgba(0,0,0,.3)'> The toolbar is closed. You can go to the settings page to open it. </p>",
 
@@ -244,7 +244,7 @@
         "oneday_wt_text": "页面标题",
         "oneday_wt_help": "统计可能存在较大偏差，仅供参考。",
         "oneday_ls_title_wintitle": "⏱️ 活动统计",
-        "oneday_ls_title_flag_note": "🚩 旗标",
+        "oneday_ls_title_flag_note": "🚩 全局旗标",
         "oneday_ls_text_no_wintitle_stat": "<p align='left' style='color:rgba(0,0,0,.3)'> 没有当日页面浏览数据 </p>",
         "oneday_ls_text_disable_leftside": "<p align='center' style='color:rgba(0,0,0,.3)'> 工具栏已关闭，可前往设置页开启。 </p>",
 
@@ -443,7 +443,7 @@
         "oneday_wt_text": "ページタイトル",
         "oneday_wt_help": "統計には大きな偏差がある可能性があり、参照のみを目的としています。",
         "oneday_ls_title_wintitle": "⏱️ アクティビティ統計",
-        "oneday_ls_title_flag_note": "🚩 フラグ",
+        "oneday_ls_title_flag_note": "🚩 すべてのフラグ",
         "oneday_ls_text_no_wintitle_stat": "<p align='left' style='color:rgba(0,0,0,.3)'> その日のページビュー データはありません </p>",
         "oneday_ls_text_disable_leftside": "<p align='center' style='color:rgba(0,0,0,.3)'> ツールバーは閉じています。ツールバーを開くには、設定ページに移動できます。</p> ",
 
