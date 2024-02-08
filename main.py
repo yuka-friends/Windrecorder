@@ -67,6 +67,11 @@ def open_webui(icon: pystray.Icon, item: pystray.MenuItem):
     webbrowser.open(webui_local_url)
 
 
+# 调用浏览器打开更新日记
+def open_web_changelog(icon: pystray.Icon, item: pystray.MenuItem):
+    webbrowser.open("https://github.com/yuka-friends/Windrecorder/blob/main/CHANGELOG.md")
+
+
 def setup(icon: pystray.Icon):
     icon.visible = True
     if config.start_recording_on_startup:
@@ -198,6 +203,12 @@ def menu_callback():
             ),
             update,
             enabled=lambda item: new_version is not None,
+        ),
+        # 查看更新日志
+        pystray.MenuItem(
+            _t("tray_updatelog"),
+            open_web_changelog,
+            visible=lambda item: new_version is not None,
         ),
         # 退出选项
         pystray.MenuItem(_t("tray_exit"), on_exit),
