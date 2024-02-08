@@ -227,7 +227,7 @@ class OneDay:
         stat = {}
         for index, row in df.iterrows():
             win_title_name = str(row["win_title"])
-            if win_title_name == "None":
+            if win_title_name == "None" or win_title_name == "nan":
                 continue
             if win_title_name not in stat:
                 stat[win_title_name] = 0
