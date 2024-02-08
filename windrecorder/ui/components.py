@@ -33,7 +33,8 @@ def video_dataframe(df, heightIn=800):
                 "videofile",
                 default=False,
             ),
-            "ocr_text": st.column_config.TextColumn("ocr_text", width="large"),
+            "ocr_text": st.column_config.TextColumn("ocr_text", width="medium"),
+            "win_title": st.column_config.TextColumn("title", width="medium"),
             "thumbnail": st.column_config.ImageColumn(
                 "thumbnail",
             ),

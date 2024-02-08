@@ -13,7 +13,7 @@ from skimage.metrics import structural_similarity as ssim
 
 import windrecorder.record as record
 import windrecorder.utils as utils
-from windrecorder import file_utils
+from windrecorder import file_utils, record_wintitle
 from windrecorder.config import config
 from windrecorder.db_manager import db_manager
 from windrecorder.exceptions import LockExistsException
@@ -333,6 +333,7 @@ def ocr_core_logic(file_path, vid_file_name, iframe_path):
         "is_videofile_exist",
         "is_videofile_exist",
         "thumbnail",
+        "win_title",
     ]
     dataframe_all = pd.DataFrame(columns=dataframe_column_names)
 
@@ -361,10 +362,16 @@ def ocr_core_logic(file_path, vid_file_name, iframe_path):
                 calc_to_sec_vidname = calc_to_sec_vidname.replace("-INDEX", "")
                 calc_to_sec_picname = round(int(os.path.splitext(img_file_name)[0]) / 2)
                 calc_to_sec_data = date_to_seconds(calc_to_sec_vidname) + calc_to_sec_picname
+                win_title = record_wintitle.get_wintitle_by_timestamp(calc_to_sec_data)
+                win_title = record_wintitle.optimize_wintitle_name(win_title)
+                # 检查窗口标题是否在跳过词中
+                if utils.is_str_contain_list_word(win_title, config.exclude_words):
+                    print("[Skip] The window title name contains exclusion list words and is not written to the database.")
+                    continue
                 # 计算图片预览图
                 img_thumbnail = resize_imahe_as_base64(img)
                 # 清理ocr数据
-                ocr_result_write = utils.clean_dirty_text(ocr_result_stringB)
+                ocr_result_write = utils.clean_dirty_text(ocr_result_stringB) + "-" + str(win_title)
                 # 为准备写入数据库dataframe添加记录
                 dataframe_all.loc[len(dataframe_all.index)] = [
                     vid_file_name,
@@ -374,6 +381,7 @@ def ocr_core_logic(file_path, vid_file_name, iframe_path):
                     True,
                     False,
                     img_thumbnail,
+                    win_title,
                 ]
                 ocr_result_stringA = ocr_result_stringB
 
