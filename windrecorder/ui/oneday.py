@@ -285,86 +285,35 @@ def render():
                 )  # 优化下数据展示
                 components.video_dataframe(df_day_search_result_refine)
             else:
-                # # 时间轴拖动视图 - 切换前后视频片段
-                # # 初始化状态
-                # if 'btn_last_vid_disable' not in st.session_state:
-                #     st.session_state['btn_last_vid_disable'] = False
-                # if 'btn_next_vid_disable' not in st.session_state:
-                #     st.session_state['btn_next_vid_disable'] = False
-                # if 'all_video_filepath_dict' not in st.session_state:   # 获取所有视频的文件-dt词典
-                #     st.session_state['all_video_filepath_dict'] = file_utils.get_videofile_path_dict_datetime(file_utils.get_videofile_path_list_by_time_range(file_utils.get_file_path_list(config.record_videos_dir)))
-                # if 'timeline_select_dt' not in st.session_state:   # 当前选择的时间
-                #     st.session_state['timeline_select_dt'] = utils.merge_date_day_datetime_together(st.session_state.day_date_input,st.session_state.day_time_select_24h) #合并时间为datetime
-
-                # # 找到最近的上一项/下一项时间
-                # def find_closest_dict_key(sorted_dict, target_datetime, return_mode = 'last'):
-                #     closest_datetime = None
-
-                #     for key, value in sorted_dict.items():
-                #         if return_mode == 'last':
-                #             if value < target_datetime:
-                #                 closest_datetime = value
-                #         elif return_mode == 'next':
-                #             if value > target_datetime:
-                #                 closest_datetime = value
-                #         else:
-                #             break
-
-                #     if closest_datetime is not None:
-                #         closest_datetime = closest_datetime + datetime.timedelta(seconds=1)
-                #     return closest_datetime
-
-                # # 切换到上个视频片段
-                # def switch_to_last_vid():
-                #     new_datetime_select = find_closest_dict_key(st.session_state.all_video_filepath_dict, st.session_state.timeline_select_dt, return_mode='last')
-                #     if new_datetime_select is None:
-                #         st.session_state.btn_last_vid_disable = True
-                #         st.session_state.btn_next_vid_disable = False
-                #     else:
-                #         st.session_state.day_time_slider_disable = True
-                #         st.session_state.day_date_input = utils.set_full_datetime_to_YYYY_MM_DD(new_datetime_select)
-                #         st.session_state.day_time_select_24h = utils.set_full_datetime_to_day_time(new_datetime_select)
-                #         st.session_state.timeline_select_dt = utils.merge_date_day_datetime_together(st.session_state.day_date_input,st.session_state.day_time_select_24h) # 更新时间
-                #     return
-
-                # # 切换到下个视频片段
-                # def switch_to_next_vid():
-                #     new_datetime_select = find_closest_dict_key(st.session_state.all_video_filepath_dict, st.session_state.timeline_select_dt, return_mode='next')
-                #     if new_datetime_select is None:
-                #         st.session_state.btn_last_vid_disable = False
-                #         st.session_state.btn_next_vid_disable = True
-                #     else:
-                #         st.session_state.day_time_slider_disable = True
-                #         st.session_state.day_date_input = utils.set_full_datetime_to_YYYY_MM_DD(new_datetime_select)
-                #         st.session_state.day_time_select_24h = utils.set_full_datetime_to_day_time(new_datetime_select)
-                #         st.session_state.timeline_select_dt = utils.merge_date_day_datetime_together(st.session_state.day_date_input,st.session_state.day_time_select_24h) # 更新时间
-                #     return
-
-                # col1_switchvid, col2_switchvid = st.columns([1,1])
-                # with col1_switchvid:
-                #     st.button("← 上个视频片段", use_container_width=True, disabled=st.session_state.btn_last_vid_disable, on_click=switch_to_last_vid)
-                # with col2_switchvid:
-                #     st.button("下个视频片段 →", use_container_width=True, disabled=st.session_state.btn_next_vid_disable, on_click=switch_to_next_vid)
-
-                # st.session_state.day_date_input
-                # st.session_state.day_time_select_24h
-                # st.session_state.timeline_select_dt
                 st.empty()
-                day_wintitle_df_statename_date = st.session_state.day_date_input.strftime("%Y-%m-%d")
-                day_wintitle_df_statename = f"wintitle_stat_{day_wintitle_df_statename_date}"
-                if day_wintitle_df_statename not in st.session_state:
-                    st.session_state[day_wintitle_df_statename] = OneDay().get_wintitle_stat_in_day(
-                        st.session_state.day_date_input
+                # 窗口标题时长统计
+                if config.show_oneday_left_side_stat:
+                    lefttab_wintitle, lefttab_flagnote = st.tabs(
+                        [_t("oneday_ls_title_wintitle"), _t("oneday_ls_title_flag_note")]
                     )
-                if len(st.session_state[day_wintitle_df_statename]) > 0 and config.show_oneday_wintitle_stat:
-                    st.markdown("#")
-                    st.dataframe(
-                        st.session_state[day_wintitle_df_statename],
-                        column_config={"Page": st.column_config.TextColumn(_t("oneday_wt_text"), help=_t("oneday_wt_help"))},
-                        height=650,
-                        hide_index=True,
-                        use_container_width=True,
-                    )
+                    with lefttab_wintitle:
+                        day_wintitle_df_statename_date = st.session_state.day_date_input.strftime("%Y-%m-%d")
+                        day_wintitle_df_statename = f"wintitle_stat_{day_wintitle_df_statename_date}"
+                        if day_wintitle_df_statename not in st.session_state:
+                            st.session_state[day_wintitle_df_statename] = OneDay().get_wintitle_stat_in_day(
+                                st.session_state.day_date_input
+                            )
+                        if len(st.session_state[day_wintitle_df_statename]) > 0:
+                            st.dataframe(
+                                st.session_state[day_wintitle_df_statename],
+                                column_config={
+                                    "Page": st.column_config.TextColumn(_t("oneday_wt_text"), help=_t("oneday_wt_help"))
+                                },
+                                height=650,
+                                hide_index=True,
+                                use_container_width=True,
+                            )
+                        else:
+                            st.markdown(_t("oneday_ls_text_no_wintitle_stat"), unsafe_allow_html=True)
+                    with lefttab_flagnote:
+                        st.empty()
+                else:
+                    st.markdown(_t("oneday_ls_text_disable_leftside"), unsafe_allow_html=True)
 
         with col2a:
             # 居中部分：视频结果显示区域
