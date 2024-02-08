@@ -8,7 +8,7 @@
 
 This is a tool that can continuously record screen images and retrieve relevant memories at any time through keyword searches and other methods.
 
-**All its capabilities (recording, recognition processing, storage, rewind, etc.) run completely locally, without the need for an Internet connection, without uploading any data, and only do what should be done. **
+**All its capabilities (recording, recognition processing, storage, rewind, etc.) run completely locally, without the need for an Internet connection, without uploading any data, and only do what should be done.**
 
 ![Windrecorder](https://github.com/yuka-friends/Windrecorder/blob/main/__assets__/product-preview-en.jpg)
 
@@ -24,7 +24,7 @@ This is a tool that can continuously record screen images and retrieve relevant 
 > [!WARNING]
 > This project is still in the early stages of development, and you may encounter some minor problems in experience and use. If you encounter it, you are welcome to submit issue feedback, follow updates, and initiate discussions in the [Discussions discussion area](https://github.com/yuka-friends/Windrecorder/discussions).
 >
-> 🤯 **If you are good at Python/client front-end direction and are interested in the project, you are welcome to submit an issue/PR/PR review to participate in the construction, in [Dissuasions](https://github.com/yuka-friends/Windrecorder /discussions) Check out the Roadmap and discussions! **
+> 🤯 **If you are good at Python/client front-end direction and are interested in the project, you are welcome to submit an issue/PR/PR review to participate in the construction, in [Dissuasions](https://github.com/yuka-friends/Windrecorder /discussions) Check out the Roadmap and discussions!**
 
 > [!IMPORTANT]
 > Due to minor coding errors, versions prior to `0.0.5` may not be able to detect updates properly or upgrade through install_update.bat. If so, please enter `cmd` in the path box of the `Windrecorder` root directory to open the command line, and enter `git pull` to update. 🙇‍♀️
@@ -59,14 +59,14 @@ This is a tool that can continuously record screen images and retrieve relevant 
 
 
 # 🦝 How it works
-![Windrecorder](https://github.com/yuka-friends/Windrecorder/blob/main/__assets__/how-it-work-sc.jpg)
+![Windrecorder](https://github.com/yuka-friends/Windrecorder/blob/main/__assets__/how-it-work-en.jpg)
 
 When recording is started, the Wind Capture Recorder will record 15 minutes of video segment by segment, and the video segments will be indexed after the recording is completed (therefore, there may be a 15-minute delay in querying the data). When the screen does not change or the computer enters the lock screen, recording will be automatically paused and idle maintenance will be performed (compressing and cleaning videos, image embedding recognition, etc.) until the user comes back and continues to operate the computer.
 
-| Video recording size                                                                                                                | SQlite database size (month) |
+| Video recording size                                                                                                                | SQlite database size         |
 |-------------------------------------------------------------------------------------------------------------------------------------|------------------------------|
-| Per Hour: 2~100 Mb (depends on screen change\number of monitors)                                                                    | About 160 Mb                 |
-| Per Month: 10~20 Gb (depends on screen time)  Different video compression presets can compress these data to 0.1~0.7 times the size |                              |
+| Per Hour: 2-100 Mb (depends on screen change\number of monitors)                                                                    |                              |
+| Per Month: 10-20 Gb (depends on screen time)  Different video compression presets can compress these data to 0.1-0.7 times the size | Per Month: About 160 Mb      |
 
 > In the future, the recording method may be improved to reduce ffmpeg usage and eliminate the need to wait for traceback.
 
