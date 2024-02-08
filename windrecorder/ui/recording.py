@@ -33,16 +33,14 @@ def render():
         with col2_record:
             st.markdown(_t("rs_md_only_support_main_monitor"), unsafe_allow_html=True)
 
+        is_start_recording_on_start_app = st.checkbox(
+            _t("rs_checkbox_is_start_recording_on_start_app"), value=config.start_recording_on_startup
+        )
+
         record_screen_enable_half_res_while_hidpi = st.checkbox(
             _t("rs_checkbox_enable_half_res_while_hidpi"),
             help=_t("rs_text_enable_half_res_while_hidpi"),
             value=config.record_screen_enable_half_res_while_hidpi,
-        )
-
-        firefox_optimization = st.checkbox(
-            _t("rs_checkbox_optimization_firefox"),
-            help=_t("rs_text_optimization_firefox_help"),
-            value=config.used_firefox,
         )
 
         screentime_not_change_to_pause_record = st.number_input(
@@ -133,9 +131,9 @@ def render():
 
         if st.button("Save and Apple All Change / 保存并应用所有更改", type="primary", key="SaveBtnRecord"):
             config.set_and_save_config("screentime_not_change_to_pause_record", screentime_not_change_to_pause_record)
+            config.set_and_save_config("start_recording_on_startup", is_start_recording_on_start_app)
             config.set_and_save_config("record_screen_enable_half_res_while_hidpi", record_screen_enable_half_res_while_hidpi)
             config.set_and_save_config("OCR_index_strategy", ocr_strategy_option_dict[ocr_strategy_option])
-            config.set_and_save_config("used_firefox", firefox_optimization)
 
             config.set_and_save_config("vid_store_day", vid_store_day)
             config.set_and_save_config("vid_compress_day", vid_compress_day)
@@ -147,7 +145,7 @@ def render():
 
             st.toast(_t("utils_toast_setting_saved"), icon="🦝")
             time.sleep(2)
-            st.experimental_rerun()
+            st.rerun()
 
     with spacing_col:
         st.empty()

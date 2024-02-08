@@ -18,6 +18,8 @@ class Config:
         db_filename,
         record_videos_dir,
         record_seconds,
+        record_framerate,
+        record_bitrate,
         record_screen_enable_half_res_while_hidpi,
         lang,
         ocr_lang,
@@ -44,18 +46,21 @@ class Config:
         compress_encoder,
         compress_accelerator,
         compress_quality,
-        used_firefox,
         lock_file_dir,
         maintain_lock_subdir,
         record_lock_name,
+        tray_lock_name,
         last_idle_maintain_file_path,
         iframe_dir,
         log_dir,
+        win_title_dir,
         start_recording_on_startup,
         userdata_dir,
         flag_mark_note_filename,
         thumbnail_generation_size_width,
         thumbnail_generation_jpg_quality,
+        show_oneday_left_side_stat,
+        webui_access_password_md5,
         **other_field,
     ) -> None:
         self.db_path = db_path
@@ -63,7 +68,10 @@ class Config:
         self.db_filepath = os.path.join(self.db_path, self.db_filename)
         self.record_videos_dir = record_videos_dir
         self.record_seconds = record_seconds
+        self.record_framerate = record_framerate
+        self.record_bitrate = record_bitrate
         self.record_screen_enable_half_res_while_hidpi = record_screen_enable_half_res_while_hidpi
+        self.ffmpeg_path = ".venv\\ffmpeg.exe" if release_ver else "ffmpeg"
         self.lang = lang
         self.ocr_lang = ocr_lang
         self.ocr_engine = ocr_engine
@@ -88,14 +96,15 @@ class Config:
         self.enable_ocr_chineseocr_lite_onnx = enable_ocr_chineseocr_lite_onnx
         self.maintain_lock_path = os.path.join(lock_file_dir, maintain_lock_subdir)
         self.record_lock_path = os.path.join(lock_file_dir, record_lock_name)
+        self.tray_lock_path = os.path.join(lock_file_dir, tray_lock_name)
         self.last_idle_maintain_file_path = last_idle_maintain_file_path
         self.iframe_dir = iframe_dir
         self.compress_encoder = compress_encoder
         self.compress_accelerator = compress_accelerator
         self.compress_quality = compress_quality
         self.compress_preset = get_video_compress_preset_json()
-        self.used_firefox = used_firefox
         self.log_dir = log_dir
+        self.win_title_dir = win_title_dir
         self.start_recording_on_startup = start_recording_on_startup
         self.lock_file_dir = lock_file_dir
         self.userdata_dir = userdata_dir
@@ -103,6 +112,8 @@ class Config:
         self.flag_mark_note_filepath = os.path.join(self.userdata_dir, self.flag_mark_note_filename)
         self.thumbnail_generation_size_width = thumbnail_generation_size_width
         self.thumbnail_generation_jpg_quality = thumbnail_generation_jpg_quality
+        self.show_oneday_left_side_stat = show_oneday_left_side_stat
+        self.webui_access_password_md5 = webui_access_password_md5
 
     def set_and_save_config(self, attr: str, value):
         if not hasattr(self, attr):

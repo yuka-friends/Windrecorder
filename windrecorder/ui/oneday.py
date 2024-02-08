@@ -16,7 +16,10 @@ from windrecorder.utils import get_text as _t
 
 def render():
     # onboarding checking
-    if db_manager.check_is_onboarding():
+    if "is_onboarding" not in st.session_state:
+        st.session_state["is_onboarding"] = db_manager.check_is_onboarding()
+
+    if st.session_state.is_onboarding:
         col1, col2 = st.columns([1, 2])
         with col1:
             components.web_onboarding()
@@ -408,7 +411,7 @@ def render():
                         "🚩" + _t("oneday_btn_add_flag_mark_from_select_time"),
                         use_container_width=True,
                         on_click=_create_timestamp_flag_mark_note_from_oneday_timeselect,
-                    )   # 按钮：为一日之时正在选择的时间创建时间戳
+                    )  # 按钮：为一日之时正在选择的时间创建时间戳
 
                     # 表格编辑器展示区
                     if not os.path.exists(config.flag_mark_note_filepath):
@@ -454,7 +457,9 @@ def render():
                         st.markdown(f"`{config.flag_mark_note_filepath}`")
 
                         # 点击保存按钮后，当编辑与输入不一致时，更新文件
-                        if st.button("✔️" + _t("oneday_btn_flag_mark_save_df"), use_container_width=True) and not st.session_state.df_flag_mark_note.equals(st.session_state.df_flag_mark_note_last_change):
+                        if st.button(
+                            "✔️" + _t("oneday_btn_flag_mark_save_df"), use_container_width=True
+                        ) and not st.session_state.df_flag_mark_note.equals(st.session_state.df_flag_mark_note_last_change):
                             _save_flag_mark_note_from_editor(
                                 st.session_state.df_flag_mark_note_origin, st.session_state.df_flag_mark_note
                             )
@@ -462,6 +467,34 @@ def render():
                             st.experimental_rerun()
 
                 st.empty()
+                # 窗口标题时长统计
+                if config.show_oneday_left_side_stat:
+                    lefttab_wintitle, lefttab_flagnote = st.tabs(
+                        [_t("oneday_ls_title_wintitle"), _t("oneday_ls_title_flag_note")]
+                    )
+                    with lefttab_wintitle:
+                        day_wintitle_df_statename_date = st.session_state.day_date_input.strftime("%Y-%m-%d")
+                        day_wintitle_df_statename = f"wintitle_stat_{day_wintitle_df_statename_date}"
+                        if day_wintitle_df_statename not in st.session_state:
+                            st.session_state[day_wintitle_df_statename] = OneDay().get_wintitle_stat_in_day(
+                                st.session_state.day_date_input
+                            )
+                        if len(st.session_state[day_wintitle_df_statename]) > 0:
+                            st.dataframe(
+                                st.session_state[day_wintitle_df_statename],
+                                column_config={
+                                    "Page": st.column_config.TextColumn(_t("oneday_wt_text"), help=_t("oneday_wt_help"))
+                                },
+                                height=650,
+                                hide_index=True,
+                                use_container_width=True,
+                            )
+                        else:
+                            st.markdown(_t("oneday_ls_text_no_wintitle_stat"), unsafe_allow_html=True)
+                    with lefttab_flagnote:
+                        st.empty()
+                else:
+                    st.markdown(_t("oneday_ls_text_disable_leftside"), unsafe_allow_html=True)
 
         with col2a:
             # 居中部分：视频结果显示区域
@@ -591,7 +624,7 @@ def render():
                         st.exception(ex)
                     finally:
                         st.session_state.update_wordcloud_button_disabled = False
-                        st.experimental_rerun()
+                        st.rerun()
             else:
                 st.markdown(_t("oneday_md_word_cloud_turn_off"), unsafe_allow_html=True)
 

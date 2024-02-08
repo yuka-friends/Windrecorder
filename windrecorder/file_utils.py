@@ -140,8 +140,8 @@ def is_fileA_modified_newer_than_fileB(file_path_A, file_path_B):
 
 # 取得文件夹下所有文件名并返回文件名列表、完整文件目录列表
 def get_file_path_list(dir):
+    filepath_list = []
     if os.path.exists(dir):
-        filepath_list = []
         for root, dirs, files in os.walk(dir):
             for file in files:
                 file_path = os.path.join(root, file)

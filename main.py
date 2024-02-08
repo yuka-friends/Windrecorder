@@ -1,22 +1,29 @@
 import datetime
 import os
 import re
+import shutil
 import signal
 import subprocess
 import sys
 import time
 import webbrowser
+from os import getpid
 from subprocess import Popen
 
 import pystray
 import requests
+import win32con
+import win32gui
 from PIL import Image
+from streamlit.file_util import get_streamlit_file_path
 
 PROJECT_ROOT = os.path.abspath(os.path.dirname(__file__))
 os.chdir(PROJECT_ROOT)
 
-from windrecorder import file_utils, flag_mark_note, utils  # NOQA: E402
+from windrecorder import file_utils, flag_mark_note, utils, win_ui  # NOQA: E402
 from windrecorder.config import config  # NOQA: E402
+from windrecorder.exceptions import LockExistsException  # NOQA: E402
+from windrecorder.lock import FileLock  # NOQA: E402
 from windrecorder.utils import get_text as _t  # NOQA: E402
 
 # 定义存储标准输出的日志文件路径
@@ -45,18 +52,25 @@ def get_tray_icon(state="recording"):
 
 def update(icon: pystray.Icon, item: pystray.MenuItem):
     webbrowser.open(os.path.join(PROJECT_ROOT, "install_update.bat"))
+    on_exit(icon=icon, item=item)
 
 
 file_utils.ensure_dir("cache")
 file_utils.ensure_dir(config.log_dir)
 file_utils.ensure_dir(config.lock_file_dir)
+file_utils.ensure_dir(config.maintain_lock_path)
 
-file_utils.empty_directory(config.lock_file_dir)
+file_utils.empty_directory(config.maintain_lock_path)
 
 
 # 调用浏览器打开 web ui
 def open_webui(icon: pystray.Icon, item: pystray.MenuItem):
     webbrowser.open(webui_local_url)
+
+
+# 调用浏览器打开更新日记
+def open_web_changelog(icon: pystray.Icon, item: pystray.MenuItem):
+    webbrowser.open("https://github.com/yuka-friends/Windrecorder/blob/main/CHANGELOG.md")
 
 
 def setup(icon: pystray.Icon):
@@ -205,6 +219,12 @@ def menu_callback():
             update,
             enabled=lambda item: new_version is not None,
         ),
+        # 查看更新日志
+        pystray.MenuItem(
+            _t("tray_updatelog"),
+            open_web_changelog,
+            visible=lambda item: new_version is not None,
+        ),
         # 退出选项
         pystray.MenuItem(_t("tray_exit"), on_exit),
     )
@@ -229,21 +249,53 @@ def on_exit(icon: pystray.Icon, item: pystray.MenuItem):
     icon.stop()
 
 
-def main():
-    # 初始化最开始的icon和提示横幅
-    tray_icon_init = get_tray_icon(state="record_pause")
-    tray_title_init = _t("tray_tip_record_pause")
-    if config.start_recording_on_startup:
-        start_stop_recording()
-        tray_icon_init = get_tray_icon(state="recording")
-        tray_title_init = _t("tray_tip_record")
+def interrupt_start():
+    win_ui.show_popup(_t("tray_text_already_run"), "Windrecorder is already running.", "information")
+    sys.exit()
 
-    pystray.Icon(
-        "Windrecorder",
-        tray_icon_init,
-        title=tray_title_init,
-        menu=pystray.Menu(menu_callback),
-    ).run(setup=setup)
+
+def main():
+    # 启动时加锁，防止重复启动
+    while True:
+        try:
+            tray_lock = FileLock(config.tray_lock_path, str(getpid()), timeout_s=None)
+            break
+        except LockExistsException:
+            with open(config.tray_lock_path, encoding="utf-8") as f:
+                check_pid = int(f.read())
+
+            tray_is_running = utils.is_process_running(check_pid, compare_process_name="python.exe")
+            if tray_is_running:
+                interrupt_start()
+            else:
+                try:
+                    os.remove(config.tray_lock_path)
+                except FileNotFoundError:
+                    pass
+
+    with tray_lock:
+        credential_path = get_streamlit_file_path("credentials.toml")
+        if not os.path.exists(credential_path):
+            os.makedirs(os.path.dirname(credential_path), exist_ok=True)
+            shutil.copyfile(os.path.join(PROJECT_ROOT, ".streamlit\\credentials.toml"), credential_path)
+
+        # 隐藏命令行窗口
+        hide = win32gui.GetForegroundWindow()
+        win32gui.ShowWindow(hide, win32con.SW_HIDE)
+
+        tray_icon_init = get_tray_icon(state="record_pause")
+        tray_title_init = _t("tray_tip_record_pause")
+        if config.start_recording_on_startup:
+            start_stop_recording()
+            tray_icon_init = get_tray_icon(state="recording")
+            tray_title_init = _t("tray_tip_record")
+
+        pystray.Icon(
+            "Windrecorder",
+            tray_icon_init,
+            title=tray_title_init,
+            menu=pystray.Menu(menu_callback),
+        ).run(setup=setup)
 
 
 if __name__ == "__main__":

@@ -1,4 +1,3 @@
 *We didn't find any new data in the `db` directory's database, so we assume you're using this tool for the first time! Welcome. 🎉*
-1. To start/stop recording the screen, simply open/close the :orange[start_record.bat] file in the directory.
-2. Once the segmented video files are recorded, they will be automatically indexed based on the settings, or you can choose to manually index them (if you choose manual indexing, you can use OCR to index the recorded video files in the :orange["Settings"] section).
-3. After the video files are indexed, you can search for recorded screen segments in sections such as :orange["OneDay"] or :orange["GlobalSearch"].
+1. When recording is started, Windrecorder will record 15 minutes of video segment by segment, and OCR index the video segments after the recording is completed (therefore, there may be a 15-minute delay in data query). When the screen does not change or the computer enters the lock screen, recording will be automatically paused and idle maintenance will be performed, including compressing and cleaning videos, image embedding and recognition, etc., until the user comes back to continue operating the computer.
+2. After the video files are indexed, you can search for recorded screen segments in sections such as :orange["OneDay"] or :orange["GlobalSearch"].

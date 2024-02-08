@@ -16,12 +16,13 @@ from windrecorder.config import config
 class _DBManager:
     def __init__(self, db_path, db_max_page_result, user_name):
         self.db_path = db_path  # 存放数据库的目录
+        file_utils.ensure_dir(self.db_path)
         self.db_max_page_result = db_max_page_result  # 最大查询页数
         self.user_name = user_name  # 用户名
         self._db_filename_dict = self._init_db_filename_dict()
 
-        file_utils.ensure_dir(self.db_path)
         self.db_main_initialize()
+        self.db_update_table_product_routine()  # 程序更新后调整数据结构
 
     # 根据传入的时间段取得对应数据库的文件名词典
     def db_get_dbfilename_by_datetime(self, db_query_datetime_start, db_query_datetime_end):
@@ -77,6 +78,7 @@ class _DBManager:
                 False,
                 False,
                 None,
+                None,
             )
         else:
             print("dbManager: db existed and not empty")
@@ -86,6 +88,38 @@ class _DBManager:
     # 重新读取配置文件
     def db_update_read_config(self, config):
         self.db_max_page_result = int(config.max_page_result)
+
+    # 检查 column_name 列是否存在，若无则新增
+    def db_ensure_row_exist(self, db_filepath, column_name, column_type, table_name="video_text"):
+        conn = sqlite3.connect(db_filepath)
+        cursor = conn.cursor()
+
+        # 查询表信息
+        cursor.execute(f"PRAGMA table_info({table_name});")
+        table_info = cursor.fetchall()
+
+        # 检查新列是否已存在
+        if column_name not in [column[1] for column in table_info]:
+            # 新列不存在，添加新列
+            cursor.execute(f"ALTER TABLE {table_name} ADD COLUMN {column_name} {column_type};")
+            print(f"Column {column_name} added to {table_name}.")
+        else:
+            print(f"Column {column_name} already exists in {table_name}.")
+
+        # 提交更改并关闭连接
+        conn.commit()
+        cursor.close()
+        conn.close()
+
+    # 根据程序更新调整原有数据表结构
+    def db_update_table_product_routine(self):
+        for key, value in self._db_filename_dict.items():
+            db_filepath = os.path.join(self.db_path, key)
+
+            # 新增了记录前台进程名功能，需要增加一列 win_title TEXT
+            self.db_ensure_row_exist(
+                db_filepath=db_filepath, column_name="win_title", column_type="TEXT", table_name="video_text"
+            )
 
     # 创建表
     def db_create_table(self, db_filepath):
@@ -99,7 +133,8 @@ class _DBManager:
                    ocr_text TEXT,
                    is_videofile_exist BOOLEAN,
                    is_picturefile_exist BOOLEAN,
-                   thumbnail TEXT);"""
+                   thumbnail TEXT,
+                   win_title TEXT);"""
         )
         conn.close()
 
@@ -113,9 +148,10 @@ class _DBManager:
         is_videofile_exist,
         is_picturefile_exist,
         thumbnail,
+        win_title,
     ):
         print("dbManager: Inserting data")
-        # 使用方法：db_update_data(db_filepath,'video1.mp4','iframe_0.jpg', 120, 'text from ocr', True, False)
+        # 使用方法：db_update_data(db_filepath,'video1.mp4','iframe_0.jpg', 120, 'text from ocr', True, False, "window_title")
 
         # 获取插入时间，取得对应的数据库
         insert_db_datetime = utils.set_full_datetime_to_YYYY_MM(utils.seconds_to_datetime(videofile_time))
@@ -125,7 +161,7 @@ class _DBManager:
         c = conn.cursor()
 
         c.execute(
-            "INSERT INTO video_text (videofile_name, picturefile_name, videofile_time, ocr_text, is_videofile_exist, is_picturefile_exist, thumbnail) VALUES (?, ?, ?, ?, ?, ?, ?)",
+            "INSERT INTO video_text (videofile_name, picturefile_name, videofile_time, ocr_text, is_videofile_exist, is_picturefile_exist, thumbnail, win_title) VALUES (?, ?, ?, ?, ?, ?, ?, ?)",
             (
                 videofile_name,
                 picturefile_name,
@@ -134,6 +170,7 @@ class _DBManager:
                 is_videofile_exist,
                 is_picturefile_exist,
                 thumbnail,
+                win_title,
             ),
         )
         conn.commit()
@@ -179,6 +216,7 @@ class _DBManager:
             "is_videofile_exist": "BOOLEAN",
             "is_picturefile_exist": "BOOLEAN",
             "thumbnail": "TEXT",
+            "win_title": "TEXT",
         }
 
         # 将dataframe的数据写入数据库的video_text表中
@@ -362,6 +400,7 @@ class _DBManager:
             [
                 "thumbnail",
                 "timestamp",
+                "win_title",
                 "ocr_text",
                 "videofile",
                 "videofile_name",
@@ -407,6 +446,7 @@ class _DBManager:
             [
                 "thumbnail",
                 "timestamp",
+                "win_title",
                 "ocr_text",
                 "videofile",
                 "videofile_name",
@@ -599,6 +639,8 @@ class _DBManager:
         similar_chars = list(set(similar_chars))
         if len(similar_chars) == 0:
             similar_chars.append(input_str)
+
+        similar_chars = list(filter(None, similar_chars))  # 过滤空字符串内容
         return similar_chars
 
     # 遍历得到每种可能性

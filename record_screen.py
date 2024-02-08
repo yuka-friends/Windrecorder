@@ -11,16 +11,17 @@ from os import getpid
 import numpy as np
 import pyautogui
 
-from windrecorder import file_utils, ocr_manager, record, utils, wordcloud
+from windrecorder import (
+    file_utils,
+    ocr_manager,
+    record,
+    record_wintitle,
+    utils,
+    wordcloud,
+)
 from windrecorder.config import config
 from windrecorder.exceptions import LockExistsException
 from windrecorder.lock import FileLock
-
-if config.release_ver:
-    # FIXME
-    ffmpeg_path = "env\\ffmpeg.exe"
-else:
-    ffmpeg_path = "ffmpeg"
 
 # 全局状态变量
 monitor_idle_minutes = 0
@@ -43,7 +44,7 @@ except FileNotFoundError:
 
 def assert_ffmpeg():
     try:
-        subprocess.run([ffmpeg_path, "-version"])
+        subprocess.run([config.ffmpeg_path, "-version"])
     except FileNotFoundError:
         print("Error: ffmpeg is not installed! Please ensure ffmpeg is in the PATH.")
         sys.exit(1)
@@ -103,19 +104,16 @@ def record_screen(
     )
     print(f"Origin screen resolution: {screen_width}x{screen_height}, Resized to {target_scale_width}x{target_scale_height}.")
 
-    pix_fmt_args = []
-    # firefox 不支持 yuv444p
-    if config.used_firefox:
-        pix_fmt_args = ["-pix_fmt", "yuv420p"]
+    pix_fmt_args = ["-pix_fmt", "yuv420p"]
 
     ffmpeg_cmd = [
-        ffmpeg_path,
+        config.ffmpeg_path,
         "-f",
         "gdigrab",
         "-video_size",
         f"{screen_width}x{screen_height}",
         "-framerate",
-        "2",
+        f"{config.record_framerate}",
         "-i",
         "desktop",
         "-vf",
@@ -125,14 +123,8 @@ def record_screen(
         "libx264",
         # 默认码率为 200kbps
         "-b:v",
-        "200k",
+        f"{config.record_bitrate}k",
         *pix_fmt_args,
-        "-bf",
-        "8",
-        "-g",
-        "600",
-        "-sc_threshold",
-        "10",
         "-t",
         str(record_time),
         out_path,
@@ -231,6 +223,15 @@ def monitor_compare_screenshot():
         time.sleep(5)
 
 
+# 定时记录前台窗口标题页名
+def record_active_window_title():
+    while True:
+        if not utils.is_screen_locked() or utils.is_system_awake():
+            record_wintitle.record_wintitle_now()
+
+        time.sleep(2)
+
+
 def main():
     subprocess.run("color 60", shell=True)  # 设定背景色为不活动
     assert_ffmpeg()
@@ -269,6 +270,10 @@ def main():
             thread_continuously_record_screen = threading.Thread(target=continuously_record_screen, daemon=True)
             thread_continuously_record_screen.start()
 
+            # 记录前台窗体标题的进程：
+            thread_record_active_window_title = threading.Thread(target=record_active_window_title, daemon=True)
+            thread_record_active_window_title.start()
+
             while True:
                 # 如果屏幕重复画面检测线程意外出错，重启它
                 if thread_monitor_compare_screenshot is not None and not thread_monitor_compare_screenshot.is_alive():
@@ -279,6 +284,11 @@ def main():
                 if not thread_continuously_record_screen.is_alive():
                     thread_continuously_record_screen = threading.Thread(target=continuously_record_screen, daemon=True)
                     thread_continuously_record_screen.start()
+
+                # 如果记录窗体标题进程出错，重启它
+                if not thread_record_active_window_title.is_alive():
+                    thread_record_active_window_title = threading.Thread(target=record_active_window_title, daemon=True)
+                    thread_record_active_window_title.start()
 
                 time.sleep(30)
 

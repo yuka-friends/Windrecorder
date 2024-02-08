@@ -15,11 +15,11 @@ from datetime import timedelta
 from io import BytesIO
 
 import cv2
+import psutil
 import pyautogui
 import requests
 from PIL import Image
 from pyshortcuts import make_shortcut
-from pandas.testing import assert_frame_equal
 
 from windrecorder import __version__, file_utils
 from windrecorder.config import config
@@ -291,6 +291,7 @@ def string_to_list(string):
 
 # 判断字符串是否包含列表内的元素
 def is_str_contain_list_word(string, list_items):
+    string = str(string)
     string = string.lower()
     for item in list_items:
         item = item.lower()
@@ -439,8 +440,9 @@ def get_github_version(
     url="https://raw.githubusercontent.com/yuka-friends/Windrecorder/main/windrecorder/__init__.py",
 ):
     response = requests.get(url)
-    exec(response.text)
-    version = __version__
+    global_vars = {}
+    exec(response.text, global_vars)
+    version = global_vars["__version__"]
     return version
 
 
@@ -636,3 +638,22 @@ def is_win11():
 
 def get_windows_edition():
     return platform.win32_edition()
+
+
+def is_process_running(pid, compare_process_name):
+    """根据进程 PID 与名字比对检测进程是否存在"""
+    pid = int(pid)
+    try:
+        # 确保 PID 与进程名一致
+        process = psutil.Process(pid)
+        return process.is_running() and process.name() == compare_process_name
+    except psutil.NoSuchProcess:
+        return False
+
+
+def get_process_id(process_name):
+    """通过进程名称获取进程 ID"""
+    for proc in psutil.process_iter(["pid", "name"]):
+        if proc.info["name"] == process_name:
+            return proc.info["pid"]
+    return None

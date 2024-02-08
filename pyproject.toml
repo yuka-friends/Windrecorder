@@ -7,7 +7,7 @@ license = "GPL-2.0"
 readme = "README.md"
 
 [tool.poetry.dependencies]
-python = "~3.10"
+python = ">=3.10,<3.12"
 jieba = "^0.42.1"
 matplotlib = "^3.7.1"
 numpy = "^1.24.2"
@@ -25,6 +25,8 @@ pillow = "^10.1.0"
 wordcloud = "^1.9.2"
 pystray = "^0.19.5"
 customtkinter = "^5.2.1"
+psutil = "^5.9.5"
+scikit-image = "^0.22.0"
 
 [tool.poetry.group.dev.dependencies]
 pre-commit = "^3.5.0"

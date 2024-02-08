@@ -4,15 +4,15 @@ import shutil
 import subprocess
 
 import cv2
-import numpy as np
 import pandas as pd
 import win32file
 from PIL import Image
 from send2trash import send2trash
+from skimage.metrics import structural_similarity as ssim
 
 import windrecorder.record as record
 import windrecorder.utils as utils
-from windrecorder import file_utils
+from windrecorder import file_utils, record_wintitle
 from windrecorder.config import config
 from windrecorder.db_manager import db_manager
 from windrecorder.exceptions import LockExistsException
@@ -209,26 +209,21 @@ def compare_strings(a, b, threshold=70):
 
 
 # 计算两张图片的重合率 - 通过本地文件的方式
-def compare_image_similarity(img_path1, img_path2, threshold=0.7):
+def compare_image_similarity(img_path1, img_path2, threshold=0.85):
     # todo: 将删除操作改为整理为文件列表，降低io开销
     print("ocr_manager: Calculate the coincidence rate of two pictures.")
-    img1 = cv2.imread(img_path1)
-    img2 = cv2.imread(img_path2)
+    imageA = cv2.imread(img_path1)
+    imageB = cv2.imread(img_path2)
 
-    # 将图片转换为灰度图
-    img1_gray = cv2.cvtColor(img1, cv2.COLOR_BGR2GRAY)
-    img2_gray = cv2.cvtColor(img2, cv2.COLOR_BGR2GRAY)
+    # 将图片转换为灰度
+    imageA = cv2.cvtColor(imageA, cv2.COLOR_BGR2GRAY)
+    imageB = cv2.cvtColor(imageB, cv2.COLOR_BGR2GRAY)
 
-    img1_gray = img1_gray.astype(np.float32)
-    img2_gray = img2_gray.astype(np.float32)
-
-    # 计算两个灰度图的Structural Similarity Index
-    # (score, diff) = cv2.compareHist(img1_gray, img2_gray, cv2.HISTCMP_BHATTACHARYYA)
-    score = cv2.compareHist(img1_gray, img2_gray, cv2.HISTCMP_BHATTACHARYYA)
+    # 计算两张图片的SSIM
+    score = ssim(imageA, imageB)
 
     if score >= threshold:
         print(f"Images are similar with score {score}, deleting {img_path2}")
-        # os.remove(img_path2)
         return True
     else:
         print(f"Images are different with score {score}")
@@ -325,6 +320,7 @@ def ocr_core_logic(file_path, vid_file_name, iframe_path):
         "is_videofile_exist",
         "is_videofile_exist",
         "thumbnail",
+        "win_title",
     ]
     dataframe_all = pd.DataFrame(columns=dataframe_column_names)
 
@@ -353,10 +349,16 @@ def ocr_core_logic(file_path, vid_file_name, iframe_path):
                 calc_to_sec_vidname = calc_to_sec_vidname.replace("-INDEX", "")
                 calc_to_sec_picname = round(int(os.path.splitext(img_file_name)[0]) / 2)
                 calc_to_sec_data = date_to_seconds(calc_to_sec_vidname) + calc_to_sec_picname
+                win_title = record_wintitle.get_wintitle_by_timestamp(calc_to_sec_data)
+                win_title = record_wintitle.optimize_wintitle_name(win_title)
+                # 检查窗口标题是否在跳过词中
+                if utils.is_str_contain_list_word(win_title, config.exclude_words):
+                    print("[Skip] The window title name contains exclusion list words and is not written to the database.")
+                    continue
                 # 计算图片预览图
                 img_thumbnail = resize_image_as_base64(img)
                 # 清理ocr数据
-                ocr_result_write = utils.clean_dirty_text(ocr_result_stringB)
+                ocr_result_write = utils.clean_dirty_text(ocr_result_stringB) + "-" + str(win_title)
                 # 为准备写入数据库dataframe添加记录
                 dataframe_all.loc[len(dataframe_all.index)] = [
                     vid_file_name,
@@ -366,6 +368,7 @@ def ocr_core_logic(file_path, vid_file_name, iframe_path):
                     True,
                     False,
                     img_thumbnail,
+                    win_title,
                 ]
                 ocr_result_stringA = ocr_result_stringB
 
@@ -374,7 +377,7 @@ def ocr_core_logic(file_path, vid_file_name, iframe_path):
 
 
 # 对某个视频进行处理的过程
-def ocr_process_single_video(video_path, vid_file_name, iframe_path):
+def ocr_process_single_video(video_path, vid_file_name, iframe_path, optimize_for_high_framerate_vid=False):
     with acquire_ocr_lock(vid_file_name):
         iframe_sub_path = os.path.join(iframe_path, os.path.splitext(vid_file_name)[0])
         # 整合完整路径
@@ -401,7 +404,17 @@ def ocr_process_single_video(video_path, vid_file_name, iframe_path):
 
         file_utils.ensure_dir(iframe_sub_path)
         try:
-            ocr_core_logic(file_path, vid_file_name, iframe_sub_path)
+            if optimize_for_high_framerate_vid:
+                vid_filepath_optimize = convert_temp_optimize_vidfile_for_ocr(file_path)
+                if vid_filepath_optimize is None:
+                    raise FileNotFoundError
+                ocr_core_logic(vid_filepath_optimize, vid_file_name, iframe_sub_path)
+                try:
+                    os.remove(vid_filepath_optimize)
+                except FileNotFoundError:
+                    pass
+            else:
+                ocr_core_logic(file_path, vid_file_name, iframe_sub_path)
         except Exception as e:
             # 记录错误日志
             print(
@@ -423,6 +436,27 @@ def ocr_process_single_video(video_path, vid_file_name, iframe_path):
         finally:
             # 清理文件
             shutil.rmtree(iframe_sub_path)
+
+
+def convert_temp_optimize_vidfile_for_ocr(vid_filepath):
+    """
+    将输入视频转为 2fps 的临时视频，以便于 OCR 拆帧识别
+    """
+    output_temp_vid_filepath = os.path.join(
+        os.path.dirname(vid_filepath), f"{os.path.basename(vid_filepath).split('.')[0]}-2FPS.mp4"
+    )
+    try:
+        os.remove(output_temp_vid_filepath)
+    except FileNotFoundError:
+        pass
+    ffmpeg_cmd = [config.ffmpeg_path, "-i", vid_filepath, "-vf", "fps=2", output_temp_vid_filepath]
+    try:
+        subprocess.run(ffmpeg_cmd, check=True)
+        print(f"convert {vid_filepath} into {output_temp_vid_filepath}")
+        return output_temp_vid_filepath
+    except subprocess.CalledProcessError as ex:
+        print(f"convert_temp_optimize_vidfile_for_ocr: {ex.cmd} failed with return code {ex.returncode}")
+        return None
 
 
 # 处理文件夹内所有视频的主要流程
@@ -447,8 +481,10 @@ def ocr_process_videos(video_path, iframe_path):
                 continue
 
             try:
-                # ocr该文件
-                ocr_process_single_video(root, file, iframe_path)
+                # ocr 该文件。如果使用了超过 2fps 的录制参数，先优化处理视频然后再 ocr
+                ocr_process_single_video(
+                    root, file, iframe_path, optimize_for_high_framerate_vid=(config.record_framerate > 2)
+                )
             except LockExistsException:
                 pass
 

@@ -1,100 +1,90 @@
 ![Windrecorder](https://github.com/yuka-friends/Windrecorder/blob/main/__assets__/product-header-en.jpg)
-<h1 align="center"> 🦝 Windrecorder | Memory Cue Search Engine</h1>
-<p align="center"> An Open Source <a href="https://www.rewind.ai/">Rewind</a>’s alternative tool on Windows to help you retrieve memory cues.</p>
+<h1 align="center"> 🦝 Windrecorder | Personal Memory Search Engine</h1>
+<p align="center"> An Open Source Mac App <a href="https://www.rewind.ai/">Rewind</a>’s alternative tool on Windows to help you retrieve memory cues.</p>
 
-<p align="center"> <a href="https://github.com/yuka-friends/Windrecorder/blob/main/__assets__/README-en.md">English</a>  | <a href="https://github.com/yuka-friends/Windrecorder/blob/main/README.md">简体中文</a> | <a href="https://github.com/yuka-friends/Windrecorder/blob/main/__assets__/README-ja.md">日本語</a> </p>
+<p align="center"> <a href="https://github.com/yuka-friends/Windrecorder/blob/main/__assets__/README-en.md">English</a>  | <a href="https://github.com/yuka-friends/Windrecorder/blob/main/README.md">简体中文</a></p>
 
 ---
 
 This is a tool that can continuously record screen images and retrieve relevant memories at any time through keyword searches and other methods.
 
-**All its capabilities (recording, recognition processing, storage traceback, etc.) run completely locally, without the need for an Internet connection, without uploading any data, and only do what should be done. **
+**All its capabilities (recording, recognition processing, storage, rewind, etc.) run completely locally, without the need for an Internet connection, without uploading any data, and only do what should be done.**
 
-![Windrecorder](https://github.com/yuka-friends/Windrecorder/blob/main/__assets__/product-preview-cn.jpg)
+![Windrecorder](https://github.com/yuka-friends/Windrecorder/blob/main/__assets__/product-preview-en.jpg)
+
+**Windrecorder currently does:**
+- Record the screen stably and continuously with a smaller file size. Only index the changed scenes and update the OCR text, page title and other information to the database; automatically maintain the database, clean and compress the video when no one is using the computer;
+- Complete webui interface, which can review the screen, conduct OCR/image semantics and other queries;
+- Provide data summaries such as activity statistics, word clouds, timelines, light boxes, scatter plots, etc.;
+- Supports multiple languages. Currently built-in: Simplified Chinese, English, and Japanese. Welcome to contribute multilingual translations and help us improve copywriting quality.
+- _coming soon... pay attention to our PR :)_
+
+---
 
 > [!WARNING]
-> 🤯 This project is still in the early stages of development, and you may encounter some minor problems in experience and use. If you encounter it, you are welcome to submit issue feedback, follow updates, and initiate discussions in the Discussions forum.
+> This project is still in the early stages of development, and you may encounter some minor problems in experience and use. If you encounter it, you are welcome to submit issue feedback, follow updates, and initiate discussions in the [Discussions discussion area](https://github.com/yuka-friends/Windrecorder/discussions).
+>
+> 🤯 **If you are good at Python/client front-end direction and are interested in the project, you are welcome to submit an issue/PR/PR review to participate in the construction, in [Dissuasions](https://github.com/yuka-friends/Windrecorder /discussions) Check out the Roadmap and discussions!**
 
 > [!IMPORTANT]
-> The project is adding functions and making architectural changes, which may cause problems such as users of earlier versions being unable to upgrade and update normally.
-> Don't worry! Bring your own `videos`, `db`, `config\config_user.json` and other directories and files, and you can migrate to the latest version at any time.
+> Due to minor coding errors, versions prior to `0.0.5` may not be able to detect updates properly or upgrade through install_update.bat. If so, please enter `cmd` in the path box of the `Windrecorder` root directory to open the command line, and enter `git pull` to update. 🙇‍♀️
 
-## 🦝🎉 0.1.0 What's new (coming soon)
+# 🦝 Installation
 
-![Windrecorder](https://github.com/yuka-friends/Windrecorder/blob/main/__assets__/product-update-0.1.0.jpg)
+- Download [ffmpeg](https://www.gyan.dev/ffmpeg/builds/ffmpeg-release-essentials.zip) and extract `ffmpeg.exe` and `ffprobe.exe` in the bin directory to `C :\Windows\System32` (or other directories located in PATH)
 
-- Now that we have integrated the tool into the system tray and will release a ready-to-run integration package, Wind Recorder will be more intuitive and easier to use than ever before. Say goodbye to complicated manual installation, `start_record.bat` & `start_webui.bat`! 👋
-- Added time mark function: When you want to mark important meetings, emergencies, live broadcasts, gaming and movie-watching highlights, etc. to facilitate future review, you can mark the present moment through the tray, or you can Add records of important events when reviewing;
-- Added more format and parameter support for compressed video;
-- Refactored a large number of code structures, fixed some bugs and improved performance;
-- For more upgrades and changes, please check the [Update Log](https://github.com/yuka-friends/Windrecorder/blob/main/CHANGELOG.md)
+- Install [Git](https://git-scm.com/download/win) and just take the next step;
 
+- Install [Python](https://www.python.org/ftp/python/3.11.7/python-3.11.7-amd64.exe), make sure to check `Add python.exe to PATH` when installing
+     - **Notice! Currently, python 3.12** is not supported. It is recommended to use python 3.11, which is the version pointed to by the link above.
 
-If you've been using a windlogger before, thank you! You can update to the latest version through the following methods:
+- In the file manager, navigate to the directory where you want to install this tool (it is recommended to place it in a partition with sufficient space), and download the tool through the terminal command `git clone https://github.com/yuka-friends/Windrecorder`;
 
-- Method A: Download the integration package from [Releases](https://github.com/yuka-friends/Windrecorder/releases) and unzip it, then:
-     - Create a new `userdata` folder in the tool directory, and move the original `videos`, `db`, `result_lightbox`, `result_timeline`, `result_wordcloud` folders to `userdata`;
-     - Move the original `config\config_user.json` file to the `userdata` folder;
-     - Open `windrecorder.exe` to use 🎉
-- Method B: Execute `git pull` in the directory, and then open `install_update_setting.bat` to upgrade;
-
-
-# 🦝 First time installation
-
-## Automatic installation (almost ready)
-
-Download the integration package from [Releases](https://github.com/yuka-friends/Windrecorder/releases), unzip it to the directory where you want to store the data, open `windrecorder.exe` and start using it.
-
-
-## Manual installation
-
-- Download [ffmpeg](https://www.gyan.dev/ffmpeg/builds/ffmpeg-release-essentials.zip) and extract ffmpeg.exe & ffprobe.exe in the bin directory to `C:\Windows\System32` ( or other directories located in PATH)
-
-- Install [Git](https://git-scm.com/downloads), [Python](https://www.python.org/ftp/python/3.10.11/python-3.10.11-amd64.exe ) (check Add python.exe to PATH during installation), [Pip](https://pip.pypa.io/en/stable/installation/);
-     - **Notice! Currently, python 3.12** is not supported. It is recommended to use python 3.10, which is the version pointed to by the link above.
-
-- Navigate to the directory where you want to install this tool (it is recommended to place it in a partition with sufficient space), and download the tool through the terminal command `git clone https://github.com/yuka-friends/Windrecorder`;
-
-     - You can open the folder you want to install, enter `cmd` in the path bar and press Enter, enter the current directory terminal, paste the above command and press Enter to execute;
+     - You can open the folder you want to install, enter `cmd` in the path bar and press Enter, you can locate the current directory in the terminal, paste the above command and press Enter to execute;
 
 - Open `install_update.bat` in the directory to install and configure the tool. If everything goes well, you can start using it!
-
-     - If an error is reported due to network reasons, you can add proxy `set https_proxy=http://127.0.0.1:xxxx` or add mainland [mirror source] (https://mirrors.tuna.tsinghua.edu. cn/help/pypi/);
 
 
 # 🦝 How to use
 
-Currently, you need to open the batch script in the directory to use the tool:
+- Open `start_app.bat` in the directory, the tool will run in the system tray and be used through the right-click menu;
+- All data (video, database, statistical information) will be stored in the same directory as Windrecorder. If you want to copy or move the tool location (for example, if you change the computer), you only need to delete `.venv` in the directory after the move, and re-run `install_update.bat` to install the virtual environment and use it;
 
-- Start recording the screen by opening `start_app.bat` in the directory;
+> [!TIP]
+> Best practice: Set up auto-start in webui to record everything without any fuss.
+>
+> **Recording will be automatically paused when there is no change in the picture or the screen is sleeping. When the computer is idle and no one is using it, the tool will automatically maintain the database, compress, and clean up expired videos. **
+>
+> _Just set it and forget it! _
 
-> Note: You need to keep the terminal window minimized and run in the background to record. Likewise, simply close the terminal window when you need to pause recording.
 
-> Best practice: Set auto-start in webui to record everything without any fuss. Recording will be automatically paused when there is no change in the picture or the screen is in sleep mode. When the computer is idle and no one is using it, the tool will automatically maintain the database, compress, and clean up expired videos; Just set it and forget it!
+# 🦝 How it works
+![Windrecorder](https://github.com/yuka-friends/Windrecorder/blob/main/__assets__/how-it-work-en.jpg)
 
----
-### Roadmap:
-- [x] Record screen stably and continuously with smaller file size
-- [x] Only identify changed pictures and store the index in the database
-- [x] Complete graphical interface (webui)
-- [x] Data summary of word cloud, timeline, light box, scatter plot
-- [x] Automatically identify clips after recording, and automatically maintain, clean and compress videos in your spare time
-- [x] Multi-language support: i18n support for interface and OCR recognition completed
-- [ ] Refactor the code to make it more standardized, easier to develop, and have better performance
-- [-] Package tools and provide a more convenient usage mode to make it user-friendly
-- [ ] Add recognition of screen modalities to enable search for screen content descriptions
-- [ ] Add database encryption function
-- [ ] Record the foreground process name and record the corresponding position of the OCR word to present it as a clue during search
-- [ ] Add word embedding index, local/API LLM query
-- [-] Add multi-screen recording support (depends on future features of pyautogui)
-- [ ] 🤔
+When recording is started, the Wind Capture Recorder will record 15 minutes of video segment by segment, and the video segments will be indexed after the recording is completed (therefore, there may be a 15-minute delay in querying the data). When the screen does not change or the computer enters the lock screen, recording will be automatically paused and idle maintenance will be performed (compressing and cleaning videos, image embedding recognition, etc.) until the user comes back and continues to operate the computer.
+
+| Video recording size                                                                                                                | SQlite database size         |
+|-------------------------------------------------------------------------------------------------------------------------------------|------------------------------|
+| Per Hour: 2-100 Mb (depends on screen change\number of monitors)                                                                    |                              |
+| Per Month: 10-20 Gb (depends on screen time)  Different video compression presets can compress these data to 0.1-0.7 times the size | Per Month: About 160 Mb      |
+
+> In the future, the recording method may be improved to reduce ffmpeg usage and eliminate the need to wait for traceback.
 
 
 # 🦝 Q&A | Frequently Asked Questions
+
+Q: Failed to open webui from tray
+
+- A: It may be a bug caused by streamlit triggering mailbox collection when it is first started. You can execute the following command on the command line in the directory and press Enter to skip the mailbox collection during the first run. After closing the command line, you can use it normally.
+```
+poetry shell
+streamlit run webui.py
+```
+
 Q: There is no data in the recent period when opening webui.
 
 - A: When the tool is indexing data, webui will not create the latest temporary database file.
-Solution: Try to wait for a while, wait for the tool index to be completed, refresh the webui interface, or delete the database file with the suffix _TEMP_READ.db in the db directory and refresh it (if there is a database file damage prompt, don’t worry, it may be The tool is still in the index, please try refreshing/removing it after some time). This strategy will be fixed and refactored in the future. [#26](https://github.com/yuka-friends/Windrecorder/issues/26)
+Solution: Try to wait for a while, wait for the tool indexing to complete, refresh the webui interface, or delete the database file with the suffix _TEMP_READ.db in the db directory and refresh it (if there is a database file damage prompt, don’t worry, it may be The tool is still in the index, please try refreshing/removing it after some time). This strategy will be fixed and refactored in the future. [#26](https://github.com/yuka-friends/Windrecorder/issues/26)
 
 Q: When opening webui, it prompts: `FileNotFoundError: [WinError 2] The system cannot find the file specified: './db\\user_2023-10_wind.db-journal'`
 
@@ -103,7 +93,7 @@ Solution: After the tool background indexing is completed, delete the correspond
 
 Q: The mouse flashes during recording
 
-- A: For issues left over from Windows history, you can try [this post](https://stackoverflow.com/questions/34023630/how-to-avoid-mouse-pointer-flicker-when-capture-a-window-by-ffmpeg ) method to solve🤔. (Actually, it’s okay if you get used to it and don’t care about it (escape)
+- A: Windows historical issues, you can try [this post](https://stackoverflow.com/questions/34023630/how-to-avoid-mouse-pointer-flicker-when-capture-a-window-by-ffmpeg ) method to solve🤔. (IMO it might okay if you get used to it and don’t care about it
 
 Q: Windows.Media.Ocr.Cli OCR is not available/the recognition rate is too low
 

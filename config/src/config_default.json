@@ -2,6 +2,8 @@
   "record_screen_res": "3840x2160",
   "target_screen_res": "scale=1920:1080",
   "record_seconds": 900,
+  "record_framerate": 2,
+  "record_bitrate": 200,
   "record_videos_dir": "videos",
   "db_path": "./db",
   "db_filename": "ocrSaved.db",
@@ -17,13 +19,12 @@
   "ocr_engine": "Windows.Media.Ocr.Cli",
   "exclude_words": [
     "Windrecorder",
-    "捕风记录仪",
-    "一天之时",
-    "OneDay",
-    "KeePass"
+    "Windrecord - webui",
+    "KeePass",
+    "forget password"
   ],
   "wordcloud_user_stop_words": [
-    "请","替换","为","不想","统计","在","词云","中","的","词语"
+    "login","account","twitter","reddit","youtube"
   ],
   "ocr_image_crop_URBL": [6,6,6,3],
   "vid_store_day": 600,
@@ -44,12 +45,15 @@
   "compress_encoder": "x264",
   "compress_accelerator": "cpu",
   "compress_quality": 39,
-  "used_firefox": false,
   "start_recording_on_startup": true,
   "lock_file_dir": "cache\\locks",
   "maintain_lock_subdir": "LOCK_MAINTAIN",
   "record_lock_name": "LOCK_FILE_RECORD.MD",
+  "tray_lock_name": "LOCK_FILE_TRAY.MD",
   "last_idle_maintain_file_path": "cache\\LAST_IDLE_MAINTAIN.MD",
   "iframe_dir": "cache\\i_frames",
-  "log_dir": "cache\\logs"
+  "log_dir": "cache\\logs",
+  "win_title_dir": "cache\\win_title",
+  "show_oneday_left_side_stat": true,
+  "webui_access_password_md5": ""
 }
