@@ -48,7 +48,7 @@ This is a tool that can continuously record screen images and retrieve relevant 
 # 🦝 How to use
 
 - Open `start_app.bat` in the directory, the tool will run in the system tray and be used through the right-click menu;
-- All data (video, database, statistical information) will be stored in the same directory as Windrecorder. If you want to copy or move the tool location (for example, if you change the computer), you only need to delete `.venv` in the directory after the move, and re-run `install_update.bat` to install the virtual environment and use it;
+- All data (video, database, statistical information) will be stored in the same directory as Windrecorder. If you want to copy or move the tool location (for example, if you change the computer), you only need to delete `.venv` in the directory and moved, then re-run `install_update.bat` to install the virtual environment and use it;
 
 > [!TIP]
 > Best practice: Set up auto-start in webui to record everything without any fuss.
@@ -63,6 +63,9 @@ This is a tool that can continuously record screen images and retrieve relevant 
 
 When recording is started, the Wind Capture Recorder will record 15 minutes of video segment by segment, and the video segments will be indexed after the recording is completed (therefore, there may be a 15-minute delay in querying the data). When the screen does not change or the computer enters the lock screen, recording will be automatically paused and idle maintenance will be performed (compressing and cleaning videos, image embedding recognition, etc.) until the user comes back and continues to operate the computer.
 
+- _Image Embedding will be provided as extension, still WIP._
+
+
 | Video recording size                                                                                                                | SQlite database size         |
 |-------------------------------------------------------------------------------------------------------------------------------------|------------------------------|
 | Per Hour: 2-100 Mb (depends on screen change\number of monitors)                                                                    |                              |
@@ -72,14 +75,6 @@ When recording is started, the Wind Capture Recorder will record 15 minutes of v
 
 
 # 🦝 Q&A | Frequently Asked Questions
-
-Q: Failed to open webui from tray
-
-- A: It may be a bug caused by streamlit triggering mailbox collection when it is first started. You can execute the following command on the command line in the directory and press Enter to skip the mailbox collection during the first run. After closing the command line, you can use it normally.
-```
-poetry shell
-streamlit run webui.py
-```
 
 Q: There is no data in the recent period when opening webui.
 
