@@ -55,6 +55,10 @@ class Config:
         log_dir,
         win_title_dir,
         start_recording_on_startup,
+        userdata_dir,
+        flag_mark_note_filename,
+        thumbnail_generation_size_width,
+        thumbnail_generation_jpg_quality,
         show_oneday_left_side_stat,
         webui_access_password_md5,
         **other_field,
@@ -103,6 +107,11 @@ class Config:
         self.win_title_dir = win_title_dir
         self.start_recording_on_startup = start_recording_on_startup
         self.lock_file_dir = lock_file_dir
+        self.userdata_dir = userdata_dir
+        self.flag_mark_note_filename = flag_mark_note_filename
+        self.flag_mark_note_filepath = os.path.join(self.userdata_dir, self.flag_mark_note_filename)
+        self.thumbnail_generation_size_width = thumbnail_generation_size_width
+        self.thumbnail_generation_jpg_quality = thumbnail_generation_jpg_quality
         self.show_oneday_left_side_stat = show_oneday_left_side_stat
         self.webui_access_password_md5 = webui_access_password_md5
 

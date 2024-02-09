@@ -5,9 +5,7 @@ import pandas as pd
 import streamlit as st
 from PIL import Image
 
-import windrecorder.utils as utils
-import windrecorder.wordcloud as wordcloud
-from windrecorder import file_utils
+from windrecorder import file_utils, flag_mark_note, record_wintitle, utils, wordcloud
 from windrecorder.config import config
 from windrecorder.db_manager import db_manager
 from windrecorder.oneday import OneDay
@@ -245,10 +243,20 @@ def render():
 
         # 展示时间轴缩略图
         if get_generate_result:
-            # TODO: 不知道这里是因为什么问题没用上，以后搞清楚原因再看看
-            image_thumbnail = Image.open(current_day_TL_img_path)  # noqa: F841
-            daily_timeline_html(utils.image_to_base64(current_day_TL_img_path))
-            # st.image(image_thumbnail,use_column_width="always")
+            # 添加时间标记
+            flag_mark_timeline_img_filepath = None
+            if os.path.exists(config.flag_mark_note_filepath):  # 读取标记数据
+                df_flag_mark_for_timeline = file_utils.read_dataframe_from_path(config.flag_mark_note_filepath)
+                if len(df_flag_mark_for_timeline) > 0:  # 绘制旗标图
+                    flag_mark_timeline_img_filepath = flag_mark_note.add_visual_mark_on_oneday_timeline_thumbnail(
+                        df=df_flag_mark_for_timeline, image_filepath=current_day_TL_img_path
+                    )
+
+            if flag_mark_timeline_img_filepath:
+                daily_timeline_html(utils.image_to_base64(flag_mark_timeline_img_filepath))
+            else:
+                daily_timeline_html(utils.image_to_base64(current_day_TL_img_path))
+
         else:
             st.markdown(
                 _t("oneday_md_no_enough_thunmbnail_for_timeline"),
@@ -256,7 +264,6 @@ def render():
             )
 
         # 可视化数据时间轴
-        # day_chart_data_overview = OneDay().get_day_statistic_chart_overview(df = day_df, start = day_min_timestamp_dt.hour, end = day_max_timestamp_dt.hour+1)
         day_chart_data_overview = OneDay().get_day_statistic_chart_overview(
             df=day_df, start_dt=day_min_timestamp_dt, end_dt=day_max_timestamp_dt
         )
@@ -285,33 +292,15 @@ def render():
                 )  # 优化下数据展示
                 components.video_dataframe(df_day_search_result_refine)
             else:
-                st.empty()
-                # 窗口标题时长统计
+                # 左侧工具栏：活动统计，旗标
                 if config.show_oneday_left_side_stat:
                     lefttab_wintitle, lefttab_flagnote = st.tabs(
                         [_t("oneday_ls_title_wintitle"), _t("oneday_ls_title_flag_note")]
                     )
                     with lefttab_wintitle:
-                        day_wintitle_df_statename_date = st.session_state.day_date_input.strftime("%Y-%m-%d")
-                        day_wintitle_df_statename = f"wintitle_stat_{day_wintitle_df_statename_date}"
-                        if day_wintitle_df_statename not in st.session_state:
-                            st.session_state[day_wintitle_df_statename] = OneDay().get_wintitle_stat_in_day(
-                                st.session_state.day_date_input
-                            )
-                        if len(st.session_state[day_wintitle_df_statename]) > 0:
-                            st.dataframe(
-                                st.session_state[day_wintitle_df_statename],
-                                column_config={
-                                    "Page": st.column_config.TextColumn(_t("oneday_wt_text"), help=_t("oneday_wt_help"))
-                                },
-                                height=650,
-                                hide_index=True,
-                                use_container_width=True,
-                            )
-                        else:
-                            st.markdown(_t("oneday_ls_text_no_wintitle_stat"), unsafe_allow_html=True)
+                        record_wintitle.component_wintitle_stat(st.session_state.day_date_input)
                     with lefttab_flagnote:
-                        st.empty()
+                        flag_mark_note.component_flag_mark()
                 else:
                     st.markdown(_t("oneday_ls_text_disable_leftside"), unsafe_allow_html=True)
 

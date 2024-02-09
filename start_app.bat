@@ -1,4 +1,5 @@
 @echo off
+title Windrecorder
 mode con cols=70 lines=10
 color 75
 echo.

@@ -38,10 +38,15 @@
         "oneday_md_word_cloud_turn_off": "<p align='center' style='color:rgba(0,0,0,.3)'> Daily word cloud disabled, enable in Setting tab. </p>",
         "oneday_text_has_vid_but_not_index": "No data index in the database for this day. However, there is a video on the disk that has not been indexed yet, please go to 'Settings' to index. →",
         "oneday_text_vid_and_data_not_found": "Data index and video file not found for this day.",
+        "oneday_text_flag_mark_help": "When you want to add a mark to an important meeting, emergency situation, certain live broadcast, game or movie viewing highlight moment, etc. to facilitate future review, you can add a mark to the present moment through the tray menu - in the long river of time. You can also carve a boat and ask for a sword.",
+        "oneday_text_help_locate_manually": "Limited by streamlit capabilities, currently we can only manually locate back to this point in time.",
+        "oneday_toggle_flag_mark": "Time mark list",
+        "oneday_btn_add_flag_mark_from_select_time": "Add a mark to the currently positioned time",
+        "oneday_btn_flag_mark_save_df": "Save changes",
         "oneday_wt_text": "Page Title",
         "oneday_wt_help": "The statistics may have large deviations and are for reference only.",
         "oneday_ls_title_wintitle": "⏱️ Activity Statistics",
-        "oneday_ls_title_flag_note": "🚩 Flag Note",
+        "oneday_ls_title_flag_note": "🚩 All Flag Note",
         "oneday_ls_text_no_wintitle_stat": "<p align='left' style='color:rgba(0,0,0,.3)'> No page view data for the day </p>",
         "oneday_ls_text_disable_leftside": "<p align='center' style='color:rgba(0,0,0,.3)'> The toolbar is closed. You can go to the settings page to open it. </p>",
 
@@ -169,6 +174,7 @@
         "qs_end_slogan": "> Capture and preserve the fleeting moments of the wind, as seen through your eyes.",
         "qs_end_feedback": "> Encountered a problem or have suggestions? Feel free to submit issues and PRs at https://github.com/yuka-friends/Windrecorder.",
 
+        "tray_add_flag_mark_note_for_now": "🚩 Add a mark for now time",
         "tray_webui_start": "🦝 Start Search/Setting webui",
         "tray_webui_exit": "🦝 Stop Search/Settings webui",
         "tray_webui_address": "🦝 Browser {address_port} to access webui",
@@ -185,7 +191,12 @@
         "tray_notify_text_start_without_record": "Use the tray right-click menu to Start Recording and Rewind Memories",
         "tray_tip_record": "Windrecorder - Recording",
         "tray_tip_record_pause": "Windrecorder - Recording Pause",
-        "tray_text_already_run": "Another Windrecorder is running in system tray."
+        "tray_text_already_run": "Another Windrecorder is running in system tray.",
+
+        "flag_text_mark_added": "The mark at this time has been added.",
+        "flag_input_note": "Note:",
+        "flag_btn_remove_mark": "Remove mark",
+        "flag_btn_add_note": "Add note"
     },
   
     "sc": {  
@@ -227,10 +238,15 @@
         "oneday_md_word_cloud_turn_off": "<p align='center' style='color:rgba(0,0,0,.3)'> 每日词云已关闭，可前往设置页开启。 </p>",
         "oneday_text_has_vid_but_not_index": "数据库中没有这一天的数据索引。不过，磁盘上有这一天的视频还未索引，请前往「设置」进行索引。→",
         "oneday_text_vid_and_data_not_found": "没有找到这一天的数据索引和视频文件。",
+        "oneday_text_flag_mark_help": "当想为正在经历的重要会议、突发情况、某场直播、游戏与观影高光时刻……等添加标记、以方便未来回顾时，可以通过托盘菜单为当下添加一个标记——在时间长河中也可以刻舟求剑。",
+        "oneday_text_help_locate_manually": "受限于 streamlit 能力，目前只能手动定位回到该时间点。",
+        "oneday_toggle_flag_mark": "查看时间标记清单",
+        "oneday_btn_add_flag_mark_from_select_time": "为当前定位的时间添加标记",
+        "oneday_btn_flag_mark_save_df": "保存修改",
         "oneday_wt_text": "页面标题",
         "oneday_wt_help": "统计可能存在较大偏差，仅供参考。",
         "oneday_ls_title_wintitle": "⏱️ 活动统计",
-        "oneday_ls_title_flag_note": "🚩 旗标",
+        "oneday_ls_title_flag_note": "🚩 所有旗标",
         "oneday_ls_text_no_wintitle_stat": "<p align='left' style='color:rgba(0,0,0,.3)'> 没有当日页面浏览数据 </p>",
         "oneday_ls_text_disable_leftside": "<p align='center' style='color:rgba(0,0,0,.3)'> 工具栏已关闭，可前往设置页开启。 </p>",
 
@@ -358,6 +374,7 @@
         "qs_end_slogan": "> 一起捕捉贮藏风一般掠过的、你的目之所见。",
         "qs_end_feedback": "> 遇到问题、想反馈建议？欢迎在 https://github.com/yuka-friends/Windrecorder 提交 issue 与 PR。",
         
+        "tray_add_flag_mark_note_for_now": "🚩 为现在时间添加标记",
         "tray_webui_start": "🦝 启动搜索/设置界面",
         "tray_webui_exit": "🦝 关闭搜索/设置界面",
         "tray_webui_address": "🦝 浏览器访问 {address_port} 进入页面",
@@ -374,8 +391,12 @@
         "tray_notify_text_start_without_record": "通过托盘右键菜单来「开始记录」与「搜索回忆」",
         "tray_tip_record": "捕风记录仪 - 正在记录",
         "tray_tip_record_pause": "捕风记录仪 - 暂停记录",
-        "tray_text_already_run": "「捕风记录仪」已在系统托盘中运行。"
+        "tray_text_already_run": "「捕风记录仪」已在系统托盘中运行。",
 
+        "flag_text_mark_added": "已添加此时的标记。",
+        "flag_input_note": "备注：",
+        "flag_btn_remove_mark": "移除标记",
+        "flag_btn_add_note": "添加备注"
     },
 
     "ja": {  
@@ -417,10 +438,15 @@
         "oneday_md_word_cloud_turn_off": "<p align='center' style='color:rgba(0,0,0,.3)'> 日毎のワードクラウドがオフになっています。設定ページで有効にすることができます。 </p>",
         "oneday_text_has_vid_but_not_index": "この日のデータインデックスがデータベースにありません。しかし、インデックスされていないその日のビデオがディスクにあります。設定ページに移動してインデックスを実行してください。→",
         "oneday_text_vid_and_data_not_found": "データインデックスとビデオファイルがその日見つかりませんでした。",
+        "oneday_text_flag_mark_help": "重要な会議、緊急事態、特定の生放送、ゲームや映画の視聴ハイライトの瞬間などにマークを追加して、将来の見直しを容易にしたい場合、トレイメニューから現在の瞬間にマークを追加できます。時の川、船を彫って剣を求めることもできます。",
+        "oneday_text_help_locate_manually": "ストリームライト機能によって制限されているため、現在、この時点まで遡って手動で検索することしかできません。",
+        "oneday_toggle_flag_mark": "タイムマークリスト",
+        "oneday_btn_add_flag_mark_from_select_time": "現在位置している時間にマークを追加します",
+        "oneday_btn_flag_mark_save_df": "変更を保存",
         "oneday_wt_text": "ページタイトル",
         "oneday_wt_help": "統計には大きな偏差がある可能性があり、参照のみを目的としています。",
         "oneday_ls_title_wintitle": "⏱️ アクティビティ統計",
-        "oneday_ls_title_flag_note": "🚩 フラグ",
+        "oneday_ls_title_flag_note": "🚩 すべてのフラグ",
         "oneday_ls_text_no_wintitle_stat": "<p align='left' style='color:rgba(0,0,0,.3)'> その日のページビュー データはありません </p>",
         "oneday_ls_text_disable_leftside": "<p align='center' style='color:rgba(0,0,0,.3)'> ツールバーは閉じています。ツールバーを開くには、設定ページに移動できます。</p> ",
 
@@ -548,6 +574,7 @@
         "qs_end_slogan": "> 一緒に、あなたの目が見た、風のように過ぎ去るものをキャプチャしましょう。",
         "qs_end_feedback": "> 問題が発生した場合やフィードバックの提案がある場合は、https://github.com/yuka-friends/Windrecorder でissueやPRを提出してください。",
 
+        "tray_add_flag_mark_note_for_now": "🚩 とりあえずマークを追加",
         "tray_webui_start": "🦝 検索/設定インターフェイスを開始します",
         "tray_webui_exit": "🦝 検索/設定インターフェイスを閉じます",
         "tray_webui_address": "🦝 ページに入るにはブラウザから {address_port} にアクセスしてください",
@@ -564,7 +591,11 @@
         "tray_notify_text_start_without_record": "トレイの右クリック メニューを使用して記録を開始し、メモリを巻き戻します",
         "tray_tip_record": "Windrecorder - Recording",
         "tray_tip_record_pause": "Windrecorder - Recording Pause",
-        "tray_text_already_run": "Windrecorder はシステムトレイですでに実行されています。"
+        "tray_text_already_run": "Windrecorder はシステムトレイですでに実行されています。",
+        "flag_text_mark_added": "今回のマークが追加されました。",
+        "flag_input_note": "メモ:",
+        "flag_btn_remove_mark": "マークを削除",
+        "flag_btn_add_note": "メモを追加"
     },
 
     "lang_map": {

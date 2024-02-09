@@ -26,7 +26,6 @@ class FileLock:
     lock.release()
     ```
     如果您希望在 `with` 语句块之外手动释放文件锁，可以调用 `release()` 方法。
-    
     注意事项：
     - 如果文件锁已存在（即文件已存在），将引发 `LockExistsException` 异常。
     - 文件锁在创建时会将指定的值写入文件中。

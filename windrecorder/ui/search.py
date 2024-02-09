@@ -50,7 +50,7 @@ def render():
             ):
                 return
 
-            st.session_state.timeCost_globalSearch = time.time()   # 预埋搜索用时
+            st.session_state.timeCost_globalSearch = time.time()  # 预埋搜索用时
 
             # 更新懒状态
             st.session_state.search_content_lazy = st.session_state.search_content
@@ -73,8 +73,7 @@ def render():
                 keyword_input_exclude=st.session_state.search_content_exclude,
             )
 
-            st.session_state.timeCost_globalSearch = round(time.time() - st.session_state.timeCost_globalSearch, 5)   # 回收搜索用时
-
+            st.session_state.timeCost_globalSearch = round(time.time() - st.session_state.timeCost_globalSearch, 5)  # 回收搜索用时
 
         title_col, random_word_btn_col = st.columns([10, 1])
         with title_col:
@@ -165,7 +164,6 @@ def render():
 
         # 进行搜索
         if not len(st.session_state.search_content) == 0:
-
             df = db_manager.db_search_data_page_turner(st.session_state.db_global_search_result, st.session_state.page_index)
 
             is_df_result_exist = len(df)

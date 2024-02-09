@@ -543,6 +543,25 @@ class _DBManager:
         conn.commit()
         conn.close()
 
+    # 获取某个时间点附近最接近的一行数据
+    def db_get_closest_row_around_by_datetime(self, datetime, time_threshold=60):
+        df, all_result_counts, _ = self.db_search_data("", datetime, datetime)
+        timestamp = utils.datetime_to_seconds(datetime)
+        closest_timestamp = df[np.abs(df["videofile_time"] - timestamp) <= time_threshold][
+            "videofile_time"
+        ].max()  # 差距阈值:second
+        if math.isnan(closest_timestamp):  # 如果无结果为 NaN
+            return pd.DataFrame()
+        row = df[df["videofile_time"] == closest_timestamp]
+        return row
+
+    # 获取某个时间的当天最早与最晚记录时间
+    def db_get_time_min_and_max_through_datetime(self, datetime):
+        df, all_result_counts, _ = self.db_search_data("", datetime, datetime)
+        time_min = df["videofile_time"].min()
+        time_max = df["videofile_time"].max()
+        return time_min, time_max
+
     # 获取一个时间段内，按时间戳等均分的几张缩略图
     def db_get_day_thumbnail_by_timeavg(self, date_in, date_out, back_pic_num):
         df, all_result_counts, _ = self.db_search_data("", date_in, date_out)
@@ -567,7 +586,8 @@ class _DBManager:
         closest_timestamp_result = []
         for timestamp in timestamp_list:
             closest_timestamp = df[np.abs(df["videofile_time"] - timestamp) <= 300]["videofile_time"].max()  # 差距阈值:second
-            if closest_timestamp is None:
+
+            if math.isnan(closest_timestamp):  # 如果无结果为 NaN
                 closest_timestamp = 0
             closest_timestamp_result.append(closest_timestamp)
 
