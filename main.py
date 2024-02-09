@@ -17,6 +17,9 @@ import win32gui
 from PIL import Image
 from streamlit.file_util import get_streamlit_file_path
 
+# 隐藏该 CLI 窗口
+hide_CLI = win32gui.GetForegroundWindow()
+
 PROJECT_ROOT = os.path.abspath(os.path.dirname(__file__))
 os.chdir(PROJECT_ROOT)
 
@@ -284,8 +287,7 @@ def main():
             shutil.copyfile(os.path.join(PROJECT_ROOT, ".streamlit\\credentials.toml"), credential_path)
 
         # 隐藏命令行窗口
-        hide = win32gui.GetForegroundWindow()
-        win32gui.ShowWindow(hide, win32con.SW_HIDE)
+        win32gui.ShowWindow(hide_CLI, win32con.SW_HIDE)
 
         tray_icon_init = get_tray_icon(state="record_pause")
         tray_title_init = _t("tray_tip_record_pause")
