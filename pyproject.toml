@@ -1,6 +1,6 @@
 [tool.poetry]
 name = "windrecorder"
-version = "0.0.7"
+version = "0.0.8"
 description = "Your personal memorize search engine on Windows. It can continuously recording your screen locally in small file size, and OCR the content so you can backtrack and query memory any time."
 authors = ["yuka-friends"]
 license = "GPL-2.0"

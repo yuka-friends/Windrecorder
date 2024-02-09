@@ -237,10 +237,6 @@ def render():
                 help=_t("set_input_oneday_timeline_thumbnail_num_help"),
             )
 
-        config_webui_access_password = st.text_input(
-            f'🔒 {_t("set_pwd_text")}', value=config.webui_access_password_md5, help=_t("set_pwd_help"), type="password"
-        )
-
         # imgemb 选项
         if config.img_embed_module_install:
             col1_imgemb, col2_imgemb = st.columns([1, 1])
@@ -254,6 +250,10 @@ def render():
                 )
             with col2_imgemb:
                 st.empty()
+
+        config_webui_access_password = st.text_input(
+            f'🔒 {_t("set_pwd_text")}', value=config.webui_access_password_md5, help=_t("set_pwd_help"), type="password"
+        )
 
         # 选择语言
         lang_selection = list(lang_map.values())
@@ -281,6 +281,8 @@ def render():
             config.set_and_save_config("show_oneday_wordcloud", option_show_oneday_wordcloud)
             config.set_and_save_config("show_oneday_left_side_stat", option_show_oneday_wintitle)
             config.set_and_save_config("use_similar_ch_char_to_search", config_use_similar_ch_char_to_search)
+            config.set_and_save_config("img_embed_search_recall_result_per_db", config_img_embed_search_recall_result_per_db)
+
             config.set_and_save_config(
                 "ocr_image_crop_URBL",
                 [
