@@ -1,12 +1,12 @@
 import datetime
-import os
 import time
 
 import pandas as pd
 import streamlit as st
 
 import windrecorder.utils as utils
-import windrecorder.wordcloud as wordcloud
+
+# import windrecorder.wordcloud as wordcloud
 from windrecorder import file_utils
 from windrecorder.config import config
 from windrecorder.db_manager import db_manager
@@ -15,7 +15,7 @@ from windrecorder.utils import get_text as _t
 
 if config.img_embed_module_install:
     try:
-        from windrecorder.img_embed_manager import query_text_in_img_vdbs, get_model
+        from windrecorder.img_embed_manager import get_model, query_text_in_img_vdbs
     except ModuleNotFoundError:
         config.set_and_save_config("img_embed_module_install", False)
 
@@ -84,7 +84,7 @@ def render():
 
         # 绘制抬头部分的 UI
         search_method_list = [_t("gs_option_ocr_text_search"), _t("gs_option_img_emb_search")]
-        title_col, search_method = st.columns([5, 1.5])
+        title_col, search_method = st.columns([4, 2.5])
         with title_col:
             st.markdown(_t("gs_md_search_title"))
         with search_method:
@@ -117,7 +117,9 @@ def render():
                 if config.enable_img_embed_search and config.img_embed_module_install:
                     ui_vector_img_search()
                 else:
-                    st.warning("未启用或未安装图像语义检索模块，请前往设置页启用。若设置中无相关选项，请先安装图像语义模块。安装脚本位于 Windrecorder 目录下：extension\\install_img_embedding_module\\install_img_embedding_module.bat")
+                    st.warning(
+                        "未启用或未安装图像语义检索模块，请前往设置页启用。若设置中无相关选项，请先安装图像语义模块。安装脚本位于 Windrecorder 目录下：extension\\install_img_embedding_module\\install_img_embedding_module.bat"
+                    )
 
         # 搜索结果表格的 UI
         if not len(st.session_state.search_content) == 0:
@@ -228,7 +230,7 @@ def ui_ocr_text_search():
         st.session_state.page_index = 1
 
         with st.spinner(_t("gs_text_searching")):
-            st.session_state.timeCost_globalSearch = time.time()   # 预埋搜索用时
+            st.session_state.timeCost_globalSearch = time.time()  # 预埋搜索用时
             # 进行搜索，取回结果
             (
                 st.session_state.db_global_search_result,
@@ -240,7 +242,7 @@ def ui_ocr_text_search():
                 st.session_state.search_date_range_out,
                 keyword_input_exclude=st.session_state.search_content_exclude,
             )
-            st.session_state.timeCost_globalSearch = round(time.time() - st.session_state.timeCost_globalSearch, 5)   # 回收搜索用时
+            st.session_state.timeCost_globalSearch = round(time.time() - st.session_state.timeCost_globalSearch, 5)  # 回收搜索用时
 
     # 文本搜索 UI
     col_keyword, col_exclude, col_date_range, col_page = st.columns([2, 1, 2, 1.5])
@@ -266,7 +268,7 @@ def ui_vector_img_search():
     # 预加载文本嵌入模型，这样每次搜索就不需要重复加载、提升时间
     if "text_embed_model" not in st.session_state:
         with st.spinner(_t("gs_text_loading_text_embed_model")):
-            st.session_state["text_embed_model"] = get_model(mode='cpu')
+            st.session_state["text_embed_model"] = get_model(mode="cpu")
 
     # 获得全局图像语义搜索结果
     def do_global_vector_img_search():
@@ -288,7 +290,7 @@ def ui_vector_img_search():
         st.session_state.page_index = 1
 
         with st.spinner(_t("gs_text_searching")):
-            st.session_state.timeCost_globalSearch = time.time()   # 预埋搜索用时
+            st.session_state.timeCost_globalSearch = time.time()  # 预埋搜索用时
             # 进行搜索，取回结果
             (
                 st.session_state.db_global_search_result,
@@ -300,7 +302,7 @@ def ui_vector_img_search():
                 start_datetime=st.session_state.search_date_range_in,
                 end_datetime=st.session_state.search_date_range_out,
             )
-            st.session_state.timeCost_globalSearch = round(time.time() - st.session_state.timeCost_globalSearch, 5)   # 回收搜索用时
+            st.session_state.timeCost_globalSearch = round(time.time() - st.session_state.timeCost_globalSearch, 5)  # 回收搜索用时
 
     # 图像语义搜索 UI
     col_text_query_content, col_date_range, col_page = st.columns([3, 2, 1.5])
@@ -310,7 +312,7 @@ def ui_vector_img_search():
         ui_component_date_range_selector()
     with col_page:  # 搜索结果翻页
         ui_component_pagination()
-    
+
     do_global_vector_img_search()
 
 
