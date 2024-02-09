@@ -238,7 +238,7 @@ def render():
             )
 
         # imgemb 选项
-        if config.img_embed_module_install:
+        if config.img_embed_module_install and option_enable_img_embed_search:
             col1_imgemb, col2_imgemb = st.columns([1, 1])
             with col1_imgemb:
                 config_img_embed_search_recall_result_per_db = st.number_input(
