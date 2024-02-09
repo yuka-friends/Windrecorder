@@ -543,17 +543,17 @@ class _DBManager:
         conn.commit()
         conn.close()
 
-    # 获取某个时间点附近最接近的缩略图
-    def db_get_closest_thumbnail_around_by_datetime(self, datetime, time_threshold=60):
+    # 获取某个时间点附近最接近的一行数据
+    def db_get_closest_row_around_by_datetime(self, datetime, time_threshold=60):
         df, all_result_counts, _ = self.db_search_data("", datetime, datetime)
         timestamp = utils.datetime_to_seconds(datetime)
         closest_timestamp = df[np.abs(df["videofile_time"] - timestamp) <= time_threshold][
             "videofile_time"
         ].max()  # 差距阈值:second
         if math.isnan(closest_timestamp):  # 如果无结果为 NaN
-            return None
-        thumbnail = df[df["videofile_time"] == closest_timestamp]["thumbnail"].values
-        return thumbnail[0]
+            return pd.DataFrame()
+        row = df[df["videofile_time"] == closest_timestamp]
+        return row
 
     # 获取某个时间的当天最早与最晚记录时间
     def db_get_time_min_and_max_through_datetime(self, datetime):

@@ -8,7 +8,7 @@ import streamlit as st
 from PIL import Image, ImageDraw
 from send2trash import send2trash
 
-from windrecorder import file_utils, utils
+from windrecorder import file_utils, record_wintitle, utils
 from windrecorder.config import config
 from windrecorder.db_manager import db_manager
 from windrecorder.utils import get_text as _t
@@ -136,13 +136,15 @@ class Flag_mark_window(customtkinter.CTk):
         screen_height = self.winfo_screenheight()
         window_width = 400
         window_height = 190
-        target_x = int((screen_width * 4 / 5))
-        target_y = int((screen_height * 3 / 5))
+        # target_x = int((screen_width * 4 / 5))
+        # target_y = int((screen_height * 3 / 5))
+        target_x = int(screen_width - (window_width * SCALE_FACTOR))
+        target_y = int(screen_height - ((window_height + 34) * SCALE_FACTOR))
 
-        print(f"DEBUG: \n{dpi=}\n{SCALE_FACTOR=}\n{screen_width=}\n{screen_height=}\n{target_x=}\n{target_y=}")
+        print(f"flag window DEBUG: \n{dpi=}\n{SCALE_FACTOR=}\n{screen_width=}\n{screen_height=}\n{target_x=}\n{target_y=}")
 
         # 窗口配置项
-        self.title("Windrecorder")
+        self.title("Windrecorder - Flag")
         self.geometry(f"{window_width}x{window_height}+{target_x}+{target_y}")
         self.grid_columnconfigure((0, 1), weight=1)
         # self.attributes("-toolwindow", True)   # 移除窗口放大与最小化选项
@@ -152,7 +154,7 @@ class Flag_mark_window(customtkinter.CTk):
 
         # 添加标记后的提示项
         self.label_added = customtkinter.CTkLabel(
-            self, text="✔ " + _t("flag_text_mark_added"), fg_color="transparent", font=self.FONT_CONFIG
+            self, text="✔ " + _t("flag_text_mark_added"), fg_color="transparent", font=self.FONT_CONFIG, text_color="#A4E074"
         )
         self.label_added.grid(row=0, column=0, padx=15, pady=5, sticky="w")
         self.label_time = customtkinter.CTkLabel(
@@ -167,7 +169,12 @@ class Flag_mark_window(customtkinter.CTk):
         # 备注输入框
         self.textbox = customtkinter.CTkTextbox(master=self, height=80, font=self.FONT_CONFIG)
         self.textbox.grid(row=2, column=0, columnspan=4, padx=5, pady=5, sticky="ew")
-        self.textbox.insert("0.0", _t("flag_input_note"))
+        # 添加最接近的标题名作为默认备注
+        wintitle_note_df = record_wintitle.get_df_by_csv_filepath(
+            record_wintitle.get_csv_filepath(datetime=datetime.datetime.now())
+        )
+        wintitle_note = record_wintitle.get_lastest_wintitle_from_df(wintitle_note_df, filter=True)["window_title"]
+        self.textbox.insert("0.0", _t("flag_input_note") + wintitle_note + "\n")
 
         # 移除标记 按钮
         self.button_remove = customtkinter.CTkButton(
@@ -320,9 +327,13 @@ def st_create_timestamp_flag_mark_note_from_oneday_timeselect():
         st.session_state.day_time_select_24h,
     )
     # 获取选择时间附近的缩略图
-    thumbnail = db_manager.db_get_closest_thumbnail_around_by_datetime(datetime_created)
+    row = db_manager.db_get_closest_row_around_by_datetime(datetime_created)
     # 添加数据到原始 csv 中
-    new_data = {"thumbnail": thumbnail, "datetime": datetime_created, "note": "_"}
+    new_data = {
+        "thumbnail": "" if row.empty else row["thumbnail"].values[0],
+        "datetime": datetime_created,
+        "note": "" if row.empty else row["win_title"].values[0],
+    }
     df = file_utils.read_dataframe_from_path(config.flag_mark_note_filepath)
     df.loc[len(df)] = new_data
     file_utils.save_dataframe_to_path(df, config.flag_mark_note_filepath)
@@ -368,7 +379,13 @@ def component_flag_mark():
                 "thumbnail": st.column_config.ImageColumn(
                     "thumbnail",
                 ),
-                "note": st.column_config.TextColumn("note", width="large"),
+                "datetime": st.column_config.TextColumn(
+                    help=_t("oneday_text_help_locate_manually"),
+                ),
+                "note": st.column_config.TextColumn(
+                    "note",
+                    width="large",
+                ),
                 "delete": st.column_config.CheckboxColumn(
                     "delete",
                     default=False,

@@ -23,10 +23,41 @@ def get_csv_filepath(datetime: datetime.datetime):
     return csv_filepath
 
 
+def get_df_by_csv_filepath(csv_filepath):
+    """根据csv路径获取dataframe。只读属性，若无返回 None"""
+    if os.path.exists(csv_filepath):
+        return file_utils.read_dataframe_from_path(file_path=csv_filepath)
+    else:
+        return None
+
+
+def get_current_wintitle(optimize_name=True):
+    """获取当前的前台窗口标题"""
+    if optimize_name:
+        res = optimize_wintitle_name(pygetwindow.getActiveWindowTitle())
+    else:
+        res = str(pygetwindow.getActiveWindowTitle())
+    return res
+
+
+def get_lastest_wintitle_from_df(df, filter=True):
+    """获取dataframe中不在跳过项中的最后一行"""
+    if filter:
+        existing_list = ["", "nan", "任务切换", "ctk"]
+        # 倒序遍历数据帧
+        for i in df.index[::-1]:
+            # 检查 'window_title' 列中的值是否不在已有列表中
+            if str(df.loc[i, "window_title"]).lower() not in existing_list:
+                # 输出满足条件的最后一行数据
+                return df.loc[i]
+    else:
+        return df.iloc[-1]
+
+
 def record_wintitle_now():
     """记录当下的前台窗口标题到 csv"""
     global window_title_last_record
-    windowTitle = optimize_wintitle_name(str(pygetwindow.getActiveWindowTitle()))
+    windowTitle = get_current_wintitle(optimize_name=True)
 
     # 如果与上次检测结果一致，则跳过
     if windowTitle == window_title_last_record:
@@ -92,7 +123,7 @@ def optimize_wintitle_name(text):
     return text
 
 
-# 获取当天前台窗口标题统计情况
+# 获取当天前台窗口标题统计
 def get_wintitle_stat_in_day(dt_in: datetime.datetime):
     df = OneDay().search_day_data(dt_in, search_content="")
     # 在生成前清洗数据：
