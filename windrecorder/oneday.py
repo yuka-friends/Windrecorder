@@ -215,3 +215,34 @@ class OneDay:
         img_saved_path = os.path.join(img_saved_folder, img_saved_name)
         result.save(img_saved_path, format="PNG")
         return True
+
+    # 获取当天前台窗口标题统计情况
+    def get_wintitle_stat_in_day(self, dt_in: datetime.datetime):
+        df = self.search_day_data(dt_in, search_content="")
+        # 在生成前清洗数据：
+        # from windrecorder import record_wintitle
+        # df["win_title"] = df["win_title"].apply(record_wintitle.optimize_wintitle_name)
+        df.sort_values(by="videofile_time", ascending=True, inplace=True)
+        df = df.reset_index(drop=True)
+        stat = {}
+        for index, row in df.iterrows():
+            win_title_name = str(row["win_title"])
+            if win_title_name == "None" or win_title_name == "nan":
+                continue
+            if win_title_name not in stat:
+                stat[win_title_name] = 0
+            if index == df.index.max():
+                break
+            second_interval = df.loc[index + 1, "videofile_time"] - df.loc[index, "videofile_time"]
+            if second_interval > 100:  # 添加阈值，排除时间差值过大的 row，比如隔夜、锁屏期间的记录等
+                second_interval = 100
+            stat[win_title_name] += second_interval
+
+        # 清洗整理数据
+        stat = {key: val for key, val in stat.items() if val > 1}
+        df_show = pd.DataFrame(list(stat.items()), columns=["Page", "Screen Time"])
+        df_show.sort_values(by="Screen Time", ascending=False, inplace=True)
+        df_show = df_show.reset_index(drop=True)
+        df_show["Screen Time"] = df_show["Screen Time"].apply(utils.convert_seconds_to_hhmmss)
+
+        return df_show
