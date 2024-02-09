@@ -55,7 +55,7 @@ def get_lastest_wintitle_from_df(df, filter=True):
 
 
 def record_wintitle_now():
-    """记录当下的前台窗口标题到 csv"""
+    """流程：记录当下的前台窗口标题到 csv"""
     global window_title_last_record
     windowTitle = get_current_wintitle(optimize_name=True)
 
@@ -123,8 +123,8 @@ def optimize_wintitle_name(text):
     return text
 
 
-# 获取当天前台窗口标题统计
 def get_wintitle_stat_in_day(dt_in: datetime.datetime):
+    """流程：获取当天前台窗口标题统计dataframe, 屏幕时间总和"""
     df = OneDay().search_day_data(dt_in, search_content="")
     # 在生成前清洗数据：
     # from windrecorder import record_wintitle
@@ -152,7 +152,10 @@ def get_wintitle_stat_in_day(dt_in: datetime.datetime):
     df_show = df_show.reset_index(drop=True)
     df_show["Screen Time"] = df_show["Screen Time"].apply(utils.convert_seconds_to_hhmmss)
 
-    return df_show
+    # 获取时间总和
+    time_sum = sum(int(value) for value in stat.values())
+
+    return df_show, time_sum
 
 
 # ------------streamlit component
@@ -161,11 +164,23 @@ def component_wintitle_stat(day_date_input):
     day_wintitle_df_statename_date = day_date_input.strftime("%Y-%m-%d")
     day_wintitle_df_statename = f"wintitle_stat_{day_wintitle_df_statename_date}"
     if day_wintitle_df_statename not in st.session_state:
-        st.session_state[day_wintitle_df_statename] = get_wintitle_stat_in_day(day_date_input)
+        (
+            st.session_state[day_wintitle_df_statename],
+            st.session_state[day_wintitle_df_statename + "_screentime_sum"],
+        ) = get_wintitle_stat_in_day(day_date_input)
     if len(st.session_state[day_wintitle_df_statename]) > 0:
         st.dataframe(
             st.session_state[day_wintitle_df_statename],
-            column_config={"Page": st.column_config.TextColumn(_t("oneday_wt_text"), help=_t("oneday_wt_help"))},
+            column_config={
+                "Page": st.column_config.TextColumn(
+                    _t("oneday_wt_text")
+                    + "   -   "
+                    + utils.convert_seconds_to_hhmmss(
+                        st.session_state[day_wintitle_df_statename + "_screentime_sum"], complete_with_zero=False
+                    ),
+                    help=_t("oneday_wt_help"),
+                )
+            },
             height=650,
             hide_index=True,
             use_container_width=True,

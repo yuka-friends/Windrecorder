@@ -139,8 +139,14 @@ def datetime_to_dateDayStr(dt):
     return dt.strftime("%Y-%m-%d")
 
 
-# 将输入的秒数格式化为 1h2m3s str
-def convert_seconds_to_hhmmss(seconds):
+# 将输入的秒数格式化为 1h02m03s str
+def convert_seconds_to_hhmmss(seconds, complete_with_zero=True):
+    """
+    将输入的秒数格式化为 1h02m03s str
+
+    :param seconds: int
+    :param complete_with_zero: bool 是否用 0 补齐 m s
+    """
     seconds = int(round(seconds))
     td = timedelta(seconds=seconds)
 
@@ -151,9 +157,14 @@ def convert_seconds_to_hhmmss(seconds):
     time_str = ""
     if hours > 0:
         time_str += str(hours) + "h"
-    if minutes > 0 or hours > 0:
-        time_str += str(minutes).zfill(2) + "m"
-    time_str += str(seconds).zfill(2) + "s"
+    if complete_with_zero:  # 是否在开头补齐0
+        if minutes > 0 or hours > 0:
+            time_str += str(minutes).zfill(2) + "m"
+        time_str += str(seconds).zfill(2) + "s"
+    else:
+        if minutes > 0 or hours > 0:
+            time_str += str(minutes) + "m"
+        time_str += str(seconds) + "s"
 
     return time_str
 
