@@ -462,7 +462,7 @@ class _DBManager:
     def db_get_row_from_vid_filename(self, vid_filename):
         vid_filepath = file_utils.convert_vid_filename_as_vid_filepath(vid_filename)
         vid_datetime_start = utils.date_to_datetime(vid_filename[:19])
-        if os.path.exists(vid_filepath):   # 视频文件存在情况下，尝试拿其真实时长，若无用 config 录制值兜底
+        if os.path.exists(vid_filepath):  # 视频文件存在情况下，尝试拿其真实时长，若无用 config 录制值兜底
             try:
                 vid_datetime_end = vid_datetime_start + datetime.timedelta(
                     seconds=int(float(utils.get_vidfilepath_info(vid_filepath)["duration"]))
@@ -498,10 +498,10 @@ class _DBManager:
         conn = sqlite3.connect(db_filepath)
         rowid_list = [tuple[0] for tuple in rowid_probs_list]
         probs_list = [tuple[1] for tuple in rowid_probs_list]
-        rowid_str = ','.join(map(str, rowid_list))   # 将 rowid 列表转换为逗号分隔的字符串
-        
+        rowid_str = ",".join(map(str, rowid_list))  # 将 rowid 列表转换为逗号分隔的字符串
+
         # 构建SQL查询语句
-        query = f"SELECT * FROM video_text WHERE rowid IN ({rowid_str})"        
+        query = f"SELECT * FROM video_text WHERE rowid IN ({rowid_str})"
         result_df = pd.read_sql_query(query, conn)
         conn.close()
 
@@ -712,7 +712,7 @@ class _DBManager:
 
         maintaining = os.path.isfile(config.maintain_lock_path)
 
-        if not "_TEMP_READ" in db_filename:
+        if "_TEMP_READ" not in db_filename:
             db_filename_temp = os.path.splitext(db_filename)[0] + "_TEMP_READ.db"  # 创建临时文件名
             filepath_temp_read = os.path.join(self.db_path, db_filename_temp)  # 创建读取的临时路径
             if os.path.exists(filepath_temp_read):  # 检测是否已存在临时数据库

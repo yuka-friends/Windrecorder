@@ -1,39 +1,41 @@
 # Set workspace to Windrecorder dir
-import sys
+import datetime
 import os
+import subprocess
+import sys
+from os import getpid
+
 current_dir = os.path.dirname(os.path.abspath(__file__))
 parent_parent_dir = os.path.dirname(os.path.dirname(current_dir))
 sys.path.append(parent_parent_dir)
 os.chdir("..")
 os.chdir("..")
 
-import subprocess
-import datetime
-from os import getpid
-
-from windrecorder import file_utils, utils
-from windrecorder.config import config
-from windrecorder.exceptions import LockExistsException
-from windrecorder.lock import FileLock
+from windrecorder import file_utils, utils  # noqa: E402
+from windrecorder.config import config  # noqa: E402
+from windrecorder.exceptions import LockExistsException  # noqa: E402
+from windrecorder.lock import FileLock  # noqa: E402
 
 if config.img_embed_module_install:
     try:
         from windrecorder import img_embed_manager
     except ModuleNotFoundError:
         config.set_and_save_config("img_embed_module_install", False)
-        print('Img Embedding Module seems not installed, please install first.')
+        print("Img Embedding Module seems not installed, please install first.")
         sys.exit()
 else:
-    print('Img Embedding Module seems not installed, please install first.')
+    print("Img Embedding Module seems not installed, please install first.")
     sys.exit()
 
 subprocess.run("title Embedding Img for existing video files", shell=True)
 
 videos_filepath = file_utils.get_file_path_list(config.record_videos_dir)
-videos_filepath_filter = [item for item in videos_filepath if '-IMGEMB' not in item]
+videos_filepath_filter = [item for item in videos_filepath if "-IMGEMB" not in item]
 videos_filepath_filter_num = len(videos_filepath_filter)
 
-per_video_embedding_time = datetime.timedelta(minutes=2) * config.record_seconds / 900   # 在使用 cuda 的情况下，每 900s 视频需要 2 分钟完成索引。其中拆 iframe 占了大部分时间
+per_video_embedding_time = (
+    datetime.timedelta(minutes=2) * config.record_seconds / 900
+)  # 在使用 cuda 的情况下，每 900s 视频需要 2 分钟完成索引。其中拆 iframe 占了大部分时间
 eta_process_all_video = videos_filepath_filter_num * per_video_embedding_time
 
 
@@ -41,12 +43,12 @@ def main():
     while True:
         subprocess.run("cls", shell=True)
         if img_embed_manager.is_cuda_available:
-            print('√ Your device support CUDA acceleration.')
+            print("√ Your device support CUDA acceleration.")
         else:
-            print('X Your device seems not support CUDA acceleration, embedding performance might be slow.')
-        
+            print("X Your device seems not support CUDA acceleration, embedding performance might be slow.")
+
         text_intro = f"""
-        
+
 本脚本可以将你未进行图像嵌入索引的历史视频进行索引。索引完成后，你可以使用自然语言描述来查找对应图像画面。
 This script can index your no image embedding historical videos. After indexed, you can use natural language descriptions to find corresponding images in video files.
 
@@ -81,7 +83,7 @@ Tip: During the indexing process, you can close the terminal window at any time 
             pass
 
     subprocess.run("cls", shell=True)
-    print('指定的选项下视频已索引完成，你可以在 webui 使用自然语言描述来查找对应图像画面。')
+    print("指定的选项下视频已索引完成，你可以在 webui 使用自然语言描述来查找对应图像画面。")
 
 
 try:
@@ -90,4 +92,6 @@ try:
         main()
 except LockExistsException:
     subprocess.run("cls", shell=True)
-    print('Warring: Seems another img embedding indexing process is running.\n If not, please try to delete cache/lock/LOCK_FILE_IMG_EMB.MD and try again.\n')
+    print(
+        "Warring: Seems another img embedding indexing process is running.\n If not, please try to delete cache/lock/LOCK_FILE_IMG_EMB.MD and try again.\n"
+    )

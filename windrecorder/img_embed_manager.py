@@ -11,10 +11,10 @@
 #     except ModuleNotFoundError:
 #         config.set_and_save_config("img_embed_module_install", False)
 
-import os
-import shutil
 import datetime
 import math
+import os
+import shutil
 
 import faiss
 import numpy as np
@@ -33,6 +33,7 @@ DEBUG_MODULE_NAME = "img_embed_manager: "
 
 is_cuda_available = torch.cuda.is_available()
 device = torch.device("cuda" if is_cuda_available else "cpu")
+
 
 def get_model(mode="cpu"):
     """
@@ -94,7 +95,7 @@ class VectorDatabase:
     以 IndexIDMap 存储，对应关系为 向量 - sqlite 的 ROWID
     """
 
-    def __init__(self, vdb_filename, db_dir=config.vdb_img_path, dimension=256):   # uform 使用 256d 向量
+    def __init__(self, vdb_filename, db_dir=config.vdb_img_path, dimension=256):  # uform 使用 256d 向量
         """
         初始化新建/载入数据库
 
@@ -134,7 +135,7 @@ class VectorDatabase:
     def save_to_file(self):
         """将向量数据库写入本地文件"""
         faiss.write_index(self.index, self.vdb_filepath)
-        self.all_ids_list = faiss.vector_to_array(self.index.id_map).tolist()   # 更新 ROWID 列表
+        self.all_ids_list = faiss.vector_to_array(self.index.id_map).tolist()  # 更新 ROWID 列表
 
 
 def find_closest_iframe_img_dict_item(target: str, img_dict: dict, threshold=3):
@@ -143,7 +144,7 @@ def find_closest_iframe_img_dict_item(target: str, img_dict: dict, threshold=3):
     如输入 "123.jpg"，返回字典中最接近的 "125.jpg"
     """
     closest_item = None
-    min_difference = float('inf')
+    min_difference = float("inf")
 
     for key, value in img_dict.items():
         difference = abs(int(value.split(".")[0]) - int(target.split(".")[0]))
@@ -179,7 +180,13 @@ def embed_img_in_iframe_by_rowid_dict(model: uform.models.VLM, img_dict: dict, i
     vdb.save_to_file()
 
 
-def embed_vid_file(model: uform.models.VLM, vdb: VectorDatabase, vid_file_name, video_saved_dir=config.record_videos_dir, iframe_path=config.iframe_dir):
+def embed_vid_file(
+    model: uform.models.VLM,
+    vdb: VectorDatabase,
+    vid_file_name,
+    video_saved_dir=config.record_videos_dir,
+    iframe_path=config.iframe_dir,
+):
     """
     流程：输入一个视频文件路径，根据 sqlite 数据库，获得 dict {sqlite_ROWID:图像文件名}
     建议用 try 调用，避免因索引数据可能不全报错而阻塞。
@@ -192,17 +199,19 @@ def embed_vid_file(model: uform.models.VLM, vdb: VectorDatabase, vid_file_name, 
     img_db_recorded_dict = {}
     df_video_related = db_manager.db_get_row_from_vid_filename(vid_file_name)
     for index, row in df_video_related.iterrows():
-        img_db_recorded_dict[row['rowid']] = row['picturefile_name']
+        img_db_recorded_dict[row["rowid"]] = row["picturefile_name"]
     if len(img_db_recorded_dict) == 0:
         return False
 
     # 判断是否存在图片缓存文件，若无则提取
-    iframe_sub_path = os.path.join(iframe_path, os.path.splitext(vid_file_name)[0][:19])   # FIXME 硬编码取了文件名的日期范围
+    iframe_sub_path = os.path.join(iframe_path, os.path.splitext(vid_file_name)[0][:19])  # FIXME 硬编码取了文件名的日期范围
     iframe_img_list = []
     if os.path.exists(iframe_sub_path):
         iframe_img_list = os.listdir(iframe_sub_path)
 
-    if not all(element in iframe_img_list for element in list(img_db_recorded_dict.values())):   # 已有缓存图像文件是否包含了sqlite db中记录的图像文件，否则重新提取
+    if not all(
+        element in iframe_img_list for element in list(img_db_recorded_dict.values())
+    ):  # 已有缓存图像文件是否包含了sqlite db中记录的图像文件，否则重新提取
         # 清理缓存
         try:
             shutil.rmtree(iframe_sub_path)
@@ -211,7 +220,7 @@ def embed_vid_file(model: uform.models.VLM, vdb: VectorDatabase, vid_file_name, 
         file_utils.ensure_dir(iframe_sub_path)
         extract_iframe(video_file=vid_filepath, iframe_path=iframe_sub_path)
         # FIXME 提取后需要对图像进行遮减处理？
-    
+
     # 因为是原子操作，不用添加回滚机制，完成了所有的索引才写入 faiss index db file
     embed_img_in_iframe_by_rowid_dict(model=model, img_dict=img_db_recorded_dict, img_dir_filepath=iframe_sub_path, vdb=vdb)
     # 清理图像缓存
@@ -224,7 +233,7 @@ def embed_vid_file(model: uform.models.VLM, vdb: VectorDatabase, vid_file_name, 
     return True
 
 
-def all_videofile_do_img_embedding_routine(video_queue_count = 14):
+def all_videofile_do_img_embedding_routine(video_queue_count=14):
     """
     流程：处理未嵌入的视频，提取嵌入视频 iframe embedding 到向量数据库。默认计算时间控制在 30 分钟左右内（即索引 12~15 个视频）
     """
@@ -232,14 +241,16 @@ def all_videofile_do_img_embedding_routine(video_queue_count = 14):
 
     model = get_model(mode="cuda")
 
-    video_dirs = os.listdir(config.record_videos_dir)[::-1]   # 倒序列表，以先索引较新的视频
+    video_dirs = os.listdir(config.record_videos_dir)[::-1]  # 倒序列表，以先索引较新的视频
     for video_dir in tqdm(video_dirs):
         videos_names = os.listdir(os.path.join(config.record_videos_dir, video_dir))[::-1]
         for video_name in tqdm(videos_names):
-            print(f"{DEBUG_MODULE_NAME} img_embed({video_process_count}/{video_queue_count}): embedding {video_dir}, {video_name}")
+            print(
+                f"{DEBUG_MODULE_NAME} img_embed({video_process_count}/{video_queue_count}): embedding {video_dir}, {video_name}"
+            )
             # 确认视频已被 OCR 索引，且没含有 -IMGEMB 标签
             # 如果视频被压缩了，目前跳过；TODO 未来如果使用时间戳手段提取、或者可以接受iframe提取的时域误差，则不需要这条规则了
-            if not "-OCRED" in video_name:
+            if "-OCRED" not in video_name:
                 continue
             if "-IMGEMB" in video_name or "-COMPRESS" in video_name:
                 continue
@@ -251,7 +262,8 @@ def all_videofile_do_img_embedding_routine(video_queue_count = 14):
         if video_process_count > video_queue_count:
             break
 
-def get_vdbs_filename_via_time_range(start_datetime:datetime.datetime, end_datetime:datetime.datetime):
+
+def get_vdbs_filename_via_time_range(start_datetime: datetime.datetime, end_datetime: datetime.datetime):
     """
     根据输入输出时间范围获取 vdb filename list
     """
@@ -260,10 +272,12 @@ def get_vdbs_filename_via_time_range(start_datetime:datetime.datetime, end_datet
 
     file_utils.ensure_dir(config.vdb_img_path)
     vdb_filename_list = file_utils.get_file_path_list_first_level(config.vdb_img_path)
-    vdb_filename_list = [item for item in vdb_filename_list if (item.startswith(config.user_name) and item.endswith("_imgemb.index"))] # 去除非当前用户、且非 vdb 的项
+    vdb_filename_list = [
+        item for item in vdb_filename_list if (item.startswith(config.user_name) and item.endswith("_imgemb.index"))
+    ]  # 去除非当前用户、且非 vdb 的项
     if len(vdb_filename_list) == 0:
         return None
-    
+
     vdb_filename_list_datetime = [utils.extract_date_from_db_filename(file) for file in vdb_filename_list]
     vdb_filename_list_datetime_dict = dict(sorted(zip(vdb_filename_list, vdb_filename_list_datetime), key=lambda x: x[1]))
     result = []
@@ -283,21 +297,21 @@ def query_text_in_img_vdbs(model: uform.models.VLM, text_query, start_datetime, 
     if vdb_filenames is None:
         return pd.DataFrame(), 0, 0
     text_vector = embed_text(model=model, text_query=text_query)
-    
+
     df_list = []
     for vdb_filename in vdb_filenames:
-        print(f'{DEBUG_MODULE_NAME} recalling {vdb_filename}')
+        print(f"{DEBUG_MODULE_NAME} recalling {vdb_filename}")
         vdb = VectorDatabase(vdb_filename=vdb_filename)
         res_tuple_list = vdb.search_vector(text_vector, k=config.img_embed_search_recall_result_per_db)
-        res_tuple_list = [t for t in res_tuple_list if t[0] != -1]   # 相似度结果不足时，会以 -1 的 index 填充，在进 sqlite 搜索前需过滤
+        res_tuple_list = [t for t in res_tuple_list if t[0] != -1]  # 相似度结果不足时，会以 -1 的 index 填充，在进 sqlite 搜索前需过滤
 
-        len_prefix = len(config.user_name)+1
+        len_prefix = len(config.user_name) + 1
         db_filename = f"{vdb_filename[0:len_prefix+7]}_wind.db"
         df = db_manager.db_get_rowid_and_similar_tuple_list_rows(rowid_probs_list=res_tuple_list, db_filename=db_filename)
         df_list.append(df)
 
     merged_df = pd.concat(df_list)
-    sorted_df = merged_df.sort_values(by='probs', ascending=True)
+    sorted_df = merged_df.sort_values(by="probs", ascending=True)
     sorted_df = sorted_df.reset_index(drop=True)
     row_count = len(sorted_df)
     page_count_all = int(math.ceil(int(row_count) / int(config.max_page_result)))

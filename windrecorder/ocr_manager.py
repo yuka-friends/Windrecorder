@@ -24,6 +24,7 @@ if config.enable_ocr_chineseocr_lite_onnx:
 
 # ocr_short_side = int(config.ocr_short_size)
 
+
 # 使用 win32file 的判断实现，检查文件是否被占用
 def is_file_in_use(file_path):
     try:
@@ -520,7 +521,7 @@ def compress_outdated_videofiles():
 
     if len(video_filepath_list_outdate) > 0:
         for item in video_filepath_list_outdate:
-            if not "-COMPRESS" in item and "-OCRED" in item:
+            if "-COMPRESS" not in item and "-OCRED" in item:
                 print(f"ocr_manager: compressing {item}")
                 record.compress_video_resolution(item, config.video_compress_rate)
                 send2trash(item)

@@ -11,13 +11,12 @@ from os import getpid
 import numpy as np
 import pyautogui
 
-from windrecorder import (
+from windrecorder import (  # wordcloud,
     file_utils,
     ocr_manager,
     record,
     record_wintitle,
     utils,
-    wordcloud,
 )
 from windrecorder.config import config
 from windrecorder.exceptions import LockExistsException
@@ -28,7 +27,7 @@ if config.img_embed_module_install:
         from windrecorder import img_embed_manager
     except ModuleNotFoundError:
         config.set_and_save_config("img_embed_module_install", False)
-        pass   #TODO log here
+        pass  # TODO log here
 
 # 全局状态变量
 monitor_idle_minutes = 0
@@ -66,11 +65,11 @@ def idle_maintain_process_main():
         # 图像语义嵌入
         if config.enable_img_embed_search and config.img_embed_module_install:
             try:
-                img_emb_lock = FileLock(config.img_emb_lock_path, str(getpid()), timeout_s=30*60)
+                img_emb_lock = FileLock(config.img_emb_lock_path, str(getpid()), timeout_s=30 * 60)
                 with img_emb_lock:
                     img_embed_manager.all_videofile_do_img_embedding_routine()
             except LockExistsException:
-                print('another img embedding indexing is running.')
+                print("another img embedding indexing is running.")
 
         # 清理过时视频
         ocr_manager.remove_outdated_videofiles()
