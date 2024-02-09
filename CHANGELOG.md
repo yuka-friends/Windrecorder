@@ -1,5 +1,16 @@
 # Changelog 更新日志
 
+## 0.0.8
+> 2024-02-10
+
+- 添加图像语义嵌入、检索扩展，在 extension\install_img_embedding_module 进行安装
+- Add image semantic embedding and retrieval extension, install it in extension\install_img_embedding_module
+
+### Fixed
+- bug: 当 CLI 未隐藏时切换了活动前台窗口、导致该前台窗口被隐藏；
+
+---
+
 ## 0.0.7
 > 2024-02-09
 
