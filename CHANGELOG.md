@@ -1,4 +1,30 @@
-# Changelog
+# Changelog 更新日志
+
+## 0.0.7
+> 2024-02-09
+
+- 添加时间标记功能，可以为当下时间、回溯中的时间进行标记和备注，方便回忆查找；
+- 添加对窗口标题的记录与统计；
+- 添加 webui 保护密码；
+- 添加托盘中的更新日志入口；
+- 隐藏显示命令行窗口，加入阻止托盘重复运行；
+- 升级支持了 python 3.11；虚拟环境默认创建在 windrecorder 目录下；
+
+- Added time mark function, which can mark and make notes for the current time and the time in retrospect to facilitate recall and search;
+- Added records and statistics of window titles;
+- Add webui protection password;
+- Added update log entry in the tray;
+- Hide the command line window and prevent the tray from running repeatedly;
+- Upgraded to support python 3.11; the virtual environment is created in the windrecorder directory by default;
+
+### Fixed
+- https://github.com/yuka-friends/Windrecorder/issues/109 bug: 托盘显示"WebUI started failed"且无webui错误日志
+- https://github.com/yuka-friends/Windrecorder/issues/97 bug: 当开启“形近字”搜索，可能以空字符进行搜索
+- https://github.com/yuka-friends/Windrecorder/pull/105 修复图像对比函数
+- https://github.com/yuka-friends/Windrecorder/issues/100 bug: “记忆摘要”统计中，翻阅年视图不生效
+- https://github.com/yuka-friends/Windrecorder/pull/88 fix state page date selector
+
+---
 
 ## 0.0.6
 > 2024-01-25
@@ -15,6 +41,7 @@
 - https://github.com/yuka-friends/Windrecorder/issues/77 bug: 在托盘关闭 webui 服务后，菜单残留局域网提示项
 - https://github.com/yuka-friends/Windrecorder/issues/56 feat: 已有托盘在运行时，阻止托盘重复启动、且提供指引提示
 
+---
 
 ## 0.0.5
 > 2023-12-22
@@ -28,6 +55,7 @@
 - https://github.com/yuka-friends/Windrecorder/issues/62 Bug: webui 在 Firefox 上无法播放，本地可以
 - https://github.com/yuka-friends/Windrecorder/issues/37 bug: Windows Terminal 下背景颜色显示异常
 
+---
 
 ## 0.0.4 
 > 2023-11-25
