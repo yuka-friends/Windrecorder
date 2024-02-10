@@ -158,14 +158,15 @@ class OneDay:
     # 生成当天时间线预览图
     def generate_preview_timeline_img(
         self,
-        day_datetime: datetime.datetime,
-        img_saved_name="default.png",
+        dt_in: datetime.datetime,
+        dt_out: datetime.datetime,
+        img_saved_name,
         img_saved_folder=config.timeline_result_dir,
     ):
         file_utils.ensure_dir(img_saved_folder)
 
-        dt_in = utils.get_datetime_in_day_range_pole_by_config_day_begin(day_datetime, range="start")
-        dt_out = utils.get_datetime_in_day_range_pole_by_config_day_begin(day_datetime, range="end")
+        # dt_in = utils.get_datetime_in_day_range_pole_by_config_day_begin(day_datetime, range="start")
+        # dt_out = utils.get_datetime_in_day_range_pole_by_config_day_begin(day_datetime, range="end")
 
         image_list = db_manager.db_get_day_thumbnail_by_timeavg(dt_in, dt_out, config.oneday_timeline_pic_num)
 

@@ -240,7 +240,8 @@ def render():
         def update_day_timeline_thumbnail():
             with st.spinner(_t("oneday_text_generate_timeline_thumbnail")):
                 if OneDay().generate_preview_timeline_img(
-                    dt_in,
+                    dt_in=day_min_timestamp_dt,
+                    dt_out=day_max_timestamp_dt,
                     img_saved_name=current_day_cloud_and_TL_img_name,
                 ):
                     return True
