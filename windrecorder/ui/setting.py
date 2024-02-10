@@ -13,6 +13,12 @@ from windrecorder import __version__, file_utils, ocr_manager
 from windrecorder.config import config
 from windrecorder.utils import get_text as _t
 
+if config.img_embed_module_install:
+    try:
+        from windrecorder import img_embed_manager
+    except ModuleNotFoundError:
+        config.set_and_save_config("img_embed_module_install", False)
+
 lang_map = utils.d_lang["lang_map"]
 
 
@@ -28,6 +34,13 @@ def set_config_lang(lang_name):
 
 
 def render():
+    # 初始化全局状态
+    if "is_cuda_available" not in st.session_state:
+        if config.img_embed_module_install:
+            st.session_state.is_cuda_available = img_embed_manager.is_cuda_available
+        else:
+            st.session_state.is_cuda_available = False
+
     st.markdown(_t("set_md_title"))
 
     col1b, col2b, col3b = st.columns([1, 0.5, 1.5])
@@ -85,6 +98,18 @@ def render():
                 help=_t("set_input_exclude_word_help"),
             )
 
+            if config.img_embed_module_install:
+                option_enable_img_embed_search = st.checkbox(
+                    _t("set_checkbox_enable_img_emb"),
+                    help=_t("set_text_enable_img_emb_help"),
+                    value=config.enable_img_embed_search,
+                )
+            else:
+                option_enable_img_embed_search = False
+
+        if not st.session_state.is_cuda_available and option_enable_img_embed_search:
+            st.warning(_t("set_text_img_emb_not_suppport_cuda"))
+
         # 更新数据库按钮
         if update_db_btn:
             try:
@@ -111,6 +136,8 @@ def render():
                 st.button(_t("set_btn_got_it"), key="setting_reset")
 
         st.divider()
+
+        # OCR 时忽略屏幕四边的区域范围
         col1pb, col2pb = st.columns([1, 1])
         with col1pb:
             st.markdown(_t("set_md_ocr_ignore_area"), help=_t("set_md_ocr_ignore_area_help"))
@@ -196,10 +223,11 @@ def render():
         with col1_ui2:
             config_max_search_result_num = st.number_input(
                 _t("set_input_max_num_search_page"),
-                min_value=1,
+                min_value=5,
                 max_value=500,
                 value=config.max_page_result,
             )
+        # 「一天之时」时间轴的横向缩略图数量
         with col2_ui2:
             config_oneday_timeline_num = st.number_input(
                 _t("set_input_oneday_timeline_thumbnail_num"),
@@ -208,6 +236,20 @@ def render():
                 value=config.oneday_timeline_pic_num,
                 help=_t("set_input_oneday_timeline_thumbnail_num_help"),
             )
+
+        # imgemb 选项
+        if config.img_embed_module_install and option_enable_img_embed_search:
+            col1_imgemb, col2_imgemb = st.columns([1, 1])
+            with col1_imgemb:
+                config_img_embed_search_recall_result_per_db = st.number_input(
+                    _t("set_input_img_emb_max_recall_count"),
+                    min_value=5,
+                    max_value=100,
+                    value=config.img_embed_search_recall_result_per_db,
+                    help=_t("set_text_help_img_emb_max_recall_count"),
+                )
+            with col2_imgemb:
+                st.empty()
 
         config_webui_access_password = st.text_input(
             f'🔒 {_t("set_pwd_text")}', value=config.webui_access_password_md5, help=_t("set_pwd_help"), type="password"
@@ -235,9 +277,12 @@ def render():
             # config.set_and_save_config("ocr_engine", config_ocr_engine)
             config.set_and_save_config("ocr_lang", config_ocr_lang)
             config.set_and_save_config("exclude_words", utils.string_to_list(exclude_words))
+            config.set_and_save_config("enable_img_embed_search", option_enable_img_embed_search)
             config.set_and_save_config("show_oneday_wordcloud", option_show_oneday_wordcloud)
             config.set_and_save_config("show_oneday_left_side_stat", option_show_oneday_wintitle)
             config.set_and_save_config("use_similar_ch_char_to_search", config_use_similar_ch_char_to_search)
+            config.set_and_save_config("img_embed_search_recall_result_per_db", config_img_embed_search_recall_result_per_db)
+
             config.set_and_save_config(
                 "ocr_image_crop_URBL",
                 [

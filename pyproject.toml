@@ -1,6 +1,6 @@
 [tool.poetry]
 name = "windrecorder"
-version = "0.0.7"
+version = "0.0.8"
 description = "Your personal memorize search engine on Windows. It can continuously recording your screen locally in small file size, and OCR the content so you can backtrack and query memory any time."
 authors = ["yuka-friends"]
 license = "GPL-2.0"
@@ -27,6 +27,8 @@ pystray = "^0.19.5"
 customtkinter = "^5.2.1"
 psutil = "^5.9.5"
 scikit-image = "^0.22.0"
+faiss-cpu = "^1.7.4"
+tqdm = "^4.65.0"
 
 [tool.poetry.group.dev.dependencies]
 pre-commit = "^3.5.0"

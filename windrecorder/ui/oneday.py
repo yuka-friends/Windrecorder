@@ -228,14 +228,14 @@ def render():
             get_generate_result = update_day_timeline_thumbnail()
             # 移除非今日的-today.png
             for filename in os.listdir(config.timeline_result_dir):
-                if filename.endswith("-today-.png") and filename != real_today_day_cloud_and_TL_img_name:
+                if "-today-" in filename and filename != real_today_day_cloud_and_TL_img_name:
                     file_path = os.path.join(config.timeline_result_dir, filename)
                     try:
                         os.remove(file_path)
                         print(f"webui: Deleted file: {file_path}")
                     except Exception as e:
                         print(f"webui: {e}")
-        elif current_day_TL_img_path.endswith("-today-.png"):
+        elif "-today-" in current_day_TL_img_path:
             # 如果已存在今日的，重新生成覆盖更新
             if not file_utils.is_file_modified_recently(current_day_TL_img_path):
                 # 如果修改日期超过30分钟则更新
@@ -404,7 +404,7 @@ def render():
                     update_day_word_cloud()
                     # 移除非今日的-today.png
                     for filename in os.listdir(config.wordcloud_result_dir):
-                        if filename.endswith("-today-.png") and filename != real_today_day_cloud_and_TL_img_name:
+                        if "-today-" in filename and filename != real_today_day_cloud_and_TL_img_name:
                             file_path = os.path.join(config.wordcloud_result_dir, filename)
                             os.remove(file_path)
                             print(f"webui: Deleted file: {file_path}")

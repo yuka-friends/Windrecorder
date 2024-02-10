@@ -1,6 +1,7 @@
 import getpass
 import os
 import subprocess
+import sys
 import time
 
 import windrecorder.upgrade_migration_routine as upgrade_migration_routine
@@ -8,11 +9,33 @@ from windrecorder import file_utils, ocr_manager, record, utils
 from windrecorder.config import config
 from windrecorder.utils import get_text as _t
 
+if os.path.exists(config.tray_lock_path):
+    with open(config.tray_lock_path, encoding="utf-8") as f:
+        check_pid = int(f.read())
+
+    tray_is_running = utils.is_process_running(check_pid, compare_process_name="python.exe")
+    if tray_is_running:
+        subprocess.run("cls", shell=True)
+        print("Windrecorder seems to be running, please try to close it and retry.")
+        print("捕风记录仪似乎正在运行，请尝试关闭后重试。")
+        print()
+        print(f"PID: {check_pid}")
+        sys.exit()
+    else:
+        try:
+            os.remove(config.tray_lock_path)
+        except FileNotFoundError:
+            pass
+
+
 # 清理早期版本的旧设定
-upgrade_migration_routine.main()
+try:
+    upgrade_migration_routine.main()
+except Exception as e:
+    print(e)
 
 # 全部向导的步骤数
-ALLSTEPS = 5
+ALLSTEPS = 6
 
 # 清理缓存
 if os.path.exists("cache"):
@@ -40,7 +63,7 @@ def print_header(step=1, toast=""):
 # 配置文件已有选项的指示器
 def config_indicator(config_element, expect_result):
     if config_element == expect_result:
-        return _t("qs_config_indicator")
+        return "   ← "
     else:
         return ""
 
@@ -250,9 +273,20 @@ while True:
 divider()
 subprocess.run("pause", shell=True)
 
+# 扩展介绍
+while True:
+    print_header(step=5)
+    print(_t("qs_et_describe"))
+    print()
+    for key, value in file_utils.get_extension().items():
+        print(f"   - {key}")
+    break
+
+divider()
+subprocess.run("pause", shell=True)
 
 # 完成初始化设定
-print_header(step=5)
+print_header(step=6)
 print(_t("qs_end_describe"))
 print(_t("qs_end_slogan"))
 print(_t("qs_end_feedback"))
