@@ -332,7 +332,7 @@ def st_create_timestamp_flag_mark_note_from_oneday_timeselect():
     new_data = {
         "thumbnail": "" if row.empty else row["thumbnail"].values[0],
         "datetime": datetime_created,
-        "note": "" if row.empty else row["win_title"].values[0],
+        "note": "_" if row.empty else row["win_title"].values[0],
     }
     df = file_utils.read_dataframe_from_path(config.flag_mark_note_filepath)
     df.loc[len(df)] = new_data

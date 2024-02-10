@@ -60,8 +60,6 @@
   "webui_access_password_md5": "",
   "enable_img_embed_search": true,
   "img_embed_search_recall_result_per_db": 30,
-  "img_embed_module_install": false
-  "used_firefox": false,
-  "late_night_poets": false,
-  "begin_day": 0
+  "img_embed_module_install": false,
+  "day_begin_minutes": 180
 }

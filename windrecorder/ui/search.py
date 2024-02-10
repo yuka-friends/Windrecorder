@@ -238,8 +238,8 @@ def ui_ocr_text_search():
                 st.session_state.max_page_count,
             ) = db_manager.db_search_data(
                 st.session_state.search_content,
-                st.session_state.search_date_range_in,
-                st.session_state.search_date_range_out,
+                utils.get_datetime_in_day_range_pole_by_config_day_begin(st.session_state.search_date_range_in, range="start"),
+                utils.get_datetime_in_day_range_pole_by_config_day_begin(st.session_state.search_date_range_out, range="end"),
                 keyword_input_exclude=st.session_state.search_content_exclude,
             )
             st.session_state.timeCost_globalSearch = round(time.time() - st.session_state.timeCost_globalSearch, 5)  # 回收搜索用时

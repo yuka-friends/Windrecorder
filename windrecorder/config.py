@@ -46,8 +46,7 @@ class Config:
         compress_encoder,
         compress_accelerator,
         compress_quality,
-        begin_day,
-        late_night_poets=False,
+        day_begin_minutes,
         lock_file_dir,
         maintain_lock_subdir,
         record_lock_name,
@@ -123,8 +122,7 @@ class Config:
         self.enable_img_embed_search = enable_img_embed_search
         self.img_embed_search_recall_result_per_db = img_embed_search_recall_result_per_db
         self.img_embed_module_install = img_embed_module_install
-        self.late_night_poets = late_night_poets
-        self.begin_day = begin_day
+        self.day_begin_minutes = day_begin_minutes
 
     def set_and_save_config(self, attr: str, value):
         if not hasattr(self, attr):
