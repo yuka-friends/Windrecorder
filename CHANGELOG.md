@@ -7,7 +7,7 @@
 - Add image semantic embedding and retrieval extension, install it in extension\install_img_embedding_module
 
 ### Fixed
-- bug: 当 CLI 未隐藏时切换了活动前台窗口、导致该前台窗口被隐藏；
+- bug: 当 CLI 未隐藏时切换了活动前台窗口、导致该前台窗口被隐藏；(?)
 
 ---
 
