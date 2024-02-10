@@ -29,6 +29,7 @@ psutil = "^5.9.5"
 scikit-image = "^0.22.0"
 faiss-cpu = "^1.7.4"
 tqdm = "^4.65.0"
+streamlit-tags = "^1.2.8"
 
 [tool.poetry.group.dev.dependencies]
 pre-commit = "^3.5.0"

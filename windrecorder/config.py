@@ -65,6 +65,7 @@ class Config:
         enable_img_embed_search,
         img_embed_search_recall_result_per_db,
         img_embed_module_install,
+        skip_record_wintitle,
         **other_field,
     ) -> None:
         self.db_path = db_path
@@ -121,6 +122,7 @@ class Config:
         self.enable_img_embed_search = enable_img_embed_search
         self.img_embed_search_recall_result_per_db = img_embed_search_recall_result_per_db
         self.img_embed_module_install = img_embed_module_install
+        self.skip_record_wintitle = skip_record_wintitle
 
     def set_and_save_config(self, attr: str, value):
         if not hasattr(self, attr):
