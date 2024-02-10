@@ -27,7 +27,7 @@
   "wordcloud_user_stop_words": [
     "login","account","twitter","reddit","youtube"
   ],
-  "record_skip_wintitle": ["Visual Studio Code", "Steam"],
+  "skip_record_wintitle": ["Visual Studio Code", "Steam"],
   "ocr_image_crop_URBL": [6,6,6,3],
   "vid_store_day": 600,
   "vid_compress_day": 120,

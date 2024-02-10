@@ -50,8 +50,8 @@ def render():
             min_value=0,
         )
 
-        record_skip_wintitle = st_tags(
-            label=_t("rs_text_skip_recording_by_wintitle"), text=_t("rs_tag_input_tip"), value=config.record_skip_wintitle
+        skip_record_wintitle = st_tags(
+            label=_t("rs_text_skip_recording_by_wintitle"), text=_t("rs_tag_input_tip"), value=config.skip_record_wintitle
         )
 
         st.divider()
@@ -139,7 +139,7 @@ def render():
             config.set_and_save_config("start_recording_on_startup", is_start_recording_on_start_app)
             config.set_and_save_config("record_screen_enable_half_res_while_hidpi", record_screen_enable_half_res_while_hidpi)
             config.set_and_save_config("OCR_index_strategy", ocr_strategy_option_dict[ocr_strategy_option])
-            config.set_and_save_config("record_skip_wintitle", [item for item in record_skip_wintitle if len(item) >= 2])
+            config.set_and_save_config("skip_record_wintitle", [item for item in skip_record_wintitle if len(item) >= 2])
 
             config.set_and_save_config("vid_store_day", vid_store_day)
             config.set_and_save_config("vid_compress_day", vid_compress_day)
