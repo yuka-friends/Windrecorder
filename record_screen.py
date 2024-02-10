@@ -69,7 +69,16 @@ def idle_maintain_process_main():
                 with img_emb_lock:
                     img_embed_manager.all_videofile_do_img_embedding_routine()
             except LockExistsException:
-                print("another img embedding indexing is running.")
+                with open(config.tray_lock_path, encoding="utf-8") as f:
+                    check_pid = int(f.read())
+                img_emb_is_running = utils.is_process_running(check_pid, compare_process_name="python.exe")
+                if img_emb_is_running:
+                    print("another img embedding indexing is running.")
+                else:
+                    try:
+                        os.remove(config.tray_lock_path)
+                    except FileNotFoundError:
+                        pass
 
         # 清理过时视频
         ocr_manager.remove_outdated_videofiles()
