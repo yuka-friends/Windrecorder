@@ -48,6 +48,7 @@
         "oneday_ls_title_wintitle": "⏱️ Activity Statistics",
         "oneday_ls_title_flag_note": "🚩 All Flag Note",
         "oneday_ls_text_no_wintitle_stat": "<p align='left' style='color:rgba(0,0,0,.3)'> No page view data for the day </p>",
+        "oneday_ls_text_no_wintitle_stat_momnth": "<p align='left' style='color:rgba(0,0,0,.3)'> No page view data for the month </p>",
         "oneday_ls_text_disable_leftside": "<p align='center' style='color:rgba(0,0,0,.3)'> The toolbar is closed. You can go to the settings page to open it. </p>",
 
         "gs_md_search_title": "### 🔎 Search",
@@ -78,6 +79,7 @@
         "stat_btn_generate_lightbox": "Generate/Update Monthly Lightbox",
         "stat_text_generating_lightbox": "Generating, it might takes about 5s...",
         "stat_text_no_month_lightbox": "No lightbox image for this month.",
+        "stat_text_counting": "Counting...",
 
         "rs_text_need_to_restart_after_save_setting": "After saving the settings on this page, you need to restart the 'start_app.bat' to take effect.",
         "rs_md_title": "### 📼 Recording & Video Storage",
@@ -260,6 +262,7 @@
         "oneday_ls_title_wintitle": "⏱️ 活动统计",
         "oneday_ls_title_flag_note": "🚩 所有旗标",
         "oneday_ls_text_no_wintitle_stat": "<p align='left' style='color:rgba(0,0,0,.3)'> 没有当日页面浏览数据 </p>",
+        "oneday_ls_text_no_wintitle_stat_momnth": "<p align='left' style='color:rgba(0,0,0,.3)'> 没有当月页面浏览数据 </p>",
         "oneday_ls_text_disable_leftside": "<p align='center' style='color:rgba(0,0,0,.3)'> 工具栏已关闭，可前往设置页开启。 </p>",
 
         "gs_md_search_title": "### 🔎 搜索",
@@ -290,6 +293,7 @@
         "stat_btn_generate_lightbox": "生成/更新本月的光箱",
         "stat_text_generating_lightbox": "生成中，大概需要 5s……",
         "stat_text_no_month_lightbox": "当月未有光箱图片。",
+        "stat_text_counting": "统计中……",
 
         "rs_text_need_to_restart_after_save_setting": "本页的设置在保存后，需重启 「start_app.bat」 才能生效。",
         "rs_md_title": "### 📼 录制与视频存储",
@@ -472,6 +476,7 @@
         "oneday_ls_title_wintitle": "⏱️ アクティビティ統計",
         "oneday_ls_title_flag_note": "🚩 すべてのフラグ",
         "oneday_ls_text_no_wintitle_stat": "<p align='left' style='color:rgba(0,0,0,.3)'> その日のページビュー データはありません </p>",
+        "oneday_ls_text_no_wintitle_stat_momnth": "<p align='left' style='color:rgba(0,0,0,.3)'> その月のページビュー データはありません </p>",
         "oneday_ls_text_disable_leftside": "<p align='center' style='color:rgba(0,0,0,.3)'> ツールバーは閉じています。ツールバーを開くには、設定ページに移動できます。</p> ",
 
         "gs_md_search_title": "### 🔎 検索",
@@ -502,6 +507,7 @@
         "stat_btn_generate_lightbox": "今月のライトボックスを生成/更新",
         "stat_text_generating_lightbox": "生成中です。約 5秒かかります...",
         "stat_text_no_month_lightbox": "今月はライトボックス画像がありません。",
+        "stat_text_counting": "統計...",
 
         "rs_text_need_to_restart_after_save_setting": "このページの設定を保存した後、start_app.bat を再起動する必要があります。",
         "rs_md_title": "### 📼 録画とビデオストレージ",

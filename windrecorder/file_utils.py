@@ -194,13 +194,6 @@ def get_db_filepath_by_datetime(dt, db_dir=config.db_path, user_name=config.user
 def save_dataframe_to_path(dataframe, file_path="cache/temp.csv"):
     """
     将DataFrame数据保存到指定路径
-
-    参数:
-    dataframe (pandas.DataFrame): 要保存的DataFrame数据
-    file_path (str): 要保存到的文件路径 默认为cache
-
-    返回:
-    无
     """
     ensure_dir(os.path.dirname(file_path))
     dataframe.to_csv(file_path, index=False)  # 使用to_csv()方法将DataFrame保存为CSV文件（可根据需要选择其他文件格式）
@@ -211,18 +204,30 @@ def save_dataframe_to_path(dataframe, file_path="cache/temp.csv"):
 def read_dataframe_from_path(file_path="cache/temp.csv"):
     """
     从指定路径读取数据到DataFrame
-
-    参数:
-    file_path (str): 要读取数据的文件路径 默认为cache
-
-    返回:
-    pandas.DataFrame: 读取到的DataFrame数据
     """
     if not os.path.exists(file_path):
         return None
 
     dataframe = pd.read_csv(file_path)  # 使用read_csv()方法读取CSV文件（可根据文件格式选择对应的读取方法）
     return dataframe
+
+
+def save_dict_as_json_to_path(data: dict, filepath):
+    """将 dict 保存到 json"""
+    ensure_dir(os.path.dirname(filepath))
+    with open(filepath, "w") as f:
+        json.dump(data, f)
+    print("files: json has been saved at ", filepath)
+
+
+def read_json_as_dict_from_path(filepath):
+    """从 json 读取 dict"""
+    if not os.path.exists(filepath):
+        return None
+
+    with open(filepath, "r") as f:
+        data = json.load(f)
+    return data
 
 
 # 读取 extension 文件夹下所有插件名与对应 meta info
