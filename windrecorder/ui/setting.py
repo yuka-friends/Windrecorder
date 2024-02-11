@@ -91,13 +91,6 @@ def render():
                 index=ocr_lang_index,
             )
 
-            # 设置排除词
-            exclude_words = st.text_area(
-                _t("set_input_exclude_word"),
-                value=utils.list_to_string(config.exclude_words),
-                help=_t("set_input_exclude_word_help"),
-            )
-
             if config.img_embed_module_install:
                 option_enable_img_embed_search = st.checkbox(
                     _t("set_checkbox_enable_img_emb"),
@@ -276,7 +269,6 @@ def render():
             config.set_and_save_config("max_page_result", config_max_search_result_num)
             # config.set_and_save_config("ocr_engine", config_ocr_engine)
             config.set_and_save_config("ocr_lang", config_ocr_lang)
-            config.set_and_save_config("exclude_words", utils.string_to_list(exclude_words))
             config.set_and_save_config("enable_img_embed_search", option_enable_img_embed_search)
             config.set_and_save_config("show_oneday_wordcloud", option_show_oneday_wordcloud)
             config.set_and_save_config("show_oneday_left_side_stat", option_show_oneday_wintitle)
