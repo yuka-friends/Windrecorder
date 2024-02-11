@@ -162,6 +162,9 @@ def turn_dict_into_display_dataframe(stat: dict):
     wintitle | 1h02m03s
     """
     df_show = pd.DataFrame(list(stat.items()), columns=["Page", "Screen Time"])
+    # 使用 str.contains 和 ' | '.join 方法来生成一个判断条件语句，然后利用 ~ 来进行逻辑非操作
+    mask = df_show["Page"].apply(lambda x: any(word in x for word in config.exclude_words))  # 过滤掉自定义跳过词
+    df_show = df_show[~mask]
     df_show.sort_values(by="Screen Time", ascending=False, inplace=True)
     df_show = df_show.reset_index(drop=True)
     df_show["Screen Time"] = df_show["Screen Time"].apply(utils.convert_seconds_to_hhmmss)
