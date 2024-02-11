@@ -426,7 +426,8 @@ def ocr_process_single_video(video_path, vid_file_name, iframe_path, optimize_fo
             print(f"ocr_manager: --------- {file_path} Finished! ---------")
         finally:
             # 清理文件
-            # shutil.rmtree(iframe_sub_path)   先不清理文件，留给 img embed 流程继续使用，由它清理
+            if not config.enable_img_embed_search:
+                shutil.rmtree(iframe_sub_path)  # 先不清理文件，留给 img embed 流程继续使用，由它清理
             pass
 
 
