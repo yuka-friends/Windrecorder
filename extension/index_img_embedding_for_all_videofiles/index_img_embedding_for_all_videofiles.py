@@ -86,12 +86,27 @@ Tip: During the indexing process, you can close the terminal window at any time 
     print("指定的选项下视频已索引完成，你可以在 webui 使用自然语言描述来查找对应图像画面。")
 
 
-try:
-    img_emb_lock = FileLock(config.img_emb_lock_path, str(getpid()), timeout_s=None)
-    with img_emb_lock:
-        main()
-except LockExistsException:
-    subprocess.run("cls", shell=True)
-    print(
-        "Warring: Seems another img embedding indexing process is running.\n If not, please try to delete cache/lock/LOCK_FILE_IMG_EMB.MD and try again.\n"
-    )
+while True:
+    try:
+        img_emb_lock = FileLock(config.img_emb_lock_path, str(getpid()), timeout_s=None)
+        break
+    except LockExistsException:
+        with open(config.img_emb_lock_path, encoding="utf-8") as f:
+            check_pid = int(f.read())
+
+        tray_is_running = utils.is_process_running(check_pid, compare_process_name="python.exe")
+        if tray_is_running:
+            subprocess.run("cls", shell=True)
+            print(
+                "Warring: Seems another img embedding indexing process is running.\n If not, please try to delete cache/lock/LOCK_FILE_IMG_EMB.MD and try again.\n"
+            )
+            print(f"PID: {check_pid}")
+            sys.exit()
+        else:
+            try:
+                os.remove(config.img_emb_lock_path)
+            except FileNotFoundError:
+                pass
+
+with img_emb_lock:
+    main()
