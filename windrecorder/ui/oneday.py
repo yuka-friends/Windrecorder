@@ -31,9 +31,15 @@ def render():
     if "day_date_input" not in st.session_state:
         st.session_state["day_date_input"] = datetime.date.today()
 
-    title_col, yesterday_col, tomorrow_col, today_col, date_col, spacing_col, search_col = st.columns(
-        [0.4, 0.25, 0.25, 0.15, 0.25, 0.2, 1]
-    )
+    (
+        title_col,
+        yesterday_col,
+        tomorrow_col,
+        today_col,
+        date_col,
+        spacing_col,
+        search_col,
+    ) = st.columns([0.4, 0.25, 0.25, 0.15, 0.25, 0.2, 1])
     with title_col:
         st.markdown(_t("oneday_title"))
     with yesterday_col:
@@ -45,6 +51,11 @@ def render():
     with today_col:
         if st.button(_t("oneday_btn_today"), use_container_width=True):
             st.session_state.day_date_input = datetime.date.today()
+            if (datetime.datetime.now().hour < config.day_begin_minutes // 60) or (
+                datetime.datetime.now().hour == config.day_begin_minutes // 60
+                and datetime.datetime.now().minute < config.day_begin_minutes % 60
+            ):
+                st.session_state.day_date_input -= datetime.timedelta(days=1)
     with date_col:
         st.session_state.day_date_input = st.date_input(
             "Today Date",
@@ -54,12 +65,13 @@ def render():
 
         # 获取输入的日期
         # 清理格式到HMS
+        begin_day = config.day_begin_minutes
         dt_in = datetime.datetime(
             st.session_state.day_date_input.year,
             st.session_state.day_date_input.month,
             st.session_state.day_date_input.day,
-            0,
-            0,
+            begin_day // 60,
+            begin_day % 60,
             0,
         )
         # 检查数据库中关于今天的数据
@@ -70,7 +82,8 @@ def render():
             day_min_timestamp_dt,
             day_max_timestamp_dt,
             day_df,
-        ) = OneDay().checkout(dt_in)
+        ) = OneDay().checkout_daily_data_meta(dt_in)
+        print(f"{day_min_timestamp_dt=}, {day_max_timestamp_dt=}")
     with spacing_col:
         st.empty()
     with search_col:
@@ -82,7 +95,13 @@ def render():
         if "day_search_query_page_index" not in st.session_state:
             st.session_state["day_search_query_page_index"] = 0
 
-        toggle_col, keyword_col, result_cnt_col, turn_page_col, refresh_col = st.columns([1, 1.5, 1, 1, 0.5])
+        (
+            toggle_col,
+            keyword_col,
+            result_cnt_col,
+            turn_page_col,
+            refresh_col,
+        ) = st.columns([1, 1.5, 1, 1, 0.5])
         with toggle_col:
             if st.toggle(_t("oneday_toggle_search"), help=_t("oneday_toggle_search_help")):
                 st.session_state.day_time_slider_disable = True
@@ -166,14 +185,14 @@ def render():
                     label_visibility="collapsed",
                     disabled=not st.session_state.day_time_slider_disable,
                     on_change=update_slider(
-                        utils.set_full_datetime_to_day_time(
-                            utils.seconds_to_datetime(
-                                st.session_state.df_day_search_result.loc[
-                                    st.session_state.day_search_result_index_num,
-                                    "videofile_time",
-                                ]
-                            )
+                        # utils.set_full_datetime_to_day_time(
+                        utils.seconds_to_datetime(
+                            st.session_state.df_day_search_result.loc[
+                                st.session_state.day_search_result_index_num,
+                                "videofile_time",
+                            ]
                         )
+                        # )
                     ),
                 )
         with refresh_col:
@@ -198,14 +217,20 @@ def render():
             current_day_TL_img_path = os.path.join(config.timeline_result_dir, current_day_cloud_and_TL_img_name)
 
         # 时间滑动控制杆
-        start_time = datetime.time(day_min_timestamp_dt.hour, day_min_timestamp_dt.minute)
-        end_time = datetime.time(day_max_timestamp_dt.hour, day_max_timestamp_dt.minute)
+        # start_time = datetime.time(
+        #     day_min_timestamp_dt.hour, day_min_timestamp_dt.minute
+        # )
+        # end_time = datetime.time(day_max_timestamp_dt.hour, day_max_timestamp_dt.minute)
+
+        # if end_time < start_time:
+        #     end_time = datetime.time(day_max_timestamp_dt.hour + 24, day_max_timestamp_dt.minute)
         st.session_state.day_time_select_24h = st.slider(
             "Time Rewind",
             label_visibility="collapsed",
-            min_value=start_time,
-            max_value=end_time,
-            value=end_time,
+            min_value=day_min_timestamp_dt,
+            max_value=day_max_timestamp_dt,
+            value=day_max_timestamp_dt,
+            format="MM/DD - HH:mm" if day_min_timestamp_dt.day != day_max_timestamp_dt.day else "HH:mm",
             step=datetime.timedelta(seconds=30),
             disabled=st.session_state.day_time_slider_disable,
             key="day_time_select_slider",
@@ -215,7 +240,8 @@ def render():
         def update_day_timeline_thumbnail():
             with st.spinner(_t("oneday_text_generate_timeline_thumbnail")):
                 if OneDay().generate_preview_timeline_img(
-                    st.session_state.day_date_input,
+                    dt_in=day_min_timestamp_dt,
+                    dt_out=day_max_timestamp_dt,
                     img_saved_name=current_day_cloud_and_TL_img_name,
                 ):
                     return True
@@ -334,10 +360,11 @@ def render():
             else:
                 # 【时间线速查功能】
                 # 获取选择的时间，查询对应时间下有无视频，有则换算与定位
-                day_full_select_datetime = utils.merge_date_day_datetime_together(
-                    st.session_state.day_date_input,
-                    st.session_state.day_time_select_24h,
-                )  # 合并时间为datetime
+                day_full_select_datetime = st.session_state.day_time_select_24h
+                # day_full_select_datetime = utils.merge_date_day_datetime_together(
+                #     st.session_state.day_date_input,
+                #     st.session_state.day_time_select_24h,
+                # )  # 合并时间为datetime
                 (
                     day_is_result_exist,
                     day_video_file_name,

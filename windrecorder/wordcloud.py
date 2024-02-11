@@ -202,23 +202,10 @@ def get_month_ocr_result(timestamp, text_file_path="cache/get_month_ocr_result_o
 def get_day_ocr_result(timestamp):
     timestamp_datetime = utils.seconds_to_datetime(timestamp)
     # 查询当月所有识别到的数据，存储在文本中
-    date_in = datetime(
-        timestamp_datetime.year,
-        timestamp_datetime.month,
-        timestamp_datetime.day,
-        0,
-        0,
-        1,
-    )
-    date_out = datetime(
-        timestamp_datetime.year,
-        timestamp_datetime.month,
-        timestamp_datetime.day,
-        23,
-        59,
-        59,
-    )
-    df, _, _ = db_manager.db_search_data("", date_in, date_out)
+    dt_in = utils.get_datetime_in_day_range_pole_by_config_day_begin(timestamp_datetime, range="start")
+    dt_out = utils.get_datetime_in_day_range_pole_by_config_day_begin(timestamp_datetime, range="end")
+
+    df, _, _ = db_manager.db_search_data("", dt_in, dt_out)
     ocr_text_data = "".join(df["ocr_text"].tolist())
     ocr_text_data = utils.delete_short_lines(ocr_text_data, less_than=10)
 

@@ -243,15 +243,23 @@ class _DBManager:
         df_after = df.loc[nearest_index + 1 :]
         return df_before, df_after
 
-    # 查询关键词数据，返回完整的结果 dataframe
     def db_search_data(self, keyword_input, date_in, date_out, keyword_input_exclude=""):
-        # 返回值：关于结果的所有数据 df，所有结果的总行数
+        """
+        查询选定日期当天的关键词数据，返回完整的结果 dataframe
+        返回值：关于结果的所有数据 df，所有结果的总行数
+
+        :param keyword_input: str 关键词
+        :param date_in: datetime.datetime 开始时间范围
+        :param date_out: datetime.datetime 结束时间范围
+        :param keyword_input_exclude: str 排除词
+        """
         print("dbManager: Querying keywords")
         # 初始化查询数据
-        # date_in/date_out : 类型为datetime.datetime
         self.db_update_read_config(config)
-        date_in_ts = int(utils.date_to_seconds(date_in.strftime("%Y-%m-%d_00-00-00")))
-        date_out_ts = int(utils.date_to_seconds(date_out.strftime("%Y-%m-%d_23-59-59")))
+        date_in_ts = int(utils.date_to_seconds(date_in.strftime("%Y-%m-%d_%H-%M-%S")))
+        date_out_ts = int(utils.date_to_seconds(date_out.strftime("%Y-%m-%d_%H-%M-%S")))
+        # date_in_ts = int(utils.date_to_seconds(date_in.strftime("%Y-%m-%d_00-00-00")))
+        # date_out_ts = int(utils.date_to_seconds(date_out.strftime("%Y-%m-%d_23-59-59")))
 
         if date_in_ts == date_out_ts:
             date_out_ts += 1
@@ -260,6 +268,7 @@ class _DBManager:
         datetime_start = utils.seconds_to_datetime(date_in_ts)
         datetime_end = utils.seconds_to_datetime(date_out_ts)
         query_db_name_list = self.db_get_dbfilename_by_datetime(datetime_start, datetime_end)
+        print(f"{datetime_start=}, {datetime_end=}")
 
         # 遍历查询所有数据库信息
         df_all = pd.DataFrame()
@@ -595,9 +604,13 @@ class _DBManager:
         conn.close()
 
     # 获取某个时间点附近最接近的一行数据
-    def db_get_closest_row_around_by_datetime(self, datetime, time_threshold=60):
-        df, all_result_counts, _ = self.db_search_data("", datetime, datetime)
-        timestamp = utils.datetime_to_seconds(datetime)
+    def db_get_closest_row_around_by_datetime(self, dt: datetime.datetime, time_threshold=60):
+        df, all_result_counts, _ = self.db_search_data(
+            "",
+            utils.get_datetime_in_day_range_pole_by_config_day_begin(dt, range="start"),
+            utils.get_datetime_in_day_range_pole_by_config_day_begin(dt, range="end"),
+        )
+        timestamp = utils.datetime_to_seconds(dt)
         closest_timestamp = df[np.abs(df["videofile_time"] - timestamp) <= time_threshold][
             "videofile_time"
         ].max()  # 差距阈值:second
@@ -607,15 +620,19 @@ class _DBManager:
         return row
 
     # 获取某个时间的当天最早与最晚记录时间
-    def db_get_time_min_and_max_through_datetime(self, datetime):
-        df, all_result_counts, _ = self.db_search_data("", datetime, datetime)
+    def db_get_time_min_and_max_through_datetime(self, dt: datetime.datetime):
+        df, all_result_counts, _ = self.db_search_data(
+            "",
+            utils.get_datetime_in_day_range_pole_by_config_day_begin(dt, range="start"),
+            utils.get_datetime_in_day_range_pole_by_config_day_begin(dt, range="end"),
+        )
         time_min = df["videofile_time"].min()
         time_max = df["videofile_time"].max()
         return time_min, time_max
 
     # 获取一个时间段内，按时间戳等均分的几张缩略图
-    def db_get_day_thumbnail_by_timeavg(self, date_in, date_out, back_pic_num):
-        df, all_result_counts, _ = self.db_search_data("", date_in, date_out)
+    def db_get_day_thumbnail_by_timeavg(self, dt_in: datetime.datetime, dt_out: datetime.datetime, back_pic_num):
+        df, all_result_counts, _ = self.db_search_data("", dt_in, dt_out)
 
         if all_result_counts < back_pic_num:
             return None

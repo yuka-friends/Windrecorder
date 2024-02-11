@@ -46,6 +46,7 @@ class Config:
         compress_encoder,
         compress_accelerator,
         compress_quality,
+        day_begin_minutes,
         lock_file_dir,
         maintain_lock_subdir,
         record_lock_name,
@@ -122,6 +123,7 @@ class Config:
         self.enable_img_embed_search = enable_img_embed_search
         self.img_embed_search_recall_result_per_db = img_embed_search_recall_result_per_db
         self.img_embed_module_install = img_embed_module_install
+        self.day_begin_minutes = day_begin_minutes
         self.skip_record_wintitle = skip_record_wintitle
 
     def set_and_save_config(self, attr: str, value):
@@ -191,3 +193,8 @@ def get_video_compress_preset_json():
 
 
 config = Config(**get_config_json())
+
+# main 函数，输出 config 内容
+if __name__ == "__main__":
+    print(vars(config))
+    print(config)

@@ -227,6 +227,31 @@ def set_full_datetime_to_YYYY_MM_DD(dt):
     return dt.replace(hour=0, minute=0, second=0, microsecond=0)
 
 
+def get_datetime_in_day_range_pole_by_config_day_begin(dt: datetime.datetime, range="start"):
+    """
+    根据一天中的一个时间点 datetime，获取在 config.day_begin_minutes 下对应一天的开始/结束点
+
+    param: dt 一天中的一个时间点
+    param: range 指定为 start/end 获取开始与结束
+    """
+    if type(dt) is datetime.date:
+        dt = datetime.datetime.combine(dt, datetime.datetime.min.time())
+
+    day_begin_minutes = config.day_begin_minutes
+    if range == "start":
+        res = dt.replace(hour=day_begin_minutes // 60, minute=day_begin_minutes % 60, second=0, microsecond=0)
+    if range == "end":
+        res = dt.replace(
+            day=dt.day + (1 if day_begin_minutes > 0 else 0),
+            hour=(23 + day_begin_minutes // 60) % 24,
+            minute=(59 + day_begin_minutes % 60) % 60,
+            second=59,
+            microsecond=0,
+        )
+
+    return res
+
+
 # 将输入的不完整的datetime补齐为默认年月日时分秒的datetime
 def complete_datetime(dt):
     if isinstance(dt, datetime.date):
