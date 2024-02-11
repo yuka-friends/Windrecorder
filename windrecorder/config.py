@@ -39,6 +39,7 @@ class Config:
         use_similar_ch_char_to_search,
         ocr_image_crop_URBL,
         lightbox_result_dir,
+        wintitle_result_dir,
         release_ver,
         video_compress_rate,
         oneday_timeline_pic_num,
@@ -90,6 +91,7 @@ class Config:
         self.wordcloud_result_dir = wordcloud_result_dir
         self.timeline_result_dir = timeline_result_dir
         self.lightbox_result_dir = lightbox_result_dir
+        self.wintitle_result_dir = wintitle_result_dir
         self.screentime_not_change_to_pause_record = screentime_not_change_to_pause_record
         self.show_oneday_wordcloud = show_oneday_wordcloud
         self.user_name = user_name

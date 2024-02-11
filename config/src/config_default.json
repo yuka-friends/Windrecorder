@@ -35,6 +35,7 @@
   "wordcloud_result_dir": "result_wordcloud",
   "timeline_result_dir": "result_timeline",
   "lightbox_result_dir": "result_lightbox",
+  "wintitle_result_dir": "result_wintitle",
   "screentime_not_change_to_pause_record": 5,
   "show_oneday_wordcloud": true,
   "user_name": "default",

@@ -11,7 +11,6 @@ import subprocess
 import sys
 import threading
 import time
-from datetime import timedelta
 from io import BytesIO
 
 import cv2
@@ -167,11 +166,11 @@ def convert_seconds_to_hhmmss(seconds, complete_with_zero=True):
     :param complete_with_zero: bool 是否用 0 补齐 m s
     """
     seconds = int(round(seconds))
-    td = timedelta(seconds=seconds)
+    # td = timedelta(seconds=seconds)
 
-    hours = td.seconds // 3600
-    minutes = (td.seconds // 60) % 60
-    seconds = td.seconds % 60
+    hours = seconds // 3600
+    minutes = (seconds // 60) % 60
+    seconds = seconds % 60
 
     time_str = ""
     if hours > 0:

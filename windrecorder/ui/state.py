@@ -11,6 +11,7 @@ import windrecorder.wordcloud as wordcloud
 from windrecorder import file_utils
 from windrecorder.config import config
 from windrecorder.db_manager import db_manager
+from windrecorder.record_wintitle import component_month_wintitle_stat
 from windrecorder.utils import get_text as _t
 
 
@@ -79,23 +80,8 @@ def render():
 
         col1_mem, col2_mem = st.columns([1, 1])
         with col1_mem:
-            current_month_cloud_img_name = (
-                str(st.session_state.Stat_query_Year) + "-" + str(st.session_state.Stat_query_Month) + ".png"
-            )
-            current_month_cloud_img_path = os.path.join(config.wordcloud_result_dir, current_month_cloud_img_name)
-
-            if st.button(_t("stat_btn_generate_update_word_cloud")):
-                with st.spinner(_t("stat_text_generating_word_cloud")):
-                    wordcloud.generate_word_cloud_in_month(
-                        utils.datetime_to_seconds(st.session_state.stat_select_month_datetime),
-                        current_month_cloud_img_name,
-                    )
-
-            if os.path.exists(current_month_cloud_img_path):
-                image = Image.open(current_month_cloud_img_path)
-                st.image(image, caption=current_month_cloud_img_path)
-            else:
-                st.info(_t("stat_text_no_month_word_cloud_pic"))
+            st.empty()
+            component_month_wintitle_stat(st.session_state.stat_select_month_datetime)  # 显示当月活动统计
 
         with col2_mem:
             current_month_lightbox_img_name = (
@@ -115,6 +101,24 @@ def render():
                 st.image(image, caption=current_month_lightbox_img_path)
             else:
                 st.info(_t("stat_text_no_month_lightbox"))
+
+            current_month_cloud_img_name = (
+                str(st.session_state.Stat_query_Year) + "-" + str(st.session_state.Stat_query_Month) + ".png"
+            )
+            current_month_cloud_img_path = os.path.join(config.wordcloud_result_dir, current_month_cloud_img_name)
+
+            if st.button(_t("stat_btn_generate_update_word_cloud")):
+                with st.spinner(_t("stat_text_generating_word_cloud")):
+                    wordcloud.generate_word_cloud_in_month(
+                        utils.datetime_to_seconds(st.session_state.stat_select_month_datetime),
+                        current_month_cloud_img_name,
+                    )
+
+            if os.path.exists(current_month_cloud_img_path):
+                image = Image.open(current_month_cloud_img_path)
+                st.image(image, caption=current_month_cloud_img_path)
+            else:
+                st.info(_t("stat_text_no_month_word_cloud_pic"))
 
 
 # 生成并显示每月数据量概览
