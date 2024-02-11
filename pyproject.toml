@@ -1,7 +1,7 @@
 [tool.poetry]
 name = "windrecorder"
 version = "0.0.8"
-description = "Your personal memorize search engine on Windows. It can continuously recording your screen locally in small file size, and OCR the content so you can backtrack and query memory any time."
+description = "Windrecorder is a memory search app by records everything on your screen in small size, to let you rewind what you have seen, query through OCR text or image description, and get activity statistics. Developed as MacOS App Rewind.ai's alternative on Windows platform."
 authors = ["yuka-friends"]
 license = "GPL-2.0"
 readme = "README.md"
@@ -29,6 +29,7 @@ psutil = "^5.9.5"
 scikit-image = "^0.22.0"
 faiss-cpu = "^1.7.4"
 tqdm = "^4.65.0"
+streamlit-tags = "^1.2.8"
 
 [tool.poetry.group.dev.dependencies]
 pre-commit = "^3.5.0"

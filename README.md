@@ -105,6 +105,8 @@ Q: Windows.Media.Ocr.Cli OCR 不可用/识别率过低
 
 - https://github.com/zh-h/Windows.Media.Ocr.Cli
 
+- https://github.com/unum-cloud/uform
+
 
 ---
 

@@ -3,8 +3,11 @@
 ## 0.0.8
 > 2024-02-10
 
-- 添加图像语义嵌入、检索扩展，在 extension\install_img_embedding_module 进行安装
-- Add image semantic embedding and retrieval extension, install it in extension\install_img_embedding_module
+- 添加图像语义嵌入、检索扩展，在 extension\install_img_embedding_module 进行安装；
+- 可跳过录制自定义的前台活动了，比如自定义锁屏、游戏、隐私场景等；
+
+- Add image semantic embedding and retrieval extension, install it in extension\install_img_embedding_module;
+- You can now skip recording customized foreground activities, such as customized lock screens, games, privacy scenes, etc.
 
 ### Fixed
 - bug: 当 CLI 未隐藏时切换了活动前台窗口、导致该前台窗口被隐藏；(?)
