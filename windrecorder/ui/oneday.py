@@ -29,7 +29,12 @@ def render():
 
     # 日期选择器
     if "day_date_input" not in st.session_state:
-        st.session_state["day_date_input"] = datetime.date.today()
+        st.session_state["day_date_input"] = datetime.date.today() - (
+            datetime.timedelta(days=1)
+            if (datetime.datetime.now() - datetime.datetime.now().replace(hour=0, minute=0, second=0))
+            < datetime.timedelta(minutes=config.day_begin_minutes)
+            else datetime.timedelta(seconds=0)
+        )  # 如果在分隔时间内则矫正到缺省选择昨天
 
     (
         title_col,
