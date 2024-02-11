@@ -241,9 +241,6 @@ def component_month_wintitle_stat(month_dt: datetime.datetime):
         update_condition = True
         st.session_state.wintitle_month_dt_last_time = month_dt
 
-    if not (st.session_state[month_wintitle_df_statename].empty or update_condition):
-        return
-
     def _generate_stat():
         """生成统计，结果放于 session state 中"""
         st.session_state["month_wintitle_stat_dict"] = get_wintitle_stat_dict_in_month(month_dt)
@@ -257,27 +254,28 @@ def component_month_wintitle_stat(month_dt: datetime.datetime):
             current_month_wintitle_stat_json_filepath
         )
 
-    # 检查磁盘上有无统计缓存，然后检查是否过时
-    if os.path.exists(current_month_wintitle_stat_json_filepath):
-        if current_month_wintitle_stat_json_name[:7] == datetime.datetime.today().strftime("%Y-%m"):  # 如果是需要时效性的当下月数据
-            if not file_utils.is_file_modified_recently(
-                current_month_wintitle_stat_json_filepath, time_gap=720
-            ):  # 超过半天未更新，过时 重新生成
-                with st.spinner(_t("stat_text_counting")):
-                    _generate_stat()
-        # 进行读取操作
-        _read_stat_on_disk_cache()
-    else:  # 磁盘上不存在缓存
-        with st.spinner(_t("stat_text_counting")):
-            _generate_stat()
+    if st.session_state[month_wintitle_df_statename].empty or update_condition:
+        # 检查磁盘上有无统计缓存，然后检查是否过时
+        if os.path.exists(current_month_wintitle_stat_json_filepath):
+            if current_month_wintitle_stat_json_name[:7] == datetime.datetime.today().strftime("%Y-%m"):  # 如果是需要时效性的当下月数据
+                if not file_utils.is_file_modified_recently(
+                    current_month_wintitle_stat_json_filepath, time_gap=720
+                ):  # 超过半天未更新，过时 重新生成
+                    with st.spinner(_t("stat_text_counting")):
+                        _generate_stat()
+            # 进行读取操作
+            _read_stat_on_disk_cache()
+        else:  # 磁盘上不存在缓存
+            with st.spinner(_t("stat_text_counting")):
+                _generate_stat()
 
-    # 处理数据
-    st.session_state[month_wintitle_df_statename] = turn_dict_into_display_dataframe(
-        st.session_state["month_wintitle_stat_dict"]
-    )
-    st.session_state[month_wintitle_df_statename + "_screentime_sum"] = sum(
-        int(value) for value in st.session_state["month_wintitle_stat_dict"].values()
-    )
+        # 处理数据
+        st.session_state[month_wintitle_df_statename] = turn_dict_into_display_dataframe(
+            st.session_state["month_wintitle_stat_dict"]
+        )
+        st.session_state[month_wintitle_df_statename + "_screentime_sum"] = sum(
+            int(value) for value in st.session_state["month_wintitle_stat_dict"].values()
+        )
 
     if len(st.session_state[month_wintitle_df_statename]) > 0:
         st.dataframe(
