@@ -167,7 +167,7 @@ def turn_dict_into_display_dataframe(stat: dict):
     df_show = df_show[~mask]
     df_show.sort_values(by="Screen Time", ascending=False, inplace=True)
     df_show = df_show.reset_index(drop=True)
-    df_show["Screen Time"] = df_show["Screen Time"].apply(utils.convert_seconds_to_hhmmss)
+    df_show["Screen Time"] = df_show["Screen Time"].apply(utils.convert_seconds_to_hhmmss, args=(False,))
     return df_show
 
 
