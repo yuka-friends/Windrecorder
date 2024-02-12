@@ -1,14 +1,12 @@
 ![Windrecorder](https://github.com/yuka-friends/Windrecorder/blob/main/__assets__/product-header-en.jpg)
 <h1 align="center"> 🦝 Windrecorder | Personal Memory Search Engine</h1>
-<p align="center"> An Open Source Mac App <a href="https://www.rewind.ai/">Rewind</a>’s alternative tool on Windows to help you retrieve memory cues.</p>
+<p align="center"> An Open Source Mac App <a href="https://www.rewind.ai/">Rewind.ai</a>’s alternative tool on Windows to help you retrieve memory cues.</p>
 
 <p align="center"> <a href="https://github.com/yuka-friends/Windrecorder/blob/main/__assets__/README-en.md">English</a>  | <a href="https://github.com/yuka-friends/Windrecorder/blob/main/README.md">简体中文</a></p>
 
 ---
 
-This is a tool that can continuously record screen images and retrieve relevant memories at any time through keyword searches and other methods.
-
-**All its capabilities (recording, recognition processing, storage, rewind, etc.) run completely locally, without the need for an Internet connection, without uploading any data, and only do what should be done.**
+Windrecorder is a memory search app by records everything on your screen in small size, to let you rewind what you have seen, query through OCR text or image description, and get activity statistics. All its capabilities run completely locally, without the need for an Internet connection or uploading any data, you should own all your data.**
 
 ![Windrecorder](https://github.com/yuka-friends/Windrecorder/blob/main/__assets__/product-preview-en.jpg)
 
@@ -19,12 +17,14 @@ This is a tool that can continuously record screen images and retrieve relevant 
 - Supports multiple languages. Currently built-in: Simplified Chinese, English, and Japanese. Welcome to contribute multilingual translations and help us improve copywriting quality.
 - _coming soon... pay attention to our PR :)_
 
+**Windrecorder current limitations:**
+- Only supports recording for the main display, multi-display support is still under development;
+- FFmpeg may occupy a large amount of memory in some cases;
+
 ---
 
 > [!WARNING]
-> This project is still in the early stages of development, and you may encounter some minor problems in experience and use. If you encounter it, you are welcome to submit issue feedback, follow updates, and initiate discussions in the [Discussions discussion area](https://github.com/yuka-friends/Windrecorder/discussions).
->
-> 🤯 **If you are good at Python/client front-end direction and are interested in the project, you are welcome to submit an issue/PR/PR review to participate in the construction, in [Dissuasions](https://github.com/yuka-friends/Windrecorder /discussions) Check out the Roadmap and discussions!**
+> This project is still in the early stages of development, and you may encounter some minor problems in experience and use, feel free to submit issue feedback, follow updates, and initiate discussions or roadmap in [Discussions](https://github.com/yuka-friends/Windrecorder/discussions).You are also welcome to help us optimize and build the project, submit PR/review.
 
 > [!IMPORTANT]
 > Due to minor coding errors, versions prior to `0.0.5` may not be able to detect updates properly or upgrade through install_update.bat. If so, please enter `cmd` in the path box of the `Windrecorder` root directory to open the command line, and enter `git pull` to update. 🙇‍♀️
@@ -63,7 +63,7 @@ This is a tool that can continuously record screen images and retrieve relevant 
 
 When recording is started, the Wind Capture Recorder will record 15 minutes of video segment by segment, and the video segments will be indexed after the recording is completed (therefore, there may be a 15-minute delay in querying the data). When the screen does not change or the computer enters the lock screen, recording will be automatically paused and idle maintenance will be performed (compressing and cleaning videos, image embedding recognition, etc.) until the user comes back and continues to operate the computer.
 
-- _Image Embedding will be provided as extension, still WIP._
+- _Image Embedding is provided as an extension and can be installed under the directory `extension/install_img_embedding_module`._
 
 
 | Video recording size                                                                                                                | SQlite database size         |
@@ -88,7 +88,7 @@ Solution: After the tool background indexing is completed, delete the correspond
 
 Q: The mouse flashes during recording
 
-- A: Windows historical issues, you can try [this post](https://stackoverflow.com/questions/34023630/how-to-avoid-mouse-pointer-flicker-when-capture-a-window-by-ffmpeg ) method to solve🤔. (IMO it might okay if you get used to it and don’t care about it
+- A: It's a Windows historical issues, you can try [this post](https://stackoverflow.com/questions/34023630/how-to-avoid-mouse-pointer-flicker-when-capture-a-window-by-ffmpeg ) method to solve🤔. (it might be okay after get used to it..
 
 Q: Windows.Media.Ocr.Cli OCR is not available/the recognition rate is too low
 
@@ -99,13 +99,12 @@ Q: Windows.Media.Ocr.Cli OCR is not available/the recognition rate is too low
 - A3: Windows.Media.Ocr.Cli may have poor recognition rate for smaller text. You can improve the recall hit rate during search by turning on the "similar glyph search" option in the settings.
 
 # 🧡
-Help has been introduced for these projects:
+Thanks to the following projects
 
 - https://github.com/DayBreak-u/chineseocr_lite
-
 - https://github.com/zh-h/Windows.Media.Ocr.Cli
-
 - https://github.com/unum-cloud/uform
+- https://github.com/streamlit/streamlit
 
 
 ---
