@@ -5,9 +5,11 @@
 
 - 添加图像语义嵌入、检索扩展，在 extension\install_img_embedding_module 进行安装；
 - 可跳过录制自定义的前台活动了，比如自定义锁屏、游戏、隐私场景等；
+- 调整目录结构，将所有用户数据集中放置到 userdata 下了；
 
 - Add image semantic embedding and retrieval extension, install it in extension\install_img_embedding_module;
 - You can now skip recording customized foreground activities, such as customized lock screens, games, privacy scenes, etc.
+- Adjust the directory structure and centrally place all user data under userdata dictionary;
 
 ### Fixed
 - bug: 当 CLI 未隐藏时切换了活动前台窗口、导致该前台窗口被隐藏；(?)
