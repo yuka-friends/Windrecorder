@@ -44,14 +44,14 @@ def web_footer_state():
 
     if "footer_videos_file_size" not in st.session_state:
         st.session_state["footer_videos_file_size"] = round(
-            file_utils.get_dir_size(config.record_videos_dir) / (1024 * 1024 * 1024), 3
+            file_utils.get_dir_size(config.record_videos_dir_ud) / (1024 * 1024 * 1024), 3
         )
 
     if "footer_videos_files_count" not in st.session_state:
         (
             st.session_state["footer_videos_files_count"],
             _,
-        ) = file_utils.get_videos_and_ocred_videos_count(config.record_videos_dir)
+        ) = file_utils.get_videos_and_ocred_videos_count(config.record_videos_dir_ud)
 
     # webUI draw
     st.divider()

@@ -36,7 +36,7 @@ def render():
         if "all_result_counts" not in st.session_state:
             st.session_state.all_result_counts = 1
         if "cache_videofile_ondisk_list" not in st.session_state:  # 减少io查询，预拿视频文件列表供比对是否存在
-            st.session_state.cache_videofile_ondisk_list = file_utils.get_file_path_list(config.record_videos_dir)
+            st.session_state.cache_videofile_ondisk_list = file_utils.get_file_path_list(config.record_videos_dir_ud)
         if "timeCost_globalSearch" not in st.session_state:  # 统计搜索使用时长
             st.session_state.timeCost_globalSearch = 0
 

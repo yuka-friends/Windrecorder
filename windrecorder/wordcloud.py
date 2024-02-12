@@ -25,7 +25,7 @@ def read_stopwords(filename):
     return stopwords
 
 
-stopwords = read_stopwords("config\\src\\wordcloud_stopword.txt") + config.wordcloud_user_stop_words
+stopwords = read_stopwords(os.path.join(config.config_src_dir, "wordcloud_stopword.txt")) + config.wordcloud_user_stop_words
 
 
 # 按月数据库生成已有所有数据的词库
@@ -223,7 +223,7 @@ def generate_word_cloud_in_month(timestamp, img_save_name="default"):
     # 取得当月内所有ocr结果
     text_file_path = get_month_ocr_result(timestamp)
 
-    img_save_dir = config.wordcloud_result_dir
+    img_save_dir = config.wordcloud_result_dir_ud
     file_utils.ensure_dir(img_save_dir)
     img_save_name = img_save_name
     img_save_path = os.path.join(img_save_dir, img_save_name)
@@ -238,7 +238,7 @@ def generate_word_cloud_in_day(timestamp, img_save_name="default"):
     # 取得当天内所有ocr结果
     text_file_path = get_day_ocr_result(timestamp)
 
-    img_save_dir = config.wordcloud_result_dir
+    img_save_dir = config.wordcloud_result_dir_ud
     file_utils.ensure_dir(img_save_dir)
     img_save_name = img_save_name
     img_save_path = os.path.join(img_save_dir, img_save_name)

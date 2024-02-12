@@ -492,7 +492,7 @@ def remove_outdated_videofiles():
     start_datetime = datetime.datetime(2000, 1, 1, 0, 0, 1)
     end_datetime = today_datetime - datetime.timedelta(days=days_to_subtract)
 
-    video_filepath_list = file_utils.get_file_path_list(config.record_videos_dir)
+    video_filepath_list = file_utils.get_file_path_list(config.record_videos_dir_ud)
     video_filepath_list_outdate = file_utils.get_videofile_path_list_by_time_range(
         video_filepath_list, start_datetime, end_datetime
     )
@@ -514,7 +514,7 @@ def compress_outdated_videofiles():
     start_datetime = datetime.datetime(2000, 1, 1, 0, 0, 1)
     end_datetime = today_datetime - datetime.timedelta(days=days_to_subtract)
 
-    video_filepath_list = file_utils.get_file_path_list(config.record_videos_dir)
+    video_filepath_list = file_utils.get_file_path_list(config.record_videos_dir_ud)
     video_filepath_list_outdate = file_utils.get_videofile_path_list_by_time_range(
         video_filepath_list, start_datetime, end_datetime
     )
@@ -592,7 +592,7 @@ def ocr_manager_main():
     数据库主维护方式
     """
 
-    record_videos_dir = config.record_videos_dir
+    record_videos_dir = config.record_videos_dir_ud
     i_frames_dir = config.iframe_dir
 
     file_utils.ensure_dir(i_frames_dir)

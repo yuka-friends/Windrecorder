@@ -386,7 +386,7 @@ class _DBManager:
         cache_videofile_ondisk_str = ""
         if cache_videofile_ondisk_list is None:
             cache_videofile_ondisk_str = cache_videofile_ondisk_str.join(
-                file_utils.get_file_path_list(config.record_videos_dir)
+                file_utils.get_file_path_list(config.record_videos_dir_ud)
             )
         else:
             cache_videofile_ondisk_str = cache_videofile_ondisk_str.join(cache_videofile_ondisk_list)
@@ -435,7 +435,7 @@ class _DBManager:
         cache_videofile_ondisk_str = ""
         if cache_videofile_ondisk_list is None:
             cache_videofile_ondisk_str = cache_videofile_ondisk_str.join(
-                file_utils.get_file_path_list(config.record_videos_dir)
+                file_utils.get_file_path_list(config.record_videos_dir_ud)
             )
         else:
             cache_videofile_ondisk_str = cache_videofile_ondisk_str.join(cache_videofile_ondisk_list)
@@ -693,7 +693,9 @@ class _DBManager:
         return img_list
 
     # 相似的单个中文字符查找
-    def find_similar_ch_characters(self, input_str, file_path="config\\src\\similar_CN_characters.txt"):
+    def find_similar_ch_characters(
+        self, input_str, file_path=os.path.join(config.config_src_dir, "similar_CN_characters.txt")
+    ):
         similar_chars = []
 
         with open(file_path, "r", encoding="utf-8") as file:
@@ -754,10 +756,10 @@ class _DBManager:
     def db_update_videofile_exist_status(self):
         db_file_path_dict = self.get_db_filename_dict()
         db_file_path_list = []
-        video_file_path_list = file_utils.get_file_path_list(config.record_videos_dir)
+        video_file_path_list = file_utils.get_file_path_list(config.record_videos_dir_ud)
 
         for key in db_file_path_dict.keys():
-            db_filepath = os.path.join(config.db_path, key)
+            db_filepath = os.path.join(config.db_path_ud, key)
             db_file_path_list.append(db_filepath)
 
         # Get only first 19 characters of video files in video_file_path_list
@@ -833,7 +835,7 @@ class _DBManager:
 
 
 db_manager = _DBManager(
-    config.db_path,
+    config.db_path_ud,
     int(config.max_page_result),
     config.user_name,
 )

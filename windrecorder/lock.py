@@ -2,6 +2,7 @@ import os
 from threading import Timer
 
 from windrecorder.exceptions import LockExistsException
+from windrecorder.file_utils import ensure_dir
 
 
 class FileLock:
@@ -34,6 +35,7 @@ class FileLock:
 
     def __init__(self, path, value="", timeout_s: int | None = 60 * 16):
         try:
+            ensure_dir(os.path.dirname(path))
             with open(path, "x", encoding="utf-8") as f:
                 f.write(value)
         except FileExistsError:

@@ -70,7 +70,7 @@ def add_visual_mark_on_oneday_timeline_thumbnail(df, image_filepath):
     # 查询当天最早记录时间与最晚记录时间，获取图像宽度中百分比位置
     # 绘制上去，然后存为 -flag 文件返回
     img_saved_name = f"{os.path.basename(image_filepath).split('.')[0]}-flag-.png"  # 新的临时存储文件名
-    img_saved_folder = config.timeline_result_dir
+    img_saved_folder = config.timeline_result_dir_ud
     img_saved_filepath = os.path.join(img_saved_folder, img_saved_name)
 
     img_datetime_str = os.path.basename(image_filepath).split(".")[0].replace("-today-", "")  # 从源文件名获取时间（日期）

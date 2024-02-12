@@ -330,7 +330,7 @@ def render():
         )
 
         about_markdown = (
-            Path(f"config\\src\\about_{config.lang}.md")
+            Path(f"{config.config_src_dir}\\about_{config.lang}.md")
             .read_text(encoding="utf-8")
             .format(
                 version=__version__,
@@ -342,7 +342,7 @@ def render():
 
 # 数据库的前置更新索引状态提示
 def draw_db_status():
-    count, nocred_count = file_utils.get_videos_and_ocred_videos_count(config.record_videos_dir)
+    count, nocred_count = file_utils.get_videos_and_ocred_videos_count(config.record_videos_dir_ud)
     timeCostStr = utils.estimate_indexing_time()
     if config.OCR_index_strategy == 1:
         # 启用自动索引

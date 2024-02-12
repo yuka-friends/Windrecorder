@@ -16,7 +16,7 @@ def web_onboarding():
     if st.session_state.is_onboarding:
         # 数据库不存在，展示 Onboarding 提示
         st.success(_t("text_welcome_to_windrecorder"), icon="😺")
-        intro_markdown = Path(f"config\\src\\onboarding_{config.lang}.md").read_text(encoding="utf-8")
+        intro_markdown = Path(f"{config.config_src_dir}\\onboarding_{config.lang}.md").read_text(encoding="utf-8")
         st.markdown(intro_markdown)
         st.divider()
 

@@ -3,17 +3,19 @@ import os
 import shutil
 
 config_name = "config_user.json"
-config_name_default = "src\\config_default.json"
-config_name_video_compress_preset = "src\\video_compress_preset.json"
-config_dir = "config"
+config_name_default = "config_default.json"
+config_name_video_compress_preset = "video_compress_preset.json"
+config_dir = "windrecorder\\config_src"
+userdata_dir = "userdata"
 default_config_path = os.path.join(config_dir, config_name_default)
-user_config_path = os.path.join(config_dir, config_name)
+user_config_path = os.path.join(userdata_dir, config_name)
 video_compress_preset_config_path = os.path.join(config_dir, config_name_video_compress_preset)
 
 
 class Config:
     def __init__(
         self,
+        config_src_dir,
         db_path,
         vdb_img_path,
         record_videos_dir,
@@ -69,9 +71,12 @@ class Config:
         img_embed_module_install,
         **other_field,
     ) -> None:
-        self.db_path = db_path
-        self.vdb_img_path = vdb_img_path
-        self.record_videos_dir = record_videos_dir
+        # If need to process input parameters, they should assign another variable name to prevent recursive writing into the config.
+        self.config_src_dir = config_src_dir
+        self.userdata_dir = userdata_dir
+        self.db_path_ud = os.path.join(userdata_dir, db_path)
+        self.vdb_img_path_ud = os.path.join(userdata_dir, vdb_img_path)
+        self.record_videos_dir_ud = os.path.join(userdata_dir, record_videos_dir)
         self.record_seconds = record_seconds
         self.record_framerate = record_framerate
         self.record_bitrate = record_bitrate
@@ -87,10 +92,10 @@ class Config:
         self.vid_store_day = vid_store_day
         self.vid_compress_day = vid_compress_day
         self.OCR_index_strategy = OCR_index_strategy  # 0=不自动索引，1=每录制完一个切片进行索引
-        self.wordcloud_result_dir = wordcloud_result_dir
-        self.timeline_result_dir = timeline_result_dir
-        self.lightbox_result_dir = lightbox_result_dir
-        self.wintitle_result_dir = wintitle_result_dir
+        self.wordcloud_result_dir_ud = os.path.join(userdata_dir, wordcloud_result_dir)
+        self.timeline_result_dir_ud = os.path.join(userdata_dir, timeline_result_dir)
+        self.lightbox_result_dir_ud = os.path.join(userdata_dir, lightbox_result_dir)
+        self.wintitle_result_dir_ud = os.path.join(userdata_dir, wintitle_result_dir)
         self.screentime_not_change_to_pause_record = screentime_not_change_to_pause_record
         self.show_oneday_wordcloud = show_oneday_wordcloud
         self.user_name = user_name
@@ -114,7 +119,6 @@ class Config:
         self.win_title_dir = win_title_dir
         self.start_recording_on_startup = start_recording_on_startup
         self.lock_file_dir = lock_file_dir
-        self.userdata_dir = userdata_dir
         self.flag_mark_note_filename = flag_mark_note_filename
         self.flag_mark_note_filepath = os.path.join(self.userdata_dir, self.flag_mark_note_filename)
         self.thumbnail_generation_size_width = thumbnail_generation_size_width
@@ -173,6 +177,12 @@ def update_config_files_from_default_to_user():
 
 
 def initialize_config():
+    # 0.0.9 upgrade change, migrate previous user config
+    if not os.path.exists(userdata_dir):
+        os.makedirs(userdata_dir)
+    if os.path.exists("config\\config_user.json"):
+        shutil.copyfile("config\\config_user.json", user_config_path)
+
     if not os.path.exists(user_config_path):
         print("-User config not found, will be created.")
         shutil.copyfile(default_config_path, user_config_path)

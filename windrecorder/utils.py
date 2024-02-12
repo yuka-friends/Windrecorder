@@ -319,7 +319,7 @@ def calc_vid_inside_time(df, num):
 
 # 估计索引时间
 def estimate_indexing_time():
-    count, nocred_count = file_utils.get_videos_and_ocred_videos_count(config.record_videos_dir)
+    count, nocred_count = file_utils.get_videos_and_ocred_videos_count(config.record_videos_dir_ud)
     record_minutes = int(config.record_seconds) / 60
     ocr_cost_time_table = {"Windows.Media.Ocr.Cli": 5, "ChineseOCR_lite_onnx": 25}
     ocr_cost_time = ocr_cost_time_table[config.ocr_engine]
@@ -552,7 +552,7 @@ def get_os_support_lang():
     return extracted_lines
 
 
-with open("config\\src\\languages.json", encoding="utf-8") as f:
+with open(os.path.join(config.config_src_dir, "languages.json"), encoding="utf-8") as f:
     d_lang = json.load(f)
 
 

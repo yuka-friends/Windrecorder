@@ -106,7 +106,7 @@ def index_video_data(video_saved_dir, vid_file_name):
 
 # 录制屏幕
 def record_screen(
-    output_dir=config.record_videos_dir,
+    output_dir=config.record_videos_dir_ud,
     record_time=config.record_seconds,
 ):
     """
@@ -118,7 +118,6 @@ def record_screen(
     output_dir_with_date = now.strftime("%Y-%m")  # 将视频存储在日期月份子目录下
     video_saved_dir = os.path.join(output_dir, output_dir_with_date)
     file_utils.ensure_dir(video_saved_dir)
-    file_utils.ensure_dir(output_dir)
     out_path = os.path.join(video_saved_dir, video_out_name)
 
     # 获取屏幕分辨率并根据策略决定缩放
