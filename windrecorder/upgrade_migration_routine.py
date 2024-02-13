@@ -30,8 +30,8 @@ def main():
     ]
 
     for filepath in move_filepath_list:
-        print(f"moving {filepath}")
         if os.path.exists(filepath):
+            print(f"moving {filepath}")
             shutil.move(filepath, config.userdata_dir)
     if os.path.exists("config"):
         shutil.rmtree("config")
