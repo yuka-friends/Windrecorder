@@ -261,6 +261,11 @@ def interrupt_start():
     sys.exit()
 
 
+def interrupt_start_no_ffmpeg_and_ffprobe(reason):
+    win_ui.show_popup(reason, "Missing dependencies", "information")
+    sys.exit()
+
+
 def main():
     # 启动时加锁，防止重复启动
     while True:
@@ -281,6 +286,10 @@ def main():
                     pass
 
     with tray_lock:
+        ff_available, ff_callback = utils.check_ffmpeg_and_ffprobe()
+        if not ff_available:
+            interrupt_start_no_ffmpeg_and_ffprobe(ff_callback)
+
         credential_path = get_streamlit_file_path("credentials.toml")
         if not os.path.exists(credential_path):
             os.makedirs(os.path.dirname(credential_path), exist_ok=True)

@@ -36,7 +36,7 @@ def get_scale_screen_res_strategy(origin_width=1920, origin_height=1080):
 
 # 获取视频的原始分辨率
 def get_video_res(video_path):
-    cmd = f"ffprobe -v error -select_streams v:0 -show_entries stream=width,height -of csv=p=0 {video_path}"
+    cmd = f"{config.ffprobe_path} -v error -select_streams v:0 -show_entries stream=width,height -of csv=p=0 {video_path}"
     output = subprocess.check_output(cmd, shell=True).decode("utf-8").strip()
     width, height = map(int, output.split(","))
     return width, height

@@ -82,6 +82,7 @@ class Config:
         self.record_bitrate = record_bitrate
         self.record_screen_enable_half_res_while_hidpi = record_screen_enable_half_res_while_hidpi
         self.ffmpeg_path = ".venv\\ffmpeg.exe" if release_ver else "ffmpeg"
+        self.ffprobe_path = ".venv\\ffprobe.exe" if release_ver else "ffprobe"
         self.lang = lang
         self.ocr_lang = ocr_lang
         self.ocr_engine = ocr_engine

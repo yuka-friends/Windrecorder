@@ -59,7 +59,7 @@ def get_vidfilepath_info(vid_filepath) -> dict:
     当获取失败时，可能抛出错误：CalledProcessError: Command 'ffprobe' returned non-zero exit status 1.
     """
     result = subprocess.check_output(
-        f'ffprobe -v quiet -show_streams -select_streams v:0 -of json "{vid_filepath}"', shell=True
+        f'{config.ffprobe_path} -v quiet -show_streams -select_streams v:0 -of json "{vid_filepath}"', shell=True
     ).decode()
 
     fields = json.loads(result)["streams"][0]
@@ -716,3 +716,36 @@ def find_strings_list_with_substring(string_list, substring):
         if substring in string:
             result.append(string)
     return result
+
+
+def check_ffmpeg_and_ffprobe():
+    """
+    检查 ffmpeg 与 ffprobe 是否可用，返回(是否均可用:bool, 不可用原因:str)
+    """
+    available_ffmpeg = False
+    available_ffprobe = False
+    try:
+        subprocess.check_output(f"{config.ffmpeg_path} -version", shell=True)
+        available_ffmpeg = True
+    except subprocess.CalledProcessError:
+        print("ffmpeg is not available.")
+    except Exception as e:
+        print(f"Unexpected Error. {e}")
+
+    try:
+        subprocess.check_output(f"{config.ffprobe_path} -version", shell=True)
+        available_ffprobe = True
+    except subprocess.CalledProcessError:
+        print("ffprobe is not available.")
+    except Exception as e:
+        print(f"Unexpected Error. {e}")
+
+    if available_ffmpeg and available_ffprobe:
+        return True, ""
+    elif not available_ffmpeg and not available_ffprobe:
+        return False, "FFmpeg and FFprobe are not available.\nPlease check the installation."
+    elif not available_ffmpeg:
+        return False, "FFmpeg is not available.\nPlease check the installation."
+    elif not available_ffprobe:
+        return False, "FFprobe is not available.\nPlease check the installation."
+    return False, "Unexpected Error on checking ffmpeg and ffprobe available."
