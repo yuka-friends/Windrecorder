@@ -83,6 +83,8 @@ def render():
             st.session_state.search_content = ""
 
         # 绘制抬头部分的 UI
+        components.web_onboarding()
+
         search_method_list = [_t("gs_option_ocr_text_search"), _t("gs_option_img_emb_search")]
         title_col, search_method = st.columns([4, 2.5])
         with title_col:
@@ -107,8 +109,6 @@ def render():
         #             st.session_state.use_random_search = False
         #     else:
         #         st.session_state.use_random_search = False
-
-        components.web_onboarding()
 
         match search_method_list.index(st.session_state.search_method_selected):
             case 0:
