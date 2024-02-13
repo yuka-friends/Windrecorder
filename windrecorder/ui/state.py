@@ -87,7 +87,7 @@ def render():
             current_month_lightbox_img_name = (
                 str(st.session_state.Stat_query_Year) + "-" + str(st.session_state.Stat_query_Month) + ".png"
             )
-            current_month_lightbox_img_path = os.path.join(config.lightbox_result_dir, current_month_lightbox_img_name)
+            current_month_lightbox_img_path = os.path.join(config.lightbox_result_dir_ud, current_month_lightbox_img_name)
 
             if st.button(_t("stat_btn_generate_lightbox")):
                 with st.spinner(_t("stat_text_generating_lightbox")):
@@ -105,7 +105,7 @@ def render():
             current_month_cloud_img_name = (
                 str(st.session_state.Stat_query_Year) + "-" + str(st.session_state.Stat_query_Month) + ".png"
             )
-            current_month_cloud_img_path = os.path.join(config.wordcloud_result_dir, current_month_cloud_img_name)
+            current_month_cloud_img_path = os.path.join(config.wordcloud_result_dir_ud, current_month_cloud_img_name)
 
             if st.button(_t("stat_btn_generate_update_word_cloud")):
                 with st.spinner(_t("stat_text_generating_word_cloud")):

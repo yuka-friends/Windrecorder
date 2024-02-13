@@ -58,7 +58,7 @@ class OneDay:
 
         if search_result_num < 2:
             # 没有结果的处理
-            _, noocred_count = file_utils.get_videos_and_ocred_videos_count(config.record_videos_dir)
+            _, noocred_count = file_utils.get_videos_and_ocred_videos_count(config.record_videos_dir_ud)
             return False, noocred_count, 0, None, None, None
         else:
             # 有结果 - 返回其中最早、最晚的结果，以写入slider；提供总索引数目、未索引数量
@@ -66,7 +66,7 @@ class OneDay:
             max_timestamp = df["videofile_time"].max()
             min_timestamp_dt = utils.seconds_to_datetime(min_timestamp)
             max_timestamp_dt = utils.seconds_to_datetime(max_timestamp)
-            _, noocred_count = file_utils.get_videos_and_ocred_videos_count(config.record_videos_dir)
+            _, noocred_count = file_utils.get_videos_and_ocred_videos_count(config.record_videos_dir_ud)
             return (
                 True,
                 noocred_count - 1,
@@ -109,7 +109,7 @@ class OneDay:
 
         # 提取视频文件名中的时间信息
         file_times = []
-        for root, dirs, files in os.walk(config.record_videos_dir):
+        for root, dirs, files in os.walk(config.record_videos_dir_ud):
             for file in files:
                 match = re.match(r"(\d{4}-\d{2}-\d{2}_\d{2}-\d{2}-\d{2})", file)
                 if match:
@@ -161,7 +161,7 @@ class OneDay:
         dt_in: datetime.datetime,
         dt_out: datetime.datetime,
         img_saved_name,
-        img_saved_folder=config.timeline_result_dir,
+        img_saved_folder=config.timeline_result_dir_ud,
     ):
         file_utils.ensure_dir(img_saved_folder)
 

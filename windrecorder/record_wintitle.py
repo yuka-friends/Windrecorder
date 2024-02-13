@@ -236,7 +236,9 @@ def component_month_wintitle_stat(month_dt: datetime.datetime):
         st.session_state[month_wintitle_df_statename + "_screentime_sum"] = 0
 
     current_month_wintitle_stat_json_name = f"{month_wintitle_df_statename_date}.json"
-    current_month_wintitle_stat_json_filepath = os.path.join(config.wintitle_result_dir, current_month_wintitle_stat_json_name)
+    current_month_wintitle_stat_json_filepath = os.path.join(
+        config.wintitle_result_dir_ud, current_month_wintitle_stat_json_name
+    )
 
     # 如果切换了时间或第一次加载，进行更新
     update_condition = False
@@ -302,4 +304,4 @@ def component_month_wintitle_stat(month_dt: datetime.datetime):
         )
         st.markdown(f"`{current_month_wintitle_stat_json_filepath}`")
     else:
-        st.markdown(_t("oneday_ls_text_no_wintitle_stat"), unsafe_allow_html=True)
+        st.markdown(_t("oneday_ls_text_no_wintitle_stat_momnth"), unsafe_allow_html=True)

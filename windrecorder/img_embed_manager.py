@@ -95,7 +95,7 @@ class VectorDatabase:
     以 IndexIDMap 存储，对应关系为 向量 - sqlite 的 ROWID
     """
 
-    def __init__(self, vdb_filename, db_dir=config.vdb_img_path, dimension=256):  # uform 使用 256d 向量
+    def __init__(self, vdb_filename, db_dir=config.vdb_img_path_ud, dimension=256):  # uform 使用 256d 向量
         """
         初始化新建/载入数据库
 
@@ -184,7 +184,7 @@ def embed_vid_file(
     model: uform.models.VLM,
     vdb: VectorDatabase,
     vid_file_name,
-    video_saved_dir=config.record_videos_dir,
+    video_saved_dir=config.record_videos_dir_ud,
     iframe_path=config.iframe_dir,
 ):
     """
@@ -241,9 +241,9 @@ def all_videofile_do_img_embedding_routine(video_queue_count=14):
 
     model = get_model(mode="cuda")
 
-    video_dirs = os.listdir(config.record_videos_dir)[::-1]  # 倒序列表，以先索引较新的视频
+    video_dirs = os.listdir(config.record_videos_dir_ud)[::-1]  # 倒序列表，以先索引较新的视频
     for video_dir in tqdm(video_dirs):
-        videos_names = os.listdir(os.path.join(config.record_videos_dir, video_dir))[::-1]
+        videos_names = os.listdir(os.path.join(config.record_videos_dir_ud, video_dir))[::-1]
         for video_name in tqdm(videos_names):
             print(
                 f"{DEBUG_MODULE_NAME} img_embed({video_process_count}/{video_queue_count}): embedding {video_dir}, {video_name}"
@@ -270,8 +270,8 @@ def get_vdbs_filename_via_time_range(start_datetime: datetime.datetime, end_date
     start_datetime = utils.set_full_datetime_to_YYYY_MM(start_datetime)
     end_datetime = utils.set_full_datetime_to_YYYY_MM(end_datetime)
 
-    file_utils.ensure_dir(config.vdb_img_path)
-    vdb_filename_list = file_utils.get_file_path_list_first_level(config.vdb_img_path)
+    file_utils.ensure_dir(config.vdb_img_path_ud)
+    vdb_filename_list = file_utils.get_file_path_list_first_level(config.vdb_img_path_ud)
     vdb_filename_list = [
         item for item in vdb_filename_list if (item.startswith(config.user_name) and item.endswith("_imgemb.index"))
     ]  # 去除非当前用户、且非 vdb 的项

@@ -4,10 +4,8 @@ import subprocess
 import sys
 import time
 
-import windrecorder.upgrade_migration_routine as upgrade_migration_routine
-from windrecorder import file_utils, ocr_manager, record, utils
+from windrecorder import utils
 from windrecorder.config import config
-from windrecorder.utils import get_text as _t
 
 if os.path.exists(config.tray_lock_path):
     with open(config.tray_lock_path, encoding="utf-8") as f:
@@ -28,11 +26,19 @@ if os.path.exists(config.tray_lock_path):
             pass
 
 
-# 清理早期版本的旧设定
+import windrecorder.upgrade_migration_routine as upgrade_migration_routine
+
+# 清理早期版本的旧设定。需要在多余包被 import 进来被占用文件前处理。
 try:
     upgrade_migration_routine.main()
 except Exception as e:
     print(e)
+    subprocess.run("pause", shell=True)
+
+# ------------------------------------------------------------------
+
+from windrecorder import file_utils, ocr_manager, record
+from windrecorder.utils import get_text as _t
 
 # 全部向导的步骤数
 ALLSTEPS = 6

@@ -43,7 +43,7 @@ def convert_vid_filename_as_YYYY_MM(vid_filename):
 
 # 输入一个视频文件名，返回其完整的相对路径
 def convert_vid_filename_as_vid_filepath(vid_filename):
-    return os.path.join(config.record_videos_dir, convert_vid_filename_as_YYYY_MM(vid_filename), vid_filename)
+    return os.path.join(config.record_videos_dir_ud, convert_vid_filename_as_YYYY_MM(vid_filename), vid_filename)
 
 
 # 查询videos文件夹下的文件数量、未被ocr的文件数量
@@ -76,7 +76,9 @@ def find_filename_in_dir(dir, search_str):
 # 检查视频文件是否存在
 def check_video_exist_in_videos_dir(video_name):
     try:
-        exist_videofiles_list = os.listdir(os.path.join(config.record_videos_dir, convert_vid_filename_as_YYYY_MM(video_name)))
+        exist_videofiles_list = os.listdir(
+            os.path.join(config.record_videos_dir_ud, convert_vid_filename_as_YYYY_MM(video_name))
+        )
         video_filename_list = utils.find_strings_list_with_substring(
             exist_videofiles_list, video_name.split(".")[0]
         )  # 获取文件夹列表中对应文件名
@@ -184,7 +186,7 @@ def get_videofile_path_dict_datetime(filepath_list):
 
 
 # 根据datetime生成数据库带db路径的文件名
-def get_db_filepath_by_datetime(dt, db_dir=config.db_path, user_name=config.user_name):
+def get_db_filepath_by_datetime(dt, db_dir=config.db_path_ud, user_name=config.user_name):
     filename = user_name + "_" + dt.strftime("%Y-%m") + "_wind.db"
     filepath = os.path.join(db_dir, filename)
     return filepath

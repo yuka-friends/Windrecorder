@@ -93,7 +93,7 @@ def get_year_data_overview_scatter(dt: datetime.datetime):
 def generate_month_lightbox(
     dt: datetime.datetime,
     img_saved_name="default.png",
-    img_saved_folder=config.lightbox_result_dir,
+    img_saved_folder=config.lightbox_result_dir_ud,
 ):
     file_utils.ensure_dir(img_saved_folder)
 
