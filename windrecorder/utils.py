@@ -541,9 +541,9 @@ def get_cmd_tool_echo(command):
 
 
 # 将list打印为列表项
-def show_numbered_list(lst):
+def print_numbered_list(lst):
     for i, item in enumerate(lst, 1):
-        logger.info(f"{i}. {item}")
+        print(f"{i}. {item}")
 
 
 # 获取系统支持的ocr语言
