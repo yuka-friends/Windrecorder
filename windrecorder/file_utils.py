@@ -7,6 +7,9 @@ import pandas as pd
 
 import windrecorder.utils as utils
 from windrecorder.config import config
+from windrecorder.logger import get_logger
+
+logger = get_logger(__name__)
 
 
 # 清空指定目录下的所有文件和子目录
@@ -31,9 +34,9 @@ def ensure_dir(folder_name):
     if not os.path.exists(folder_path):
         # 创建文件夹
         os.makedirs(folder_path)
-        print(f"files: created folder {folder_name}")
+        logger.info(f"files: created folder {folder_name}")
     else:
-        print(f"files: folder existed:{folder_name}")
+        logger.info(f"files: folder existed:{folder_name}")
 
 
 # 输入一个视频文件名，返回其%Y-%m的年月信息作为子文件夹
@@ -199,7 +202,7 @@ def save_dataframe_to_path(dataframe, file_path="cache/temp.csv"):
     """
     ensure_dir(os.path.dirname(file_path))
     dataframe.to_csv(file_path, index=False)  # 使用to_csv()方法将DataFrame保存为CSV文件（可根据需要选择其他文件格式）
-    print("files: DataFrame has been saved at ", file_path)
+    logger.info("files: DataFrame has been saved at ", file_path)
 
 
 # 从csv文件读取dataframe
@@ -219,7 +222,7 @@ def save_dict_as_json_to_path(data: dict, filepath):
     ensure_dir(os.path.dirname(filepath))
     with open(filepath, "w") as f:
         json.dump(data, f)
-    print("files: json has been saved at ", filepath)
+    logger.info("files: json has been saved at ", filepath)
 
 
 def read_json_as_dict_from_path(filepath):
@@ -242,5 +245,5 @@ def get_extension(extension_filepath="extension"):
                 data = json.load(file)
                 extension_dict[data["extension_name"]] = data
         except Exception as e:
-            print(e)
+            logger.error(e)
     return extension_dict

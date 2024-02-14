@@ -2,6 +2,10 @@ import json
 import os
 import shutil
 
+from windrecorder.logger import get_logger
+
+logger = get_logger(__name__)
+
 config_name = "config_user.json"
 config_name_default = "config_default.json"
 config_name_video_compress_preset = "video_compress_preset.json"
@@ -69,6 +73,7 @@ class Config:
         enable_img_embed_search,
         img_embed_search_recall_result_per_db,
         img_embed_module_install,
+        debug_mode,
         **other_field,
     ) -> None:
         # If need to process input parameters, they should assign another variable name to prevent recursive writing into the config.
@@ -130,10 +135,11 @@ class Config:
         self.img_embed_search_recall_result_per_db = img_embed_search_recall_result_per_db
         self.img_embed_module_install = img_embed_module_install
         self.day_begin_minutes = day_begin_minutes
+        self.debug_mode = debug_mode
 
     def set_and_save_config(self, attr: str, value):
         if not hasattr(self, attr):
-            print("{} not exist in config!".format(attr))
+            logger.warning("{} not exist in config!".format(attr))
             return
             # raise AttributeError("{} not exist in config!".format(attr))
         setattr(self, attr, value)
@@ -185,7 +191,7 @@ def initialize_config():
         shutil.copyfile("config\\config_user.json", user_config_path)
 
     if not os.path.exists(user_config_path):
-        print("-User config not found, will be created.")
+        logger.info("-User config not found, will be created.")
         shutil.copyfile(default_config_path, user_config_path)
 
 

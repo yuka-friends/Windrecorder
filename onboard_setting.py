@@ -154,7 +154,7 @@ if len(os_support_lang) > 1:  # 如果系统安装了超过一种语言
     while True:
         print_header(step=3)
         print(_t("qs_olang_intro"))
-        utils.print_numbered_list(os_support_lang)
+        utils.show_numbered_list(os_support_lang)
         divider()
 
         try:

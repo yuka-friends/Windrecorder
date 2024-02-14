@@ -27,7 +27,10 @@ from tqdm import tqdm
 from windrecorder import file_utils, utils
 from windrecorder.config import config
 from windrecorder.db_manager import db_manager
+from windrecorder.logger import get_logger
 from windrecorder.ocr_manager import extract_iframe
+
+logger = get_logger(__name__)
 
 DEBUG_MODULE_NAME = "img_embed_manager: "
 
@@ -41,13 +44,13 @@ def get_model(mode="cpu"):
     """
     model = uform.get_model("unum-cloud/uform-vl-multilingual-v2")
     if mode == "cpu":
-        print(f"{DEBUG_MODULE_NAME} emb run on cpu.")
+        logger.info(f"{DEBUG_MODULE_NAME} emb run on cpu.")
     if mode == "cuda":
-        print(f"{DEBUG_MODULE_NAME} emb run on cuda.")
+        logger.info(f"{DEBUG_MODULE_NAME} emb run on cuda.")
         if is_cuda_available:
             model.to(device=device)
         else:
-            print(f"{DEBUG_MODULE_NAME} cude not available, emb run on cpu.")
+            logger.warning(f"{DEBUG_MODULE_NAME} cude not available, emb run on cpu.")
 
     return model
 
@@ -161,20 +164,20 @@ def embed_img_in_iframe_by_rowid_dict(model: uform.models.VLM, img_dict: dict, i
     将（i_frame 临时）文件夹中的对应图像转为对应的 embedding 并写入 vdb.index
     """
     for rowid, img_filename in img_dict.items():
-        print(f"{DEBUG_MODULE_NAME} Embedding {rowid=}, {img_filename=}")
+        logger.info(f"{DEBUG_MODULE_NAME} Embedding {rowid=}, {img_filename=}")
         img_filepath = os.path.join(img_dir_filepath, img_filename)
         if not os.path.exists(img_filepath):
             # 提取的图像列表有时出于换了提取iframe方式、cv可能的随机性等缘故，可能无法保证与db过去记录的完全一致，在 embedding 时有则 embed，无则寻找最近的阈值、再无则跳过。但考虑到相似图像仍会出现在附近时间范围，结果应尚可。
             closest_img_filename = find_closest_iframe_img_dict_item(target=img_filename, img_dict=img_dict)
             if closest_img_filename is None:
-                print(f"{img_filepath} closest item not found, skipped.")
+                logger.info(f"{img_filepath} closest item not found, skipped.")
                 continue
             else:
                 img_filepath = os.path.join(img_dir_filepath, closest_img_filename)
                 if not os.path.exists(img_filepath):
-                    print(f"{img_filepath} not existed, skipped.")
+                    logger.info(f"{img_filepath} not existed, skipped.")
                     continue
-                print(f"{img_filepath} replaced.")
+                logger.info(f"{img_filepath} replaced.")
         vdb.add_vector(vector=embed_img(model, img_filepath), rowid=rowid)
 
     vdb.save_to_file()
@@ -245,7 +248,7 @@ def all_videofile_do_img_embedding_routine(video_queue_count=14):
     for video_dir in tqdm(video_dirs):
         videos_names = os.listdir(os.path.join(config.record_videos_dir_ud, video_dir))[::-1]
         for video_name in tqdm(videos_names):
-            print(
+            logger.info(
                 f"{DEBUG_MODULE_NAME} img_embed({video_process_count}/{video_queue_count}): embedding {video_dir}, {video_name}"
             )
             # 确认视频已被 OCR 索引，且没含有 -IMGEMB 标签
@@ -293,14 +296,14 @@ def query_text_in_img_vdbs(model: uform.models.VLM, text_query, start_datetime, 
     model 需要运行在 cpu mode 下
     """
     vdb_filenames = get_vdbs_filename_via_time_range(start_datetime=start_datetime, end_datetime=end_datetime)
-    print(f"{DEBUG_MODULE_NAME} quering {text_query}, {start_datetime=}, {end_datetime=}, {vdb_filenames=}")
+    logger.info(f"{DEBUG_MODULE_NAME} quering {text_query}, {start_datetime=}, {end_datetime=}, {vdb_filenames=}")
     if vdb_filenames is None:
         return pd.DataFrame(), 0, 0
     text_vector = embed_text(model=model, text_query=text_query)
 
     df_list = []
     for vdb_filename in vdb_filenames:
-        print(f"{DEBUG_MODULE_NAME} recalling {vdb_filename}")
+        logger.info(f"{DEBUG_MODULE_NAME} recalling {vdb_filename}")
         vdb = VectorDatabase(vdb_filename=vdb_filename)
         res_tuple_list = vdb.search_vector(text_vector, k=config.img_embed_search_recall_result_per_db)
         res_tuple_list = [t for t in res_tuple_list if t[0] != -1]  # 相似度结果不足时，会以 -1 的 index 填充，在进 sqlite 搜索前需过滤
@@ -341,4 +344,4 @@ if __name__ == "__main__":
     res_parse = []
     for item in res:
         res_parse.append((test_dataset_dict[item[0]], item[1]))
-    print(f"{res_parse=}")
+    logger.info(f"{res_parse=}")

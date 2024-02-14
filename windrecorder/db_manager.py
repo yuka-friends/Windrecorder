@@ -12,6 +12,9 @@ import pandas as pd
 import windrecorder.utils as utils
 from windrecorder import file_utils
 from windrecorder.config import config
+from windrecorder.logger import get_logger
+
+logger = get_logger(__name__)
 
 
 class _DBManager:
@@ -39,7 +42,7 @@ class _DBManager:
     # ___
     # 初始化对应时间的数据库流程
     def db_main_initialize(self):
-        print("dbManager: Initialize the database...")
+        logger.info("Initialize the database...")
         db_filepath_today = file_utils.get_db_filepath_by_datetime(datetime.datetime.today())
 
         # 初始化最新的数据库
@@ -53,10 +56,10 @@ class _DBManager:
 
         # 检查数据库是否存在
         if not is_db_exist:
-            print("dbManager: db not existed")
+            logger.info("db not existed")
             if not os.path.exists(self.db_path):
                 os.mkdir(self.db_path)
-                print("dbManager: db dir not existed, mkdir")
+                logger.info("db dir not existed, mkdir")
             db_filename = os.path.basename(db_filepath)
             self._db_filename_dict[db_filename] = utils.extract_date_from_db_filename(db_filename)
 
@@ -65,7 +68,7 @@ class _DBManager:
         c.execute("SELECT name FROM sqlite_master WHERE type='table' AND name='video_text'")
 
         if c.fetchone() is None:
-            print("dbManager: db is empty, writing new table.")
+            logger.info("db is empty, writing new table.")
             self.db_create_table(db_filepath)
             now = datetime.datetime.now()
             now_name = now.strftime("%Y-%m-%d_%H-%M-%S")
@@ -82,7 +85,7 @@ class _DBManager:
                 None,
             )
         else:
-            print("dbManager: db existed and not empty")
+            logger.info("db existed and not empty")
 
         return is_db_exist
 
@@ -103,9 +106,9 @@ class _DBManager:
         if column_name not in [column[1] for column in table_info]:
             # 新列不存在，添加新列
             cursor.execute(f"ALTER TABLE {table_name} ADD COLUMN {column_name} {column_type};")
-            print(f"Column {column_name} added to {table_name}.")
+            logger.info(f"Column {column_name} added to {table_name}.")
         else:
-            print(f"Column {column_name} already exists in {table_name}.")
+            logger.debug(f"Column {column_name} already exists in {table_name}.")
 
         # 提交更改并关闭连接
         conn.commit()
@@ -124,7 +127,7 @@ class _DBManager:
 
     # 创建表
     def db_create_table(self, db_filepath):
-        print("dbManager: Making table")
+        logger.info("Making table")
         conn = sqlite3.connect(db_filepath)
         conn.execute(
             """CREATE TABLE video_text
@@ -151,7 +154,7 @@ class _DBManager:
         thumbnail,
         win_title,
     ):
-        print("dbManager: Inserting data")
+        logger.info("Inserting data")
         # 使用方法：db_update_data(db_filepath,'video1.mp4','iframe_0.jpg', 120, 'text from ocr', True, False, "window_title")
 
         # 获取插入时间，取得对应的数据库
@@ -253,7 +256,7 @@ class _DBManager:
         :param date_out: datetime.datetime 结束时间范围
         :param keyword_input_exclude: str 排除词
         """
-        print("dbManager: Querying keywords")
+        logger.info("Querying keywords")
         # 初始化查询数据
         self.db_update_read_config(config)
         date_in_ts = int(utils.date_to_seconds(date_in.strftime("%Y-%m-%d_%H-%M-%S")))
@@ -268,7 +271,7 @@ class _DBManager:
         datetime_start = utils.seconds_to_datetime(date_in_ts)
         datetime_end = utils.seconds_to_datetime(date_out_ts)
         query_db_name_list = self.db_get_dbfilename_by_datetime(datetime_start, datetime_end)
-        print(f"{datetime_start=}, {datetime_end=}")
+        logger.info(f"{datetime_start=}, {datetime_end=}")
 
         # 遍历查询所有数据库信息
         df_all = pd.DataFrame()
@@ -276,7 +279,7 @@ class _DBManager:
         for key in query_db_name_list:
             db_filepath_origin = os.path.join(self.db_path, key)  # 构建完整路径
             db_filepath = self.get_temp_dbfilepath(db_filepath_origin)  # 检查/创建临时查询用的数据库
-            print(f"dbManager: Querying {db_filepath}")
+            logger.info(f"Querying {db_filepath}")
 
             conn = sqlite3.connect(db_filepath)  # 连接数据库
 
@@ -324,7 +327,7 @@ class _DBManager:
             # 限定查询的时间范围
             query += f" AND (videofile_time BETWEEN {date_in_ts} AND {date_out_ts})"
 
-            print(f"dbManager: SQL query:\n {query}")
+            logger.info(f"SQL query:\n {query}")
             df = pd.read_sql_query(query, conn)
 
             # 查询所有关键词和时间段下的结果
@@ -518,8 +521,8 @@ class _DBManager:
         return result_df
 
     # 列出所有数据
-    def db_print_all_data(self):
-        print("dbManager: List all data in all databases")
+    def db_list_all_data(self):
+        logger.debug("List all data in all databases")
         # 获取游标
         # 使用SELECT * 从video_text表查询所有列的数据
         # 使用fetchall()获取所有结果行
@@ -534,7 +537,7 @@ class _DBManager:
             c.execute("SELECT * FROM video_text")
             rows = c.fetchall()
             for row in rows:
-                print(row)
+                logger.debug(row)
             conn.close()
 
     # 查询全部数据库一共有多少行
@@ -550,8 +553,8 @@ class _DBManager:
             rows_count = c.fetchone()[0]
             conn.close()
             rows_count_all += rows_count
-            print(f"dbManager: db_filepath: {db_filepath}, rows_count: {rows_count}")
-        print(f"dbManager: rows_count_all: {rows_count_all}")
+            logger.info(f"db_filepath: {db_filepath}, rows_count: {rows_count}")
+        logger.info(f"rows_count_all: {rows_count_all}")
         return rows_count_all
 
     # 获取表内最新的记录时间
@@ -586,7 +589,7 @@ class _DBManager:
 
     # 回滚操作：删除输入视频文件名相关的所有条目
     def db_rollback_delete_video_refer_record(self, videofile_name):
-        print(f"dbManager: removing record {videofile_name}")
+        logger.info(f"removing record {videofile_name}")
         # 根据文件名定位数据库文件地址
         db_filepath = file_utils.get_db_filepath_by_datetime(
             utils.set_full_datetime_to_YYYY_MM(utils.date_to_datetime(os.path.splitext(videofile_name)[0]))
@@ -720,7 +723,7 @@ class _DBManager:
         result = ["".join(similar_words) for similar_words in product(*similar_words_list)]
 
         if len(result) > 100:
-            print("dbManager: The complexity of similar keyword combinations is too high, so do not use fuzzy queries.")
+            logger.info("The complexity of similar keyword combinations is too high, so do not use fuzzy queries.")
             result = [input_str]
 
         return result
@@ -766,7 +769,7 @@ class _DBManager:
         video_file_names = {video_file[:19]: True for video_file in video_file_path_list}
 
         for db_file in db_file_path_list:
-            print(f"dbManager: checking db_file:{db_file}")
+            logger.info(f"checking db_file:{db_file}")
             conn = sqlite3.connect(db_file)
             cursor = conn.cursor()
 
@@ -796,7 +799,6 @@ class _DBManager:
                 )
 
                 i += 1
-                # print(i,"/",all_i)
 
             # Commit the transaction
             conn.commit()

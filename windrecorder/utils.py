@@ -22,6 +22,9 @@ from pyshortcuts import make_shortcut
 
 from windrecorder import __version__, file_utils
 from windrecorder.config import config
+from windrecorder.logger import get_logger
+
+logger = get_logger(__name__)
 
 
 # 启动定时执行线程
@@ -302,9 +305,9 @@ def kill_recording():
             stdout=subprocess.PIPE,
             text=True,
         )
-        print(f"utils: The screen recording process has ended. {check_result.stdout}")
+        logger.info(f"utils: The screen recording process has ended. {check_result.stdout}")
     except FileNotFoundError:
-        print("utils: Unable to find process lock.")
+        logger.error("utils: Unable to find process lock.")
 
 
 # 通过数据库内项目计算视频对应时间戳
@@ -313,7 +316,7 @@ def calc_vid_inside_time(df, num):
     vidfilename = os.path.splitext(df.iloc[num]["videofile_name"])[0][:19]
     # 用记录时的总时间减去视频文件时间（开始记录的时间）即可得到相对的时间
     vid_timestamp = fulltime - date_to_seconds(vidfilename)
-    print(f"utils: video file fulltime:{fulltime}\n" f" vidfilename:{vidfilename}\n" f" vid_timestamp:{vid_timestamp}\n")
+    logger.info(f"utils: video file fulltime:{fulltime}\n" f" vidfilename:{vidfilename}\n" f" vid_timestamp:{vid_timestamp}\n")
     return vid_timestamp
 
 
@@ -521,7 +524,7 @@ def get_new_version_if_available():
 
 # 输入cmd命令，返回结果回显内容
 def get_cmd_tool_echo(command):
-    print(f"command: {command}")
+    logger.info(f"command: {command}")
     proc = subprocess.run(command, capture_output=True)
     encodings_try = ["gbk", "utf-8"]  # 强制兼容
     for enc in encodings_try:
@@ -538,9 +541,9 @@ def get_cmd_tool_echo(command):
 
 
 # 将list打印为列表项
-def print_numbered_list(lst):
+def show_numbered_list(lst):
     for i, item in enumerate(lst, 1):
-        print(f"{i}. {item}")
+        logger.info(f"{i}. {item}")
 
 
 # 获取系统支持的ocr语言
@@ -673,13 +676,13 @@ def change_startup_shortcut(is_create=True):
             current_dir = os.getcwd()
             bat_path = os.path.join(current_dir, "start_app.bat")
             make_shortcut(bat_path, folder=startup_folder)
-            print("record: The shortcut has been created and added to the startup items")
+            logger.info("record: The shortcut has been created and added to the startup items")
     else:
         # 移除快捷方式
         if os.path.exists(shortcut_path):
-            print("record: Shortcut already exists")
+            logger.info("record: Shortcut already exists")
             os.remove(shortcut_path)
-            print("record: Delete shortcut")
+            logger.info("record: Delete shortcut")
 
 
 def is_win11():
@@ -728,17 +731,17 @@ def check_ffmpeg_and_ffprobe():
         subprocess.check_output(f"{config.ffmpeg_path} -version", shell=True)
         available_ffmpeg = True
     except subprocess.CalledProcessError:
-        print("ffmpeg is not available.")
+        logger.error("ffmpeg is not available.")
     except Exception as e:
-        print(f"Unexpected Error. {e}")
+        logger.error(f"Unexpected Error. {e}")
 
     try:
         subprocess.check_output(f"{config.ffprobe_path} -version", shell=True)
         available_ffprobe = True
     except subprocess.CalledProcessError:
-        print("ffprobe is not available.")
+        logger.error("ffprobe is not available.")
     except Exception as e:
-        print(f"Unexpected Error. {e}")
+        logger.error(f"Unexpected Error. {e}")
 
     if available_ffmpeg and available_ffprobe:
         return True, ""

@@ -24,3 +24,4 @@ env
 random_lexicon
 logs
 userdata
+DEBUGMODE.txt

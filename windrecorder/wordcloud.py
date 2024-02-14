@@ -14,6 +14,9 @@ import windrecorder.utils as utils
 from windrecorder import file_utils
 from windrecorder.config import config
 from windrecorder.db_manager import db_manager
+from windrecorder.logger import get_logger
+
+logger = get_logger(__name__)
 
 
 # 读取跳过词
@@ -57,13 +60,13 @@ def generate_all_word_lexicon_by_month():
                 file_list_to_generate_lexicon.append(filename[:-8] + ".db")
 
     file_list_to_generate_lexicon = list(set(file_list_to_generate_lexicon))  # 整理去重需要整理词语的数据库列表
-    print(f"[wordcloud] file_list_to_generate_lexicon:{file_list_to_generate_lexicon}")
+    logger.info(f"[wordcloud] file_list_to_generate_lexicon:{file_list_to_generate_lexicon}")
 
     for db_name in file_list_to_generate_lexicon:
-        print(f"[wordcloud]processing {db_name}")
+        logger.info(f"[wordcloud]processing {db_name}")
 
         # 获取对应数据库的所有ocr数据
-        print(all_db_files_dict[db_name])
+        logger.info(all_db_files_dict[db_name])
         ocr_text_filepath = get_month_ocr_result(
             utils.datetime_to_seconds(all_db_files_dict[db_name]),
             text_file_path="cache\\lexicon_ocr_temp.txt",
