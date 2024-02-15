@@ -11,7 +11,10 @@ from send2trash import send2trash
 from windrecorder import file_utils, record_wintitle, utils
 from windrecorder.config import config
 from windrecorder.db_manager import db_manager
+from windrecorder.logger import get_logger
 from windrecorder.utils import get_text as _t
+
+logger = get_logger(__name__)
 
 # 从托盘标记时间点，在 webui 检索记录表
 # 使用 main.py 中的 create_timestamp_flag_mark_note() 进行调试
@@ -141,7 +144,9 @@ class Flag_mark_window(customtkinter.CTk):
         target_x = int(screen_width - (window_width * SCALE_FACTOR))
         target_y = int(screen_height - ((window_height + 34) * SCALE_FACTOR))
 
-        print(f"flag window DEBUG: \n{dpi=}\n{SCALE_FACTOR=}\n{screen_width=}\n{screen_height=}\n{target_x=}\n{target_y=}")
+        logger.info(
+            f"flag window DEBUG: \n{dpi=}\n{SCALE_FACTOR=}\n{screen_width=}\n{screen_height=}\n{target_x=}\n{target_y=}"
+        )
 
         # 窗口配置项
         self.title("Windrecorder - Flag")

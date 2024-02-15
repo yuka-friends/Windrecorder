@@ -8,9 +8,12 @@ from PIL import Image
 from windrecorder import file_utils, flag_mark_note, record_wintitle, utils, wordcloud
 from windrecorder.config import config
 from windrecorder.db_manager import db_manager
+from windrecorder.logger import get_logger
 from windrecorder.oneday import OneDay
 from windrecorder.ui import components
 from windrecorder.utils import get_text as _t
+
+logger = get_logger(__name__)
 
 
 def render():
@@ -88,7 +91,7 @@ def render():
             day_max_timestamp_dt,
             day_df,
         ) = OneDay().checkout_daily_data_meta(dt_in)
-        print(f"{day_min_timestamp_dt=}, {day_max_timestamp_dt=}")
+        logger.info(f"{day_min_timestamp_dt=}, {day_max_timestamp_dt=}")
     with spacing_col:
         st.empty()
     with search_col:
@@ -263,9 +266,9 @@ def render():
                     file_path = os.path.join(config.timeline_result_dir_ud, filename)
                     try:
                         os.remove(file_path)
-                        print(f"webui: Deleted file: {file_path}")
+                        logger.info(f"webui: Deleted file: {file_path}")
                     except Exception as e:
-                        print(f"webui: {e}")
+                        logger.error(f"webui: {e}")
         elif "-today-" in current_day_TL_img_path:
             # 如果已存在今日的，重新生成覆盖更新
             if not file_utils.is_file_modified_recently(current_day_TL_img_path):
@@ -439,7 +442,7 @@ def render():
                         if "-today-" in filename and filename != real_today_day_cloud_and_TL_img_name:
                             file_path = os.path.join(config.wordcloud_result_dir_ud, filename)
                             os.remove(file_path)
-                            print(f"webui: Deleted file: {file_path}")
+                            logger.info(f"webui: Deleted file: {file_path}")
 
                 # 展示词云
                 try:
@@ -483,7 +486,7 @@ def show_and_locate_video_timestamp_by_filename_and_time(video_file_name, timest
     # 合并视频文件路径
     videofile_path_month_dir = file_utils.convert_vid_filename_as_YYYY_MM(video_file_name)  # 获取对应的日期目录
     videofile_path = os.path.join(config.record_videos_dir_ud, videofile_path_month_dir, video_file_name)
-    print("webui: videofile_path: " + videofile_path)
+    logger.info(f"webui: videofile_path: {videofile_path}")
     # 打开并展示定位视频文件
     video_file = open(videofile_path, "rb")
     video_bytes = video_file.read()

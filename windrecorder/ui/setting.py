@@ -11,7 +11,10 @@ import windrecorder.record as record
 import windrecorder.utils as utils
 from windrecorder import __version__, file_utils, ocr_manager
 from windrecorder.config import config
+from windrecorder.logger import get_logger
 from windrecorder.utils import get_text as _t
+
+logger = get_logger(__name__)
 
 if config.img_embed_module_install:
     try:
@@ -27,7 +30,7 @@ def set_config_lang(lang_name):
     lang_code = inverted_lang_map.get(lang_name)
 
     if not lang_code:
-        print(f"webui: Invalid language name: {lang_name}")
+        logger.error(f"Invalid language name: {lang_name}")
         return
 
     config.set_and_save_config("lang", lang_code)

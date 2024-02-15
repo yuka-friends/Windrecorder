@@ -19,6 +19,7 @@ from streamlit.file_util import get_streamlit_file_path
 
 # 隐藏该 CLI 窗口
 hide_CLI = win32gui.GetForegroundWindow()
+win32gui.ShowWindow(hide_CLI, win32con.SW_HIDE)
 
 PROJECT_ROOT = os.path.abspath(os.path.dirname(__file__))
 os.chdir(PROJECT_ROOT)
@@ -294,9 +295,6 @@ def main():
         if not os.path.exists(credential_path):
             os.makedirs(os.path.dirname(credential_path), exist_ok=True)
             shutil.copyfile(os.path.join(PROJECT_ROOT, ".streamlit\\credentials.toml"), credential_path)
-
-        # 隐藏命令行窗口
-        win32gui.ShowWindow(hide_CLI, win32con.SW_HIDE)
 
         tray_icon_init = get_tray_icon(state="record_pause")
         tray_title_init = _t("tray_tip_record_pause")

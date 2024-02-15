@@ -2,6 +2,10 @@ import json
 import os
 import shutil
 
+from windrecorder.logger import get_logger
+
+logger = get_logger(__name__)
+
 config_name = "config_user.json"
 config_name_default = "config_default.json"
 config_name_video_compress_preset = "video_compress_preset.json"
@@ -133,7 +137,7 @@ class Config:
 
     def set_and_save_config(self, attr: str, value):
         if not hasattr(self, attr):
-            print("{} not exist in config!".format(attr))
+            logger.warning("{} not exist in config!".format(attr))
             return
             # raise AttributeError("{} not exist in config!".format(attr))
         setattr(self, attr, value)
@@ -185,7 +189,7 @@ def initialize_config():
         shutil.copyfile("config\\config_user.json", user_config_path)
 
     if not os.path.exists(user_config_path):
-        print("-User config not found, will be created.")
+        logger.info("-User config not found, will be created.")
         shutil.copyfile(default_config_path, user_config_path)
 
 

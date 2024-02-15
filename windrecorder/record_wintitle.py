@@ -11,8 +11,11 @@ import streamlit as st
 from windrecorder import file_utils, utils
 from windrecorder.config import config
 from windrecorder.db_manager import db_manager
+from windrecorder.logger import get_logger
 from windrecorder.oneday import OneDay
 from windrecorder.utils import get_text as _t
+
+logger = get_logger(__name__)
 
 CSV_TEMPLATE_DF = pd.DataFrame(columns=["datetime", "window_title"])
 window_title_last_record = ""
@@ -106,7 +109,7 @@ def get_wintitle_by_timestamp(timestamp: int):
             elif i == len(df) - 1 and target_time >= df.loc[i, "datetime"]:  # 如果时间戳对应的是最后一条记录，直接返回该记录的window_title
                 return df.loc[i, "window_title"]
     except (ValueError, KeyError) as e:
-        print(e)
+        logger.error(e)
         pass
 
     return None
