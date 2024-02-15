@@ -241,10 +241,10 @@ def monitor_compare_screenshot():
                             monitor_idle_minutes = 0
 
                     last_screenshot_array = screenshot_array.copy()
-                    logger.info(f"Windrecorder: monitor_idle_minutes:{monitor_idle_minutes}, similarity:{similarity}")
+                    logger.info(f"monitor_idle_minutes:{monitor_idle_minutes}, similarity:{similarity}")
                     time.sleep(30)
             except Exception as e:
-                logger.error(f"Windrecorder: Error occurred:{str(e)}")
+                logger.warning(f"Error occurred:{str(e)}")
                 if "batchDistance" in str(e):  # 如果是抓不到画面导致出错，可以认为是进入了休眠等情况
                     monitor_idle_minutes += 0.5
                 else:

@@ -130,7 +130,7 @@ def ocr_image(img_input):
 
 # OCR文本-chineseOCRlite
 def ocr_image_col(img_input):
-    logger.info("OCR text by chineseOCRlite")
+    logger.debug("OCR text by chineseOCRlite")
     # 输入图片路径，like 'test.jpg'
     # 实例化OcrHandle对象
     ocr_handle = OcrHandle()
@@ -146,14 +146,14 @@ def ocr_image_col(img_input):
         # logger.info(box,text,score)
         ocr_sentence_result = ocr_sentence_result + "," + text
 
-    logger.info("ocr_sentence_result:")
-    logger.info(ocr_sentence_result)
+    logger.debug("ocr_sentence_result:")
+    logger.debug(ocr_sentence_result)
     return ocr_sentence_result
 
 
 # OCR文本-MS自带方式
 def ocr_image_ms(img_input):
-    logger.info("OCR text by Windows.Media.Ocr.Cli")
+    logger.debug("OCR text by Windows.Media.Ocr.Cli")
     text = ""
     # 调用Windows.Media.Ocr.Cli.exe,参数为图片路径
     command = ["ocr_lib\\Windows.Media.Ocr.Cli.exe", "-l", config.ocr_lang, img_input]
@@ -319,24 +319,24 @@ def ocr_core_logic(file_path, vid_file_name, iframe_path):
 
     # TODO: os.listdir 应该进行正确的数字排序、以确保是按视频顺序索引的
     for img_file_name in os.listdir(iframe_path):
-        logger.info("_____________________")
-        logger.info(f"processing IMG - OCR:{img_file_name}")
+        logger.debug("_____________________")
+        logger.debug(f"processing IMG - OCR:{img_file_name}")
 
         img = os.path.join(iframe_path, img_file_name)
         ocr_result_stringB = ocr_image(img)
-        # logger.info(f"ocr_result_stringB:{ocr_result_stringB}")
+        # logger.debug(f"ocr_result_stringB:{ocr_result_stringB}")
 
         is_str_same, _ = compare_strings(ocr_result_stringA, ocr_result_stringB)
         if is_str_same:
-            logger.info("[Skip] The content is consistent, not written to the database, skipped.")
+            logger.debug("[Skip] The content is consistent, not written to the database, skipped.")
         elif len(ocr_result_stringB) < 3:
-            logger.info("[Skip] Insufficient content, not written to the database, skipped.")
+            logger.debug("[Skip] Insufficient content, not written to the database, skipped.")
         else:
             logger.info("Inconsistent content")
             if utils.is_str_contain_list_word(ocr_result_stringB, config.exclude_words):
-                logger.info("[Skip] The content contains exclusion list words and is not written to the database.")
+                logger.debug("[Skip] The content contains exclusion list words and is not written to the database.")
             else:
-                logger.info("Writing to database.")
+                logger.debug("Writing to database.")
                 # 使用os.path.splitext()可以把文件名和文件扩展名分割开来，os.path.splitext(file_name)会返回一个元组,元组的第一个元素是文件名,第二个元素是扩展名
                 calc_to_sec_vidname = os.path.splitext(vid_file_name)[0]
                 calc_to_sec_vidname = calc_to_sec_vidname.replace("-INDEX", "")
@@ -346,7 +346,7 @@ def ocr_core_logic(file_path, vid_file_name, iframe_path):
                 win_title = record_wintitle.optimize_wintitle_name(win_title)
                 # 检查窗口标题是否在跳过词中
                 if utils.is_str_contain_list_word(win_title, config.exclude_words):
-                    logger.info(
+                    logger.debug(
                         "[Skip] The window title name contains exclusion list words and is not written to the database."
                     )
                     continue

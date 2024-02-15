@@ -248,7 +248,7 @@ def all_videofile_do_img_embedding_routine(video_queue_count=14):
     for video_dir in tqdm(video_dirs):
         videos_names = os.listdir(os.path.join(config.record_videos_dir_ud, video_dir))[::-1]
         for video_name in tqdm(videos_names):
-            logger.info(
+            logger.debug(
                 f"{DEBUG_MODULE_NAME} img_embed({video_process_count}/{video_queue_count}): embedding {video_dir}, {video_name}"
             )
             # 确认视频已被 OCR 索引，且没含有 -IMGEMB 标签

@@ -36,7 +36,7 @@ def ensure_dir(folder_name):
         os.makedirs(folder_path)
         logger.info(f"files: created folder {folder_name}")
     else:
-        logger.info(f"files: folder existed:{folder_name}")
+        logger.debug(f"files: folder existed:{folder_name}")
 
 
 # 输入一个视频文件名，返回其%Y-%m的年月信息作为子文件夹
