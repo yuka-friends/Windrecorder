@@ -486,7 +486,7 @@ def show_and_locate_video_timestamp_by_filename_and_time(video_file_name, timest
     # 合并视频文件路径
     videofile_path_month_dir = file_utils.convert_vid_filename_as_YYYY_MM(video_file_name)  # 获取对应的日期目录
     videofile_path = os.path.join(config.record_videos_dir_ud, videofile_path_month_dir, video_file_name)
-    logger.info("webui: videofile_path: " + videofile_path)
+    logger.info(f"webui: videofile_path: {videofile_path}")
     # 打开并展示定位视频文件
     video_file = open(videofile_path, "rb")
     video_bytes = video_file.read()

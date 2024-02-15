@@ -65,7 +65,7 @@ def extract_iframe(video_file, iframe_path, iframe_interval=4000):
             break
 
         if frame_cnt % frame_step == 0:
-            logger.debug("extract frame cut:" + str(frame_cnt))
+            logger.debug(f"extract frame cut:{str(frame_cnt)}")
             cv2.imwrite(os.path.join(iframe_path, f"{frame_cnt}.jpg"), frame)
 
         frame_cnt += 1
@@ -190,7 +190,7 @@ def compare_strings(a, b, threshold=70):
     # For example:
     # "ababababab" is very similar to "aaaaabbbbb"
     overlap = len(set(a) & set(b)) / len(set(a) | set(b)) * 100
-    logger.debug("overlap:" + str(overlap))
+    logger.debug(f"overlap:{str(overlap)}")
 
     # 判断重合率是否超过阈值
     if overlap >= threshold:
@@ -281,9 +281,9 @@ def ocr_core_logic(file_path, vid_file_name, iframe_path):
     is_first_process_image_similarity = 1
     # 先清理一波看起来重复的图像
     for img_file_name in os.listdir(iframe_path):
-        logger.debug("processing IMG - compare:" + img_file_name)
+        logger.debug(f"processing IMG - compare:{img_file_name}")
         img = os.path.join(iframe_path, img_file_name)
-        logger.debug("img=" + img)
+        logger.debug(f"img={img}")
 
         # 填充用于对比的slot队列
         if is_first_process_image_similarity == 1:
@@ -320,7 +320,7 @@ def ocr_core_logic(file_path, vid_file_name, iframe_path):
     # TODO: os.listdir 应该进行正确的数字排序、以确保是按视频顺序索引的
     for img_file_name in os.listdir(iframe_path):
         logger.info("_____________________")
-        logger.info("processing IMG - OCR:" + img_file_name)
+        logger.info(f"processing IMG - OCR:{img_file_name}")
 
         img = os.path.join(iframe_path, img_file_name)
         ocr_result_stringB = ocr_image(img)
@@ -467,7 +467,7 @@ def ocr_process_videos(video_path, iframe_path):
     for root, dirs, filess in os.walk(video_path):
         for file in filess:
             full_file_path = os.path.join(root, file)
-            logger.debug("processing VID:" + full_file_path)
+            logger.debug(f"processing VID: {full_file_path}")
 
             # 检查视频文件是否已被索引
             if not file.endswith(".mp4") or "-OCRED" in file or "-ERROR" in file:

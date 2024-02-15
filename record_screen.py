@@ -160,7 +160,7 @@ def record_screen(
 
     # 执行命令
     try:
-        logger.info("record_screen: ffmpeg cmd: ", ffmpeg_cmd)
+        logger.info(f"record_screen: ffmpeg cmd: {ffmpeg_cmd}")
         # 运行ffmpeg
         subprocess.run(ffmpeg_cmd, check=True)
         logger.info("Windrecorder: Start Recording via FFmpeg")
@@ -244,7 +244,7 @@ def monitor_compare_screenshot():
                     logger.info(f"Windrecorder: monitor_idle_minutes:{monitor_idle_minutes}, similarity:{similarity}")
                     time.sleep(30)
             except Exception as e:
-                logger.error("Windrecorder: Error occurred:", str(e))
+                logger.error(f"Windrecorder: Error occurred:{str(e)}")
                 if "batchDistance" in str(e):  # 如果是抓不到画面导致出错，可以认为是进入了休眠等情况
                     monitor_idle_minutes += 0.5
                 else:

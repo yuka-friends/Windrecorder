@@ -202,7 +202,7 @@ def save_dataframe_to_path(dataframe, file_path="cache/temp.csv"):
     """
     ensure_dir(os.path.dirname(file_path))
     dataframe.to_csv(file_path, index=False)  # 使用to_csv()方法将DataFrame保存为CSV文件（可根据需要选择其他文件格式）
-    logger.info("files: DataFrame has been saved at ", file_path)
+    logger.info(f"files: DataFrame has been saved at {file_path}")
 
 
 # 从csv文件读取dataframe
@@ -222,7 +222,7 @@ def save_dict_as_json_to_path(data: dict, filepath):
     ensure_dir(os.path.dirname(filepath))
     with open(filepath, "w") as f:
         json.dump(data, f)
-    logger.info("files: json has been saved at ", filepath)
+    logger.info(f"files: json has been saved at {filepath}")
 
 
 def read_json_as_dict_from_path(filepath):
@@ -245,5 +245,5 @@ def get_extension(extension_filepath="extension"):
                 data = json.load(file)
                 extension_dict[data["extension_name"]] = data
         except Exception as e:
-            logger.error(e)
+            logger.error(str(e))
     return extension_dict

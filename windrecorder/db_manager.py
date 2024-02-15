@@ -537,7 +537,7 @@ class _DBManager:
             c.execute("SELECT * FROM video_text")
             rows = c.fetchall()
             for row in rows:
-                logger.debug(row)
+                logger.debug(str(row))
             conn.close()
 
     # 查询全部数据库一共有多少行
