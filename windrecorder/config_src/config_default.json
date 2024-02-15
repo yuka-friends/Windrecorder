@@ -64,6 +64,5 @@
   "enable_img_embed_search": true,
   "img_embed_search_recall_result_per_db": 30,
   "img_embed_module_install": false,
-  "day_begin_minutes": 180,
-  "debug_mode": false
+  "day_begin_minutes": 180
 }
