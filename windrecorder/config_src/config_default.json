@@ -31,7 +31,7 @@
     "login","account","twitter","reddit","youtube"
   ],
   "ocr_image_crop_URBL": [6,6,6,3],
-  "vid_store_day": 900,
+  "vid_store_day": 1200,
   "vid_compress_day": 300,
   "OCR_index_strategy": 1,
   "wordcloud_result_dir": "result_wordcloud",
@@ -68,6 +68,6 @@
   "day_begin_minutes": 180,
   "enable_search_history_record": true,
   "batch_size_embed_video_in_idle": 14,
-  "batch_size_remove_video_in_idle": 60,
-  "batch_size_compress_video_in_idle": 30
+  "batch_size_remove_video_in_idle": 80,
+  "batch_size_compress_video_in_idle": 50
 }
