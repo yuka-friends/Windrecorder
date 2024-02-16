@@ -10,6 +10,7 @@
   "db_filename": "ocrSaved.db",
   "userdata_dir": "userdata",
   "flag_mark_note_filename": "flag_mark_note.csv",
+  "search_history_note_filename": "search_history.csv",
   "thumbnail_generation_size_width": 70,
   "thumbnail_generation_jpg_quality": 30,
   "vdb_img_path": "db_imgemb",
@@ -64,5 +65,6 @@
   "enable_img_embed_search": true,
   "img_embed_search_recall_result_per_db": 30,
   "img_embed_module_install": false,
-  "day_begin_minutes": 180
+  "day_begin_minutes": 180,
+  "enable_search_history_record": true
 }
