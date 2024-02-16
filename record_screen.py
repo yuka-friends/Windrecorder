@@ -64,6 +64,7 @@ def idle_maintain_process_main():
     global idle_maintaining_in_process
     idle_maintaining_in_process = True
     try:
+        logger.info("start idle maintain processing")
         threading.Thread(target=ocr_manager.ocr_manager_main, daemon=True).start()
         # 图像语义嵌入
         if config.enable_img_embed_search and config.img_embed_module_install:
