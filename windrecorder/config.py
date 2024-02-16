@@ -75,6 +75,9 @@ class Config:
         img_embed_search_recall_result_per_db,
         img_embed_module_install,
         enable_search_history_record,
+        batch_size_embed_video_in_idle,
+        batch_size_remove_video_in_idle,
+        batch_size_compress_video_in_idle,
         **other_field,
     ) -> None:
         # If need to process input parameters, they should assign another variable name to prevent recursive writing into the config.
@@ -139,6 +142,9 @@ class Config:
         self.img_embed_module_install = img_embed_module_install
         self.day_begin_minutes = day_begin_minutes
         self.enable_search_history_record = enable_search_history_record
+        self.batch_size_embed_video_in_idle = batch_size_embed_video_in_idle
+        self.batch_size_remove_video_in_idle = batch_size_remove_video_in_idle
+        self.batch_size_compress_video_in_idle = batch_size_compress_video_in_idle
 
     def set_and_save_config(self, attr: str, value):
         if not hasattr(self, attr):

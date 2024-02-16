@@ -7,11 +7,13 @@
 - 可跳过录制自定义的前台活动了，比如自定义锁屏、游戏、隐私场景等；
 - 调整目录结构，将所有用户数据集中放置到 userdata 下；
 - 添加日志；添加对搜索历史的记录（可在 config_user.json enable_search_history_record 中设置）
+- 对闲时任务添加了分批数量限制；
 
 - Add image embedding and retrieval extension, which can search through the natural language description of the picture or search for pictures; install in extension\install_img_embedding_module;
 - You can now skip recording customized foreground activities, such as customized lock screens, games, privacy scenes, etc.
 - Adjust the directory structure and centrally place all user data under userdata dictionary;
 - Add logger; Add a record of search history (can be set in config_user.json enable_search_history_record)
+- Added a limit on the number of batches for idle tasks;
 
 ### Fixed
 - bug: 当 CLI 未隐藏时切换了活动前台窗口、导致该前台窗口被隐藏；(?)

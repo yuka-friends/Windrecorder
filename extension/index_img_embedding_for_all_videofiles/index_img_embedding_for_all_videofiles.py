@@ -72,12 +72,12 @@ Tip: During the indexing process, you can close the terminal window at any time 
         print(text_intro)
         user_input = input("> ")
         if user_input.lower() == "y":
-            img_embed_manager.all_videofile_do_img_embedding_routine(video_queue_count=videos_filepath_filter_num)
+            img_embed_manager.all_videofile_do_img_embedding_routine(video_queue_batch=videos_filepath_filter_num)
             break
         try:
             val = int(user_input)
             if 0 < val < videos_filepath_filter_num:
-                img_embed_manager.all_videofile_do_img_embedding_routine(video_queue_count=val)
+                img_embed_manager.all_videofile_do_img_embedding_routine(video_queue_batch=val)
                 break
         except ValueError:
             pass
