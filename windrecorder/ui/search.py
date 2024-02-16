@@ -90,7 +90,11 @@ def render():
         # 绘制抬头部分的 UI
         components.web_onboarding()
 
-        search_method_list = [_t("gs_option_ocr_text_search"), _t("gs_option_img_emb_search"), "以图搜图"]
+        search_method_list = [
+            _t("gs_option_ocr_text_search"),
+            _t("gs_option_img_emb_search"),
+            _t("gs_option_similar_img_search"),
+        ]
         title_col, search_method = st.columns([4, 2.5])
         with title_col:
             st.markdown(_t("gs_md_search_title"))
