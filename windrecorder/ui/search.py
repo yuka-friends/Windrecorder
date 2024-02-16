@@ -244,7 +244,9 @@ def ui_ocr_text_search():
         with st.spinner(_t("gs_text_searching")):
             st.session_state.timeCost_globalSearch = time.time()  # 预埋搜索用时
             # 进行搜索，取回结果
-
+            components.record_search_history(
+                search_content=st.session_state.search_content, search_type="Global Search - OCR Text Search"
+            )
             (
                 st.session_state.db_global_search_result,
                 st.session_state.all_result_counts,
@@ -310,6 +312,9 @@ def ui_vector_img_search():
             logger.info(
                 f"search {st.session_state.search_content}, {st.session_state.search_date_range_in}, {st.session_state.search_date_range_out}"
             )
+            components.record_search_history(
+                search_content=st.session_state.search_content, search_type="Global Search - Image Semantic Search"
+            )
             # 进行搜索，取回结果
             (
                 st.session_state.db_global_search_result,
@@ -374,6 +379,9 @@ def ui_similar_img_search():
             img_vector = img_vector.detach().numpy()
             logger.info(
                 f"search {st.session_state.similar_img_file_input}, {st.session_state.search_date_range_in}, {st.session_state.search_date_range_out}"
+            )
+            components.record_search_history(
+                search_content=st.session_state.similar_img_file_input.name, search_type="Global Search - Similar Image Search"
             )
             # 进行搜索，取回结果
             (

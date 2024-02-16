@@ -140,6 +140,9 @@ def render():
                     return
                 st.session_state.day_search_keyword_lazy = st.session_state.day_search_keyword
                 st.session_state.day_date_input_lazy = st.session_state.day_date_input
+                components.record_search_history(
+                    search_content=st.session_state.day_search_keyword, search_type="Oneday - OCR Text Search"
+                )
                 st.session_state.df_day_search_result = OneDay().search_day_data(
                     utils.complete_datetime(st.session_state.day_date_input),
                     search_content=st.session_state.day_search_keyword,

@@ -66,6 +66,7 @@ class Config:
         start_recording_on_startup,
         userdata_dir,
         flag_mark_note_filename,
+        search_history_note_filename,
         thumbnail_generation_size_width,
         thumbnail_generation_jpg_quality,
         show_oneday_left_side_stat,
@@ -73,6 +74,7 @@ class Config:
         enable_img_embed_search,
         img_embed_search_recall_result_per_db,
         img_embed_module_install,
+        enable_search_history_record,
         **other_field,
     ) -> None:
         # If need to process input parameters, they should assign another variable name to prevent recursive writing into the config.
@@ -126,6 +128,8 @@ class Config:
         self.lock_file_dir = lock_file_dir
         self.flag_mark_note_filename = flag_mark_note_filename
         self.flag_mark_note_filepath = os.path.join(self.userdata_dir, self.flag_mark_note_filename)
+        self.search_history_note_filename = search_history_note_filename
+        self.search_history_note_filepath = os.path.join(self.userdata_dir, self.search_history_note_filename)
         self.thumbnail_generation_size_width = thumbnail_generation_size_width
         self.thumbnail_generation_jpg_quality = thumbnail_generation_jpg_quality
         self.show_oneday_left_side_stat = show_oneday_left_side_stat
@@ -134,6 +138,7 @@ class Config:
         self.img_embed_search_recall_result_per_db = img_embed_search_recall_result_per_db
         self.img_embed_module_install = img_embed_module_install
         self.day_begin_minutes = day_begin_minutes
+        self.enable_search_history_record = enable_search_history_record
 
     def set_and_save_config(self, attr: str, value):
         if not hasattr(self, attr):
