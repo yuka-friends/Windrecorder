@@ -65,7 +65,7 @@
         "gs_text_video_file_not_on_disk": "Video File **{df_videofile_name}** not on disk.",
         "gs_option_ocr_text_search": "OCR Text search",
         "gs_option_img_emb_search": "Image semantic search",
-        "gs_option_similar_img_search": "Search images with images",
+        "gs_option_similar_img_search": "Search images with image",
         "gs_input_img_emb_search": "Use natural language to describe images",
         "gs_text_img_emb_help": "Use natural language to describe the content of the image. The more precise the description, the closer the result will found. Up to 21 languages such as Chinese, English, Japanese, and Korean are supported here (detailed uform document). The video needs to be embedded after indexing Only by searching, seeing the Setting description for details.",
         "gs_text_searching": "Searching, please stand by...",
