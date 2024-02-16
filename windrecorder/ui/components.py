@@ -50,10 +50,13 @@ def video_dataframe(df, heightIn=800):
     )
 
 
-def record_search_history(search_content, search_type, search_datetime=datetime.datetime.now()):
+def record_search_history(search_content, search_type, search_datetime=None):
     """记录搜索历史"""
     try:
         if config.enable_search_history_record:
+            if search_datetime is None:
+                search_datetime = datetime.datetime.now()
+
             CSV_TEMPLATE_HISTORY = pd.DataFrame(columns=["search_content", "search_type", "search_datetime"])
             if not os.path.exists(config.search_history_note_filepath):
                 file_utils.ensure_dir(config.userdata_dir)
