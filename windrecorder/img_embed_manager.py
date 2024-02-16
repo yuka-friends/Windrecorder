@@ -55,7 +55,7 @@ def get_model(mode="cpu"):
     return model
 
 
-def embed_img(model: uform.models.VLM, img_filepath):
+def embed_img(model: uform.models.VLM, img_filepath, is_cuda_available=is_cuda_available):
     """
     将图像转为 embedding vector
     """
@@ -290,22 +290,19 @@ def get_vdbs_filename_via_time_range(start_datetime: datetime.datetime, end_date
     return result
 
 
-def query_text_in_img_vdbs(model: uform.models.VLM, text_query, start_datetime, end_datetime):
+def query_vector_in_img_vdbs(vector, start_datetime, end_datetime):
     """
-    流程：在 vdb list 中搜索文本嵌入，提取对应 sqlite rowid 项，合并排序返回 df
-    model 需要运行在 cpu mode 下
+    流程：在 vdb list 中搜索向量，提取对应 sqlite rowid 项，合并排序返回 df
     """
     vdb_filenames = get_vdbs_filename_via_time_range(start_datetime=start_datetime, end_datetime=end_datetime)
-    logger.info(f"{DEBUG_MODULE_NAME} quering {text_query}, {start_datetime=}, {end_datetime=}, {vdb_filenames=}")
     if vdb_filenames is None:
         return pd.DataFrame(), 0, 0
-    text_vector = embed_text(model=model, text_query=text_query)
 
     df_list = []
     for vdb_filename in vdb_filenames:
         logger.info(f"{DEBUG_MODULE_NAME} recalling {vdb_filename}")
         vdb = VectorDatabase(vdb_filename=vdb_filename)
-        res_tuple_list = vdb.search_vector(text_vector, k=config.img_embed_search_recall_result_per_db)
+        res_tuple_list = vdb.search_vector(vector, k=config.img_embed_search_recall_result_per_db)
         res_tuple_list = [t for t in res_tuple_list if t[0] != -1]  # 相似度结果不足时，会以 -1 的 index 填充，在进 sqlite 搜索前需过滤
 
         len_prefix = len(config.user_name) + 1

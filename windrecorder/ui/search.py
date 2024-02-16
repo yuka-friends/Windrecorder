@@ -10,12 +10,15 @@ import windrecorder.utils as utils
 from windrecorder import file_utils
 from windrecorder.config import config
 from windrecorder.db_manager import db_manager
+from windrecorder.logger import get_logger
 from windrecorder.ui import components
 from windrecorder.utils import get_text as _t
 
+logger = get_logger(__name__)
+
 if config.img_embed_module_install:
     try:
-        from windrecorder.img_embed_manager import get_model, query_text_in_img_vdbs
+        from windrecorder import img_embed_manager
     except ModuleNotFoundError:
         config.set_and_save_config("img_embed_module_install", False)
 
@@ -75,6 +78,8 @@ def render():
                 + datetime.timedelta(seconds=st.session_state.search_latest_record_time_int)
                 - datetime.timedelta(seconds=86400)
             )
+        if "similar_img_file_input_lazy" not in st.session_state:
+            st.session_state.similar_img_file_input_lazy = None
 
         def clean_lazy_state_after_change_search_method():
             """
@@ -85,7 +90,7 @@ def render():
         # 绘制抬头部分的 UI
         components.web_onboarding()
 
-        search_method_list = [_t("gs_option_ocr_text_search"), _t("gs_option_img_emb_search")]
+        search_method_list = [_t("gs_option_ocr_text_search"), _t("gs_option_img_emb_search"), "以图搜图"]
         title_col, search_method = st.columns([4, 2.5])
         with title_col:
             st.markdown(_t("gs_md_search_title"))
@@ -117,9 +122,12 @@ def render():
                 if config.enable_img_embed_search and config.img_embed_module_install:
                     ui_vector_img_search()
                 else:
-                    st.warning(
-                        "未启用或未安装图像语义检索模块，请前往设置页启用。若设置中无相关选项，请先安装图像语义模块。安装脚本位于 Windrecorder 目录下：extension\\install_img_embedding_module\\install_img_embedding_module.bat"
-                    )
+                    st.warning(_t("gs_text_not_install_img_emb"))
+            case 2:
+                if config.enable_img_embed_search and config.img_embed_module_install:
+                    ui_similar_img_search()
+                else:
+                    st.warning(_t("gs_text_not_install_img_emb"))
 
         # 搜索结果表格的 UI
         if not len(st.session_state.search_content) == 0:
@@ -232,6 +240,7 @@ def ui_ocr_text_search():
         with st.spinner(_t("gs_text_searching")):
             st.session_state.timeCost_globalSearch = time.time()  # 预埋搜索用时
             # 进行搜索，取回结果
+
             (
                 st.session_state.db_global_search_result,
                 st.session_state.all_result_counts,
@@ -265,10 +274,10 @@ def ui_vector_img_search():
     """
     图像语义搜索：使用自然语言匹配检索图像
     """
-    # 预加载文本嵌入模型，这样每次搜索就不需要重复加载、提升时间
-    if "text_embed_model" not in st.session_state:
-        with st.spinner(_t("gs_text_loading_text_embed_model")):
-            st.session_state["text_embed_model"] = get_model(mode="cpu")
+    # 预加载嵌入模型，这样每次搜索就不需要重复加载、提升时间
+    if "text_img_embed_model" not in st.session_state:
+        with st.spinner(_t("gs_text_loading_embed_model")):
+            st.session_state["text_img_embed_model"] = img_embed_manager.get_model(mode="cpu")
 
     # 获得全局图像语义搜索结果
     def do_global_vector_img_search():
@@ -291,14 +300,19 @@ def ui_vector_img_search():
 
         with st.spinner(_t("gs_text_searching")):
             st.session_state.timeCost_globalSearch = time.time()  # 预埋搜索用时
+            text_vector = img_embed_manager.embed_text(
+                model=st.session_state.text_img_embed_model, text_query=st.session_state.search_content
+            )
+            logger.info(
+                f"search {st.session_state.search_content}, {st.session_state.search_date_range_in}, {st.session_state.search_date_range_out}"
+            )
             # 进行搜索，取回结果
             (
                 st.session_state.db_global_search_result,
                 st.session_state.all_result_counts,
                 st.session_state.max_page_count,
-            ) = query_text_in_img_vdbs(
-                model=st.session_state.text_embed_model,
-                text_query=st.session_state.search_content,
+            ) = img_embed_manager.query_vector_in_img_vdbs(
+                vector=text_vector,
                 start_datetime=st.session_state.search_date_range_in,
                 end_datetime=st.session_state.search_date_range_out,
             )
@@ -314,6 +328,78 @@ def ui_vector_img_search():
         ui_component_pagination()
 
     do_global_vector_img_search()
+
+
+def ui_similar_img_search():
+    """
+    以图搜图
+    """
+    # 预加载嵌入模型，这样每次搜索就不需要重复加载、提升时间
+    if "text_img_embed_model" not in st.session_state:
+        with st.spinner(_t("gs_text_loading_embed_model")):
+            st.session_state["text_img_embed_model"] = img_embed_manager.get_model(mode="cpu")
+
+    def do_global_similar_img_search():
+        # 如果搜索所需入参状态改变了，进行搜索
+        if (
+            st.session_state.similar_img_file_input_lazy == st.session_state.similar_img_file_input
+            and st.session_state.search_date_range_in_lazy == st.session_state.search_date_range_in
+            and st.session_state.search_date_range_out_lazy == st.session_state.search_date_range_out
+        ):
+            return
+
+        if st.session_state.similar_img_file_input is None:
+            st.session_state.search_content = ""
+            return
+
+        # 更新懒状态
+        st.session_state.similar_img_file_input_lazy = st.session_state.similar_img_file_input
+        st.session_state.search_date_range_in_lazy = st.session_state.search_date_range_in
+        st.session_state.search_date_range_out_lazy = st.session_state.search_date_range_out
+
+        # 重置每次进行新搜索需要重置的状态
+        st.session_state.page_index = 1
+
+        with st.spinner(_t("gs_text_searching")):
+            st.session_state.timeCost_globalSearch = time.time()  # 预埋搜索用时
+            img_vector = img_embed_manager.embed_img(
+                model=st.session_state.text_img_embed_model,
+                img_filepath=st.session_state.similar_img_file_input,
+                is_cuda_available=False,
+            )
+            img_vector = img_vector.detach().numpy()
+            logger.info(
+                f"search {st.session_state.similar_img_file_input}, {st.session_state.search_date_range_in}, {st.session_state.search_date_range_out}"
+            )
+            # 进行搜索，取回结果
+            (
+                st.session_state.db_global_search_result,
+                st.session_state.all_result_counts,
+                st.session_state.max_page_count,
+            ) = img_embed_manager.query_vector_in_img_vdbs(
+                vector=img_vector,
+                start_datetime=st.session_state.search_date_range_in,
+                end_datetime=st.session_state.search_date_range_out,
+            )
+            st.session_state.search_content = "img"
+            st.session_state.timeCost_globalSearch = round(time.time() - st.session_state.timeCost_globalSearch, 5)  # 回收搜索用时
+
+    st.session_state.similar_img_file_input = st.file_uploader(
+        _t("gs_text_upload_img"), type=["png", "jpg", "webp"], accept_multiple_files=False, help=_t("gs_text_upload_img_help")
+    )
+
+    col_img_preview_si, col_date_range_si, col_page_si = st.columns([0.5, 2, 1.5])
+    with col_img_preview_si:  # 缩略图
+        if st.session_state.similar_img_file_input:
+            st.image(image=st.session_state.similar_img_file_input)
+        else:
+            st.empty()
+    with col_date_range_si:  # 选择时间范围
+        ui_component_date_range_selector()
+    with col_page_si:  # 搜索结果翻页
+        ui_component_pagination()
+
+    do_global_similar_img_search()
 
 
 # 选择播放视频的行数 的滑杆组件
