@@ -70,7 +70,9 @@ def idle_maintain_process_main():
             try:
                 img_emb_lock = FileLock(config.img_emb_lock_path, str(getpid()), timeout_s=30 * 60)
                 with img_emb_lock:
-                    img_embed_manager.all_videofile_do_img_embedding_routine()
+                    img_embed_manager.all_videofile_do_img_embedding_routine(
+                        video_queue_batch=config.batch_size_embed_video_in_idle
+                    )
             except LockExistsException:
                 with open(config.tray_lock_path, encoding="utf-8") as f:
                     check_pid = int(f.read())
@@ -84,9 +86,9 @@ def idle_maintain_process_main():
                         pass
 
         # 清理过时视频
-        ocr_manager.remove_outdated_videofiles()
+        ocr_manager.remove_outdated_videofiles(video_queue_batch=config.batch_size_remove_video_in_idle)
         # 压缩过期视频
-        ocr_manager.compress_outdated_videofiles()
+        ocr_manager.compress_outdated_videofiles(video_queue_batch=config.batch_size_compress_video_in_idle)
         # 生成随机词表
         # wordcloud.generate_all_word_lexicon_by_month()
     except Exception as e:

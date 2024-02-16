@@ -66,5 +66,8 @@
   "img_embed_search_recall_result_per_db": 30,
   "img_embed_module_install": false,
   "day_begin_minutes": 180,
-  "enable_search_history_record": true
+  "enable_search_history_record": true,
+  "batch_size_embed_video_in_idle": 14,
+  "batch_size_remove_video_in_idle": 60,
+  "batch_size_compress_video_in_idle": 30
 }

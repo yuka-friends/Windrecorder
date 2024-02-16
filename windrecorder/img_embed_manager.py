@@ -236,7 +236,7 @@ def embed_vid_file(
     return True
 
 
-def all_videofile_do_img_embedding_routine(video_queue_count=14):
+def all_videofile_do_img_embedding_routine(video_queue_batch=14):
     """
     流程：处理未嵌入的视频，提取嵌入视频 iframe embedding 到向量数据库。默认计算时间控制在 30 分钟左右内（即索引 12~15 个视频）
     """
@@ -249,7 +249,7 @@ def all_videofile_do_img_embedding_routine(video_queue_count=14):
         videos_names = os.listdir(os.path.join(config.record_videos_dir_ud, video_dir))[::-1]
         for video_name in tqdm(videos_names):
             logger.debug(
-                f"{DEBUG_MODULE_NAME} img_embed({video_process_count}/{video_queue_count}): embedding {video_dir}, {video_name}"
+                f"{DEBUG_MODULE_NAME} img_embed({video_process_count}/{video_queue_batch}): embedding {video_dir}, {video_name}"
             )
             # 确认视频已被 OCR 索引，且没含有 -IMGEMB 标签
             # 如果视频被压缩了，目前跳过；TODO 未来如果使用时间戳手段提取、或者可以接受iframe提取的时域误差，则不需要这条规则了
@@ -260,9 +260,9 @@ def all_videofile_do_img_embedding_routine(video_queue_count=14):
             vdb = VectorDatabase(vdb_filename=get_vdb_filename_via_video_filename(video_name))
             embed_vid_file(model=model, vdb=vdb, vid_file_name=video_name)
             video_process_count += 1
-            if video_process_count > video_queue_count:
+            if video_process_count > video_queue_batch:
                 break
-        if video_process_count > video_queue_count:
+        if video_process_count > video_queue_batch:
             break
 
 

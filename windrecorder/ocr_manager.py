@@ -487,9 +487,11 @@ def ocr_process_videos(video_path, iframe_path):
 
 
 # 检查视频文件夹中所有文件的日期，对超出储存时限的文件进行删除操作
-def remove_outdated_videofiles():
+def remove_outdated_videofiles(video_queue_batch=60):
     if config.vid_store_day == 0:
         return None
+
+    video_process_count = 0
 
     today_datetime = datetime.datetime.today()
     days_to_subtract = config.vid_store_day
@@ -504,14 +506,19 @@ def remove_outdated_videofiles():
 
     if len(video_filepath_list_outdate) > 0:
         for item in video_filepath_list_outdate:
-            logger.info(f"removing {item}")
+            logger.info(f"removing {item}, {video_process_count=}, {video_queue_batch=}")
             send2trash(item)
+            video_process_count += 1
+            if video_process_count > video_queue_batch:
+                break
 
 
 # 检查视频文件夹中所有文件的日期，对超出储存时限的文件进行压缩操作(todo)
-def compress_outdated_videofiles():
+def compress_outdated_videofiles(video_queue_batch=30):
     if config.vid_compress_day == 0:
         return None
+
+    video_process_count = 0
 
     today_datetime = datetime.datetime.today()
     days_to_subtract = config.vid_compress_day
@@ -527,9 +534,12 @@ def compress_outdated_videofiles():
     if len(video_filepath_list_outdate) > 0:
         for item in video_filepath_list_outdate:
             if "-COMPRESS" not in item and "-OCRED" in item:
-                logger.info(f"compressing {item}")
+                logger.info(f"compressing {item}, {video_process_count=}, {video_queue_batch=}")
                 record.compress_video_resolution(item, config.video_compress_rate)
                 send2trash(item)
+                video_process_count += 1
+                if video_process_count > video_queue_batch:
+                    break
     logger.info("All compress tasks done!")
 
 
