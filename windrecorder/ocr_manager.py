@@ -117,7 +117,7 @@ def crop_iframe(directory):
 # OCR 分流器
 def ocr_image(img_input):
     ocr_engine = config.ocr_engine
-    logger.info(f"ocr_engine:{ocr_engine}")
+    logger.debug(f"ocr_engine:{ocr_engine}")
     if ocr_engine == "Windows.Media.Ocr.Cli":
         return ocr_image_ms(img_input)
     elif ocr_engine == "ChineseOCR_lite_onnx":
@@ -332,7 +332,7 @@ def ocr_core_logic(file_path, vid_file_name, iframe_path):
         elif len(ocr_result_stringB) < 3:
             logger.debug("[Skip] Insufficient content, not written to the database, skipped.")
         else:
-            logger.info("Inconsistent content")
+            logger.debug("Inconsistent content")
             if utils.is_str_contain_list_word(ocr_result_stringB, config.exclude_words):
                 logger.debug("[Skip] The content contains exclusion list words and is not written to the database.")
             else:

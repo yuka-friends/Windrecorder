@@ -164,7 +164,7 @@ def embed_img_in_iframe_by_rowid_dict(model: uform.models.VLM, img_dict: dict, i
     将（i_frame 临时）文件夹中的对应图像转为对应的 embedding 并写入 vdb.index
     """
     for rowid, img_filename in img_dict.items():
-        logger.info(f"{DEBUG_MODULE_NAME} Embedding {rowid=}, {img_filename=}")
+        logger.debug(f"{DEBUG_MODULE_NAME} Embedding {rowid=}, {img_filename=}")
         img_filepath = os.path.join(img_dir_filepath, img_filename)
         if not os.path.exists(img_filepath):
             # 提取的图像列表有时出于换了提取iframe方式、cv可能的随机性等缘故，可能无法保证与db过去记录的完全一致，在 embedding 时有则 embed，无则寻找最近的阈值、再无则跳过。但考虑到相似图像仍会出现在附近时间范围，结果应尚可。

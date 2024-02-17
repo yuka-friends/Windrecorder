@@ -202,7 +202,7 @@ def save_dataframe_to_path(dataframe, file_path="cache/temp.csv"):
     """
     ensure_dir(os.path.dirname(file_path))
     dataframe.to_csv(file_path, index=False)  # 使用to_csv()方法将DataFrame保存为CSV文件（可根据需要选择其他文件格式）
-    logger.info(f"files: DataFrame has been saved at {file_path}")
+    logger.debug(f"files: DataFrame has been saved at {file_path}")
 
 
 # 从csv文件读取dataframe
