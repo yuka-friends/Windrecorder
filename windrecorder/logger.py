@@ -2,8 +2,14 @@ import logging
 import os
 from logging.handlers import TimedRotatingFileHandler
 
+logger = None
+
 
 def get_logger(name, log_name="wr.log"):
+    global logger
+    if logger is not None:
+        return logger
+
     log_dir = "cache\\logs"
     if not os.path.exists(log_dir):
         os.makedirs(log_dir)
