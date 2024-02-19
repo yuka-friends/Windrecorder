@@ -228,10 +228,10 @@ def render():
             ]
 
             option_day_begin_time_oneday = st.selectbox(
-                "「一天之时」每日时间轴最早时间",
+                _t("set_input_day_begin_minutes"),
                 index=find_index_in_tuple_timelist(list=day_begin_time_list, target=config.day_begin_minutes),
                 options=[item[0] for item in day_begin_time_list],
-                help="可以把凌晨后的一段时间记录划分到同个自然天中，而非以零点来划分每天。",
+                help=_t("set_help_day_begin_minutes"),
             )
 
             config_max_search_result_num = st.number_input(
