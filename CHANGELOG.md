@@ -5,12 +5,14 @@
 
 - **添加图像语义嵌入、检索扩展，可以通过对画面的自然语言描述进行搜索、或以图搜图**；在 extension\install_img_embedding_module 进行安装；
 - 可跳过录制自定义的前台活动了，比如自定义锁屏、游戏、隐私场景等；
+- 移除了 一日之时 中的词云统计，UI 更新为双栏布局；
 - 调整目录结构，将所有用户数据集中放置到 userdata 下；
 - 添加日志；添加对搜索历史的记录（可在 config_user.json enable_search_history_record 中设置）
 - 对闲时任务添加了分批数量限制；
 
-- Add image embedding and retrieval extension, which can search through the natural language description of the picture or search for pictures; install in extension\install_img_embedding_module;
+- Add image embedding and retrieval extension, which can **search through the natural language description of the picture or search for pictures**; install in extension\install_img_embedding_module;
 - You can now skip recording customized foreground activities, such as customized lock screens, games, privacy scenes, etc.
+- Removed wordcloud in Daily; Switch UI into two-column layout;
 - Adjust the directory structure and centrally place all user data under userdata dictionary;
 - Add logger; Add a record of search history (can be set in config_user.json enable_search_history_record)
 - Added a limit on the number of batches for idle tasks;
