@@ -193,11 +193,7 @@ def render():
         col1_ui, col2_ui = st.columns([1, 1])
         with col1_ui:
             st.markdown(_t("set_md_gui"))
-            option_show_oneday_wordcloud = st.checkbox(
-                _t("set_checkbox_show_wordcloud_under_oneday"),
-                value=config.show_oneday_wordcloud,
-            )
-            option_show_oneday_wintitle = st.checkbox(
+            option_show_oneday_sidetool = st.checkbox(
                 _t("set_checkbox_show_leftside_stat_under_oneday"),
                 value=config.show_oneday_left_side_stat,
             )
@@ -287,8 +283,7 @@ def render():
             # config.set_and_save_config("ocr_engine", config_ocr_engine)
             config.set_and_save_config("ocr_lang", config_ocr_lang)
             config.set_and_save_config("enable_img_embed_search", option_enable_img_embed_search)
-            config.set_and_save_config("show_oneday_wordcloud", option_show_oneday_wordcloud)
-            config.set_and_save_config("show_oneday_left_side_stat", option_show_oneday_wintitle)
+            config.set_and_save_config("show_oneday_left_side_stat", option_show_oneday_sidetool)
             config.set_and_save_config("use_similar_ch_char_to_search", config_use_similar_ch_char_to_search)
             config.set_and_save_config("img_embed_search_recall_result_per_db", config_img_embed_search_recall_result_per_db)
 

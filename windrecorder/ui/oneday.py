@@ -3,9 +3,8 @@ import os
 
 import pandas as pd
 import streamlit as st
-from PIL import Image
 
-from windrecorder import file_utils, flag_mark_note, record_wintitle, utils, wordcloud
+from windrecorder import file_utils, flag_mark_note, record_wintitle, utils
 from windrecorder.config import config
 from windrecorder.db_manager import db_manager
 from windrecorder.logger import get_logger
@@ -219,12 +218,10 @@ def render():
             # current_day_cloud_and_TL_img_name = str(st.session_state.day_date_input.year) + "-" + str(st.session_state.day_date_input.month) + "-" + str(st.session_state.day_date_input.day) + "-today-" + ".png"
             current_day_cloud_and_TL_img_name = str(st.session_state.day_date_input.strftime("%Y-%m-%d")) + "-today-.png"
             # 太邪门了，.png前不能是alphabet/数字字符，否则词云的.to_file会莫名其妙自己多添加一个.png
-            current_day_cloud_img_path = os.path.join(config.wordcloud_result_dir_ud, current_day_cloud_and_TL_img_name)
             current_day_TL_img_path = os.path.join(config.timeline_result_dir_ud, current_day_cloud_and_TL_img_name)
         else:
             # current_day_cloud_and_TL_img_name = str(st.session_state.day_date_input.year) + "-" + str(st.session_state.day_date_input.month) + "-" + str(st.session_state.day_date_input.day) + ".png"
             current_day_cloud_and_TL_img_name = str(st.session_state.day_date_input.strftime("%Y-%m-%d")) + ".png"
-            current_day_cloud_img_path = os.path.join(config.wordcloud_result_dir_ud, current_day_cloud_and_TL_img_name)
             current_day_TL_img_path = os.path.join(config.timeline_result_dir_ud, current_day_cloud_and_TL_img_name)
 
         # 时间滑动控制杆
@@ -318,7 +315,7 @@ def render():
             st.session_state.cache_videofile_ondisk_list_oneday = file_utils.get_file_path_list(config.record_videos_dir_ud)
 
         # 视频展示区域
-        col1a, col2a, col3a = st.columns([1, 3, 1])
+        col1a, col2a = st.columns([2, 3])
         with col1a:
             # 居左部分
             if st.session_state.day_is_search_data and not st.session_state.df_day_search_result.empty:
@@ -329,7 +326,7 @@ def render():
                 )  # 优化下数据展示
                 components.video_dataframe(df_day_search_result_refine)
             else:
-                # 左侧工具栏：活动统计，旗标
+                # 工具栏：活动统计，旗标
                 if config.show_oneday_left_side_stat:
                     lefttab_wintitle, lefttab_flagnote = st.tabs(
                         [_t("oneday_ls_title_wintitle"), _t("oneday_ls_title_flag_note")]
@@ -418,61 +415,6 @@ def render():
                                 _t("oneday_text_no_found_record_and_vid_on_disk"),
                                 icon="🦫",
                             )
-
-        with col3a:
-            if config.show_oneday_wordcloud:
-                # 是否展示当天词云
-                def update_day_word_cloud():
-                    with st.spinner(_t("oneday_text_generate_word_cloud")):
-                        day_input_datetime_finetune = datetime.datetime(
-                            st.session_state.day_date_input.year,
-                            st.session_state.day_date_input.month,
-                            st.session_state.day_date_input.day,
-                            0,
-                            0,
-                            2,
-                        )
-                        wordcloud.generate_word_cloud_in_day(
-                            utils.datetime_to_seconds(day_input_datetime_finetune),
-                            img_save_name=current_day_cloud_and_TL_img_name,
-                        )
-
-                if not os.path.exists(current_day_cloud_img_path):
-                    # 如果词云不存在，创建之
-                    update_day_word_cloud()
-                    # 移除非今日的-today.png
-                    for filename in os.listdir(config.wordcloud_result_dir_ud):
-                        if "-today-" in filename and filename != real_today_day_cloud_and_TL_img_name:
-                            file_path = os.path.join(config.wordcloud_result_dir_ud, filename)
-                            os.remove(file_path)
-                            logger.info(f"webui: Deleted file: {file_path}")
-
-                # 展示词云
-                try:
-                    image = Image.open(current_day_cloud_img_path)
-                    st.image(image)
-                except Exception as e:
-                    st.exception(_t("text_cannot_open_img") + e)
-
-                def update_wordcloud_btn_clicked():
-                    st.session_state.update_wordcloud_button_disabled = True
-
-                if st.button(
-                    _t("oneday_btn_update_word_cloud"),
-                    key="refresh_day_cloud",
-                    use_container_width=True,
-                    disabled=st.session_state.get("update_wordcloud_button_disabled", False),
-                    on_click=update_wordcloud_btn_clicked,
-                ):
-                    try:
-                        update_day_word_cloud()
-                    except Exception as ex:
-                        st.exception(ex)
-                    finally:
-                        st.session_state.update_wordcloud_button_disabled = False
-                        st.rerun()
-            else:
-                st.markdown(_t("oneday_md_word_cloud_turn_off"), unsafe_allow_html=True)
 
     else:
         # 数据库中没有今天的记录

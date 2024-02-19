@@ -39,7 +39,6 @@ class Config:
         OCR_index_strategy,
         wordcloud_result_dir,
         screentime_not_change_to_pause_record,
-        show_oneday_wordcloud,
         timeline_result_dir,
         user_name,
         use_similar_ch_char_to_search,
@@ -107,7 +106,6 @@ class Config:
         self.lightbox_result_dir_ud = os.path.join(userdata_dir, lightbox_result_dir)
         self.wintitle_result_dir_ud = os.path.join(userdata_dir, wintitle_result_dir)
         self.screentime_not_change_to_pause_record = screentime_not_change_to_pause_record
-        self.show_oneday_wordcloud = show_oneday_wordcloud
         self.user_name = user_name
         self.use_similar_ch_char_to_search = use_similar_ch_char_to_search
         self.ocr_image_crop_URBL = ocr_image_crop_URBL
