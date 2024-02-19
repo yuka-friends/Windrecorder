@@ -217,14 +217,32 @@ def render():
         # 每页结果最大数量
         col1_ui2, col2_ui2 = st.columns([1, 1])
         with col1_ui2:
+            day_begin_time_list = [
+                ("00:00", 0),
+                ("01:00", 60),
+                ("02:00", 120),
+                ("03:00", 180),
+                ("04:00", 240),
+                ("05:00", 300),
+                ("06:00", 360),
+            ]
+
+            option_day_begin_time_oneday = st.selectbox(
+                _t("set_input_day_begin_minutes"),
+                index=find_index_in_tuple_timelist(list=day_begin_time_list, target=config.day_begin_minutes),
+                options=[item[0] for item in day_begin_time_list],
+                help=_t("set_help_day_begin_minutes"),
+            )
+
             config_max_search_result_num = st.number_input(
                 _t("set_input_max_num_search_page"),
                 min_value=5,
                 max_value=500,
                 value=config.max_page_result,
             )
-        # 「一天之时」时间轴的横向缩略图数量
+
         with col2_ui2:
+            # 「一天之时」时间轴的横向缩略图数量
             config_oneday_timeline_num = st.number_input(
                 _t("set_input_oneday_timeline_thumbnail_num"),
                 min_value=50,
@@ -233,10 +251,8 @@ def render():
                 help=_t("set_input_oneday_timeline_thumbnail_num_help"),
             )
 
-        # imgemb 选项
-        if config.img_embed_module_install and option_enable_img_embed_search:
-            col1_imgemb, col2_imgemb = st.columns([1, 1])
-            with col1_imgemb:
+            # imgemb 选项
+            if config.img_embed_module_install and option_enable_img_embed_search:
                 config_img_embed_search_recall_result_per_db = st.number_input(
                     _t("set_input_img_emb_max_recall_count"),
                     min_value=5,
@@ -244,8 +260,6 @@ def render():
                     value=config.img_embed_search_recall_result_per_db,
                     help=_t("set_text_help_img_emb_max_recall_count"),
                 )
-            with col2_imgemb:
-                st.empty()
 
         config_webui_access_password = st.text_input(
             f'🔒 {_t("set_pwd_text")}', value=config.webui_access_password_md5, help=_t("set_pwd_help"), type="password"
@@ -278,6 +292,15 @@ def render():
             config.set_and_save_config("use_similar_ch_char_to_search", config_use_similar_ch_char_to_search)
             config.set_and_save_config("img_embed_search_recall_result_per_db", config_img_embed_search_recall_result_per_db)
 
+            # 更改了一天之时缩略图相关选项时，清空缓存时间轴缩略图
+            day_begin_minutes = find_value_in_tuple_timelist_by_str(
+                list=day_begin_time_list, target=option_day_begin_time_oneday
+            )
+            if day_begin_minutes != config.day_begin_minutes or config_oneday_timeline_num != config.oneday_timeline_pic_num:
+                file_utils.empty_directory(config.timeline_result_dir_ud)
+            config.set_and_save_config("day_begin_minutes", day_begin_minutes)
+            config.set_and_save_config("oneday_timeline_pic_num", config_oneday_timeline_num)
+
             config.set_and_save_config(
                 "ocr_image_crop_URBL",
                 [
@@ -291,7 +314,6 @@ def render():
                 "wordcloud_user_stop_words",
                 utils.string_to_list(config_wordcloud_user_stop_words),
             )
-            config.set_and_save_config("oneday_timeline_pic_num", config_oneday_timeline_num)
 
             # 如果有新密码输入，更改；如果留空，关闭功能
             if config_webui_access_password and config_webui_access_password != config.webui_access_password_md5:
@@ -438,3 +460,19 @@ def screen_ignore_padding(topP, rightP, bottomP, leftP, use_screenshot=False):
     )
 
     return image_padding_refer
+
+
+# 寻找配置项分钟数在 timelist 对应时间表达的 index
+def find_index_in_tuple_timelist(list, target):
+    for i in range(len(list)):
+        if list[i][1] == target:
+            return i
+    return 0
+
+
+# 根据输入 str，寻找 timelist 对应的分钟数
+def find_value_in_tuple_timelist_by_str(list, target):
+    for i in range(len(list)):
+        if list[i][0] == target:
+            return list[i][1]
+    return 1
