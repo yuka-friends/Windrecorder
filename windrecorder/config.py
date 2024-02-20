@@ -39,7 +39,6 @@ class Config:
         OCR_index_strategy,
         wordcloud_result_dir,
         screentime_not_change_to_pause_record,
-        show_oneday_wordcloud,
         timeline_result_dir,
         user_name,
         use_similar_ch_char_to_search,
@@ -69,7 +68,6 @@ class Config:
         search_history_note_filename,
         thumbnail_generation_size_width,
         thumbnail_generation_jpg_quality,
-        show_oneday_left_side_stat,
         webui_access_password_md5,
         enable_img_embed_search,
         img_embed_search_recall_result_per_db,
@@ -78,6 +76,7 @@ class Config:
         batch_size_embed_video_in_idle,
         batch_size_remove_video_in_idle,
         batch_size_compress_video_in_idle,
+        enable_3_columns_in_oneday,
         **other_field,
     ) -> None:
         # If need to process input parameters, they should assign another variable name to prevent recursive writing into the config.
@@ -107,7 +106,6 @@ class Config:
         self.lightbox_result_dir_ud = os.path.join(userdata_dir, lightbox_result_dir)
         self.wintitle_result_dir_ud = os.path.join(userdata_dir, wintitle_result_dir)
         self.screentime_not_change_to_pause_record = screentime_not_change_to_pause_record
-        self.show_oneday_wordcloud = show_oneday_wordcloud
         self.user_name = user_name
         self.use_similar_ch_char_to_search = use_similar_ch_char_to_search
         self.ocr_image_crop_URBL = ocr_image_crop_URBL
@@ -135,7 +133,6 @@ class Config:
         self.search_history_note_filepath = os.path.join(self.userdata_dir, self.search_history_note_filename)
         self.thumbnail_generation_size_width = thumbnail_generation_size_width
         self.thumbnail_generation_jpg_quality = thumbnail_generation_jpg_quality
-        self.show_oneday_left_side_stat = show_oneday_left_side_stat
         self.webui_access_password_md5 = webui_access_password_md5
         self.enable_img_embed_search = enable_img_embed_search
         self.img_embed_search_recall_result_per_db = img_embed_search_recall_result_per_db
@@ -145,6 +142,7 @@ class Config:
         self.batch_size_embed_video_in_idle = batch_size_embed_video_in_idle
         self.batch_size_remove_video_in_idle = batch_size_remove_video_in_idle
         self.batch_size_compress_video_in_idle = batch_size_compress_video_in_idle
+        self.enable_3_columns_in_oneday = enable_3_columns_in_oneday
 
     def set_and_save_config(self, attr: str, value):
         if not hasattr(self, attr):
