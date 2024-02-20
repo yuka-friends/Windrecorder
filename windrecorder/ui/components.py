@@ -5,7 +5,7 @@ from pathlib import Path
 import pandas as pd
 import streamlit as st
 
-from windrecorder import file_utils
+from windrecorder import file_utils, flag_mark_note, record_wintitle
 from windrecorder.config import config
 from windrecorder.db_manager import db_manager
 from windrecorder.logger import get_logger
@@ -73,3 +73,12 @@ def record_search_history(search_content, search_type, search_datetime=None):
             file_utils.save_dataframe_to_path(df, file_path=config.search_history_note_filepath)
     except Exception as e:
         logger.error(e)
+
+
+# 一日之时工具栏
+def oneday_side_toolbar():
+    lefttab_wintitle, lefttab_flagnote = st.tabs([_t("oneday_ls_title_wintitle"), _t("oneday_ls_title_flag_note")])
+    with lefttab_wintitle:
+        record_wintitle.component_wintitle_stat(st.session_state.day_date_input)
+    with lefttab_flagnote:
+        flag_mark_note.component_flag_mark()

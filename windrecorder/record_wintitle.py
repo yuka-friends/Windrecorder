@@ -219,7 +219,7 @@ def component_wintitle_stat(day_date_input):
                     help=_t("oneday_wt_help"),
                 )
             },
-            height=650,
+            height=850,
             hide_index=True,
             use_container_width=True,
         )
@@ -301,7 +301,7 @@ def component_month_wintitle_stat(month_dt: datetime.datetime):
                     help=_t("oneday_wt_help"),
                 )
             },
-            height=800,
+            height=1000,
             hide_index=True,
             use_container_width=True,
         )

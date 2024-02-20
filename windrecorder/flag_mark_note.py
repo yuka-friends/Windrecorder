@@ -399,7 +399,7 @@ def component_flag_mark():
             disabled=["thumbnail", "datetime"],
             hide_index=True,
             use_container_width=True,
-            height=600,
+            height=700,
         )
         st.markdown(f"`{config.flag_mark_note_filepath}`")
 

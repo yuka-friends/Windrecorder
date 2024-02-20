@@ -193,9 +193,11 @@ def render():
         col1_ui, col2_ui = st.columns([1, 1])
         with col1_ui:
             st.markdown(_t("set_md_gui"))
-            option_show_oneday_sidetool = st.checkbox(
-                _t("set_checkbox_show_leftside_stat_under_oneday"),
-                value=config.show_oneday_left_side_stat,
+            # 一日之时启用三栏布局
+            config_enable_3_columns_in_oneday = st.checkbox(
+                _t("set_checkbox_enable_3_columns_in_oneday"),
+                value=config.enable_3_columns_in_oneday,
+                help=_t("set_help_enable_3_columns_in_oneday"),
             )
             # 使用中文形近字进行搜索
             config_use_similar_ch_char_to_search = st.checkbox(
@@ -256,6 +258,8 @@ def render():
                     value=config.img_embed_search_recall_result_per_db,
                     help=_t("set_text_help_img_emb_max_recall_count"),
                 )
+            else:
+                config_img_embed_search_recall_result_per_db = 30
 
         config_webui_access_password = st.text_input(
             f'🔒 {_t("set_pwd_text")}', value=config.webui_access_password_md5, help=_t("set_pwd_help"), type="password"
@@ -279,11 +283,11 @@ def render():
             key="SaveBtnGeneral",
         ):
             set_config_lang(language_option)
+            config.set_and_save_config("enable_3_columns_in_oneday", config_enable_3_columns_in_oneday)
             config.set_and_save_config("max_page_result", config_max_search_result_num)
             # config.set_and_save_config("ocr_engine", config_ocr_engine)
             config.set_and_save_config("ocr_lang", config_ocr_lang)
             config.set_and_save_config("enable_img_embed_search", option_enable_img_embed_search)
-            config.set_and_save_config("show_oneday_left_side_stat", option_show_oneday_sidetool)
             config.set_and_save_config("use_similar_ch_char_to_search", config_use_similar_ch_char_to_search)
             config.set_and_save_config("img_embed_search_recall_result_per_db", config_img_embed_search_recall_result_per_db)
 

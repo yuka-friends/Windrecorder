@@ -59,7 +59,6 @@
   "iframe_dir": "cache\\i_frames",
   "log_dir": "cache\\logs",
   "win_title_dir": "cache\\win_title",
-  "show_oneday_left_side_stat": true,
   "webui_access_password_md5": "",
   "enable_img_embed_search": true,
   "img_embed_search_recall_result_per_db": 30,
@@ -68,5 +67,6 @@
   "enable_search_history_record": true,
   "batch_size_embed_video_in_idle": 14,
   "batch_size_remove_video_in_idle": 80,
-  "batch_size_compress_video_in_idle": 50
+  "batch_size_compress_video_in_idle": 50,
+  "enable_3_columns_in_oneday": false
 }
