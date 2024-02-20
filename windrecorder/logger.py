@@ -1,6 +1,6 @@
 import logging
 import os
-from logging.handlers import TimedRotatingFileHandler
+from logging.handlers import RotatingFileHandler
 
 logger = None
 
@@ -20,9 +20,9 @@ def get_logger(name, log_name="wr.log"):
     formatter = logging.Formatter("%(asctime)s - [%(filename)s:%(lineno)d] - %(funcName)s - %(levelname)s - %(message)s")
 
     # 创建一个滚动文件处理器，每个日志文件最大大小为5M，保存5个旧日志文件
-    # rf_handler = RotatingFileHandler(os.path.join(log_dir, log_name), maxBytes=5 * 1024 * 1024, backupCount=5)
-    rf_handler = TimedRotatingFileHandler(os.path.join(log_dir, log_name), when="d", interval=1, backupCount=7)
-    rf_handler.suffix = "%Y-%m-%d_%H-%M-%S.log"  # 设置历史文件 后缀
+    rf_handler = RotatingFileHandler(os.path.join(log_dir, log_name), maxBytes=5 * 1024 * 1024, backupCount=5)
+    # rf_handler = TimedRotatingFileHandler(os.path.join(log_dir, log_name), when="d", interval=1, backupCount=7)
+    # rf_handler.suffix = "%Y-%m-%d_%H-%M-%S.log"  # 设置历史文件 后缀
     rf_handler.setFormatter(formatter)
     logger.addHandler(rf_handler)
 
