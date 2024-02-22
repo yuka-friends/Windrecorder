@@ -258,6 +258,7 @@ def all_videofile_do_img_embedding_routine(video_queue_batch=14):
             if "-IMGEMB" in video_name or "-COMPRESS" in video_name:
                 continue
             vdb = VectorDatabase(vdb_filename=get_vdb_filename_via_video_filename(video_name))
+            print(f"embedding {video_name}")
             embed_vid_file(model=model, vdb=vdb, vid_file_name=video_name)
             video_process_count += 1
             if video_process_count > video_queue_batch:

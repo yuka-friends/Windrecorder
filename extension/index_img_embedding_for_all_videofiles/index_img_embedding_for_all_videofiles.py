@@ -33,19 +33,19 @@ videos_filepath = file_utils.get_file_path_list(config.record_videos_dir_ud)
 videos_filepath_filter = [item for item in videos_filepath if "-IMGEMB" not in item]
 videos_filepath_filter_num = len(videos_filepath_filter)
 
-per_video_embedding_time = (
-    datetime.timedelta(minutes=2) * config.record_seconds / 900
-)  # 在使用 cuda 的情况下，每 900s 视频需要 2 分钟完成索引。其中拆 iframe 占了大部分时间
-eta_process_all_video = videos_filepath_filter_num * per_video_embedding_time
-
 
 def main():
     while True:
         subprocess.run("cls", shell=True)
         if img_embed_manager.is_cuda_available:
             print("√ Your device support CUDA acceleration.")
+            time_cost = 2  # 在使用 cuda 的情况下，每 900s 视频需要 2 分钟完成索引。其中拆 iframe 占了大部分时间
         else:
             print("X Your device seems not support CUDA acceleration, embedding performance might be slow.")
+            time_cost = 8
+
+        per_video_embedding_time = datetime.timedelta(minutes=time_cost) * config.record_seconds / 900
+        eta_process_all_video = videos_filepath_filter_num * per_video_embedding_time
 
         text_intro = f"""
 
@@ -54,7 +54,7 @@ This script can index your no image embedding historical videos. After indexed, 
 
 --------------------------------------------------------------------
 
-约有 {videos_filepath_filter_num} 个视频未图像嵌入索引，索引所有视频预估用时：{utils.convert_seconds_to_hhmmss(eta_process_all_video.seconds)}
+约有 {videos_filepath_filter_num} 个视频未图像嵌入索引，索引所有视频预估用时：{utils.convert_seconds_to_hhmmss(eta_process_all_video.total_seconds())}
 
 - 若要索引全部视频文件，请输入 Y 后回车确认。
 - 若只想先索引部分视频，请输入数字后回车确认（应小于 {videos_filepath_filter_num} ）。每个视频的索引用时预估{utils.convert_seconds_to_hhmmss(per_video_embedding_time.seconds)}，同时将会从最新的视频开始、向旧视频进行索引。
