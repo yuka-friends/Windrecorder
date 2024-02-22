@@ -432,7 +432,8 @@ class _DBManager:
             axis=1,
         )
         df["timestamp"] = df.apply(lambda row: utils.seconds_to_date_dayHMS(row["videofile_time"]), axis=1)
-        df["thumbnail"] = "data:image/png;base64," + df["thumbnail"]
+        if "data:image/png;base64," not in df["thumbnail"].iloc[0]:
+            df["thumbnail"] = "data:image/png;base64," + df["thumbnail"]
 
         # 磁盘上有无对应视频检测
         cache_videofile_ondisk_str = ""
