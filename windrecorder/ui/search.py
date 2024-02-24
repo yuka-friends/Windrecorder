@@ -505,16 +505,19 @@ def get_query_synonyms(keyword, lang=config.lang):
         except ModuleNotFoundError:
             return empty_list
     # 读取近义词库
-    vdb_filepath, txt_filepath = file_utils.get_synonyms_vdb_txt_filepath(lang=lang)
-    if vdb_filepath is None or txt_filepath is None:
-        return empty_list
-    vdb = img_embed_manager.VectorDatabase(vdb_filename=os.path.basename(vdb_filepath), db_dir=os.path.dirname(vdb_filepath))
-    words = file_utils.read_txt_as_list(txt_filepath)
+    if "synonyms_vdb" not in st.session_state and "synonyms_words" not in st.session_state:
+        vdb_filepath, txt_filepath = file_utils.get_synonyms_vdb_txt_filepath(lang=lang)
+        if vdb_filepath is None or txt_filepath is None:
+            return empty_list
+        st.session_state.synonyms_vdb = img_embed_manager.VectorDatabase(
+            vdb_filename=os.path.basename(vdb_filepath), db_dir=os.path.dirname(vdb_filepath)
+        )
+        st.session_state.synonyms_words = file_utils.read_txt_as_list(txt_filepath)
 
     # 向量召回
     keyword_vector = img_embed_manager.embed_text(
         model=st.session_state.text_img_embed_model, text_query=st.session_state.search_content
     )
-    prob_res = vdb.search_vector(vector=keyword_vector, k=3)
-    word_res = [words[i[0]] for i in prob_res]
+    prob_res = st.session_state.synonyms_vdb.search_vector(vector=keyword_vector, k=3)
+    word_res = [st.session_state.synonyms_words[i[0]] for i in prob_res]
     return word_res
