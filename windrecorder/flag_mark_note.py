@@ -17,7 +17,7 @@ from windrecorder.utils import get_text as _t
 logger = get_logger(__name__)
 
 # 从托盘标记时间点，在 webui 检索记录表
-# 使用 main.py 中的 create_timestamp_flag_mark_note() 进行调试
+# 调试：from main import create_timestamp_flag_mark_note
 
 
 CSV_TEMPLATE_DF = pd.DataFrame(columns=["thumbnail", "datetime", "note"])
@@ -159,7 +159,11 @@ class Flag_mark_window(customtkinter.CTk):
 
         # 添加标记后的提示项
         self.label_added = customtkinter.CTkLabel(
-            self, text="✔ " + _t("flag_text_mark_added"), fg_color="transparent", font=self.FONT_CONFIG, text_color="#A4E074"
+            self,
+            text="✔ " + _t("flag_text_mark_added"),
+            fg_color="transparent",
+            font=self.FONT_CONFIG,
+            text_color=("#347500", "#A4E074"),
         )
         self.label_added.grid(row=0, column=0, padx=15, pady=5, sticky="w")
         self.label_time = customtkinter.CTkLabel(
