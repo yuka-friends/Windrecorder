@@ -68,5 +68,6 @@
   "batch_size_embed_video_in_idle": 14,
   "batch_size_remove_video_in_idle": 80,
   "batch_size_compress_video_in_idle": 50,
-  "enable_3_columns_in_oneday": true
+  "enable_3_columns_in_oneday": true,
+  "enable_synonyms_recommend": false
 }

@@ -54,6 +54,8 @@ try:
         img_embed_manager.get_model("cpu")
         set_config_module_install(True)
         config.set_and_save_config("enable_img_embed_search", True)
+        config.set_and_save_config("enable_synonyms_recommend", True)
+
     except Exception as e:
         print(e)
         print("   uform 模型似乎下载失败，请检查网络、添加代理或进行重试。")

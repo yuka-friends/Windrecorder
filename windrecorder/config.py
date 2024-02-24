@@ -77,6 +77,7 @@ class Config:
         batch_size_remove_video_in_idle,
         batch_size_compress_video_in_idle,
         enable_3_columns_in_oneday,
+        enable_synonyms_recommend,
         **other_field,
     ) -> None:
         # If need to process input parameters, they should assign another variable name to prevent recursive writing into the config.
@@ -143,6 +144,7 @@ class Config:
         self.batch_size_remove_video_in_idle = batch_size_remove_video_in_idle
         self.batch_size_compress_video_in_idle = batch_size_compress_video_in_idle
         self.enable_3_columns_in_oneday = enable_3_columns_in_oneday
+        self.enable_synonyms_recommend = enable_synonyms_recommend
 
     def set_and_save_config(self, attr: str, value):
         if not hasattr(self, attr):

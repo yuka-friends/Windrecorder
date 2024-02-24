@@ -8,7 +8,7 @@ import windrecorder.ui.search
 import windrecorder.ui.setting
 import windrecorder.ui.state
 import windrecorder.utils as utils
-from windrecorder import file_utils
+from windrecorder import file_utils, img_embed_manager
 from windrecorder.config import config
 from windrecorder.db_manager import db_manager
 from windrecorder.utils import get_text as _t
@@ -71,6 +71,15 @@ def web_footer_state():
             "<h2 align='right' style='color:rgba(0,0,0,.3)'> Windrecorder 🦝</h2>",
             unsafe_allow_html=True,
         )
+
+    # 尝试预加载嵌入模型，这样每次搜索就不需要重复加载、提升时间
+    if config.img_embed_module_install and config.enable_synonyms_recommend:
+        try:
+            if "text_img_embed_model" not in st.session_state:
+                with st.spinner(_t("gs_text_loading_embed_model")):
+                    st.session_state["text_img_embed_model"] = img_embed_manager.get_model(mode="cpu")
+        except ModuleNotFoundError:
+            config.set_and_save_config("img_embed_module_install", False)
 
 
 # 主界面_________________________________________________________
