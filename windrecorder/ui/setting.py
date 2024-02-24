@@ -208,7 +208,9 @@ def render():
             # 搜索中推荐近似词
             if config.img_embed_module_install:
                 config_enable_synonyms_recommend = st.checkbox(
-                    "搜索时推荐近义词", value=config.enable_synonyms_recommend, help="若语言不支持将不启用，在 config_src\\synonyms 下查看已支持语言。"
+                    _t("set_checkbox_synonyms_recommand"),
+                    value=config.enable_synonyms_recommend,
+                    help=_t("set_help_synonyms_recommand"),
                 )
             else:
                 config_enable_synonyms_recommend = False

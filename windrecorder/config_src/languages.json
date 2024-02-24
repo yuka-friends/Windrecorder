@@ -161,6 +161,8 @@
         "set_text_help_img_emb_max_recall_count": "A specified number of results will be recalled from each month database. Too high or too low may lead to a decrease in query accuracy. If the results are inaccurate, try adjusting this option.",
         "set_input_day_begin_minutes": "Daily - Latest time in day",
         "set_help_day_begin_minutes": "You can divide the records for a period of time after midnight into the same natural day, instead of dividing each day by zero.",
+        "set_checkbox_synonyms_recommand": "Recommend synonyms when searching",
+        "set_help_synonyms_recommand": "If the language is not supported, it will not be enabled. Check the supported languages under config_src\\synonyms.",
 
         "qs_la_text_same_as_previous": "The interface language remains the same as before: English",
         "qs_un_set_your_username": "Set your username as a database identifier.",
@@ -375,6 +377,8 @@
         "set_text_help_img_emb_max_recall_count": "自然语义搜索时，会分别从每月数据库中召回指定数量结果，过高或过低的数量可能导致查询准确率降低。如果结果不准确，请尝试调整该项。",
         "set_input_day_begin_minutes": "「一天之时」每日时间轴最早时间",
         "set_help_day_begin_minutes": "可以把凌晨后的一段时间记录划分到同个自然天中，而非以零点来划分每天。",
+        "set_checkbox_synonyms_recommand": "搜索时推荐近义词",
+        "set_help_synonyms_recommand": "若语言不支持将不启用，在 config_src\\synonyms 下查看已支持语言。",
 
         "qs_la_text_same_as_previous": "界面语言保持与先前一致的：简体中文",
         "qs_un_set_your_username": "设定你的用户名，以作为数据库标识。",
@@ -587,8 +591,10 @@
         "set_text_img_emb_not_suppport_cuda": "お使いのデバイスは CUDA をサポートしていないようです。CPU を使用してイメージのセマンティック インデックスを作成するとパフォーマンスが低下する可能性があります。",
         "set_input_img_emb_max_recall_count": "自然セマンティック検索で各データベースから呼び出される結果の最大数",
         "set_text_help_img_emb_max_recall_count": "ナチュラル セマンティック検索では、指定された数の結果が期間ごとにデータベースから呼び出されます。数値が多すぎたり低すぎたりすると、クエリの精度が低下する可能性があります。",
-        "set_input_day_begin_ minutes": "「一日」毎日のタイムラインの最も早い時間",
-        "set_help_day_begin_ minutes": "毎日をゼロで割るのではなく、午前 0 時以降の一定期間のレコードを同じ自然な日に分割できます。",
+        "set_input_day_begin_minutes": "「一日」毎日のタイムラインの最も早い時間",
+        "set_help_day_begin_minutes": "毎日をゼロで割るのではなく、午前 0 時以降の一定期間のレコードを同じ自然な日に分割できます。",
+        "set_checkbox_synonyms_recommand": "検索時に同義語を推奨する",
+        "set_help_synonyms_recommand": "言語がサポートされていない場合、有効になりません。config_src\\synonyms でサポートされている言語を確認してください。",
 
         "qs_la_text_same_as_previous": "インターフェイス言語は以前と同じで日本語です。",
         "qs_un_set_your_username": "データベースの識別子として使用するユーザー名を設定してください。",
