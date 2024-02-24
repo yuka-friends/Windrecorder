@@ -257,6 +257,7 @@ class _DBManager:
         :param keyword_input_exclude: str 排除词
         """
         logger.info("Querying keywords")
+        keyword_input = keyword_input.replace("'", "''")
         # 初始化查询数据
         self.db_update_read_config(config)
         date_in_ts = int(utils.date_to_seconds(date_in.strftime("%Y-%m-%d_%H-%M-%S")))
