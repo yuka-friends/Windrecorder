@@ -1,0 +1,7 @@
+{
+    "extension_name": "Create synonyms for i18n",
+    "developer_name": "antonoko",
+    "developer_url": "https://github.com/Antonoko",
+    "version": "0.0.1",
+    "description_markdown": "用于创建多语言近义词推荐的向量数据库\n\nNotebook to create a search recommend vector database for multilingual synonyms"
+}
