@@ -1,4 +1,5 @@
 import datetime
+import os
 import time
 
 import pandas as pd
@@ -42,6 +43,8 @@ def render():
             st.session_state.cache_videofile_ondisk_list = file_utils.get_file_path_list(config.record_videos_dir_ud)
         if "timeCost_globalSearch" not in st.session_state:  # 统计搜索使用时长
             st.session_state.timeCost_globalSearch = 0
+        if "synonyms_recommend_list" not in st.session_state:  # 近义词推荐
+            st.session_state.synonyms_recommend_list = []
 
         # OCR 文本搜索
         if "search_content" not in st.session_state:
@@ -139,12 +142,22 @@ def render():
 
             is_df_result_exist = len(df)
 
+            if len(st.session_state.synonyms_recommend_list) > 0 and st.session_state.search_content != "img":  # 是否显示近似搜索
+                synonyms_recommend_str = _t("gs_md_synonyms_recommend").format(
+                    synonyms_recommend=", ".join(st.session_state.synonyms_recommend_list)
+                )
+            else:
+                synonyms_recommend_str = ""
+
             st.markdown(
-                _t("gs_md_search_result_stat").format(
+                "`"
+                + _t("gs_md_search_result_stat").format(
                     all_result_counts=st.session_state.all_result_counts,
                     max_page_count=st.session_state.max_page_count,
                     search_content=st.session_state.search_content,
                 )
+                + synonyms_recommend_str
+                + "`"
             )
 
             # 滑杆选择
@@ -257,6 +270,9 @@ def ui_ocr_text_search():
                 utils.get_datetime_in_day_range_pole_by_config_day_begin(st.session_state.search_date_range_out, range="end"),
                 keyword_input_exclude=st.session_state.search_content_exclude,
             )
+
+            if config.enable_synonyms_recommend:
+                st.session_state.synonyms_recommend_list = get_query_synonyms(keyword=st.session_state.search_content)  # 获取近义词
             st.session_state.timeCost_globalSearch = round(time.time() - st.session_state.timeCost_globalSearch, 5)  # 回收搜索用时
 
     # 文本搜索 UI
@@ -325,6 +341,9 @@ def ui_vector_img_search():
                 start_datetime=st.session_state.search_date_range_in,
                 end_datetime=st.session_state.search_date_range_out,
             )
+
+            if config.enable_synonyms_recommend:
+                st.session_state.synonyms_recommend_list = get_query_synonyms(keyword=st.session_state.search_content)  # 获取近义词
             st.session_state.timeCost_globalSearch = round(time.time() - st.session_state.timeCost_globalSearch, 5)  # 回收搜索用时
 
     # 图像语义搜索 UI
@@ -470,3 +489,35 @@ def show_and_locate_video_timestamp_by_df(df, num):
         st.markdown(f"`{video_filepath}`")
     else:
         st.warning(_t("gs_text_video_file_not_on_disk").format(df_videofile_name=df_videofile_name), icon="🦫")
+
+
+# 获得搜索关键词的近义词
+def get_query_synonyms(keyword, lang=config.lang):
+    empty_list = []
+    if len(keyword) == 0:
+        return empty_list
+
+    # 读取模型
+    if "text_img_embed_model" not in st.session_state:
+        try:
+            with st.spinner(_t("gs_text_loading_embed_model")):
+                st.session_state["text_img_embed_model"] = img_embed_manager.get_model(mode="cpu")
+        except ModuleNotFoundError:
+            return empty_list
+    # 读取近义词库
+    if "synonyms_vdb" not in st.session_state and "synonyms_words" not in st.session_state:
+        vdb_filepath, txt_filepath = file_utils.get_synonyms_vdb_txt_filepath(lang=lang)
+        if vdb_filepath is None or txt_filepath is None:
+            return empty_list
+        st.session_state.synonyms_vdb = img_embed_manager.VectorDatabase(
+            vdb_filename=os.path.basename(vdb_filepath), db_dir=os.path.dirname(vdb_filepath)
+        )
+        st.session_state.synonyms_words = file_utils.read_txt_as_list(txt_filepath)
+
+    # 向量召回
+    keyword_vector = img_embed_manager.embed_text(
+        model=st.session_state.text_img_embed_model, text_query=st.session_state.search_content
+    )
+    prob_res = st.session_state.synonyms_vdb.search_vector(vector=keyword_vector, k=3)
+    word_res = [st.session_state.synonyms_words[i[0]] for i in prob_res]
+    return word_res

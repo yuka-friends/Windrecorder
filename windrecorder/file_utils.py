@@ -247,3 +247,20 @@ def get_extension(extension_filepath="extension"):
         except Exception as e:
             logger.error(str(e))
     return extension_dict
+
+
+# 返回语言所有的近义词表，若无返回 None
+def get_synonyms_vdb_txt_filepath(lang):
+    vdb_filepath = os.path.join(config.config_src_dir, "synonyms", f"synonyms_{lang}.index")
+    words_txt_filepath = os.path.join(config.config_src_dir, "synonyms", f"synonyms_{lang}.txt")
+    if os.path.exists(vdb_filepath) and os.path.exists(words_txt_filepath):
+        return vdb_filepath, words_txt_filepath
+    else:
+        return None, None
+
+
+# 读取txt文件中每一行作为一个列表
+def read_txt_as_list(file_path):
+    with open(file_path, "r", encoding="utf8") as f:
+        content_list = [line.strip() for line in f.readlines()]
+    return content_list

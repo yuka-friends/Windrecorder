@@ -205,6 +205,16 @@ def render():
                 value=config.use_similar_ch_char_to_search,
                 help=_t("set_checkbox_use_similar_zh_char_to_search_help"),
             )
+            # 搜索中推荐近似词
+            if config.img_embed_module_install:
+                config_enable_synonyms_recommend = st.checkbox(
+                    _t("set_checkbox_synonyms_recommand"),
+                    value=config.enable_synonyms_recommend,
+                    help=_t("set_help_synonyms_recommand"),
+                )
+            else:
+                config_enable_synonyms_recommend = False
+
         with col2_ui:
             config_wordcloud_user_stop_words = st.text_area(
                 _t("set_input_wordcloud_filter"),
@@ -289,6 +299,7 @@ def render():
             config.set_and_save_config("ocr_lang", config_ocr_lang)
             config.set_and_save_config("enable_img_embed_search", option_enable_img_embed_search)
             config.set_and_save_config("use_similar_ch_char_to_search", config_use_similar_ch_char_to_search)
+            config.set_and_save_config("enable_synonyms_recommend", config_enable_synonyms_recommend)
             config.set_and_save_config("img_embed_search_recall_result_per_db", config_img_embed_search_recall_result_per_db)
 
             # 更改了一天之时缩略图相关选项时，清空缓存时间轴缩略图

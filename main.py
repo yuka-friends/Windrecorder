@@ -17,10 +17,6 @@ import win32gui
 from PIL import Image
 from streamlit.file_util import get_streamlit_file_path
 
-# 隐藏该 CLI 窗口
-hide_CLI = win32gui.GetForegroundWindow()
-win32gui.ShowWindow(hide_CLI, win32con.SW_HIDE)
-
 PROJECT_ROOT = os.path.abspath(os.path.dirname(__file__))
 os.chdir(PROJECT_ROOT)
 
@@ -165,7 +161,7 @@ def start_stop_recording(icon: pystray.Icon | None = None, item: pystray.MenuIte
 
 
 # 记录当下的时间标记
-def create_timestamp_flag_mark_note(icon: pystray.Icon, item: pystray.MenuItem):
+def create_timestamp_flag_mark_note(icon: pystray.Icon | None = None, item: pystray.MenuItem | None = None):
     datetime_created = datetime.datetime.now()
     flag_mark_note.add_new_flag_record_from_tray(datetime_created=datetime_created)
     app = flag_mark_note.Flag_mark_window(datetime_input=datetime_created)
@@ -268,6 +264,10 @@ def interrupt_start_no_ffmpeg_and_ffprobe(reason):
 
 
 def main():
+    # 隐藏该 CLI 窗口
+    hide_CLI = win32gui.GetForegroundWindow()
+    win32gui.ShowWindow(hide_CLI, win32con.SW_HIDE)
+
     # 启动时加锁，防止重复启动
     while True:
         try:

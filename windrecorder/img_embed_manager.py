@@ -68,20 +68,25 @@ def embed_img(model: uform.models.VLM, img_filepath, is_cuda_available=is_cuda_a
     return image_embedding
 
 
-def embed_text(model: uform.models.VLM, text_query):
+def embed_text(model: uform.models.VLM, text_query, detach_numpy=True):
     """
     将文本转为 embedding vector
     注意：model 必须运行在 cpu 模式下
+
+    :param detach_numpy 是否预处理张量
     """
     # 对文本进行编码
     text_data = model.preprocess_text(text_query)
     text_features, text_embedding = model.encode_text(text_data, return_features=True)
 
     # 预处理张量
-    text_np = text_embedding.detach().cpu().numpy()
-    text_np = np.float32(text_np)
-    faiss.normalize_L2(text_np)
-    return text_np
+    if detach_numpy:
+        text_np = text_embedding.detach().cpu().numpy()
+        text_np = np.float32(text_np)
+        faiss.normalize_L2(text_np)
+        return text_np
+    else:
+        return text_embedding
 
 
 def get_vdb_filename_via_video_filename(video_filename):
@@ -317,6 +322,17 @@ def query_vector_in_img_vdbs(vector, start_datetime, end_datetime):
     row_count = len(sorted_df)
     page_count_all = int(math.ceil(int(row_count) / int(config.max_page_result)))
     return sorted_df, row_count, page_count_all
+
+
+def text_embedding_all_sqlitedb_ocr_text():
+    """
+    流程：嵌入 sqlite 数据库中的 ocr text
+    """
+    # 读取所有rowid，维护一个rowid表。通过维护ROWID判断有无被嵌入，有则跳过
+    # 因为嵌入速度很快，所以可以一次对所有sqlite完成嵌入。整个表完成嵌入后，给一个标志（区分是否为当月、还有更新可能性
+
+    # 读取所有sqdb文件列表
+    # 读取sqdb的所有数据作为df
 
 
 # 测试用例
