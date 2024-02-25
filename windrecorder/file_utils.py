@@ -245,7 +245,7 @@ def get_extension(extension_filepath="extension"):
                 data = json.load(file)
                 extension_dict[data["extension_name"]] = data
         except Exception as e:
-            logger.error(str(e))
+            logger.warning(str(e))
     return extension_dict
 
 
