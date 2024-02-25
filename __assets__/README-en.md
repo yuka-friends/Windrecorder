@@ -1,6 +1,6 @@
 ![Windrecorder](https://github.com/yuka-friends/Windrecorder/blob/main/__assets__/product-header-en.jpg)
 <h1 align="center"> 🦝 Windrecorder | Personal Memory Search Engine</h1>
-<p align="center"> An Open Source Mac App <a href="https://www.rewind.ai/">Rewind.ai</a>'s alternative tool on Windows to help you retrieve memory cues.</p>
+<p align="center"> An Open Source Mac App <a href="https://www.rewind.ai/">Rewind</a>'s alternative tool on Windows to help you retrieve memory cues.</p>
 
 <p align="center"> <a href="https://github.com/yuka-friends/Windrecorder/blob/main/__assets__/README-en.md">English</a>  | <a href="https://github.com/yuka-friends/Windrecorder/blob/main/README.md">简体中文</a></p>
 
@@ -113,3 +113,7 @@ Thanks to the following projects
 🧡 Like this tool? Also check out [YUKA NAGASE](https://www.youtube.com/channel/UCf-PcSHzYAtfcoiBr5C9DZA)'s gentle music on Youtube and streaming music platforms, thank ya!
 
 > "Your tools suck, check out my girl Yuka Nagase, she's amazing, I code 10 times faster when listening to her." -- @jpswing
+---
+Vote **Windrecorder** on Product Hunt:
+
+<a href="https://www.producthunt.com/posts/windrecorder?utm_source=badge-featured&utm_medium=badge&utm_souce=badge-windrecorder" target="_blank"><img src="https://api.producthunt.com/widgets/embed-image/v1/featured.svg?post_id=441411&theme=neutral" alt="Windrecorder - search&#0032;&#0038;&#0032;rewind&#0032;everything&#0032;happened&#0032;on&#0032;your&#0032;screen | Product Hunt" style="width: 250px; height: 54px;" width="250" height="54" /></a>

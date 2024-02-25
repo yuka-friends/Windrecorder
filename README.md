@@ -1,7 +1,7 @@
 ![Windrecorder](https://github.com/yuka-friends/Windrecorder/blob/main/__assets__/product-header-cn.jpg)
 <h1 align="center"> 🦝 Windrecorder | 捕风记录仪</h1>
-<p align="center"> An Open Source <a href="https://www.rewind.ai/">Rewind.ai</a>'s alternative tool on Windows to help you retrieve memory cues.</p>
-<p align="center">一款运行在 Windows 平台上的 <a href="https://www.rewind.ai/">Rewind.ai</a> 替代工具，帮助你找回记忆线索</p>
+<p align="center"> An Open Source <a href="https://www.rewind.ai/">Rewind</a>'s alternative tool on Windows to help you retrieve memory cues.</p>
+<p align="center">一款运行在 Windows 平台上的 <a href="https://www.rewind.ai/">Rewind</a> 替代工具，帮助你找回记忆线索</p>
 
 <p align="center"> <a href="https://github.com/yuka-friends/Windrecorder/blob/main/__assets__/README-en.md">English</a>  | <a href="https://github.com/yuka-friends/Windrecorder/blob/main/README.md">简体中文</a>
 
@@ -112,3 +112,7 @@ Q: Windows.Media.Ocr.Cli OCR 不可用/识别率过低
 🧡 喜欢这个工具？欢迎到 Youtube 与流媒体音乐平台上听听 [長瀬有花 / YUKA NAGASE](https://www.youtube.com/channel/UCf-PcSHzYAtfcoiBr5C9DZA) 温柔的音乐，谢谢！
 
 > "Your tools suck, check out my girl Yuka Nagase, she's amazing, I code 10 times faster when listening to her." -- @jpswing
+---
+在 Product Hunt 上为 **捕风记录仪** 投票:
+
+<a href="https://www.producthunt.com/posts/windrecorder?utm_source=badge-featured&utm_medium=badge&utm_souce=badge-windrecorder" target="_blank"><img src="https://api.producthunt.com/widgets/embed-image/v1/featured.svg?post_id=441411&theme=neutral" alt="Windrecorder - search&#0032;&#0038;&#0032;rewind&#0032;everything&#0032;happened&#0032;on&#0032;your&#0032;screen | Product Hunt" style="width: 250px; height: 54px;" width="250" height="54" /></a>
