@@ -146,7 +146,7 @@
         "set_md_auto_maintain": "#### Automatic maintenance",
         "set_input_video_hold_days":"Video file retention days",
         "set_input_max_num_search_page": "In global search, maximum number of results per page",
-        "set_update_latest": "The current version is already up to date.",
+        "set_update_latest": "Already up to date.",
         "set_update_checking": "Checking for updates...",
         "set_update_new": "\n💫 A new version {tool_version} has been detected. Update by opening `install_update.bat` or tray menu.",
         "set_update_changelog": "\n [What's new](https://github.com/yuka-friends/Windrecorder/blob/main/CHANGELOG.md)",
