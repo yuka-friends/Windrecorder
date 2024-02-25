@@ -43,7 +43,7 @@ def render():
             st.session_state.cache_videofile_ondisk_list = file_utils.get_file_path_list(config.record_videos_dir_ud)
         if "timeCost_globalSearch" not in st.session_state:  # 统计搜索使用时长
             st.session_state.timeCost_globalSearch = 0
-        if "synonyms_recommend_list" not in st.session_state:  # 统计搜索使用时长
+        if "synonyms_recommend_list" not in st.session_state:  # 近义词推荐
             st.session_state.synonyms_recommend_list = []
 
         # OCR 文本搜索
