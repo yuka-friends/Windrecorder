@@ -26,42 +26,41 @@ Windrecorder is a memory search app by records everything on your screen in smal
 > [!WARNING]
 > This project is still in the early stages of development, and you may encounter some minor problems in experience and use, feel free to submit issue feedback, follow updates, and initiate discussions or roadmap in [Discussions](https://github.com/yuka-friends/Windrecorder/discussions).You are also welcome to help us optimize and build the project, submit PR/review.
 
-> [!IMPORTANT]
-> Due to minor coding errors, versions prior to `0.0.5` may not be able to detect updates properly or upgrade through install_update.bat. If so, please enter `cmd` in the path box of the `Windrecorder` root directory to open the command line, and enter `git pull` to update. 🙇‍♀️
-
 # 🦝 Installation
 
-- Download [ffmpeg](https://www.gyan.dev/ffmpeg/builds/ffmpeg-release-essentials.zip) and extract `ffmpeg.exe` and `ffprobe.exe` in the bin directory to `C :\Windows\System32` (or other directories located in PATH)
+- Download [ffmpeg](https://www.gyan.dev/ffmpeg/builds/ffmpeg-release-essentials.zip) and extract `ffmpeg.exe` and `ffprobe.exe` in `bin` directory to `C:\Windows\System32` (or other directories located in PATH)
 
-- Install [Git](https://git-scm.com/download/win) and just take the next step;
+- Install [Git](https://git-scm.com/download/win), just keep clicking next.
 
-- Install [Python](https://www.python.org/ftp/python/3.11.7/python-3.11.7-amd64.exe), make sure to check `Add python.exe to PATH` when installing
-     - **Notice! Currently, python 3.12** is not supported. It is recommended to use python 3.11, which is the version pointed to by the link above.
+- Install [Python](https://www.python.org/ftp/python/3.11.7/python-3.11.7-amd64.exe), make sure to check `Add python.exe to PATH` when installing.
+     - **Currently, Python 3.12 is not supported**. It is recommended to use python 3.11, which is the version pointed to by the link above.
 
-- In the file manager, navigate to the directory where you want to install this tool (it is recommended to place it in a partition with sufficient space), and download the tool through the terminal command `git clone https://github.com/yuka-friends/Windrecorder`;
+- In file explorer, navigate to the directory where you want to install Windrecorder (it is recommended to place it in a partition with sufficient space), and download the tool through the terminal command `git clone https://github.com/yuka-friends/Windrecorder`;
 
-     - You can open the folder you want to install, enter `cmd` in the path bar and press Enter, you can locate the current directory in the terminal, paste the above command and press Enter to execute;
+     - You can open the folder you want to install, enter `cmd` in the path bar and press Enter, you will be located into current directory in terminal, then paste the above command and press Enter to execute;
 
-- Open `install_update.bat` in the directory to install and configure the tool. If everything goes well, you can start using it!
+     - Currently, if there are spaces in the installation path, an error may occur on app startup. [#110](https://github.com/yuka-friends/Windrecorder/issues/110)
+
+- Open `install_update.bat` in the directory to install dependencies and configure the app. If everything goes well, you can start using it!
 
 
 # 🦝 How to use
 
 - Open `start_app.bat` in the directory, the tool will run in the system tray and be used through the right-click menu;
-- All data (video, database, statistical information) will be stored in the same directory as Windrecorder. If you want to copy or move the tool location (for example, if you change the computer), you only need to delete `.venv` in the directory and moved, then re-run `install_update.bat` to install the virtual environment and use it;
+- All data (video, database, statistical information) will be stored in `userdata` directory in Windrecorder. If you want to copy or move the app location (for example, if you change the computer), you can delete `.venv` in the directory and moved, then re-run `install_update.bat` to install the virtual environment to use it;
 
 > [!TIP]
 > Best practice: Set up auto-start in webui to record everything without any fuss.
 >
-> **Recording will be automatically paused when there is no change in the picture or the screen is sleeping. When the computer is idle and no one is using it, the tool will automatically maintain the database, compress, and clean up expired videos. **
+> **Recording will be automatically paused when there is no change in the picture or the screen is sleeping. When the computer is idle and no one is using it, the tool will automatically maintain the database, compress, and clean up expired videos.**
 >
-> _Just set it and forget it! _
+> _Just set it and forget it!_
 
 
 # 🦝 How it works
 ![Windrecorder](https://github.com/yuka-friends/Windrecorder/blob/main/__assets__/how-it-work-en.jpg)
 
-When recording is started, the Wind Capture Recorder will record 15 minutes of video segment by segment, and the video segments will be indexed after the recording is completed (therefore, there may be a 15-minute delay in querying the data). When the screen does not change or the computer enters the lock screen, recording will be automatically paused and idle maintenance will be performed (compressing and cleaning videos, image embedding recognition, etc.) until the user comes back and continues to operate the computer.
+When recording is started, the Windrecorder will record each 15 minutes of video segment by segment, and the video segments will be indexed after the recorded (therefore, there may be a 15-minute delay while querying the data). When the screen content not change, or the foreground windows title in skip list, or the computer enters the lock screen/sleep state, recording will be automatically paused and idle maintenance will be performed (compressing and cleaning videos, image embedding recognition, etc.) until the user comes back and continues to use the computer.
 
 - _Image Embedding is provided as an extension and can be installed under the directory `extension/install_img_embedding_module`._
 
@@ -88,7 +87,7 @@ Solution: After the tool background indexing is completed, delete the correspond
 
 Q: The mouse flashes during recording
 
-- A: It's a Windows historical issues, you can try [this post](https://stackoverflow.com/questions/34023630/how-to-avoid-mouse-pointer-flicker-when-capture-a-window-by-ffmpeg ) method to solve🤔. (it might be okay after get used to it..
+- A: It's a Windows historical issues, you can try [this post](https://stackoverflow.com/questions/34023630/how-to-avoid-mouse-pointer-flicker-when-capture-a-window-by-ffmpeg ) method to solve🤔. (it might be okay after get used to it.. we might work on it in the future
 
 Q: Windows.Media.Ocr.Cli OCR is not available/the recognition rate is too low
 
@@ -97,6 +96,8 @@ Q: Windows.Media.Ocr.Cli OCR is not available/the recognition rate is too low
 - A2: The default policy of earlier versions will treat screen resolutions with a height greater than 1500 as "high DPI/high resolution screens", and their recorded video resolution will be reduced to a quarter of the original. For example, on a 3840x2160 4k monitor, the resolution of the recorded video will be 1920x1080, which may lead to a decrease in OCR recognition accuracy. If you use smaller fonts or scaling on a high-resolution screen, you can turn off this option in Recording and Video Storage, and set the number of days to keep the original video before compressing it to a smaller value. value, thereby compressing the video volume some time after the video OCR index.
 
 - A3: Windows.Media.Ocr.Cli may have poor recognition rate for smaller text. You can improve the recall hit rate during search by turning on the "similar glyph search" option in the settings.
+
+> We will add more OCR extension support in the future.
 
 # 🧡
 Thanks to the following projects
@@ -109,6 +110,6 @@ Thanks to the following projects
 
 ---
 
-🧡 Like this tool? Welcome to Youtube and streaming music platforms to listen to [YUKA NAGASE](https://www.youtube.com/channel/UCf-PcSHzYAtfcoiBr5C9DZA) gentle music, thank you!
+🧡 Like this tool? Also check out [YUKA NAGASE](https://www.youtube.com/channel/UCf-PcSHzYAtfcoiBr5C9DZA)'s gentle music on Youtube and streaming music platforms, thank ya!
 
 > "Your tools suck, check out my girl Yuka Nagase, she's amazing, I code 10 times faster when listening to her." -- @jpswing

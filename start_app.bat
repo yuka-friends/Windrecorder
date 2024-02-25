@@ -5,7 +5,7 @@ color 75
 echo.
 echo   Initializing Windrecorder, please stand by...
 echo.
-echo   Please do not leave this window until it disappears
+echo   Please stay in this window until it disappears
 echo.
 
 cd /d %~dp0
