@@ -125,6 +125,11 @@ def optimize_wintitle_name(text):
     text = re.sub(" - \\(\\d+\\)", "", text)
     text = re.sub("^\\(\\d+\\) ", "", text)  # 移除最开始的当前对话未读消息
 
+    # Microsoft Edge: 移除其中的标签数量
+    # eg. "XXXX and 64 more pages - Personal - Microsoft Edge"
+    text = re.sub(" and \\d+ more pages", "", text)
+    text = re.sub(" - Personal", "", text)
+
     return text
 
 
@@ -136,7 +141,7 @@ def count_all_page_times_by_raw_dataframe(df: pd.DataFrame):
     value: int 秒数
     """
     # 在生成前清洗数据：
-    # df["win_title"] = df["win_title"].apply(record_wintitle.optimize_wintitle_name)
+    df["win_title"] = df["win_title"].apply(optimize_wintitle_name)
     df.sort_values(by="videofile_time", ascending=True, inplace=True)
     df = df.reset_index(drop=True)
     stat = {}
