@@ -141,7 +141,7 @@ def count_all_page_times_by_raw_dataframe(df: pd.DataFrame):
     value: int 秒数
     """
     # 在生成前清洗数据：
-    # df["win_title"] = df["win_title"].apply(record_wintitle.optimize_wintitle_name)
+    df["win_title"] = df["win_title"].apply(optimize_wintitle_name)
     df.sort_values(by="videofile_time", ascending=True, inplace=True)
     df = df.reset_index(drop=True)
     stat = {}
