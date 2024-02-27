@@ -134,6 +134,7 @@ def render():
         st.divider()
 
         # OCR 时忽略屏幕四边的区域范围
+        # FIXME 添加多屏幕设置支持
         col1pb, col2pb = st.columns([1, 1])
         with col1pb:
             st.markdown(_t("set_md_ocr_ignore_area"), help=_t("set_md_ocr_ignore_area_help"))
