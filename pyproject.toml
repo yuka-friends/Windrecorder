@@ -30,6 +30,7 @@ scikit-image = "^0.22.0"
 faiss-cpu = "^1.7.4"
 tqdm = "^4.65.0"
 streamlit-tags = "^1.2.8"
+mss = "^9.0.1"
 
 [tool.poetry.group.dev.dependencies]
 pre-commit = "^3.5.0"
