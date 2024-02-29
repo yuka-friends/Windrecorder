@@ -7,7 +7,7 @@ echo -git: updating repository
 git pull
 
 echo -updating dependencies
-python -m pip install poetry==1.7.1
+python -m pip install -i https://pypi.tuna.tsinghua.edu.cn/simple poetry
 python -m poetry config virtualenvs.in-project true
 python -m poetry install
 
