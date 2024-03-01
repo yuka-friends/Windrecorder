@@ -14,8 +14,8 @@ import time
 from io import BytesIO
 
 import cv2
+import mss
 import psutil
-import pyautogui
 import requests
 from PIL import Image
 from pyshortcuts import make_shortcut
@@ -46,8 +46,21 @@ class RepeatingTimer(threading.Thread):
 
 
 # 获得屏幕分辨率
-def get_screen_resolution():
-    return pyautogui.size()
+def get_display_resolution():
+    with mss.mss() as mss_instance:
+        return mss_instance.monitors[0]["width"], mss_instance.monitors[0]["height"]
+
+
+# 获得屏幕数量
+def get_display_count():
+    with mss.mss() as mss_instance:
+        return len(mss_instance.monitors) - 1
+
+
+# 获得屏幕具体数值
+def get_display_info():
+    with mss.mss() as mss_instance:
+        return mss_instance.monitors
 
 
 # 获取视频文件信息

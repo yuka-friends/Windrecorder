@@ -8,8 +8,8 @@ import threading
 import time
 from os import getpid
 
+import mss
 import numpy as np
-import pyautogui
 
 from windrecorder import (  # wordcloud,
     file_utils,
@@ -127,7 +127,7 @@ def record_screen(
     out_path = os.path.join(video_saved_dir, video_out_name)
 
     # 获取屏幕分辨率并根据策略决定缩放
-    screen_width, screen_height = utils.get_screen_resolution()
+    screen_width, screen_height = utils.get_display_resolution()
     target_scale_width, target_scale_height = record.get_scale_screen_res_strategy(
         origin_width=screen_width, origin_height=screen_height
     )
@@ -141,8 +141,6 @@ def record_screen(
         config.ffmpeg_path,
         "-f",
         "gdigrab",
-        "-video_size",
-        f"{screen_width}x{screen_height}",
         "-framerate",
         f"{config.record_framerate}",
         "-i",
@@ -222,38 +220,44 @@ def continuously_record_screen():
 
 # 每隔一段截图对比是否屏幕内容缺少变化
 def monitor_compare_screenshot():
-    while True:
-        if utils.is_screen_locked() or not utils.is_system_awake():
-            logger.info("Windrecorder: Screen locked / System not awaked")
-        else:
-            try:
-                global monitor_idle_minutes
-                global last_screenshot_array
+    with mss.mss() as sct:
+        while True:
+            if utils.is_screen_locked() or not utils.is_system_awake():
+                logger.info("Windrecorder: Screen locked / System not awaked")
+            else:
+                try:
+                    global monitor_idle_minutes
+                    global last_screenshot_array
 
-                while True:
-                    similarity = None
-                    screenshot = pyautogui.screenshot()
-                    screenshot_array = np.array(screenshot)
+                    while True:
+                        similarity = None
+                        screenshot_array = []
+                        for monitor in sct.monitors[1:]:
+                            screenshot = sct.grab(monitor)
+                            logger.debug(f"{monitor=}")
+                            screenshot_array.append(np.array(screenshot))
 
-                    if last_screenshot_array is not None:
-                        similarity = ocr_manager.compare_image_similarity_np(last_screenshot_array, screenshot_array)
+                        if last_screenshot_array is not None:
+                            similarity = []
+                            for last_screen, now_screen in zip(last_screenshot_array, screenshot_array):
+                                similarity.append(ocr_manager.compare_image_similarity_np(last_screen, now_screen))
 
-                        if similarity > 0.9:  # 对比检测阈值
-                            monitor_idle_minutes += 0.5
-                        else:
-                            monitor_idle_minutes = 0
+                            if all(sim > 0.90 for sim in similarity):  # 对比检测阈值
+                                monitor_idle_minutes += 0.5
+                            else:
+                                monitor_idle_minutes = 0
 
-                    last_screenshot_array = screenshot_array.copy()
-                    logger.info(f"monitor_idle_minutes:{monitor_idle_minutes}, similarity:{similarity}")
-                    time.sleep(30)
-            except Exception as e:
-                logger.warning(f"Error occurred:{str(e)}")
-                if "batchDistance" in str(e):  # 如果是抓不到画面导致出错，可以认为是进入了休眠等情况
-                    monitor_idle_minutes += 0.5
-                else:
-                    monitor_idle_minutes = 0
+                        last_screenshot_array = screenshot_array.copy()
+                        logger.info(f"monitor_idle_minutes:{monitor_idle_minutes}, similarity:{similarity}")
+                        time.sleep(30)
+                except Exception as e:
+                    logger.warning(f"Error occurred:{str(e)}")
+                    if "batchDistance" in str(e):  # 如果是抓不到画面导致出错，可以认为是进入了休眠等情况
+                        monitor_idle_minutes += 0.5
+                    else:
+                        monitor_idle_minutes = 0
 
-        time.sleep(5)
+            time.sleep(5)
 
 
 # 定时记录前台窗口标题页名

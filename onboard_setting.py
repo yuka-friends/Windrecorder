@@ -268,8 +268,8 @@ while True:
     print_header(step=4)
     print(_t("qs_mo_describe"))
 
-    monitor_width = utils.get_screen_resolution().width
-    monitor_height = utils.get_screen_resolution().height
+    monitor_width = utils.get_display_resolution().width
+    monitor_height = utils.get_display_resolution().height
     scale_width, scale_height = record.get_scale_screen_res_strategy(origin_width=monitor_width, origin_height=monitor_height)
 
     print(_t("qs_mo_detect").format(monitor_width=monitor_width, monitor_height=monitor_height))
