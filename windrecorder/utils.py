@@ -243,13 +243,24 @@ def get_datetime_in_day_range_pole_by_config_day_begin(dt: datetime.datetime, ra
     if range == "start":
         res = dt.replace(hour=day_begin_minutes // 60, minute=day_begin_minutes % 60, second=0, microsecond=0)
     if range == "end":
-        res = dt.replace(
-            day=dt.day + (1 if day_begin_minutes > 0 else 0),
-            hour=(23 + day_begin_minutes // 60) % 24,
-            minute=(59 + day_begin_minutes % 60) % 60,
-            second=59,
-            microsecond=0,
-        )
+        _, month_days = calendar.monthrange(dt.year, dt.month)
+        if dt.day == month_days:  # month last day
+            res = dt.replace(
+                month=dt.month + (1 if day_begin_minutes > 0 else 0),
+                day=1 if day_begin_minutes > 0 else dt.day,
+                hour=(23 + day_begin_minutes // 60) % 24,
+                minute=(59 + day_begin_minutes % 60) % 60,
+                second=59,
+                microsecond=0,
+            )
+        else:
+            res = dt.replace(
+                day=dt.day + (1 if day_begin_minutes > 0 else 0),
+                hour=(23 + day_begin_minutes // 60) % 24,
+                minute=(59 + day_begin_minutes % 60) % 60,
+                second=59,
+                microsecond=0,
+            )
 
     return res
 
