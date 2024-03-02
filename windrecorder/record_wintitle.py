@@ -109,7 +109,7 @@ def get_wintitle_by_timestamp(timestamp: int):
             elif i == len(df) - 1 and target_time >= df.loc[i, "datetime"]:  # 如果时间戳对应的是最后一条记录，直接返回该记录的window_title
                 return df.loc[i, "window_title"]
     except (ValueError, KeyError) as e:
-        logger.error(e)
+        logger.error(f"{e=}, {len(df)=}, {csv_filepath=}, {target_time=}")
         pass
 
     return None

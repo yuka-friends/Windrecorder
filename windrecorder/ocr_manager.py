@@ -311,7 +311,7 @@ def ocr_core_logic(file_path, vid_file_name, iframe_path):
         "videofile_time",
         "ocr_text",
         "is_videofile_exist",
-        "is_videofile_exist",
+        "is_picturefile_exist",
         "thumbnail",
         "win_title",
     ]
@@ -412,11 +412,7 @@ def ocr_process_single_video(video_path, vid_file_name, iframe_path, optimize_fo
                 ocr_core_logic(file_path, vid_file_name, iframe_sub_path)
         except Exception as e:
             # 记录错误日志
-            logger.error(
-                "Error occurred while processing :",
-                file_path,
-                e,
-            )
+            logger.error(f"Error occurred while processing :{file_path=}, {e=}")
             new_name = vid_file_name.split(".")[0] + "-ERROR." + vid_file_name.split(".")[1]
             new_name_dir = os.path.dirname(file_path)
             os.rename(file_path, os.path.join(new_name_dir, new_name))

@@ -1,5 +1,11 @@
 # Changelog 更新日志
 
+## 0.0.9
+> 2024-03-02
+
+### Fixed
+- https://github.com/yuka-friends/Windrecorder/pull/137 bug: 在索引视频时因为 column name typo 导致索引失败。 Indexing failed due to column name typo when indexing videos.
+
 ## 0.0.8
 > 2024-02-24
 

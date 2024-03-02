@@ -247,7 +247,7 @@ def monitor_compare_screenshot():
                     logger.info(f"monitor_idle_minutes:{monitor_idle_minutes}, similarity:{similarity}")
                     time.sleep(30)
             except Exception as e:
-                logger.warning(f"Error occurred:{str(e)}")
+                logger.warning(f"{str(e)}")
                 if "batchDistance" in str(e):  # 如果是抓不到画面导致出错，可以认为是进入了休眠等情况
                     monitor_idle_minutes += 0.5
                 else:
