@@ -5,6 +5,7 @@
 
 ### Fixed
 - https://github.com/yuka-friends/Windrecorder/pull/137 bug: 在索引视频时因为 column name typo 导致索引失败。 Indexing failed due to column name typo when indexing videos.
+- https://github.com/yuka-friends/Windrecorder/pull/138 feat: 为 webui footer 数据统计添加了缓存机制，不需要每次进入 webui 都进行统计了，提高了使用体验。 A caching mechanism has been added for webui footer data statistics, so there is no need to perform statistics every time you enter webui, which improves the user experience.
 
 ## 0.0.8
 > 2024-02-24
