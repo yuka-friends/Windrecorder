@@ -1,4 +1,5 @@
 import base64
+import calendar
 import datetime
 import os
 import re
@@ -32,10 +33,17 @@ class OneDay:
             search_date_range_in = datetime.datetime.combine(
                 dt_in, datetime.time(day_begin_minutes // 60, day_begin_minutes % 60, 0)
             )
-            search_date_range_out = datetime.datetime.combine(
-                dt_in.replace(day=dt_in.day + (1 if day_begin_minutes > 0 else 0)),
-                datetime.time((23 + day_begin_minutes // 60) % 24, (59 + day_begin_minutes % 60) % 60, 59),
-            )
+            _, month_days = calendar.monthrange(dt_in.year, dt_in.month)
+            if dt_in.day == month_days:  # month last day
+                search_date_range_out = datetime.datetime.combine(
+                    dt_in.replace(month=dt_in.month + 1, day=1),
+                    datetime.time((23 + day_begin_minutes // 60) % 24, (59 + day_begin_minutes % 60) % 60, 59),
+                )
+            else:
+                search_date_range_out = datetime.datetime.combine(
+                    dt_in.replace(day=dt_in.day + (1 if day_begin_minutes > 0 else 0)),
+                    datetime.time((23 + day_begin_minutes // 60) % 24, (59 + day_begin_minutes % 60) % 60, 59),
+                )
         elif type(dt_in) is datetime.datetime:
             # datetime 对象包含年月日以及时间信息
             search_date_range_in = utils.get_datetime_in_day_range_pole_by_config_day_begin(dt_in, range="start")
