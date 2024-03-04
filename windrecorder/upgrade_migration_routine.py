@@ -33,6 +33,8 @@ def main():
         if os.path.exists(filepath):
             print(f"moving {filepath}")
             shutil.move(filepath, config.userdata_dir)
+    if os.path.exists("config\\config_user.json"):
+        shutil.move("config\\config_user.json", config.userdata_dir)
     if os.path.exists("config"):
         shutil.rmtree("config")
 
