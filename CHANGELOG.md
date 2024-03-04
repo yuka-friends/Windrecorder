@@ -6,6 +6,7 @@
 ### Fixed
 - https://github.com/yuka-friends/Windrecorder/pull/138 feat: 为 webui footer 数据统计添加了缓存机制，不需要每次进入 webui 都进行统计了，大幅提高加载速度。 A caching mechanism has been added for webui footer data statistics, so there is no need to perform statistics every time you enter webui, which significantly improve loading speed.
 - bug: 当一天以非零点分隔时，每月最后一天无法被选择。 The last day of the month cannot be selected when the days are separated by a non-zero point.
+- bug: 升级时没有保留原用户 config. The original user config is not retained during the upgrade.
 
 ## 0.0.9
 > 2024-03-02
