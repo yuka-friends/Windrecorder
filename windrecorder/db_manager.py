@@ -735,10 +735,9 @@ class _DBManager:
         db_filename = os.path.basename(db_filepath)
 
         maintaining = os.path.isfile(config.maintain_lock_path)
-
+        db_filename_temp = os.path.splitext(db_filename)[0] + "_TEMP_READ.db"  # 创建临时文件名
+        filepath_temp_read = os.path.join(self.db_path, db_filename_temp)  # 创建读取的临时路径
         if "_TEMP_READ" not in db_filename:
-            db_filename_temp = os.path.splitext(db_filename)[0] + "_TEMP_READ.db"  # 创建临时文件名
-            filepath_temp_read = os.path.join(self.db_path, db_filename_temp)  # 创建读取的临时路径
             if os.path.exists(filepath_temp_read):  # 检测是否已存在临时数据库
                 # 是，检查同根数据库是否更新，阈值为大于5分钟
                 (
