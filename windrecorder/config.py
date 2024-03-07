@@ -6,14 +6,14 @@ from windrecorder.logger import get_logger
 
 logger = get_logger(__name__)
 
-config_name = "config_user.json"
-config_name_default = "config_default.json"
-config_name_video_compress_preset = "video_compress_preset.json"
-config_dir = "windrecorder\\config_src"
-userdata_dir = "userdata"
-default_config_path = os.path.join(config_dir, config_name_default)
-user_config_path = os.path.join(userdata_dir, config_name)
-video_compress_preset_config_path = os.path.join(config_dir, config_name_video_compress_preset)
+CONFIG_NAME_USER = "config_user.json"
+CONFIG_NAME_DEFAULT = "config_default.json"
+CONFIG_NAME_VIDEO_COMPRESS_PRESET = "video_compress_preset.json"
+DIR_CONFIG_SRC = "windrecorder\\config_src"
+DIR_USERDATA = "userdata"
+FILEPATH_CONFIG_DEFAULT = os.path.join(DIR_CONFIG_SRC, CONFIG_NAME_DEFAULT)
+FILEPATH_CONFIG_USER = os.path.join(DIR_USERDATA, CONFIG_NAME_USER)
+FILEPATH_CONFIG_VIDEO_COMPRESS_PRESET = os.path.join(DIR_CONFIG_SRC, CONFIG_NAME_VIDEO_COMPRESS_PRESET)
 
 
 class Config:
@@ -164,7 +164,7 @@ class Config:
         # 去除不必要的字段
         self.filter_unwanted_field(config_json)
         # 写入 config.json 文件
-        with open(user_config_path, "w", encoding="utf-8") as f:
+        with open(FILEPATH_CONFIG_USER, "w", encoding="utf-8") as f:
             json.dump(config_json, f, indent=2, ensure_ascii=False)
 
     def filter_unwanted_field(self, config_json):
@@ -173,10 +173,10 @@ class Config:
 
 # 从default config中更新user config（升级用）
 def update_config_files_from_default_to_user():
-    with open(default_config_path, "r", encoding="utf-8") as f:
+    with open(FILEPATH_CONFIG_DEFAULT, "r", encoding="utf-8") as f:
         default_data = json.load(f)
 
-    with open(user_config_path, "r", encoding="utf-8") as f:
+    with open(FILEPATH_CONFIG_USER, "r", encoding="utf-8") as f:
         user_data = json.load(f)
 
     # 将 default 中有的、user 中没有的属性从 default 写入 user中
@@ -188,32 +188,32 @@ def update_config_files_from_default_to_user():
     for key in keys_to_remove:
         del user_data[key]
     # 将更新后的 default 数据写入 user.json 文件
-    with open(user_config_path, "w", encoding="utf-8") as f:
+    with open(FILEPATH_CONFIG_USER, "w", encoding="utf-8") as f:
         json.dump(user_data, f, indent=2, ensure_ascii=False)
 
 
 def initialize_config():
     # 0.0.9 upgrade change, migrate previous user config
-    if not os.path.exists(userdata_dir):
-        os.makedirs(userdata_dir)
+    if not os.path.exists(DIR_USERDATA):
+        os.makedirs(DIR_USERDATA)
     if os.path.exists("config\\config_user.json"):
-        shutil.copyfile("config\\config_user.json", user_config_path)
+        shutil.copyfile("config\\config_user.json", FILEPATH_CONFIG_USER)
 
-    if not os.path.exists(user_config_path):
+    if not os.path.exists(FILEPATH_CONFIG_USER):
         logger.info("-User config not found, will be created.")
-        shutil.copyfile(default_config_path, user_config_path)
+        shutil.copyfile(FILEPATH_CONFIG_DEFAULT, FILEPATH_CONFIG_USER)
 
 
 def get_config_json():
     initialize_config()
     update_config_files_from_default_to_user()
-    with open(user_config_path, "r", encoding="utf-8") as f:
+    with open(FILEPATH_CONFIG_USER, "r", encoding="utf-8") as f:
         config_json = json.load(f)
     return config_json
 
 
 def get_video_compress_preset_json():
-    with open(video_compress_preset_config_path, "r", encoding="utf-8") as f:
+    with open(FILEPATH_CONFIG_VIDEO_COMPRESS_PRESET, "r", encoding="utf-8") as f:
         config_json = json.load(f)
     return config_json
 
