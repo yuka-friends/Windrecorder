@@ -25,7 +25,8 @@
     "Windrecord - webui",
     "KeePass",
     "forget password",
-    "Visual Studio Code"
+    "Visual Studio Code",
+    "New Tab - Google Chrome"
   ],
   "wordcloud_user_stop_words": [
     "login","account","twitter","reddit","youtube"
