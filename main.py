@@ -5,11 +5,13 @@ import shutil
 import signal
 import subprocess
 import sys
+import threading
 import time
 import webbrowser
 from os import getpid
 from subprocess import Popen
 
+import pygetwindow
 import pystray
 import requests
 import win32con
@@ -263,11 +265,24 @@ def interrupt_start_no_ffmpeg_and_ffprobe(reason):
     sys.exit()
 
 
-def main():
+def hide_cli_window():
     # 隐藏该 CLI 窗口
-    hide_CLI = win32gui.GetForegroundWindow()
-    win32gui.ShowWindow(hide_CLI, win32con.SW_HIDE)
+    subprocess.run("cls", shell=True)
+    print()
 
+    timeout_count = 10
+    for i in range(timeout_count):
+        print(f"   Trying to hide CLI window... ({i}/{timeout_count})")
+        title = str(pygetwindow.getActiveWindowTitle())
+        if "Windrecorder" in title:
+            hide_CLI = win32gui.GetForegroundWindow()
+            win32gui.ShowWindow(hide_CLI, win32con.SW_HIDE)
+            break
+        time.sleep(1)
+    print("\n   Hide CLI window fail. Please minimize this window manually.")
+
+
+def main():
     # 启动时加锁，防止重复启动
     while True:
         try:
@@ -287,6 +302,9 @@ def main():
                     pass
 
     with tray_lock:
+        thread_hide_cli_window = threading.Thread(target=hide_cli_window)
+        thread_hide_cli_window.start()
+
         ff_available, ff_callback = utils.check_ffmpeg_and_ffprobe()
         if not ff_available:
             interrupt_start_no_ffmpeg_and_ffprobe(ff_callback)
