@@ -152,7 +152,7 @@
         "set_update_changelog": "\n [What's new](https://github.com/yuka-friends/Windrecorder/blob/main/CHANGELOG.md)",
         "set_update_fail": "Failed to check for updates. {e}",
         "set_pwd_text": "webui access password (leave blank to disable)",
-        "set_pwd_help": "After enabling this setting, you will be asked to provide a password when accessing webui. This setting will not encrypt your data, but only protects the entrance to webui to avoid access by unfamiliar users in the same LAN.",
+        "set_pwd_help": "If password input filled, you will be asked to provide a password when accessing webui. This setting will not encrypt your data, but only protects the entrance to webui to avoid access by unfamiliar users in the same LAN.",
         "set_pwd_forget_help": "Forgot your password? Delete the webui_access_password_md5 item in config_user.json to reset password.",
         "set_checkbox_enable_img_emb": "Enable image semantic retrieval",
         "set_text_enable_img_emb_help": "Image semantic retrieval is a method of image retrieval based on the semantic content of images through computer vision technology. It can retrieve queries from large-scale image databases based on the semantic description of the content of the image. Related images. Windrecorder uses uform-vl-multilingual-v2 to embed the index. When this option turned on, the app will embedding image from video in idle maintain, and then it can be searched. You can also embedding manually through the script under app directory 'extension/index_img_embedding_for_all_videofiles'.",
