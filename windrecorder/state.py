@@ -59,7 +59,7 @@ def get_year_data_overview(dt: datetime.datetime):
     for month in range(1, months_count + 1):
         month_days = calendar.monthrange(dt.year, month)[1]
         dt_month_start = datetime.datetime(dt.year, month, 1, 0, 0, 1)
-        dt_month_end = datetime.datetime(dt.year, month, month_days, 23, 23, 59)
+        dt_month_end = datetime.datetime(dt.year, month, month_days, 23, 59, 59)
 
         df, _, _ = db_manager.db_search_data("", dt_month_start, dt_month_end)
 
@@ -74,14 +74,14 @@ def get_year_data_overview_scatter(dt: datetime.datetime):
     df_year_data = pd.DataFrame(columns=["month", "day", "data_count"])
 
     query_year_start = datetime.datetime(dt.year, 1, 1, 0, 0, 1)
-    query_year_end = datetime.datetime(dt.year, 12, 1, 23, 23, 59)
+    query_year_end = datetime.datetime(dt.year, 12, 1, 23, 59, 59)
     df, _, _ = db_manager.db_search_data("", query_year_start, query_year_end)  # 获取全年所有数据
 
     for month in range(1, 13):
         month_days = calendar.monthrange(dt.year, month)[1]
         for day in range(1, month_days + 1):
             day_ts_start = utils.datetime_to_seconds(datetime.datetime(dt.year, month, day, 0, 0, 1))
-            day_ts_end = utils.datetime_to_seconds(datetime.datetime(dt.year, month, day, 23, 23, 59))
+            day_ts_end = utils.datetime_to_seconds(datetime.datetime(dt.year, month, day, 23, 59, 59))
             result = df.loc[(df["videofile_time"] >= day_ts_start) & (df["videofile_time"] <= day_ts_end)]  # 获取当小时的所有数据
             row_count = len(result)
             df_year_data.loc[len(df_year_data.index)] = [month, day, row_count]
@@ -99,7 +99,7 @@ def generate_month_lightbox(
 
     month_days = calendar.monthrange(dt.year, dt.month)[1]
     dt_month_start = datetime.datetime(dt.year, dt.month, 1, 0, 0, 1)
-    dt_month_end = datetime.datetime(dt.year, dt.month, month_days, 23, 23, 59)
+    dt_month_end = datetime.datetime(dt.year, dt.month, month_days, 23, 59, 59)
 
     # 光箱容纳图片容量
     pic_width_num = 25
