@@ -116,3 +116,7 @@ Q: Windows.Media.Ocr.Cli OCR 不可用/识别率过低
 在 Product Hunt 上为 **捕风记录仪** 投票:
 
 <a href="https://www.producthunt.com/posts/windrecorder?utm_source=badge-featured&utm_medium=badge&utm_souce=badge-windrecorder" target="_blank"><img src="https://api.producthunt.com/widgets/embed-image/v1/featured.svg?post_id=441411&theme=neutral" alt="Windrecorder - search&#0032;&#0038;&#0032;rewind&#0032;everything&#0032;happened&#0032;on&#0032;your&#0032;screen | Product Hunt" style="width: 250px; height: 54px;" width="250" height="54" /></a>
+
+---
+> Also checkout:
+> - [🧡 after-you](https://github.com/yuka-friends/after-you): a local-first AI diary app, responding to your heart's call
