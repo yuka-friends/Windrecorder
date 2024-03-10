@@ -358,9 +358,10 @@ def render():
                 st.session_state.update_info = _t("set_update_fail").format(e=e)
             st.session_state["update_check"] = True
 
-        about_image_b64 = utils.image_to_base64("__assets__\\readme_racoonNagase.png")
+        if "about_image_b64" not in st.session_state:
+            st.session_state.about_image_b64 = utils.image_to_base64("__assets__\\readme_racoonNagase.png")
         st.markdown(
-            f"<img align='right' style='max-width: 100%;max-height: 100%;' src='data:image/png;base64, {about_image_b64}'/>",
+            f"<img align='right' style='max-width: 100%;max-height: 100%;' src='data:image/png;base64, {st.session_state.about_image_b64}'/>",
             unsafe_allow_html=True,
         )
 
