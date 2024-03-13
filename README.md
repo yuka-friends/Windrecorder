@@ -32,7 +32,7 @@
 
 # 🦝 安装
 
-- 下载 [ffmpeg](https://www.gyan.dev/ffmpeg/builds/ffmpeg-release-essentials.zip) ，将其中 bin 目录下的 `ffmpeg.exe`、`ffprobe.exe` 解压至 `C:\Windows\System32` 下（或其他位于 PATH 的目录下）
+- 下载 [ffmpeg](https://github.com/BtbN/FFmpeg-Builds/releases)（下载文件名为：`ffmpeg-master-latest-win64-gpl-shared.zip`） ，将 bin 目录下的所有文件复制至 `C:\Windows\System32` 下（或其他位于 PATH 的目录下）（不包括 bin 目录本身）
 
 - 安装 [Git](https://git-scm.com/download/win)，一路下一步即可；
 
@@ -76,6 +76,14 @@
 
 # 🦝 Q&A | 常见问题
 
+Q: 录制过程中鼠标闪烁
+
+- A：FFmpeg 历史遗留问题，可尝试[该帖](https://stackoverflow.com/questions/34023630/how-to-avoid-mouse-pointer-flicker-when-capture-a-window-by-ffmpeg)方法解决：
+    - 使用任意十六进制编辑器（如 [HxD](https://mh-nexus.de/en/downloads.php?product=HxD20)）打开之前下载的 `FFmpeg/bin` 中的 `avdevice-XX.dll` 文件；
+    - 搜索 hex code（字节序列） `20 00 cc 40`，将其最后两位 `40` 改为 `00`；
+    - 保存文件即可；
+
+
 Q: 打开 webui 时没有近期一段时间的数据。
 
 - A: 当工具正在索引数据时，webui 将不会创建最新的临时数据库文件。
@@ -85,10 +93,6 @@ Q: 在打开webui时提示：`FileNotFoundError: [WinError 2] The system cannot 
 
 - A: 通常在初次访问 webui 时、工具仍正在索引数据时出现。
 解决方法：在工具后台索引完毕后，删除 db 文件夹下对应后缀为 _TEMP_READ.db 的数据库文件后刷新即可。
-
-Q: 录制过程中鼠标闪烁
-
-- A：Windows 历史遗留问题，可尝试[该帖](https://stackoverflow.com/questions/34023630/how-to-avoid-mouse-pointer-flicker-when-capture-a-window-by-ffmpeg)方法解决🤔。（其实习惯了不去在意也还好（逃
 
 Q: Windows.Media.Ocr.Cli OCR 不可用/识别率过低
 
