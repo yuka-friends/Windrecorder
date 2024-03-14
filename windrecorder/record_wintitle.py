@@ -130,6 +130,12 @@ def optimize_wintitle_name(text):
     text = re.sub(" and \\d+ more pages", "", text)
     text = re.sub(" - Personal", "", text)
 
+    # remove number badge (like X)
+    # eg. (12) Home / X.com
+    text = re.sub("\\(\\d+\\)", "", text)
+
+    text = text.strip()
+
     return text
 
 
