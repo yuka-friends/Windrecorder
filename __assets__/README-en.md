@@ -28,7 +28,7 @@ Windrecorder is a memory search app by records everything on your screen in smal
 
 # 🦝 Installation
 
-- Download [ffmpeg](https://www.gyan.dev/ffmpeg/builds/ffmpeg-release-essentials.zip) and extract `ffmpeg.exe` and `ffprobe.exe` in `bin` directory to `C:\Windows\System32` (or other directories located in PATH)
+- Download [ffmpeg](https://github.com/BtbN/FFmpeg-Builds/releases) (the download file name is: `ffmpeg-master-latest-win64-gpl-shared.zip`), extract all files in `bin` directory(excluding the bin directory itself) to `C:\Windows\System32` (or other directories located in PATH)
 
 - Install [Git](https://git-scm.com/download/win), just keep clicking next.
 
@@ -75,6 +75,13 @@ When recording is started, the Windrecorder will record each 15 minutes of video
 
 # 🦝 Q&A | Frequently Asked Questions
 
+Q: The mouse pointer flicker during recording
+
+- A: It's a Windows historical issues, you can try [this post](https://stackoverflow.com/questions/34023630/how-to-avoid-mouse-pointer-flicker-when-capture-a-window-by-ffmpeg ) method to solve.
+     - Use any hex editor (such as [HxD](https://mh-nexus.de/en/downloads.php?product=HxD20)) to open `avdevice-XX.dll` in the previously downloaded `FFmpeg/bin`;
+     - Search for hex code `20 00 cc 40` and change the last two digits of `40` to `00`;
+     - Save the file;
+
 Q: There is no data in the recent period when opening webui.
 
 - A: When the tool is indexing data, webui will not create the latest temporary database file.
@@ -84,10 +91,6 @@ Q: When opening webui, it prompts: `FileNotFoundError: [WinError 2] The system c
 
 - A: Usually occurs when accessing the webui for the first time, while the tool is still indexing data.
 Solution: After the tool background indexing is completed, delete the corresponding database file with the suffix _TEMP_READ.db in the db folder and refresh it.
-
-Q: The mouse flashes during recording
-
-- A: It's a Windows historical issues, you can try [this post](https://stackoverflow.com/questions/34023630/how-to-avoid-mouse-pointer-flicker-when-capture-a-window-by-ffmpeg ) method to solve🤔. (it might be okay after get used to it.. we might work on it in the future
 
 Q: Windows.Media.Ocr.Cli OCR is not available/the recognition rate is too low
 
