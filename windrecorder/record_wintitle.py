@@ -130,6 +130,12 @@ def optimize_wintitle_name(text):
     text = re.sub(" and \\d+ more pages", "", text)
     text = re.sub(" - Personal", "", text)
 
+    # remove asterisk for saved state
+    # eg. Blender* a.blend
+    text = re.sub(" \\* ", " ", text)
+    text = re.sub(" \\*", " ", text)
+    text = re.sub("\\* ", " ", text)
+
     # remove number badge (like X)
     # eg. (12) Home / X.com
     text = re.sub("\\(\\d+\\)", "", text)
