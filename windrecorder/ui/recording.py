@@ -30,13 +30,12 @@ def render():
                 on_change=utils.change_startup_shortcut(is_create=st.session_state.is_create_startup_shortcut),
                 help=_t("rs_checkbox_start_record_when_startup_help"),
             )
+            is_start_recording_on_start_app = st.checkbox(
+                _t("rs_checkbox_is_start_recording_on_start_app"), value=config.start_recording_on_startup
+            )
 
         with col2_record:
             st.markdown(_t("rs_md_only_support_main_monitor"), unsafe_allow_html=True)
-
-        is_start_recording_on_start_app = st.checkbox(
-            _t("rs_checkbox_is_start_recording_on_start_app"), value=config.start_recording_on_startup
-        )
 
         record_screen_enable_half_res_while_hidpi = st.checkbox(
             _t("rs_checkbox_enable_half_res_while_hidpi"),
