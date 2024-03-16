@@ -14,6 +14,9 @@ import windrecorder.utils as utils
 from windrecorder import file_utils
 from windrecorder.config import config
 from windrecorder.db_manager import db_manager
+from windrecorder.logger import get_logger
+
+logger = get_logger(__name__)
 
 
 # 读取跳过词
@@ -25,7 +28,7 @@ def read_stopwords(filename):
     return stopwords
 
 
-stopwords = read_stopwords("config\\src\\wordcloud_stopword.txt") + config.wordcloud_user_stop_words
+stopwords = read_stopwords(os.path.join(config.config_src_dir, "wordcloud_stopword.txt")) + config.wordcloud_user_stop_words
 
 
 # 按月数据库生成已有所有数据的词库
@@ -57,13 +60,13 @@ def generate_all_word_lexicon_by_month():
                 file_list_to_generate_lexicon.append(filename[:-8] + ".db")
 
     file_list_to_generate_lexicon = list(set(file_list_to_generate_lexicon))  # 整理去重需要整理词语的数据库列表
-    print(f"[wordcloud] file_list_to_generate_lexicon:{file_list_to_generate_lexicon}")
+    logger.info(f"[wordcloud] file_list_to_generate_lexicon:{file_list_to_generate_lexicon}")
 
     for db_name in file_list_to_generate_lexicon:
-        print(f"[wordcloud]processing {db_name}")
+        logger.info(f"[wordcloud]processing {db_name}")
 
         # 获取对应数据库的所有ocr数据
-        print(all_db_files_dict[db_name])
+        logger.info(all_db_files_dict[db_name])
         ocr_text_filepath = get_month_ocr_result(
             utils.datetime_to_seconds(all_db_files_dict[db_name]),
             text_file_path="cache\\lexicon_ocr_temp.txt",
@@ -202,23 +205,10 @@ def get_month_ocr_result(timestamp, text_file_path="cache/get_month_ocr_result_o
 def get_day_ocr_result(timestamp):
     timestamp_datetime = utils.seconds_to_datetime(timestamp)
     # 查询当月所有识别到的数据，存储在文本中
-    date_in = datetime(
-        timestamp_datetime.year,
-        timestamp_datetime.month,
-        timestamp_datetime.day,
-        0,
-        0,
-        1,
-    )
-    date_out = datetime(
-        timestamp_datetime.year,
-        timestamp_datetime.month,
-        timestamp_datetime.day,
-        23,
-        59,
-        59,
-    )
-    df, _, _ = db_manager.db_search_data("", date_in, date_out)
+    dt_in = utils.get_datetime_in_day_range_pole_by_config_day_begin(timestamp_datetime, range="start")
+    dt_out = utils.get_datetime_in_day_range_pole_by_config_day_begin(timestamp_datetime, range="end")
+
+    df, _, _ = db_manager.db_search_data("", dt_in, dt_out)
     ocr_text_data = "".join(df["ocr_text"].tolist())
     ocr_text_data = utils.delete_short_lines(ocr_text_data, less_than=10)
 
@@ -236,7 +226,7 @@ def generate_word_cloud_in_month(timestamp, img_save_name="default"):
     # 取得当月内所有ocr结果
     text_file_path = get_month_ocr_result(timestamp)
 
-    img_save_dir = config.wordcloud_result_dir
+    img_save_dir = config.wordcloud_result_dir_ud
     file_utils.ensure_dir(img_save_dir)
     img_save_name = img_save_name
     img_save_path = os.path.join(img_save_dir, img_save_name)
@@ -251,7 +241,7 @@ def generate_word_cloud_in_day(timestamp, img_save_name="default"):
     # 取得当天内所有ocr结果
     text_file_path = get_day_ocr_result(timestamp)
 
-    img_save_dir = config.wordcloud_result_dir
+    img_save_dir = config.wordcloud_result_dir_ud
     file_utils.ensure_dir(img_save_dir)
     img_save_name = img_save_name
     img_save_path = os.path.join(img_save_dir, img_save_name)

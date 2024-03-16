@@ -1,0 +1,7 @@
+{
+    "extension_name": "Index image embedding for all videofiles",
+    "developer_name": "antonoko",
+    "developer_url": "https://github.com/Antonoko",
+    "version": "0.0.1",
+    "description_markdown": "本脚本可以将你未进行图像嵌入索引的历史视频进行索引。索引完成后，你可以在 webui 中使用自然语言描述，来搜索对应图像画面。\n\nThis script can index your historical videos that have not been indexed by image embedding. After the indexing is completed, you can use natural language descriptions in webui to search for corresponding images.\n\n[什么是图像嵌入索引？What's an image embedding?](https://blog.roboflow.com/what-is-an-image-embedding/)"
+}

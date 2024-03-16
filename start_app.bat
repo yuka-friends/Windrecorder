@@ -1,8 +1,11 @@
 @echo off
+title Windrecorder
 mode con cols=70 lines=10
 color 75
 echo.
 echo   Initializing Windrecorder, please stand by...
+echo.
+echo   Please stay in this window until it disappears
 echo.
 
 cd /d %~dp0

@@ -2,20 +2,26 @@ import json
 import os
 import shutil
 
-config_name = "config_user.json"
-config_name_default = "src\\config_default.json"
-config_name_video_compress_preset = "src\\video_compress_preset.json"
-config_dir = "config"
-default_config_path = os.path.join(config_dir, config_name_default)
-user_config_path = os.path.join(config_dir, config_name)
-video_compress_preset_config_path = os.path.join(config_dir, config_name_video_compress_preset)
+from windrecorder.logger import get_logger
+
+logger = get_logger(__name__)
+
+CONFIG_NAME_USER = "config_user.json"
+CONFIG_NAME_DEFAULT = "config_default.json"
+CONFIG_NAME_VIDEO_COMPRESS_PRESET = "video_compress_preset.json"
+DIR_CONFIG_SRC = "windrecorder\\config_src"
+DIR_USERDATA = "userdata"
+FILEPATH_CONFIG_DEFAULT = os.path.join(DIR_CONFIG_SRC, CONFIG_NAME_DEFAULT)
+FILEPATH_CONFIG_USER = os.path.join(DIR_USERDATA, CONFIG_NAME_USER)
+FILEPATH_CONFIG_VIDEO_COMPRESS_PRESET = os.path.join(DIR_CONFIG_SRC, CONFIG_NAME_VIDEO_COMPRESS_PRESET)
 
 
 class Config:
     def __init__(
         self,
+        config_src_dir,
         db_path,
-        db_filename,
+        vdb_img_path,
         record_videos_dir,
         record_seconds,
         record_framerate,
@@ -33,12 +39,12 @@ class Config:
         OCR_index_strategy,
         wordcloud_result_dir,
         screentime_not_change_to_pause_record,
-        show_oneday_wordcloud,
         timeline_result_dir,
         user_name,
         use_similar_ch_char_to_search,
         ocr_image_crop_URBL,
         lightbox_result_dir,
+        wintitle_result_dir,
         release_ver,
         video_compress_rate,
         oneday_timeline_pic_num,
@@ -46,25 +52,46 @@ class Config:
         compress_encoder,
         compress_accelerator,
         compress_quality,
+        day_begin_minutes,
         lock_file_dir,
         maintain_lock_subdir,
         record_lock_name,
         tray_lock_name,
+        img_emb_lock_name,
         last_idle_maintain_file_path,
         iframe_dir,
         log_dir,
+        win_title_dir,
         start_recording_on_startup,
+        userdata_dir,
+        flag_mark_note_filename,
+        search_history_note_filename,
+        thumbnail_generation_size_width,
+        thumbnail_generation_jpg_quality,
+        webui_access_password_md5,
+        enable_img_embed_search,
+        img_embed_search_recall_result_per_db,
+        img_embed_module_install,
+        enable_search_history_record,
+        batch_size_embed_video_in_idle,
+        batch_size_remove_video_in_idle,
+        batch_size_compress_video_in_idle,
+        enable_3_columns_in_oneday,
+        enable_synonyms_recommend,
         **other_field,
     ) -> None:
-        self.db_path = db_path
-        self.db_filename = db_filename
-        self.db_filepath = os.path.join(self.db_path, self.db_filename)
-        self.record_videos_dir = record_videos_dir
+        # If need to process input parameters, they should assign another variable name to prevent recursive writing into the config.
+        self.config_src_dir = config_src_dir
+        self.userdata_dir = userdata_dir
+        self.db_path_ud = os.path.join(userdata_dir, db_path)
+        self.vdb_img_path_ud = os.path.join(userdata_dir, vdb_img_path)
+        self.record_videos_dir_ud = os.path.join(userdata_dir, record_videos_dir)
         self.record_seconds = record_seconds
         self.record_framerate = record_framerate
         self.record_bitrate = record_bitrate
         self.record_screen_enable_half_res_while_hidpi = record_screen_enable_half_res_while_hidpi
         self.ffmpeg_path = ".venv\\ffmpeg.exe" if release_ver else "ffmpeg"
+        self.ffprobe_path = ".venv\\ffprobe.exe" if release_ver else "ffprobe"
         self.lang = lang
         self.ocr_lang = ocr_lang
         self.ocr_engine = ocr_engine
@@ -75,11 +102,11 @@ class Config:
         self.vid_store_day = vid_store_day
         self.vid_compress_day = vid_compress_day
         self.OCR_index_strategy = OCR_index_strategy  # 0=不自动索引，1=每录制完一个切片进行索引
-        self.wordcloud_result_dir = wordcloud_result_dir
-        self.timeline_result_dir = timeline_result_dir
-        self.lightbox_result_dir = lightbox_result_dir
+        self.wordcloud_result_dir_ud = os.path.join(userdata_dir, wordcloud_result_dir)
+        self.timeline_result_dir_ud = os.path.join(userdata_dir, timeline_result_dir)
+        self.lightbox_result_dir_ud = os.path.join(userdata_dir, lightbox_result_dir)
+        self.wintitle_result_dir_ud = os.path.join(userdata_dir, wintitle_result_dir)
         self.screentime_not_change_to_pause_record = screentime_not_change_to_pause_record
-        self.show_oneday_wordcloud = show_oneday_wordcloud
         self.user_name = user_name
         self.use_similar_ch_char_to_search = use_similar_ch_char_to_search
         self.ocr_image_crop_URBL = ocr_image_crop_URBL
@@ -90,6 +117,7 @@ class Config:
         self.maintain_lock_path = os.path.join(lock_file_dir, maintain_lock_subdir)
         self.record_lock_path = os.path.join(lock_file_dir, record_lock_name)
         self.tray_lock_path = os.path.join(lock_file_dir, tray_lock_name)
+        self.img_emb_lock_path = os.path.join(lock_file_dir, img_emb_lock_name)
         self.last_idle_maintain_file_path = last_idle_maintain_file_path
         self.iframe_dir = iframe_dir
         self.compress_encoder = compress_encoder
@@ -97,12 +125,32 @@ class Config:
         self.compress_quality = compress_quality
         self.compress_preset = get_video_compress_preset_json()
         self.log_dir = log_dir
+        self.win_title_dir = win_title_dir
         self.start_recording_on_startup = start_recording_on_startup
         self.lock_file_dir = lock_file_dir
+        self.flag_mark_note_filename = flag_mark_note_filename
+        self.flag_mark_note_filepath = os.path.join(self.userdata_dir, self.flag_mark_note_filename)
+        self.search_history_note_filename = search_history_note_filename
+        self.search_history_note_filepath = os.path.join(self.userdata_dir, self.search_history_note_filename)
+        self.thumbnail_generation_size_width = thumbnail_generation_size_width
+        self.thumbnail_generation_jpg_quality = thumbnail_generation_jpg_quality
+        self.webui_access_password_md5 = webui_access_password_md5
+        self.enable_img_embed_search = enable_img_embed_search
+        self.img_embed_search_recall_result_per_db = img_embed_search_recall_result_per_db
+        self.img_embed_module_install = img_embed_module_install
+        self.day_begin_minutes = day_begin_minutes
+        self.enable_search_history_record = enable_search_history_record
+        self.batch_size_embed_video_in_idle = batch_size_embed_video_in_idle
+        self.batch_size_remove_video_in_idle = batch_size_remove_video_in_idle
+        self.batch_size_compress_video_in_idle = batch_size_compress_video_in_idle
+        self.enable_3_columns_in_oneday = enable_3_columns_in_oneday
+        self.enable_synonyms_recommend = enable_synonyms_recommend
 
     def set_and_save_config(self, attr: str, value):
         if not hasattr(self, attr):
-            raise AttributeError("{} not exist in config!".format(attr))
+            logger.warning("{} not exist in config!".format(attr))
+            return
+            # raise AttributeError("{} not exist in config!".format(attr))
         setattr(self, attr, value)
         self.save_config()
 
@@ -116,21 +164,19 @@ class Config:
         # 去除不必要的字段
         self.filter_unwanted_field(config_json)
         # 写入 config.json 文件
-        with open(user_config_path, "w", encoding="utf-8") as f:
+        with open(FILEPATH_CONFIG_USER, "w", encoding="utf-8") as f:
             json.dump(config_json, f, indent=2, ensure_ascii=False)
 
     def filter_unwanted_field(self, config_json):
-        del config_json["db_filepath"]
-        del config_json["compress_preset"]
         return config_json
 
 
 # 从default config中更新user config（升级用）
 def update_config_files_from_default_to_user():
-    with open(default_config_path, "r", encoding="utf-8") as f:
+    with open(FILEPATH_CONFIG_DEFAULT, "r", encoding="utf-8") as f:
         default_data = json.load(f)
 
-    with open(user_config_path, "r", encoding="utf-8") as f:
+    with open(FILEPATH_CONFIG_USER, "r", encoding="utf-8") as f:
         user_data = json.load(f)
 
     # 将 default 中有的、user 中没有的属性从 default 写入 user中
@@ -142,28 +188,39 @@ def update_config_files_from_default_to_user():
     for key in keys_to_remove:
         del user_data[key]
     # 将更新后的 default 数据写入 user.json 文件
-    with open(user_config_path, "w", encoding="utf-8") as f:
+    with open(FILEPATH_CONFIG_USER, "w", encoding="utf-8") as f:
         json.dump(user_data, f, indent=2, ensure_ascii=False)
 
 
 def initialize_config():
-    if not os.path.exists(user_config_path):
-        print("-User config not found, will be created.")
-        shutil.copyfile(default_config_path, user_config_path)
+    # 0.0.9 upgrade change, migrate previous user config
+    if not os.path.exists(DIR_USERDATA):
+        os.makedirs(DIR_USERDATA)
+    if os.path.exists("config\\config_user.json"):
+        shutil.copyfile("config\\config_user.json", FILEPATH_CONFIG_USER)
+
+    if not os.path.exists(FILEPATH_CONFIG_USER):
+        logger.info("-User config not found, will be created.")
+        shutil.copyfile(FILEPATH_CONFIG_DEFAULT, FILEPATH_CONFIG_USER)
 
 
 def get_config_json():
     initialize_config()
     update_config_files_from_default_to_user()
-    with open(user_config_path, "r", encoding="utf-8") as f:
+    with open(FILEPATH_CONFIG_USER, "r", encoding="utf-8") as f:
         config_json = json.load(f)
     return config_json
 
 
 def get_video_compress_preset_json():
-    with open(video_compress_preset_config_path, "r", encoding="utf-8") as f:
+    with open(FILEPATH_CONFIG_VIDEO_COMPRESS_PRESET, "r", encoding="utf-8") as f:
         config_json = json.load(f)
     return config_json
 
 
 config = Config(**get_config_json())
+
+# main 函数，输出 config 内容
+if __name__ == "__main__":
+    print(vars(config))
+    print(config)

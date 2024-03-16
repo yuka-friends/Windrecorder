@@ -23,6 +23,9 @@ from pyshortcuts import make_shortcut
 
 from windrecorder import __version__, file_utils
 from windrecorder.config import config
+from windrecorder.logger import get_logger
+
+logger = get_logger(__name__)
 
 
 # 启动定时执行线程
@@ -46,6 +49,25 @@ class RepeatingTimer(threading.Thread):
 # 获得屏幕分辨率
 def get_screen_resolution():
     return pyautogui.size()
+
+
+# 获取视频文件信息
+def get_vidfilepath_info(vid_filepath) -> dict:
+    """
+    获取视频文件信息
+
+    常用：
+    - duration（持续时长 秒）
+    - width height
+
+    当获取失败时，可能抛出错误：CalledProcessError: Command 'ffprobe' returned non-zero exit status 1.
+    """
+    result = subprocess.check_output(
+        f'{config.ffprobe_path} -v quiet -show_streams -select_streams v:0 -of json "{vid_filepath}"', shell=True
+    ).decode()
+
+    fields = json.loads(result)["streams"][0]
+    return fields
 
 
 # 将输入的文件（ %Y-%m-%d_%H-%M-%S str）时间转为时间戳秒数
@@ -82,6 +104,7 @@ def seconds_to_date(seconds):
 def seconds_to_date_goodlook_formart(seconds):
     start_time = 0
     dt = datetime.datetime.utcfromtimestamp(start_time + seconds)
+    # todo: 这里时间格式需要封为统一的可配置项
     return dt.strftime("%Y/%m/%d   %H:%M:%S")
 
 
@@ -138,21 +161,32 @@ def datetime_to_dateDayStr(dt):
     return dt.strftime("%Y-%m-%d")
 
 
-# 将输入的秒数格式化为 1h2m3s str
-def convert_seconds_to_hhmmss(seconds):
-    seconds = int(round(seconds))
-    td = timedelta(seconds=seconds)
+# 将输入的秒数格式化为 1h02m03s str
+def convert_seconds_to_hhmmss(seconds, complete_with_zero=True):
+    """
+    将输入的秒数格式化为 1h02m03s str
 
-    hours = td.seconds // 3600
-    minutes = (td.seconds // 60) % 60
-    seconds = td.seconds % 60
+    :param seconds: int
+    :param complete_with_zero: bool 是否用 0 补齐 m s
+    """
+    seconds = int(round(seconds))
+    # td = timedelta(seconds=seconds)
+
+    hours = seconds // 3600
+    minutes = (seconds // 60) % 60
+    seconds = seconds % 60
 
     time_str = ""
     if hours > 0:
         time_str += str(hours) + "h"
-    if minutes > 0 or hours > 0:
-        time_str += str(minutes).zfill(2) + "m"
-    time_str += str(seconds).zfill(2) + "s"
+    if complete_with_zero:  # 是否在开头补齐0
+        if minutes > 0 or hours > 0:
+            time_str += str(minutes).zfill(2) + "m"
+        time_str += str(seconds).zfill(2) + "s"
+    else:
+        if minutes > 0 or hours > 0:
+            time_str += str(minutes) + "m"
+        time_str += str(seconds) + "s"
 
     return time_str
 
@@ -188,12 +222,48 @@ def set_full_datetime_to_day_time(dt):
 
 # 将完整的datetime只保留年月的datetime
 def set_full_datetime_to_YYYY_MM(dt):
-    return dt.replace(day=1, hour=0, minute=0, second=0, microsecond=0)
+    return datetime.datetime(year=dt.year, month=dt.month, day=1, hour=0, minute=0, second=0, microsecond=0)
 
 
 # 将完整的datetime只保留年月日的datetime
 def set_full_datetime_to_YYYY_MM_DD(dt):
     return dt.replace(hour=0, minute=0, second=0, microsecond=0)
+
+
+def get_datetime_in_day_range_pole_by_config_day_begin(dt: datetime.datetime, range="start"):
+    """
+    根据一天中的一个时间点 datetime，获取在 config.day_begin_minutes 下对应一天的开始/结束点
+
+    param: dt 一天中的一个时间点
+    param: range 指定为 start/end 获取开始与结束
+    """
+    if type(dt) is datetime.date:
+        dt = datetime.datetime.combine(dt, datetime.datetime.min.time())
+
+    day_begin_minutes = config.day_begin_minutes
+    if range == "start":
+        res = dt.replace(hour=day_begin_minutes // 60, minute=day_begin_minutes % 60, second=0, microsecond=0)
+    if range == "end":
+        _, month_days = calendar.monthrange(dt.year, dt.month)
+        if dt.day == month_days:  # month last day
+            res = dt.replace(
+                month=dt.month + (1 if day_begin_minutes > 0 else 0),
+                day=1 if day_begin_minutes > 0 else dt.day,
+                hour=(23 + day_begin_minutes // 60) % 24,
+                minute=(59 + day_begin_minutes % 60) % 60,
+                second=59,
+                microsecond=0,
+            )
+        else:
+            res = dt.replace(
+                day=dt.day + (1 if day_begin_minutes > 0 else 0),
+                hour=(23 + day_begin_minutes // 60) % 24,
+                minute=(59 + day_begin_minutes % 60) % 60,
+                second=59,
+                microsecond=0,
+            )
+
+    return res
 
 
 # 将输入的不完整的datetime补齐为默认年月日时分秒的datetime
@@ -247,26 +317,24 @@ def kill_recording():
             stdout=subprocess.PIPE,
             text=True,
         )
-        print(f"utils: The screen recording process has ended. {check_result.stdout}")
+        logger.info(f"utils: The screen recording process has ended. {check_result.stdout}")
     except FileNotFoundError:
-        print("utils: Unable to find process lock.")
+        logger.error("utils: Unable to find process lock.")
 
 
 # 通过数据库内项目计算视频对应时间戳
 def calc_vid_inside_time(df, num):
     fulltime = df.iloc[num]["videofile_time"]
-    vidfilename = os.path.splitext(df.iloc[num]["videofile_name"])[0]
+    vidfilename = os.path.splitext(df.iloc[num]["videofile_name"])[0][:19]
     # 用记录时的总时间减去视频文件时间（开始记录的时间）即可得到相对的时间
-    vidfilename = vidfilename.replace("-INDEX", "")
-    vidfilename = vidfilename.replace("-ERROR", "")
     vid_timestamp = fulltime - date_to_seconds(vidfilename)
-    print(f"utils: video file fulltime:{fulltime}\n" f" vidfilename:{vidfilename}\n" f" vid_timestamp:{vid_timestamp}\n")
+    logger.info(f"utils: video file fulltime:{fulltime}\n" f" vidfilename:{vidfilename}\n" f" vid_timestamp:{vid_timestamp}\n")
     return vid_timestamp
 
 
 # 估计索引时间
 def estimate_indexing_time():
-    count, nocred_count = file_utils.get_videos_and_ocred_videos_count(config.record_videos_dir)
+    count, nocred_count = file_utils.get_videos_and_ocred_videos_count(config.record_videos_dir_ud)
     record_minutes = int(config.record_seconds) / 60
     ocr_cost_time_table = {"Windows.Media.Ocr.Cli": 5, "ChineseOCR_lite_onnx": 25}
     ocr_cost_time = ocr_cost_time_table[config.ocr_engine]
@@ -290,6 +358,7 @@ def string_to_list(string):
 
 # 判断字符串是否包含列表内的元素
 def is_str_contain_list_word(string, list_items):
+    string = str(string)
     string = string.lower()
     for item in list_items:
         item = item.lower()
@@ -384,6 +453,21 @@ def image_to_base64(image_path):
     return base64_image
 
 
+def resize_image_as_base64(img: Image.Image, target_width=config.thumbnail_generation_size_width):
+    """
+    将图片缩小到等比例、宽度为70px的thumbnail，并返回base64
+    """
+    # 计算缩放比例
+    target_height = int((float(img.size[1]) * float(target_width) / float(img.size[0])))
+
+    img = img.resize((target_width, target_height))
+    output_buffer = BytesIO()
+    img.save(output_buffer, format="JPEG", quality=config.thumbnail_generation_jpg_quality, optimize=True)
+    img_b64 = base64.b64encode(output_buffer.getvalue()).decode("utf-8")
+
+    return img_b64
+
+
 # 检查db是否是有合法的、正在维护中的锁（超过一定时间则解锁）
 def is_maintain_lock_valid(timeout=datetime.timedelta(minutes=16)):
     if os.path.exists(config.maintain_lock_path):
@@ -452,7 +536,7 @@ def get_new_version_if_available():
 
 # 输入cmd命令，返回结果回显内容
 def get_cmd_tool_echo(command):
-    print(f"command: {command}")
+    logger.info(f"command: {command}")
     proc = subprocess.run(command, capture_output=True)
     encodings_try = ["gbk", "utf-8"]  # 强制兼容
     for enc in encodings_try:
@@ -483,7 +567,7 @@ def get_os_support_lang():
     return extracted_lines
 
 
-with open("config\\src\\languages.json", encoding="utf-8") as f:
+with open(os.path.join(config.config_src_dir, "languages.json"), encoding="utf-8") as f:
     d_lang = json.load(f)
 
 
@@ -533,8 +617,6 @@ def extract_date_from_db_filename(db_file_name, user_name=config.user_name):
         db_file_name = db_file_name[len(prefix) :]
 
     db_file_name = db_file_name[:7]
-    # if db_file_name.endswith(suffix):
-    # db_file_name = db_file_name[:-(len(suffix))]
 
     db_file_name_datetime = datetime.datetime.strptime(db_file_name, "%Y-%m")
     db_file_name_datetime = set_full_datetime_to_YYYY_MM(db_file_name_datetime)
@@ -606,13 +688,21 @@ def change_startup_shortcut(is_create=True):
             current_dir = os.getcwd()
             bat_path = os.path.join(current_dir, "start_app.bat")
             make_shortcut(bat_path, folder=startup_folder)
-            print("record: The shortcut has been created and added to the startup items")
+            logger.info("record: The shortcut has been created and added to the startup items")
     else:
         # 移除快捷方式
         if os.path.exists(shortcut_path):
-            print("record: Shortcut already exists")
+            logger.info("record: Shortcut already exists")
             os.remove(shortcut_path)
-            print("record: Delete shortcut")
+            logger.info("record: Delete shortcut")
+
+
+def is_win11():
+    return sys.getwindowsversion().build >= 22000
+
+
+def get_windows_edition():
+    return platform.win32_edition()
 
 
 def is_process_running(pid, compare_process_name):
@@ -640,3 +730,45 @@ def find_available_port():
         s.bind(("", 0))
         s.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)
         return s.getsockname()[1]
+
+
+# 查找列表项中包含字符串的项
+def find_strings_list_with_substring(string_list, substring):
+    result = []
+    for string in string_list:
+        if substring in string:
+            result.append(string)
+    return result
+
+
+def check_ffmpeg_and_ffprobe():
+    """
+    检查 ffmpeg 与 ffprobe 是否可用，返回(是否均可用:bool, 不可用原因:str)
+    """
+    available_ffmpeg = False
+    available_ffprobe = False
+    try:
+        subprocess.check_output(f"{config.ffmpeg_path} -version", shell=True)
+        available_ffmpeg = True
+    except subprocess.CalledProcessError:
+        logger.error("ffmpeg is not available.")
+    except Exception as e:
+        logger.error(f"Unexpected Error. {e}")
+
+    try:
+        subprocess.check_output(f"{config.ffprobe_path} -version", shell=True)
+        available_ffprobe = True
+    except subprocess.CalledProcessError:
+        logger.error("ffprobe is not available.")
+    except Exception as e:
+        logger.error(f"Unexpected Error. {e}")
+
+    if available_ffmpeg and available_ffprobe:
+        return True, ""
+    elif not available_ffmpeg and not available_ffprobe:
+        return False, "FFmpeg and FFprobe are not available.\nPlease check the installation."
+    elif not available_ffmpeg:
+        return False, "FFmpeg is not available.\nPlease check the installation."
+    elif not available_ffprobe:
+        return False, "FFprobe is not available.\nPlease check the installation."
+    return False, "Unexpected Error on checking ffmpeg and ffprobe available."

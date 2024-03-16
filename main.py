@@ -1,14 +1,17 @@
+import datetime
 import os
 import re
 import shutil
 import signal
 import subprocess
 import sys
+import threading
 import time
 import webbrowser
 from os import getpid
 from subprocess import Popen
 
+import pygetwindow
 import pystray
 import requests
 import win32con
@@ -19,7 +22,7 @@ from streamlit.file_util import get_streamlit_file_path
 PROJECT_ROOT = os.path.abspath(os.path.dirname(__file__))
 os.chdir(PROJECT_ROOT)
 
-from windrecorder import file_utils, utils, win_ui  # NOQA: E402
+from windrecorder import file_utils, flag_mark_note, utils, win_ui  # NOQA: E402
 from windrecorder.config import config  # NOQA: E402
 from windrecorder.exceptions import LockExistsException  # NOQA: E402
 from windrecorder.lock import FileLock  # NOQA: E402
@@ -43,8 +46,8 @@ webui_network_url = ""
 
 
 def get_tray_icon(state="recording"):
-    image_state = {"recording": "icon-tray.png", "record_pause": "icon-tray-pause.png"}
-    image = Image.open(os.path.join("__assets__", image_state[state]))
+    IMAGE_STATE = {"recording": "icon-tray.png", "record_pause": "icon-tray-pause.png"}
+    image = Image.open(os.path.join("__assets__", IMAGE_STATE[state]))
     image = image.convert("RGBA")
     return image
 
@@ -65,6 +68,11 @@ file_utils.empty_directory(config.maintain_lock_path)
 # 调用浏览器打开 web ui
 def open_webui(icon: pystray.Icon, item: pystray.MenuItem):
     webbrowser.open(webui_local_url)
+
+
+# 调用浏览器打开更新日记
+def open_web_changelog(icon: pystray.Icon, item: pystray.MenuItem):
+    webbrowser.open("https://github.com/yuka-friends/Windrecorder/blob/main/CHANGELOG.md")
 
 
 def setup(icon: pystray.Icon):
@@ -163,6 +171,16 @@ def start_stop_recording(icon: pystray.Icon | None = None, item: pystray.MenuIte
             icon.notify(message=_t("tray_notify_text"), title=_t("tray_notify_title"))
 
 
+# 记录当下的时间标记
+def create_timestamp_flag_mark_note(icon: pystray.Icon | None = None, item: pystray.MenuItem | None = None):
+    datetime_created = datetime.datetime.now()
+    flag_mark_note.add_new_flag_record_from_tray(datetime_created=datetime_created)
+    app = flag_mark_note.Flag_mark_window(datetime_input=datetime_created)
+    app.update()
+    app.textbox.focus_set()  # 将光标定位到输入框
+    app.mainloop()  # 启动备注记录弹窗
+
+
 # 生成系统托盘菜单
 def menu_callback():
     try:
@@ -174,6 +192,14 @@ def menu_callback():
 
     # 返回生成的菜单项列表
     return (
+        # 记录当下的时间标记
+        pystray.MenuItem(
+            lambda item: _t("tray_add_flag_mark_note_for_now"),
+            create_timestamp_flag_mark_note,
+            enabled=recording_process,
+        ),
+        # 分隔线
+        pystray.Menu.SEPARATOR,
         # 开始或停止 Web UI
         pystray.MenuItem(
             lambda item: _t("tray_webui_exit") if streamlit_process else _t("tray_webui_start"), start_stop_webui
@@ -208,6 +234,12 @@ def menu_callback():
             update,
             enabled=lambda item: new_version is not None,
         ),
+        # 查看更新日志
+        pystray.MenuItem(
+            _t("tray_updatelog"),
+            open_web_changelog,
+            visible=lambda item: new_version is not None,
+        ),
         # 退出选项
         pystray.MenuItem(_t("tray_exit"), on_exit),
     )
@@ -237,6 +269,28 @@ def interrupt_start():
     sys.exit()
 
 
+def interrupt_start_no_ffmpeg_and_ffprobe(reason):
+    win_ui.show_popup(reason, "Missing dependencies", "information")
+    sys.exit()
+
+
+def hide_cli_window():
+    # 隐藏该 CLI 窗口
+    subprocess.run("cls", shell=True)
+    print()
+
+    timeout_count = 10
+    for i in range(timeout_count):
+        print(f"   Trying to hide CLI window... ({i}/{timeout_count})")
+        title = str(pygetwindow.getActiveWindowTitle())
+        if "Windrecorder" in title:
+            hide_CLI = win32gui.GetForegroundWindow()
+            win32gui.ShowWindow(hide_CLI, win32con.SW_HIDE)
+            break
+        time.sleep(1)
+    print("\n   Hide CLI window fail. Please minimize this window manually.")
+
+
 def main():
     # 启动时加锁，防止重复启动
     while True:
@@ -257,14 +311,17 @@ def main():
                     pass
 
     with tray_lock:
+        thread_hide_cli_window = threading.Thread(target=hide_cli_window)
+        thread_hide_cli_window.start()
+
+        ff_available, ff_callback = utils.check_ffmpeg_and_ffprobe()
+        if not ff_available:
+            interrupt_start_no_ffmpeg_and_ffprobe(ff_callback)
+
         credential_path = get_streamlit_file_path("credentials.toml")
         if not os.path.exists(credential_path):
             os.makedirs(os.path.dirname(credential_path), exist_ok=True)
             shutil.copyfile(os.path.join(PROJECT_ROOT, ".streamlit\\credentials.toml"), credential_path)
-
-        # 隐藏命令行窗口
-        hide = win32gui.GetForegroundWindow()
-        win32gui.ShowWindow(hide, win32con.SW_HIDE)
 
         tray_icon_init = get_tray_icon(state="record_pause")
         tray_title_init = _t("tray_tip_record_pause")

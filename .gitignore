@@ -15,6 +15,7 @@ LOCK_FILE_RECORD.MD
 result_wordcloud
 result_timeline
 result_lightbox
+result_wintitle
 cache
 config/config_user.json
 .vscode/settings.json
@@ -23,3 +24,4 @@ env
 random_lexicon
 logs
 userdata
+DEBUGMODE.txt

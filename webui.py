@@ -1,3 +1,6 @@
+import hashlib
+import os
+
 import streamlit as st
 
 import windrecorder.ui.oneday
@@ -5,11 +8,16 @@ import windrecorder.ui.recording
 import windrecorder.ui.search
 import windrecorder.ui.setting
 import windrecorder.ui.state
-import windrecorder.utils as utils
-from windrecorder import file_utils
+from windrecorder import file_utils, utils
 from windrecorder.config import config
 from windrecorder.db_manager import db_manager
 from windrecorder.utils import get_text as _t
+
+if config.img_embed_module_install:
+    try:
+        from windrecorder import img_embed_manager
+    except ModuleNotFoundError:
+        config.set_and_save_config("img_embed_module_install", False)
 
 update_button_key = "update_button"
 
@@ -26,30 +34,30 @@ if "update_badge_emoji" not in st.session_state:
 
 # footer状态信息
 def web_footer_state():
+    FOOTER_STATE_CAHCE_FILEPATH = "cache\\footer_info_cache.json"
+
+    def get_footer_state_data():
+        res = {}
+        res["first_record_time_str"] = utils.seconds_to_date_goodlook_formart(db_manager.db_first_earliest_record_time())
+        res["latest_record_time_str"] = utils.seconds_to_date_goodlook_formart(db_manager.db_latest_record_time())
+        res["latest_db_records_num"] = db_manager.db_num_records()
+        res["videos_file_size"] = round(file_utils.get_dir_size(config.record_videos_dir_ud) / (1024 * 1024 * 1024), 3)
+        res["videos_files_count"], _ = file_utils.get_videos_and_ocred_videos_count(config.record_videos_dir_ud)
+
+        return res
+
     # 懒加载，只在刷新时第一次获取
-    if "footer_first_record_time_str" not in st.session_state:
-        st.session_state["footer_first_record_time_str"] = utils.seconds_to_date_goodlook_formart(
-            db_manager.db_first_earliest_record_time()
-        )
-
-    if "footer_latest_record_time_str" not in st.session_state:
-        st.session_state["footer_latest_record_time_str"] = utils.seconds_to_date_goodlook_formart(
-            db_manager.db_latest_record_time()
-        )
-
-    if "footer_latest_db_records" not in st.session_state:
-        st.session_state["footer_latest_db_records"] = db_manager.db_num_records()
-
-    if "footer_videos_file_size" not in st.session_state:
-        st.session_state["footer_videos_file_size"] = round(
-            file_utils.get_dir_size(config.record_videos_dir) / (1024 * 1024 * 1024), 3
-        )
-
-    if "footer_videos_files_count" not in st.session_state:
-        (
-            st.session_state["footer_videos_files_count"],
-            _,
-        ) = file_utils.get_videos_and_ocred_videos_count(config.record_videos_dir)
+    if "footer_state_dict" not in st.session_state:
+        if os.path.exists(FOOTER_STATE_CAHCE_FILEPATH):
+            if not file_utils.is_file_modified_recently(FOOTER_STATE_CAHCE_FILEPATH, time_gap=1440):
+                # time to update state cache
+                file_utils.save_dict_as_json_to_path(data=get_footer_state_data(), filepath=FOOTER_STATE_CAHCE_FILEPATH)
+            st.session_state["footer_state_dict"] = file_utils.read_json_as_dict_from_path(FOOTER_STATE_CAHCE_FILEPATH)
+        else:
+            file_utils.ensure_dir(os.path.dirname(FOOTER_STATE_CAHCE_FILEPATH))
+            footer_state_data = get_footer_state_data()
+            file_utils.save_dict_as_json_to_path(data=footer_state_data, filepath=FOOTER_STATE_CAHCE_FILEPATH)
+            st.session_state["footer_state_dict"] = footer_state_data
 
     # webUI draw
     st.divider()
@@ -57,11 +65,11 @@ def web_footer_state():
     with col1:
         st.markdown(
             _t("footer_info").format(
-                first_record_time_str=st.session_state.footer_first_record_time_str,
-                latest_record_time_str=st.session_state.footer_latest_record_time_str,
-                latest_db_records=st.session_state.footer_latest_db_records,
-                videos_file_size=st.session_state.footer_videos_file_size,
-                videos_files_count=st.session_state.footer_videos_files_count,
+                first_record_time_str=st.session_state.footer_state_dict["first_record_time_str"],
+                latest_record_time_str=st.session_state.footer_state_dict["latest_record_time_str"],
+                latest_db_records=st.session_state.footer_state_dict["latest_db_records_num"],
+                videos_file_size=st.session_state.footer_state_dict["videos_file_size"],
+                videos_files_count=st.session_state.footer_state_dict["videos_files_count"],
             )
         )
     with col2:
@@ -72,31 +80,58 @@ def web_footer_state():
 
 
 # 主界面_________________________________________________________
-st.markdown(_t("main_title"))
+def main_webui():
+    st.markdown(_t("main_title"))
 
-oneday_tab, search_tab, state_tab, recording_tab, setting_tab = st.tabs(
-    [
-        _t("tab_name_oneday"),
-        _t("tab_name_search"),
-        _t("tab_name_stat"),
-        _t("tab_name_recording"),
-        _t("tab_name_setting") + st.session_state.update_badge_emoji,
-    ]
-)
+    oneday_tab, search_tab, state_tab, recording_tab, setting_tab = st.tabs(
+        [
+            _t("tab_name_oneday"),
+            _t("tab_name_search"),
+            _t("tab_name_stat"),
+            _t("tab_name_recording"),
+            _t("tab_name_setting") + st.session_state.update_badge_emoji,
+        ]
+    )
 
-with oneday_tab:
-    windrecorder.ui.oneday.render()
+    with oneday_tab:
+        windrecorder.ui.oneday.render()
 
-with search_tab:
-    windrecorder.ui.search.render()
+    with search_tab:
+        windrecorder.ui.search.render()
 
-with state_tab:
-    windrecorder.ui.state.render()
+    with state_tab:
+        windrecorder.ui.state.render()
 
-with recording_tab:
-    windrecorder.ui.recording.render()
+    with recording_tab:
+        windrecorder.ui.recording.render()
 
-with setting_tab:
-    windrecorder.ui.setting.render()
+    with setting_tab:
+        windrecorder.ui.setting.render()
 
-web_footer_state()
+    web_footer_state()
+
+    # 尝试预加载嵌入模型
+    if config.img_embed_module_install and config.enable_synonyms_recommend:
+        try:
+            if "text_img_embed_model" not in st.session_state:
+                with st.spinner(_t("gs_text_loading_embed_model")):
+                    st.session_state["text_img_embed_model"] = img_embed_manager.get_model(mode="cpu")
+        except ModuleNotFoundError:
+            config.set_and_save_config("img_embed_module_install", False)
+
+
+# 检查 webui 是否启用密码保护
+if "webui_password_accessed" not in st.session_state:
+    st.session_state["webui_password_accessed"] = False
+
+if config.webui_access_password_md5 and st.session_state.webui_password_accessed is False:
+    col_pwd1, col_pwd2 = st.columns([1, 2])
+    with col_pwd1:
+        password = st.text_input("🔒 Password:", type="password", help=_t("set_pwd_forget_help"))
+    with col_pwd2:
+        st.empty()
+    if hashlib.md5(password.encode("utf-8")).hexdigest() == config.webui_access_password_md5:
+        st.session_state.webui_password_accessed = True
+
+if not config.webui_access_password_md5 or st.session_state.webui_password_accessed is True:
+    main_webui()

@@ -1,3 +1,4 @@
+import json
 import os
 import shutil
 import time
@@ -6,6 +7,9 @@ import pandas as pd
 
 import windrecorder.utils as utils
 from windrecorder.config import config
+from windrecorder.logger import get_logger
+
+logger = get_logger(__name__)
 
 
 # 清空指定目录下的所有文件和子目录
@@ -30,27 +34,19 @@ def ensure_dir(folder_name):
     if not os.path.exists(folder_path):
         # 创建文件夹
         os.makedirs(folder_path)
-        print(f"files: created folder {folder_name}")
+        logger.info(f"files: created folder {folder_name}")
     else:
-        print(f"files: folder existed:{folder_name}")
-
-
-# 将数据库的视频名加上-OCRED标志，使之能正常读取到
-def add_OCRED_suffix(video_name):
-    video_name = video_name.replace("-INDEX", "")
-    vidname = os.path.splitext(video_name)[0] + "-OCRED" + os.path.splitext(video_name)[1]
-    return vidname
-
-
-# 将数据库的视频名加上-COMPRESS-OCRED标志，使之能正常读取到
-def add_COMPRESS_OCRED_suffix(video_name):
-    vidname = os.path.splitext(video_name)[0] + "-COMPRESS-OCRED" + os.path.splitext(video_name)[1]
-    return vidname
+        logger.debug(f"files: folder existed:{folder_name}")
 
 
 # 输入一个视频文件名，返回其%Y-%m的年月信息作为子文件夹
 def convert_vid_filename_as_YYYY_MM(vid_filename):
     return vid_filename[:7]
+
+
+# 输入一个视频文件名，返回其完整的相对路径
+def convert_vid_filename_as_vid_filepath(vid_filename):
+    return os.path.join(config.record_videos_dir_ud, convert_vid_filename_as_YYYY_MM(vid_filename), vid_filename)
 
 
 # 查询videos文件夹下的文件数量、未被ocr的文件数量
@@ -61,8 +57,8 @@ def get_videos_and_ocred_videos_count(folder_path):
     for root, dirs, files in os.walk(folder_path):
         for file in files:
             count += 1
-            if not file.split(".")[0].endswith("-OCRED"):
-                if not file.split(".")[0].endswith("-ERROR"):
+            if "-OCRED" not in file.split(".")[0]:
+                if "-ERROR" not in file.split(".")[0]:
                     nocred_count += 1
 
     return count, nocred_count
@@ -82,16 +78,18 @@ def find_filename_in_dir(dir, search_str):
 
 # 检查视频文件是否存在
 def check_video_exist_in_videos_dir(video_name):
-    videofile_path_month_dir = convert_vid_filename_as_YYYY_MM(video_name)
-    video_path = os.path.join(config.record_videos_dir, videofile_path_month_dir, video_name)
-    ocred_video_name = os.path.splitext(video_name)[0] + "-OCRED" + os.path.splitext(video_name)[1]
-    ocred_path = os.path.join(config.record_videos_dir, videofile_path_month_dir, ocred_video_name)
-
-    if os.path.exists(video_path):
-        return video_name
-    elif os.path.exists(ocred_path):
-        return ocred_video_name
-    else:
+    try:
+        exist_videofiles_list = os.listdir(
+            os.path.join(config.record_videos_dir_ud, convert_vid_filename_as_YYYY_MM(video_name))
+        )
+        video_filename_list = utils.find_strings_list_with_substring(
+            exist_videofiles_list, video_name.split(".")[0]
+        )  # 获取文件夹列表中对应文件名
+        if video_filename_list:
+            return video_filename_list[0]
+        else:
+            return None
+    except FileNotFoundError:
         return None
 
 
@@ -159,11 +157,16 @@ def get_file_path_list_first_level(dir):
     return file_names
 
 
+# 取得文件夹下的第一级文件夹列表
+def get_file_dir_list_first_level(dir):
+    return [d for d in os.listdir(dir) if os.path.isdir(os.path.join(dir, d))]
+
+
 # 根据已有的文件列表，返回指定时间段的视频文件夹内、已索引了的视频路径列表（包括未压缩的与已压缩的）
 def get_videofile_path_list_by_time_range(filepath_list, start_datetime=None, end_datetime=None):
     filepath_list_daterange = []
     for filepath in filepath_list:
-        if filepath.endswith("-OCRED.mp4"):
+        if "-OCRED.mp4" in filepath:
             if start_datetime is None or end_datetime is None:  # 如果不指定时间段，返回所有结果
                 filepath_list_daterange.append(filepath)
             else:
@@ -186,7 +189,7 @@ def get_videofile_path_dict_datetime(filepath_list):
 
 
 # 根据datetime生成数据库带db路径的文件名
-def get_db_filepath_by_datetime(dt, db_dir=config.db_path, user_name=config.user_name):
+def get_db_filepath_by_datetime(dt, db_dir=config.db_path_ud, user_name=config.user_name):
     filename = user_name + "_" + dt.strftime("%Y-%m") + "_wind.db"
     filepath = os.path.join(db_dir, filename)
     return filepath
@@ -196,32 +199,68 @@ def get_db_filepath_by_datetime(dt, db_dir=config.db_path, user_name=config.user
 def save_dataframe_to_path(dataframe, file_path="cache/temp.csv"):
     """
     将DataFrame数据保存到指定路径
-
-    参数:
-    dataframe (pandas.DataFrame): 要保存的DataFrame数据
-    file_path (str): 要保存到的文件路径 默认为cache
-
-    返回:
-    无
     """
     ensure_dir(os.path.dirname(file_path))
     dataframe.to_csv(file_path, index=False)  # 使用to_csv()方法将DataFrame保存为CSV文件（可根据需要选择其他文件格式）
-    print("files: DataFrame has been saved at ", file_path)
+    logger.debug(f"files: DataFrame has been saved at {file_path}")
 
 
 # 从csv文件读取dataframe
 def read_dataframe_from_path(file_path="cache/temp.csv"):
     """
     从指定路径读取数据到DataFrame
-
-    参数:
-    file_path (str): 要读取数据的文件路径 默认为cache
-
-    返回:
-    pandas.DataFrame: 读取到的DataFrame数据
     """
     if not os.path.exists(file_path):
         return None
 
     dataframe = pd.read_csv(file_path)  # 使用read_csv()方法读取CSV文件（可根据文件格式选择对应的读取方法）
     return dataframe
+
+
+def save_dict_as_json_to_path(data: dict, filepath):
+    """将 dict 保存到 json"""
+    ensure_dir(os.path.dirname(filepath))
+    with open(filepath, "w") as f:
+        json.dump(data, f)
+    logger.info(f"files: json has been saved at {filepath}")
+
+
+def read_json_as_dict_from_path(filepath):
+    """从 json 读取 dict"""
+    if not os.path.exists(filepath):
+        return None
+
+    with open(filepath, "r") as f:
+        data = json.load(f)
+    return data
+
+
+# 读取 extension 文件夹下所有插件名与对应 meta info
+def get_extension(extension_filepath="extension"):
+    dir_list = get_file_dir_list_first_level(extension_filepath)
+    extension_dict = {}
+    for dir in dir_list:
+        try:
+            with open(f"{extension_filepath}\\{dir}\\meta.json", encoding="utf-8") as file:
+                data = json.load(file)
+                extension_dict[data["extension_name"]] = data
+        except Exception as e:
+            logger.warning(str(e))
+    return extension_dict
+
+
+# 返回语言所有的近义词表，若无返回 None
+def get_synonyms_vdb_txt_filepath(lang):
+    vdb_filepath = os.path.join(config.config_src_dir, "synonyms", f"synonyms_{lang}.index")
+    words_txt_filepath = os.path.join(config.config_src_dir, "synonyms", f"synonyms_{lang}.txt")
+    if os.path.exists(vdb_filepath) and os.path.exists(words_txt_filepath):
+        return vdb_filepath, words_txt_filepath
+    else:
+        return None, None
+
+
+# 读取txt文件中每一行作为一个列表
+def read_txt_as_list(file_path):
+    with open(file_path, "r", encoding="utf8") as f:
+        content_list = [line.strip() for line in f.readlines()]
+    return content_list

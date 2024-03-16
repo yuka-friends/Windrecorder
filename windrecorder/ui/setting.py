@@ -1,3 +1,4 @@
+import hashlib
 import subprocess
 import time
 from pathlib import Path
@@ -10,7 +11,16 @@ import windrecorder.record as record
 import windrecorder.utils as utils
 from windrecorder import __version__, file_utils, ocr_manager
 from windrecorder.config import config
+from windrecorder.logger import get_logger
 from windrecorder.utils import get_text as _t
+
+logger = get_logger(__name__)
+
+if config.img_embed_module_install:
+    try:
+        from windrecorder import img_embed_manager
+    except ModuleNotFoundError:
+        config.set_and_save_config("img_embed_module_install", False)
 
 lang_map = utils.d_lang["lang_map"]
 
@@ -20,13 +30,20 @@ def set_config_lang(lang_name):
     lang_code = inverted_lang_map.get(lang_name)
 
     if not lang_code:
-        print(f"webui: Invalid language name: {lang_name}")
+        logger.error(f"Invalid language name: {lang_name}")
         return
 
     config.set_and_save_config("lang", lang_code)
 
 
 def render():
+    # 初始化全局状态
+    if "is_cuda_available" not in st.session_state:
+        if config.img_embed_module_install:
+            st.session_state.is_cuda_available = img_embed_manager.is_cuda_available
+        else:
+            st.session_state.is_cuda_available = False
+
     st.markdown(_t("set_md_title"))
 
     col1b, col2b, col3b = st.columns([1, 0.5, 1.5])
@@ -77,12 +94,17 @@ def render():
                 index=ocr_lang_index,
             )
 
-            # 设置排除词
-            exclude_words = st.text_area(
-                _t("set_input_exclude_word"),
-                value=utils.list_to_string(config.exclude_words),
-                help=_t("set_input_exclude_word_help"),
-            )
+            if config.img_embed_module_install:
+                option_enable_img_embed_search = st.checkbox(
+                    _t("set_checkbox_enable_img_emb"),
+                    help=_t("set_text_enable_img_emb_help"),
+                    value=config.enable_img_embed_search,
+                )
+            else:
+                option_enable_img_embed_search = False
+
+        if not st.session_state.is_cuda_available and option_enable_img_embed_search:
+            st.warning(_t("set_text_img_emb_not_suppport_cuda"))
 
         # 更新数据库按钮
         if update_db_btn:
@@ -110,6 +132,8 @@ def render():
                 st.button(_t("set_btn_got_it"), key="setting_reset")
 
         st.divider()
+
+        # OCR 时忽略屏幕四边的区域范围
         col1pb, col2pb = st.columns([1, 1])
         with col1pb:
             st.markdown(_t("set_md_ocr_ignore_area"), help=_t("set_md_ocr_ignore_area_help"))
@@ -169,9 +193,11 @@ def render():
         col1_ui, col2_ui = st.columns([1, 1])
         with col1_ui:
             st.markdown(_t("set_md_gui"))
-            option_show_oneday_wordcloud = st.checkbox(
-                _t("set_checkbox_show_wordcloud_under_oneday"),
-                value=config.show_oneday_wordcloud,
+            # 一日之时启用三栏布局
+            config_enable_3_columns_in_oneday = st.checkbox(
+                _t("set_checkbox_enable_3_columns_in_oneday"),
+                value=config.enable_3_columns_in_oneday,
+                help=_t("set_help_enable_3_columns_in_oneday"),
             )
             # 使用中文形近字进行搜索
             config_use_similar_ch_char_to_search = st.checkbox(
@@ -179,6 +205,16 @@ def render():
                 value=config.use_similar_ch_char_to_search,
                 help=_t("set_checkbox_use_similar_zh_char_to_search_help"),
             )
+            # 搜索中推荐近似词
+            if config.img_embed_module_install:
+                config_enable_synonyms_recommend = st.checkbox(
+                    _t("set_checkbox_synonyms_recommand"),
+                    value=config.enable_synonyms_recommend,
+                    help=_t("set_help_synonyms_recommand"),
+                )
+            else:
+                config_enable_synonyms_recommend = False
+
         with col2_ui:
             config_wordcloud_user_stop_words = st.text_area(
                 _t("set_input_wordcloud_filter"),
@@ -189,13 +225,32 @@ def render():
         # 每页结果最大数量
         col1_ui2, col2_ui2 = st.columns([1, 1])
         with col1_ui2:
+            day_begin_time_list = [
+                ("00:00", 0),
+                ("01:00", 60),
+                ("02:00", 120),
+                ("03:00", 180),
+                ("04:00", 240),
+                ("05:00", 300),
+                ("06:00", 360),
+            ]
+
+            option_day_begin_time_oneday = st.selectbox(
+                _t("set_input_day_begin_minutes"),
+                index=find_index_in_tuple_timelist(list=day_begin_time_list, target=config.day_begin_minutes),
+                options=[item[0] for item in day_begin_time_list],
+                help=_t("set_help_day_begin_minutes"),
+            )
+
             config_max_search_result_num = st.number_input(
                 _t("set_input_max_num_search_page"),
-                min_value=1,
+                min_value=5,
                 max_value=500,
                 value=config.max_page_result,
             )
+
         with col2_ui2:
+            # 「一天之时」时间轴的横向缩略图数量
             config_oneday_timeline_num = st.number_input(
                 _t("set_input_oneday_timeline_thumbnail_num"),
                 min_value=50,
@@ -203,6 +258,22 @@ def render():
                 value=config.oneday_timeline_pic_num,
                 help=_t("set_input_oneday_timeline_thumbnail_num_help"),
             )
+
+            # imgemb 选项
+            if config.img_embed_module_install and option_enable_img_embed_search:
+                config_img_embed_search_recall_result_per_db = st.number_input(
+                    _t("set_input_img_emb_max_recall_count"),
+                    min_value=5,
+                    max_value=100,
+                    value=config.img_embed_search_recall_result_per_db,
+                    help=_t("set_text_help_img_emb_max_recall_count"),
+                )
+            else:
+                config_img_embed_search_recall_result_per_db = 30
+
+        config_webui_access_password = st.text_input(
+            f'🔒 {_t("set_pwd_text")}', value=config.webui_access_password_md5, help=_t("set_pwd_help"), type="password"
+        )
 
         # 选择语言
         lang_selection = list(lang_map.values())
@@ -222,12 +293,24 @@ def render():
             key="SaveBtnGeneral",
         ):
             set_config_lang(language_option)
+            config.set_and_save_config("enable_3_columns_in_oneday", config_enable_3_columns_in_oneday)
             config.set_and_save_config("max_page_result", config_max_search_result_num)
             # config.set_and_save_config("ocr_engine", config_ocr_engine)
             config.set_and_save_config("ocr_lang", config_ocr_lang)
-            config.set_and_save_config("exclude_words", utils.string_to_list(exclude_words))
-            config.set_and_save_config("show_oneday_wordcloud", option_show_oneday_wordcloud)
+            config.set_and_save_config("enable_img_embed_search", option_enable_img_embed_search)
             config.set_and_save_config("use_similar_ch_char_to_search", config_use_similar_ch_char_to_search)
+            config.set_and_save_config("enable_synonyms_recommend", config_enable_synonyms_recommend)
+            config.set_and_save_config("img_embed_search_recall_result_per_db", config_img_embed_search_recall_result_per_db)
+
+            # 更改了一天之时缩略图相关选项时，清空缓存时间轴缩略图
+            day_begin_minutes = find_value_in_tuple_timelist_by_str(
+                list=day_begin_time_list, target=option_day_begin_time_oneday
+            )
+            if day_begin_minutes != config.day_begin_minutes or config_oneday_timeline_num != config.oneday_timeline_pic_num:
+                file_utils.empty_directory(config.timeline_result_dir_ud)
+            config.set_and_save_config("day_begin_minutes", day_begin_minutes)
+            config.set_and_save_config("oneday_timeline_pic_num", config_oneday_timeline_num)
+
             config.set_and_save_config(
                 "ocr_image_crop_URBL",
                 [
@@ -241,7 +324,14 @@ def render():
                 "wordcloud_user_stop_words",
                 utils.string_to_list(config_wordcloud_user_stop_words),
             )
-            config.set_and_save_config("oneday_timeline_pic_num", config_oneday_timeline_num)
+
+            # 如果有新密码输入，更改；如果留空，关闭功能
+            if config_webui_access_password and config_webui_access_password != config.webui_access_password_md5:
+                config.set_and_save_config(
+                    "webui_access_password_md5", hashlib.md5(config_webui_access_password.encode("utf-8")).hexdigest()
+                )
+            elif len(config_webui_access_password) == 0:
+                config.set_and_save_config("webui_access_password_md5", "")
             st.toast(_t("utils_toast_setting_saved"), icon="🦝")
             time.sleep(1)
             st.rerun()
@@ -268,14 +358,15 @@ def render():
                 st.session_state.update_info = _t("set_update_fail").format(e=e)
             st.session_state["update_check"] = True
 
-        about_image_b64 = utils.image_to_base64("__assets__\\readme_racoonNagase.png")
+        if "about_image_b64" not in st.session_state:
+            st.session_state.about_image_b64 = utils.image_to_base64("__assets__\\readme_racoonNagase.png")
         st.markdown(
-            f"<img align='right' style='max-width: 100%;max-height: 100%;' src='data:image/png;base64, {about_image_b64}'/>",
+            f"<img align='right' style='max-width: 100%;max-height: 100%;' src='data:image/png;base64, {st.session_state.about_image_b64}'/>",
             unsafe_allow_html=True,
         )
 
         about_markdown = (
-            Path(f"config\\src\\about_{config.lang}.md")
+            Path(f"{config.config_src_dir}\\about_{config.lang}.md")
             .read_text(encoding="utf-8")
             .format(
                 version=__version__,
@@ -287,7 +378,7 @@ def render():
 
 # 数据库的前置更新索引状态提示
 def draw_db_status():
-    count, nocred_count = file_utils.get_videos_and_ocred_videos_count(config.record_videos_dir)
+    count, nocred_count = file_utils.get_videos_and_ocred_videos_count(config.record_videos_dir_ud)
     timeCostStr = utils.estimate_indexing_time()
     if config.OCR_index_strategy == 1:
         # 启用自动索引
@@ -380,3 +471,19 @@ def screen_ignore_padding(topP, rightP, bottomP, leftP, use_screenshot=False):
     )
 
     return image_padding_refer
+
+
+# 寻找配置项分钟数在 timelist 对应时间表达的 index
+def find_index_in_tuple_timelist(list, target):
+    for i in range(len(list)):
+        if list[i][1] == target:
+            return i
+    return 0
+
+
+# 根据输入 str，寻找 timelist 对应的分钟数
+def find_value_in_tuple_timelist_by_str(list, target):
+    for i in range(len(list)):
+        if list[i][0] == target:
+            return list[i][1]
+    return 1

@@ -1,4 +1,3 @@
-import base64
 import datetime
 import os
 import shutil
@@ -13,29 +12,23 @@ from skimage.metrics import structural_similarity as ssim
 
 import windrecorder.record as record
 import windrecorder.utils as utils
-from windrecorder import file_utils
+from windrecorder import file_utils, record_wintitle
 from windrecorder.config import config
 from windrecorder.db_manager import db_manager
 from windrecorder.exceptions import LockExistsException
 from windrecorder.lock import FileLock
+from windrecorder.logger import get_logger
 from windrecorder.utils import date_to_seconds
+
+logger = get_logger(__name__)
 
 if config.enable_ocr_chineseocr_lite_onnx:
     from ocr_lib.chineseocr_lite_onnx.model import OcrHandle
 
 # ocr_short_side = int(config.ocr_short_size)
 
-# 检查文件是否被占用
-# def is_file_in_use(file_path):
-#     try:
-#         fd = os.open(file_path, os.O_RDWR|os.O_EXCL)
-#         os.close(fd)
-#         return False
-#     except OSError:
-#         return True
 
-
-# 使用 win32file 的判断实现
+# 使用 win32file 的判断实现，检查文件是否被占用
 def is_file_in_use(file_path):
     try:
         vHandle = win32file.CreateFile(
@@ -60,8 +53,7 @@ def is_file_in_use(file_path):
 # 提取视频i帧
 # todo - 加入检测视频是否为合法视频?
 def extract_iframe(video_file, iframe_path, iframe_interval=4000):
-    print("ocr_manager: extracting video i-frame")
-    print(video_file)
+    logger.info(f"extracting video i-frame: {video_file}")
     cap = cv2.VideoCapture(video_file)
     fps = cap.get(cv2.CAP_PROP_FPS)
 
@@ -73,7 +65,7 @@ def extract_iframe(video_file, iframe_path, iframe_interval=4000):
             break
 
         if frame_cnt % frame_step == 0:
-            print("ocr_manager: extract frame cut:" + str(frame_cnt))
+            logger.debug(f"extract frame cut:{str(frame_cnt)}")
             cv2.imwrite(os.path.join(iframe_path, f"{frame_cnt}.jpg"), frame)
 
         frame_cnt += 1
@@ -119,26 +111,26 @@ def crop_iframe(directory):
         # 关闭图片文件
         image.close()
 
-        print(f"ocr_manager: saved croped img {cropped_file_path}")
+        logger.debug(f"saved croped img {cropped_file_path}")
 
 
 # OCR 分流器
 def ocr_image(img_input):
     ocr_engine = config.ocr_engine
-    # print(f"ocr_manager: ocr_engine:{ocr_engine}")
+    logger.debug(f"ocr_engine:{ocr_engine}")
     if ocr_engine == "Windows.Media.Ocr.Cli":
         return ocr_image_ms(img_input)
     elif ocr_engine == "ChineseOCR_lite_onnx":
         if config.enable_ocr_chineseocr_lite_onnx:
             return ocr_image_col(img_input)
         else:
-            print("ocr_manager: enable_ocr_chineseocr_lite_onnx is disabled. Fallback to Windows.Media.Ocr.Cli.")
+            logger.warning("enable_ocr_chineseocr_lite_onnx is disabled. Fallback to Windows.Media.Ocr.Cli.")
             return ocr_image_ms(img_input)
 
 
 # OCR文本-chineseOCRlite
 def ocr_image_col(img_input):
-    print("ocr_manager: OCR text by chineseOCRlite")
+    logger.debug("OCR text by chineseOCRlite")
     # 输入图片路径，like 'test.jpg'
     # 实例化OcrHandle对象
     ocr_handle = OcrHandle()
@@ -151,17 +143,17 @@ def ocr_image_col(img_input):
 
     # 每个结果包含[文本框坐标, 识别文字, 置信度分数]。
     for box, text, score in results:
-        # print(box,text,score)
+        # logger.info(box,text,score)
         ocr_sentence_result = ocr_sentence_result + "," + text
 
-    print("ocr_manager: ocr_sentence_result:")
-    print(ocr_sentence_result)
+    logger.debug("ocr_sentence_result:")
+    logger.debug(ocr_sentence_result)
     return ocr_sentence_result
 
 
 # OCR文本-MS自带方式
 def ocr_image_ms(img_input):
-    print("ocr_manager: OCR text by Windows.Media.Ocr.Cli")
+    logger.debug("OCR text by Windows.Media.Ocr.Cli")
     text = ""
     # 调用Windows.Media.Ocr.Cli.exe,参数为图片路径
     command = ["ocr_lib\\Windows.Media.Ocr.Cli.exe", "-l", config.ocr_lang, img_input]
@@ -184,7 +176,7 @@ def ocr_image_ms(img_input):
 
 # 计算两次结果的重合率
 def compare_strings(a, b, threshold=70):
-    print("ocr_manager: Calculate the coincidence rate of two results")
+    logger.debug("Calculate the coincidence rate of two results")
 
     # a 和 b 都不含任何文字
     if not a and not b:
@@ -198,21 +190,21 @@ def compare_strings(a, b, threshold=70):
     # For example:
     # "ababababab" is very similar to "aaaaabbbbb"
     overlap = len(set(a) & set(b)) / len(set(a) | set(b)) * 100
-    print("overlap:" + str(overlap))
+    logger.debug(f"overlap:{str(overlap)}")
 
     # 判断重合率是否超过阈值
     if overlap >= threshold:
-        print("The coincidence rate exceeds the threshold.")
+        logger.debug("The coincidence rate exceeds the threshold.")
         return True, overlap
     else:
-        print("The coincidence rate does not exceed the threshold.")
+        logger.debug("The coincidence rate does not exceed the threshold.")
         return False, overlap
 
 
 # 计算两张图片的重合率 - 通过本地文件的方式
 def compare_image_similarity(img_path1, img_path2, threshold=0.85):
     # todo: 将删除操作改为整理为文件列表，降低io开销
-    print("ocr_manager: Calculate the coincidence rate of two pictures.")
+    logger.debug("Calculate the coincidence rate of two pictures.")
     imageA = cv2.imread(img_path1)
     imageB = cv2.imread(img_path2)
 
@@ -224,10 +216,10 @@ def compare_image_similarity(img_path1, img_path2, threshold=0.85):
     score = ssim(imageA, imageB)
 
     if score >= threshold:
-        print(f"Images are similar with score {score}, deleting {img_path2}")
+        logger.debug(f"Images are similar with score {score}, deleting {img_path2}")
         return True
     else:
-        print(f"Images are different with score {score}")
+        logger.debug(f"Images are different with score {score}")
         return False
 
 
@@ -244,8 +236,8 @@ def compare_image_similarity_np(img1, img2):
     keypoints1, descriptors1 = orb.detectAndCompute(gray_img1, None)
     keypoints2, descriptors2 = orb.detectAndCompute(gray_img2, None)
 
-    # print("-----debug:descriptors1.dtype, descriptors1.shape",descriptors1.dtype, descriptors1.shape)
-    # print("-----debug:descriptors2.dtype, descriptors2.shape",descriptors2.dtype, descriptors2.shape)
+    # logger.info("-----debug:descriptors1.dtype, descriptors1.shape",descriptors1.dtype, descriptors1.shape)
+    # logger.info("-----debug:descriptors2.dtype, descriptors2.shape",descriptors2.dtype, descriptors2.shape)
 
     # 初始化一个暴力匹配器
     matcher = cv2.BFMatcher(cv2.NORM_HAMMING, crossCheck=True)
@@ -258,35 +250,23 @@ def compare_image_similarity_np(img1, img2):
 
     # 计算相似度
     similarity = len(matches) / max(len(keypoints1), len(keypoints2))
-    print(f"ocr_manager: compare_image_similarity_np:{similarity}")
+    logger.debug(f"compare_image_similarity_np:{similarity}")
 
     return similarity
 
 
 # 将图片缩小到等比例、宽度为70px的thumbnail，并返回base64
-def resize_imahe_as_base64(img_path):
-    img = cv2.imread(img_path)
+def resize_image_as_base64(img_path):
+    img = Image.open(img_path)
+    img_b64 = utils.resize_image_as_base64(img)
 
-    # 计算缩放比例,使宽度为70
-    ratio = 70 / img.shape[1]
-    dim = (70, int(img.shape[0] * ratio))
-
-    # 进行缩放
-    resized = cv2.resize(img, dim, interpolation=cv2.INTER_AREA)
-
-    # 编码为JPEG格式,质量为30
-    encode_param = [int(cv2.IMWRITE_JPEG_QUALITY), 10]
-    _, encimg = cv2.imencode(".jpg", resized, encode_param)
-
-    # 转为base64字符串
-    img_b64 = base64.b64encode(encimg).decode("utf-8")
     return img_b64
 
 
 # 回滚操作
 def rollback_data(video_path, vid_file_name):
     # 擦除db中没索引完全的数据
-    print(f"ocr_manager: rollback {vid_file_name}")
+    logger.info(f"rollback {vid_file_name}")
     db_manager.db_rollback_delete_video_refer_record(vid_file_name)
 
 
@@ -301,9 +281,9 @@ def ocr_core_logic(file_path, vid_file_name, iframe_path):
     is_first_process_image_similarity = 1
     # 先清理一波看起来重复的图像
     for img_file_name in os.listdir(iframe_path):
-        print("processing IMG - compare:" + img_file_name)
+        logger.debug(f"processing IMG - compare:{img_file_name}")
         img = os.path.join(iframe_path, img_file_name)
-        print("img=" + img)
+        logger.debug(f"img={img}")
 
         # 填充用于对比的slot队列
         if is_first_process_image_similarity == 1:
@@ -331,40 +311,49 @@ def ocr_core_logic(file_path, vid_file_name, iframe_path):
         "videofile_time",
         "ocr_text",
         "is_videofile_exist",
-        "is_videofile_exist",
+        "is_picturefile_exist",
         "thumbnail",
+        "win_title",
     ]
     dataframe_all = pd.DataFrame(columns=dataframe_column_names)
 
-    # todo: os.listdir 应该进行正确的数字排序、以确保是按视频顺序索引的
+    # TODO: os.listdir 应该进行正确的数字排序、以确保是按视频顺序索引的
     for img_file_name in os.listdir(iframe_path):
-        print("_____________________")
-        print("processing IMG - OCR:" + img_file_name)
+        logger.debug("_____________________")
+        logger.debug(f"processing IMG - OCR:{img_file_name}")
 
         img = os.path.join(iframe_path, img_file_name)
         ocr_result_stringB = ocr_image(img)
-        # print(f"ocr_result_stringB:{ocr_result_stringB}")
+        # logger.debug(f"ocr_result_stringB:{ocr_result_stringB}")
 
         is_str_same, _ = compare_strings(ocr_result_stringA, ocr_result_stringB)
         if is_str_same:
-            print("[Skip] The content is consistent, not written to the database, skipped.")
+            logger.debug("[Skip] The content is consistent, not written to the database, skipped.")
         elif len(ocr_result_stringB) < 3:
-            print("[Skip] Insufficient content, not written to the database, skipped.")
+            logger.debug("[Skip] Insufficient content, not written to the database, skipped.")
         else:
-            print("Inconsistent content")
+            logger.debug("Inconsistent content")
             if utils.is_str_contain_list_word(ocr_result_stringB, config.exclude_words):
-                print("[Skip] The content contains exclusion list words and is not written to the database.")
+                logger.debug("[Skip] The content contains exclusion list words and is not written to the database.")
             else:
-                print("Writing to database.")
+                logger.debug("Writing to database.")
                 # 使用os.path.splitext()可以把文件名和文件扩展名分割开来，os.path.splitext(file_name)会返回一个元组,元组的第一个元素是文件名,第二个元素是扩展名
                 calc_to_sec_vidname = os.path.splitext(vid_file_name)[0]
                 calc_to_sec_vidname = calc_to_sec_vidname.replace("-INDEX", "")
                 calc_to_sec_picname = round(int(os.path.splitext(img_file_name)[0]) / 2)
                 calc_to_sec_data = date_to_seconds(calc_to_sec_vidname) + calc_to_sec_picname
+                win_title = record_wintitle.get_wintitle_by_timestamp(calc_to_sec_data)
+                win_title = record_wintitle.optimize_wintitle_name(win_title)
+                # 检查窗口标题是否在跳过词中
+                if utils.is_str_contain_list_word(win_title, config.exclude_words):
+                    logger.debug(
+                        "[Skip] The window title name contains exclusion list words and is not written to the database."
+                    )
+                    continue
                 # 计算图片预览图
-                img_thumbnail = resize_imahe_as_base64(img)
+                img_thumbnail = resize_image_as_base64(img)
                 # 清理ocr数据
-                ocr_result_write = utils.clean_dirty_text(ocr_result_stringB)
+                ocr_result_write = utils.clean_dirty_text(ocr_result_stringB) + " -||- " + str(win_title)
                 # 为准备写入数据库dataframe添加记录
                 dataframe_all.loc[len(dataframe_all.index)] = [
                     vid_file_name,
@@ -374,6 +363,7 @@ def ocr_core_logic(file_path, vid_file_name, iframe_path):
                     True,
                     False,
                     img_thumbnail,
+                    win_title,
                 ]
                 ocr_result_stringA = ocr_result_stringB
 
@@ -391,7 +381,7 @@ def ocr_process_single_video(video_path, vid_file_name, iframe_path, optimize_fo
         # 判断文件是否为上次索引未完成的文件
         if "-INDEX" in vid_file_name:
             # 是-执行回滚操作
-            print("ocr_manager: INDEX flag exists, perform rollback operation.")
+            logger.info("INDEX flag exists, perform rollback operation.")
             # 这里我们保证 vid_file_name 不包含 -INDEX
             vid_file_name = vid_file_name.replace("-INDEX", "")
             rollback_data(video_path, vid_file_name)
@@ -422,11 +412,7 @@ def ocr_process_single_video(video_path, vid_file_name, iframe_path, optimize_fo
                 ocr_core_logic(file_path, vid_file_name, iframe_sub_path)
         except Exception as e:
             # 记录错误日志
-            print(
-                "ocr_manager: Error occurred while processing :",
-                file_path,
-                e,
-            )
+            logger.error(f"Error occurred while processing :{file_path=}, {e=}")
             new_name = vid_file_name.split(".")[0] + "-ERROR." + vid_file_name.split(".")[1]
             new_name_dir = os.path.dirname(file_path)
             os.rename(file_path, os.path.join(new_name_dir, new_name))
@@ -434,13 +420,15 @@ def ocr_process_single_video(video_path, vid_file_name, iframe_path, optimize_fo
             with open(f"cache\\LOG_ERROR_{new_name}.MD", "w", encoding="utf-8") as f:
                 f.write(f'{datetime.datetime.now().strftime("%Y-%m-%d_%H-%M-%S")}\n{e}')
         else:
-            print("Add tags to video file")
+            logger.info("Add tags to video file")
             new_file_path = file_path.replace("-INDEX", "-OCRED")
             os.rename(file_path, new_file_path)
-            print(f"ocr_manager: --------- {file_path} Finished! ---------")
+            logger.info(f"--------- {file_path} Finished! ---------")
         finally:
             # 清理文件
-            shutil.rmtree(iframe_sub_path)
+            if not config.enable_img_embed_search:
+                shutil.rmtree(iframe_sub_path)  # 先不清理文件，留给 img embed 流程继续使用，由它清理
+            pass
 
 
 def convert_temp_optimize_vidfile_for_ocr(vid_filepath):
@@ -457,16 +445,16 @@ def convert_temp_optimize_vidfile_for_ocr(vid_filepath):
     ffmpeg_cmd = [config.ffmpeg_path, "-i", vid_filepath, "-vf", "fps=2", output_temp_vid_filepath]
     try:
         subprocess.run(ffmpeg_cmd, check=True)
-        print(f"convert {vid_filepath} into {output_temp_vid_filepath}")
+        logger.info(f"convert {vid_filepath} into {output_temp_vid_filepath}")
         return output_temp_vid_filepath
     except subprocess.CalledProcessError as ex:
-        print(f"convert_temp_optimize_vidfile_for_ocr: {ex.cmd} failed with return code {ex.returncode}")
+        logger.error(f"convert_temp_optimize_vidfile_for_ocr: {ex.cmd} failed with return code {ex.returncode}")
         return None
 
 
 # 处理文件夹内所有视频的主要流程
 def ocr_process_videos(video_path, iframe_path):
-    print("ocr_manager: Processing all video files.")
+    logger.info("Processing all video files.")
 
     # 备份最新的数据库
     db_filepath_latest = file_utils.get_db_filepath_by_datetime(datetime.datetime.now())  # 直接获取对应时间的数据库路径
@@ -475,10 +463,10 @@ def ocr_process_videos(video_path, iframe_path):
     for root, dirs, filess in os.walk(video_path):
         for file in filess:
             full_file_path = os.path.join(root, file)
-            print("processing VID:" + full_file_path)
+            logger.debug(f"processing VID: {full_file_path}")
 
             # 检查视频文件是否已被索引
-            if not file.endswith(".mp4") or file.endswith("-OCRED.mp4") or file.endswith("-ERROR.mp4"):
+            if not file.endswith(".mp4") or "-OCRED" in file or "-ERROR" in file:
                 continue
 
             # 判断文件是否正在被占用
@@ -495,55 +483,65 @@ def ocr_process_videos(video_path, iframe_path):
 
 
 # 检查视频文件夹中所有文件的日期，对超出储存时限的文件进行删除操作
-def remove_outdated_videofiles():
+def remove_outdated_videofiles(video_queue_batch=60):
     if config.vid_store_day == 0:
         return None
+
+    video_process_count = 0
 
     today_datetime = datetime.datetime.today()
     days_to_subtract = config.vid_store_day
     start_datetime = datetime.datetime(2000, 1, 1, 0, 0, 1)
     end_datetime = today_datetime - datetime.timedelta(days=days_to_subtract)
 
-    video_filepath_list = file_utils.get_file_path_list(config.record_videos_dir)
+    video_filepath_list = file_utils.get_file_path_list(config.record_videos_dir_ud)
     video_filepath_list_outdate = file_utils.get_videofile_path_list_by_time_range(
         video_filepath_list, start_datetime, end_datetime
     )
-    print(f"ocr_manager: outdated file to remove: {video_filepath_list_outdate}")
+    logger.info(f"outdated file to remove: {video_filepath_list_outdate}")
 
     if len(video_filepath_list_outdate) > 0:
         for item in video_filepath_list_outdate:
-            print(f"ocr_manager: removing {item}")
+            logger.info(f"removing {item}, {video_process_count=}, {video_queue_batch=}")
             send2trash(item)
+            video_process_count += 1
+            if video_process_count > video_queue_batch:
+                break
 
 
 # 检查视频文件夹中所有文件的日期，对超出储存时限的文件进行压缩操作(todo)
-def compress_outdated_videofiles():
+def compress_outdated_videofiles(video_queue_batch=30):
     if config.vid_compress_day == 0:
         return None
+
+    video_process_count = 0
 
     today_datetime = datetime.datetime.today()
     days_to_subtract = config.vid_compress_day
     start_datetime = datetime.datetime(2000, 1, 1, 0, 0, 1)
     end_datetime = today_datetime - datetime.timedelta(days=days_to_subtract)
 
-    video_filepath_list = file_utils.get_file_path_list(config.record_videos_dir)
+    video_filepath_list = file_utils.get_file_path_list(config.record_videos_dir_ud)
     video_filepath_list_outdate = file_utils.get_videofile_path_list_by_time_range(
         video_filepath_list, start_datetime, end_datetime
     )
-    print(f"ocr_manager: file to compress {video_filepath_list_outdate}")
+    logger.info(f"file to compress {video_filepath_list_outdate}")
 
     if len(video_filepath_list_outdate) > 0:
         for item in video_filepath_list_outdate:
-            if not item.endswith("-COMPRESS-OCRED.mp4") and item.endswith("-OCRED.mp4"):
-                print(f"ocr_manager: compressing {item}")
+            if "-COMPRESS" not in item and "-OCRED" in item:
+                logger.info(f"compressing {item}, {video_process_count=}, {video_queue_batch=}")
                 record.compress_video_resolution(item, config.video_compress_rate)
                 send2trash(item)
-    print("ocr_manager: All compress tasks done!")
+                video_process_count += 1
+                if video_process_count > video_queue_batch:
+                    break
+    logger.info("All compress tasks done!")
 
 
 # 备份数据库
 def backup_dbfile(db_filepath, keep_items_num=15, make_new_backup_timegap=datetime.timedelta(hours=8)):
-    if db_filepath.endswith("_TEMP_READ.db"):
+    if "_TEMP_READ" in db_filepath:
         return False
 
     db_backup_filepath = "cache\\db_backup"
@@ -604,7 +602,7 @@ def ocr_manager_main():
     数据库主维护方式
     """
 
-    record_videos_dir = config.record_videos_dir
+    record_videos_dir = config.record_videos_dir_ud
     i_frames_dir = config.iframe_dir
 
     file_utils.ensure_dir(i_frames_dir)

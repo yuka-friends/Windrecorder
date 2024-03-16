@@ -1,0 +1,7 @@
+{
+    "extension_name": "Install Image Embedding Module for Windrecorder",
+    "developer_name": "antonoko",
+    "developer_url": "https://github.com/Antonoko",
+    "version": "0.0.1",
+    "description_markdown": "本脚本可以为捕风记录仪安装图像语义索引功能。安装完毕后，可以索引并用自然语言描述来搜索对应画面。\n受限于使用场景与模型精度，可能实际并没有那么有用和准确，但还是挺有意思的。\n\nThis script can install the image semantic indexing function for Windrecorder. After installation, you can index and search for corresponding images using natural language descriptions.\nLimited by usage scenarios and model accuracy, it may not actually be that useful and accurate, but it is still quite interesting.\n\n[什么是图像嵌入索引？What's an image embedding?](https://blog.roboflow.com/what-is-an-image-embedding/)"
+}

@@ -7,7 +7,10 @@ import pandas as pd
 from send2trash import send2trash
 
 from windrecorder.config import config
+from windrecorder.logger import get_logger
 from windrecorder.utils import is_process_running
+
+logger = get_logger(__name__)
 
 
 # 检测是否正在录屏
@@ -16,7 +19,7 @@ def is_recording():
         with open(config.record_lock_path, encoding="utf-8") as f:
             check_pid = int(f.read())
     except FileNotFoundError:
-        print("record: Screen recording service file lock does not exist.")
+        logger.error("record: Screen recording service file lock does not exist.")
         return False
 
     return is_process_running(check_pid, "python.exe")
@@ -36,7 +39,7 @@ def get_scale_screen_res_strategy(origin_width=1920, origin_height=1080):
 
 # 获取视频的原始分辨率
 def get_video_res(video_path):
-    cmd = f"ffprobe -v error -select_streams v:0 -show_entries stream=width,height -of csv=p=0 {video_path}"
+    cmd = f"{config.ffprobe_path} -v error -select_streams v:0 -show_entries stream=width,height -of csv=p=0 {video_path}"
     output = subprocess.check_output(cmd, shell=True).decode("utf-8").strip()
     width, height = map(int, output.split(","))
     return width, height
@@ -46,7 +49,7 @@ def get_video_res(video_path):
 def compress_video_CLI(video_path, target_width, target_height, encoder, crf_flag, crf, output_path):
     cmd = f"ffmpeg -i {video_path} -vf scale={target_width}:{target_height} -c:v {encoder} {crf_flag} {crf} -pix_fmt yuv420p {output_path}"
 
-    print(f"[compress_video_CLI] {cmd=}")
+    logger.info(f"[compress_video_CLI] {cmd=}")
     subprocess.call(cmd, shell=True)
 
 
@@ -70,7 +73,7 @@ def compress_video_resolution(video_path, scale_factor):
         crf_flag = config.compress_preset[config.compress_encoder][config.compress_accelerator]["crf_flag"]
         crf = int(config.compress_quality)
     except KeyError:
-        print("Fail to get video compress config correctly. Fallback to default preset.")
+        logger.error("Fail to get video compress config correctly. Fallback to default preset.")
         encoder = encoder_default
         crf_flag = crf_flag_default
         crf = crf_default
@@ -104,11 +107,11 @@ def compress_video_resolution(video_path, scale_factor):
     output_path = encode_video()
     if os.path.exists(output_path):
         if os.stat(output_path).st_size < 1024:
-            print("Parameter not supported, fallback to default setting.")
+            logger.warning("Parameter not supported, fallback to default setting.")
             send2trash(output_path)  # 清理空文件
             output_path = encode_video(encoder=encoder_default, crf_flag=crf_flag_default, crf=crf_default)
     else:
-        print("Parameter not supported, fallback to default setting.")
+        logger.warning("Parameter not supported, fallback to default setting.")
         output_path = encode_video(encoder=encoder_default, crf_flag=crf_flag_default, crf=crf_default)
 
     return output_path
@@ -120,7 +123,7 @@ def encode_preset_benchmark_test(scale_factor, crf):
     # 准备测试视频
     test_video_filepath = "__assets__\\test_video_compress.mp4"
     if not os.path.exists(test_video_filepath):
-        print("test_video_filepath not found.")
+        logger.error("test_video_filepath not found.")
         return
 
     # 准备测试环境
@@ -167,9 +170,9 @@ def encode_preset_benchmark_test(scale_factor, crf):
 
     # 测试所有参数预设
     for encoder_name, encoder in config.compress_preset.items():
-        print(f"Testing {encoder}")
+        logger.info(f"Testing {encoder}")
         for encode_accelerator_name, encode_accelerator in encoder.items():
-            print(f"Testing {encode_accelerator}")
+            logger.info(f"Testing {encode_accelerator}")
             time_cost = time.time()
             videofile_output_path = encode_test_video(
                 video_path=test_video_filepath, encoder=encode_accelerator["encoder"], crf_flag=encode_accelerator["crf_flag"]

@@ -11,6 +11,7 @@ import windrecorder.wordcloud as wordcloud
 from windrecorder import file_utils
 from windrecorder.config import config
 from windrecorder.db_manager import db_manager
+from windrecorder.record_wintitle import component_month_wintitle_stat
 from windrecorder.utils import get_text as _t
 
 
@@ -79,29 +80,14 @@ def render():
 
         col1_mem, col2_mem = st.columns([1, 1])
         with col1_mem:
-            current_month_cloud_img_name = (
-                str(st.session_state.Stat_query_Year) + "-" + str(st.session_state.Stat_query_Month) + ".png"
-            )
-            current_month_cloud_img_path = os.path.join(config.wordcloud_result_dir, current_month_cloud_img_name)
-
-            if st.button(_t("stat_btn_generate_update_word_cloud")):
-                with st.spinner(_t("stat_text_generating_word_cloud")):
-                    wordcloud.generate_word_cloud_in_month(
-                        utils.datetime_to_seconds(st.session_state.stat_select_month_datetime),
-                        current_month_cloud_img_name,
-                    )
-
-            if os.path.exists(current_month_cloud_img_path):
-                image = Image.open(current_month_cloud_img_path)
-                st.image(image, caption=current_month_cloud_img_path)
-            else:
-                st.info(_t("stat_text_no_month_word_cloud_pic"))
+            st.empty()
+            component_month_wintitle_stat(st.session_state.stat_select_month_datetime)  # 显示当月活动统计
 
         with col2_mem:
             current_month_lightbox_img_name = (
                 str(st.session_state.Stat_query_Year) + "-" + str(st.session_state.Stat_query_Month) + ".png"
             )
-            current_month_lightbox_img_path = os.path.join(config.lightbox_result_dir, current_month_lightbox_img_name)
+            current_month_lightbox_img_path = os.path.join(config.lightbox_result_dir_ud, current_month_lightbox_img_name)
 
             if st.button(_t("stat_btn_generate_lightbox")):
                 with st.spinner(_t("stat_text_generating_lightbox")):
@@ -116,6 +102,24 @@ def render():
             else:
                 st.info(_t("stat_text_no_month_lightbox"))
 
+            current_month_cloud_img_name = (
+                str(st.session_state.Stat_query_Year) + "-" + str(st.session_state.Stat_query_Month) + ".png"
+            )
+            current_month_cloud_img_path = os.path.join(config.wordcloud_result_dir_ud, current_month_cloud_img_name)
+
+            if st.button(_t("stat_btn_generate_update_word_cloud")):
+                with st.spinner(_t("stat_text_generating_word_cloud")):
+                    wordcloud.generate_word_cloud_in_month(
+                        utils.datetime_to_seconds(st.session_state.stat_select_month_datetime),
+                        current_month_cloud_img_name,
+                    )
+
+            if os.path.exists(current_month_cloud_img_path):
+                image = Image.open(current_month_cloud_img_path)
+                st.image(image, caption=current_month_cloud_img_path)
+            else:
+                st.info(_t("stat_text_no_month_word_cloud_pic"))
+
 
 # 生成并显示每月数据量概览
 def get_show_month_data_state(stat_select_month_datetime: datetime.datetime):
@@ -129,14 +133,13 @@ def get_show_month_data_state(stat_select_month_datetime: datetime.datetime):
     df_filepath = os.path.join(df_cache_dir, df_file_name)
 
     update_condition = False
-    if utils.set_full_datetime_to_YYYY_MM(st.session_state.df_month_stat_dt_last_time) != utils.set_full_datetime_to_YYYY_MM(stat_select_month_datetime):
+    if utils.set_full_datetime_to_YYYY_MM(st.session_state.df_month_stat_dt_last_time) != utils.set_full_datetime_to_YYYY_MM(
+        stat_select_month_datetime
+    ):
         update_condition = True
         st.session_state.df_month_stat_dt_last_time = stat_select_month_datetime
 
-    if (
-        st.session_state.df_month_stat.empty
-        or update_condition
-    ):  # 页面内无缓存，或不是当月日期
+    if st.session_state.df_month_stat.empty or update_condition:  # 页面内无缓存，或不是当月日期
         # 检查磁盘上有无统计缓存，然后检查是否过时
         if os.path.exists(df_filepath):  # 存在
             if df_file_name[:7] == datetime.datetime.today().strftime("%Y-%m"):  # 如果是需要时效性的当下月数据
@@ -178,10 +181,7 @@ def get_show_year_data_state(stat_select_year_datetime: datetime.datetime):
         update_condition = True
         st.session_state.df_year_stat_dt_last_time = stat_select_year_datetime
 
-    if (
-        st.session_state.df_year_stat.empty
-        or update_condition
-    ):  # 页面内无缓存，或不是当年日期
+    if st.session_state.df_year_stat.empty or update_condition:  # 页面内无缓存，或不是当年日期
         # 检查磁盘上有无统计缓存，然后检查是否过时
         if os.path.exists(df_filepath):  # 存在
             if not file_utils.is_file_modified_recently(df_filepath, time_gap=3000):  # 超过3000分钟未更新，过时 重新生成
