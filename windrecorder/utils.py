@@ -4,13 +4,14 @@ import ctypes
 import datetime
 import json
 import os
-import platform
 import random
 import re
+import socket
 import subprocess
-import sys
 import threading
 import time
+from contextlib import closing
+from datetime import timedelta
 from io import BytesIO
 
 import cv2
@@ -721,6 +722,14 @@ def get_process_id(process_name):
         if proc.info["name"] == process_name:
             return proc.info["pid"]
     return None
+
+
+def find_available_port():
+    """找到最小可用于 web 服务的本地端口"""
+    with closing(socket.socket(socket.AF_INET, socket.SOCK_STREAM)) as s:
+        s.bind(("", 0))
+        s.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)
+        return s.getsockname()[1]
 
 
 # 查找列表项中包含字符串的项
