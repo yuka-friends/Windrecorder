@@ -196,8 +196,6 @@ def initialize_config():
     # 0.0.9 upgrade change, migrate previous user config
     if not os.path.exists(DIR_USERDATA):
         os.makedirs(DIR_USERDATA)
-    if os.path.exists("config\\config_user.json"):
-        shutil.copyfile("config\\config_user.json", FILEPATH_CONFIG_USER)
 
     if not os.path.exists(FILEPATH_CONFIG_USER):
         logger.info("-User config not found, will be created.")
