@@ -92,7 +92,7 @@ def start_stop_webui(icon: pystray.Icon, item: pystray.MenuItem):
                     "run",
                     "webui.py",
                     "--server.port",
-                    str(utils.find_available_port(start=8501)),
+                    str(utils.find_available_port()),
                 ],
                 stdout=out,
                 stderr=err,

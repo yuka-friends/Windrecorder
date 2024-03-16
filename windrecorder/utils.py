@@ -10,6 +10,7 @@ import socket
 import subprocess
 import threading
 import time
+from contextlib import closing
 from datetime import timedelta
 from io import BytesIO
 
@@ -633,13 +634,9 @@ def get_process_id(process_name):
     return None
 
 
-def find_available_port(start=8501, end=20000):
+def find_available_port():
     """找到最小可用于 web 服务的本地端口"""
-    while True:
-        with socket.socket(socket.AF_INET, socket.SOCK_STREAM) as sock:
-            result = sock.connect_ex(("localhost", start))
-            if result == 10061:  # 对应于Windows的 'WSAECONNREFUSED' 错误
-                return start
-        start += 1
-        if start > end:
-            return end
+    with closing(socket.socket(socket.AF_INET, socket.SOCK_STREAM)) as s:
+        s.bind(("", 0))
+        s.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)
+        return s.getsockname()[1]
