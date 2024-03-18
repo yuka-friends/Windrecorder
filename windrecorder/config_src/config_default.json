@@ -26,7 +26,8 @@
     "KeePass",
     "forget password",
     "Visual Studio Code",
-    "New Tab - Google Chrome"
+    "New Tab - Google Chrome",
+    "Task Switching"
   ],
   "wordcloud_user_stop_words": [
     "login","account","twitter","reddit","youtube"
