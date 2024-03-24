@@ -26,7 +26,10 @@ from windrecorder import file_utils, flag_mark_note, utils, win_ui  # NOQA: E402
 from windrecorder.config import config  # NOQA: E402
 from windrecorder.exceptions import LockExistsException  # NOQA: E402
 from windrecorder.lock import FileLock  # NOQA: E402
+from windrecorder.logger import get_logger  # NOQA: E402
 from windrecorder.utils import get_text as _t  # NOQA: E402
+
+logger = get_logger(__name__)
 
 # 定义存储标准输出的日志文件路径
 WEBUI_STDOUT_PATH = os.path.join(config.log_dir, "webui.log")
@@ -282,11 +285,15 @@ def hide_cli_window():
     timeout_count = 10
     for i in range(timeout_count):
         print(f"   Trying to hide CLI window... ({i}/{timeout_count})")
-        title = str(pygetwindow.getActiveWindowTitle())
-        if "Windrecorder" in title:
-            hide_CLI = win32gui.GetForegroundWindow()
-            win32gui.ShowWindow(hide_CLI, win32con.SW_HIDE)
-            break
+        try:
+            title = str(pygetwindow.getActiveWindowTitle())
+            if "Windrecorder" in title:
+                hide_CLI = win32gui.GetForegroundWindow()
+                win32gui.ShowWindow(hide_CLI, win32con.SW_HIDE)
+                break
+        except Exception as e:
+            logger.error(e)
+            continue
         time.sleep(1)
     print("\n   Hide CLI window fail. Please minimize this window manually.")
 
