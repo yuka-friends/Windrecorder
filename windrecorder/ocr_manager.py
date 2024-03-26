@@ -529,14 +529,20 @@ def compress_outdated_videofiles(video_queue_batch=30):
 
     if len(video_filepath_list_outdate) > 0:
         for item in video_filepath_list_outdate:
-            if "-COMPRESS" not in item and "-OCRED" in item:
+            if "-COMPRESS" not in item and "-OCRED" in item and "-ERROR" not in item:
                 logger.info(f"compressing {item}, {video_process_count=}, {video_queue_batch=}")
-                record.compress_video_resolution(item, config.video_compress_rate)
-                send2trash(item)
-                video_process_count += 1
+                try:
+                    record.compress_video_resolution(item, config.video_compress_rate)
+                    send2trash(item)
+                    video_process_count += 1
+                except subprocess.CalledProcessError as e:
+                    logger.error(f"{item} seems invalid, error: {e}")
+                    os.rename(item, item.replace("-OCRED", "-OCRED-ERROR"))
+                except Exception as e:
+                    logger.error(f"{item} compress fail, error: {e}")
                 if video_process_count > video_queue_batch:
                     break
-    logger.info("All compress tasks done!")
+        logger.info("All compress tasks done!")
 
 
 # 备份数据库
