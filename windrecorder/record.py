@@ -25,18 +25,6 @@ def is_recording():
     return is_process_running(check_pid, "python.exe")
 
 
-# 获取录屏时目标缩放分辨率策略
-def get_scale_screen_res_strategy(origin_width=1920, origin_height=1080):
-    target_scale_width = origin_width
-    target_scale_height = origin_height
-
-    if origin_height > 1500 and config.record_screen_enable_half_res_while_hidpi:  # 高分屏缩放至四分之一策略
-        target_scale_width = int(origin_width / 2)
-        target_scale_height = int(origin_height / 2)
-
-    return target_scale_width, target_scale_height
-
-
 # 获取视频的原始分辨率
 def get_video_res(video_path):
     cmd = f"{config.ffprobe_path} -v error -select_streams v:0 -show_entries stream=width,height -of csv=p=0 {video_path}"

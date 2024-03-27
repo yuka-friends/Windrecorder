@@ -128,12 +128,7 @@ def record_screen(
 
     # 获取屏幕分辨率并根据策略决定缩放
     screen_width, screen_height = utils.get_display_resolution()
-    target_scale_width, target_scale_height = record.get_scale_screen_res_strategy(
-        origin_width=screen_width, origin_height=screen_height
-    )
-    logger.info(
-        f"Origin screen resolution: {screen_width}x{screen_height}, Resized to {target_scale_width}x{target_scale_height}."
-    )
+    logger.info(f"screen resolution: {screen_width}x{screen_height}")
 
     pix_fmt_args = ["-pix_fmt", "yuv420p"]
 
@@ -145,8 +140,6 @@ def record_screen(
         f"{config.record_framerate}",
         "-i",
         "desktop",
-        "-vf",
-        f"scale={target_scale_width}:{target_scale_height}",
         # 默认使用编码成 h264 格式
         "-c:v",
         "libx264",

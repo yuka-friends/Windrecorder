@@ -37,12 +37,6 @@ def render():
         with col2_record:
             st.markdown(_t("rs_md_only_support_main_monitor"), unsafe_allow_html=True)
 
-        record_screen_enable_half_res_while_hidpi = st.checkbox(
-            _t("rs_checkbox_enable_half_res_while_hidpi"),
-            help=_t("rs_text_enable_half_res_while_hidpi"),
-            value=config.record_screen_enable_half_res_while_hidpi,
-        )
-
         screentime_not_change_to_pause_record = st.number_input(
             _t("rs_input_stop_recording_when_screen_freeze"),
             value=config.screentime_not_change_to_pause_record,
@@ -136,7 +130,6 @@ def render():
         if st.button("Save and Apple All Change / 保存并应用所有更改", type="primary", key="SaveBtnRecord"):
             config.set_and_save_config("screentime_not_change_to_pause_record", screentime_not_change_to_pause_record)
             config.set_and_save_config("start_recording_on_startup", is_start_recording_on_start_app)
-            config.set_and_save_config("record_screen_enable_half_res_while_hidpi", record_screen_enable_half_res_while_hidpi)
             config.set_and_save_config("OCR_index_strategy", ocr_strategy_option_dict[ocr_strategy_option])
             config.set_and_save_config("exclude_words", [item for item in exclude_words if len(item) >= 2])
 
