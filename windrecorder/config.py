@@ -2,6 +2,8 @@ import json
 import os
 import shutil
 
+from send2trash import send2trash
+
 from windrecorder.logger import get_logger
 
 logger = get_logger(__name__)
@@ -199,6 +201,7 @@ def initialize_config():
 
     if os.path.exists("config\\config_user.json"):
         shutil.copyfile("config\\config_user.json", FILEPATH_CONFIG_USER)
+        send2trash("config\\config_user.json")
 
     if not os.path.exists(FILEPATH_CONFIG_USER):
         logger.info("-User config not found, will be created.")
