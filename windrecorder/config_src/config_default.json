@@ -70,5 +70,7 @@
   "batch_size_remove_video_in_idle": 80,
   "batch_size_compress_video_in_idle": 50,
   "enable_3_columns_in_oneday": false,
-  "enable_synonyms_recommend": false
+  "enable_synonyms_recommend": false,
+  "multi_display_record_strategy": "all",
+  "record_single_display_index": 1
 }
