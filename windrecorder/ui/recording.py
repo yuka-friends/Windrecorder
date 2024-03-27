@@ -50,9 +50,9 @@ def render():
                 display_record_strategy = st.selectbox("画面录制范围", options=[i for i in record_strategy_config.keys()])
             with col2_ms:
                 if display_record_strategy == "仅录制一个显示器":
-                    display_record_select_index = st.selectbox("仅录制屏幕：", options=st.session_state.display_info_formatted)
+                    display_record_selection = st.selectbox("仅录制屏幕：", options=st.session_state.display_info_formatted)
                 else:
-                    display_record_select_index = 1
+                    display_record_selection = None
                     st.empty()
         # record_encoder = st.selectbox("录制编码器", ["开启硬件加速", "CPU", "GPU(NVIDIA)"])  # FIXME 自动检测平台
 
@@ -148,9 +148,12 @@ def render():
 
         if st.button("Save and Apple All Change / 保存并应用所有更改", type="primary", key="SaveBtnRecord"):
             config.set_and_save_config("multi_display_record_strategy", record_strategy_config[display_record_strategy])
-            config.set_and_save_config(
-                "record_single_display_index", st.session_state.display_info_formatted.index(display_record_select_index)
-            )
+            if display_record_selection is None:
+                config.set_and_save_config("record_single_display_index", 1)
+            else:
+                config.set_and_save_config(
+                    "record_single_display_index", st.session_state.display_info_formatted.index(display_record_selection) + 1
+                )
 
             config.set_and_save_config("screentime_not_change_to_pause_record", screentime_not_change_to_pause_record)
             config.set_and_save_config("start_recording_on_startup", is_start_recording_on_start_app)

@@ -3,7 +3,6 @@ import subprocess
 import time
 from pathlib import Path
 
-import pyautogui
 import streamlit as st
 from PIL import Image
 
@@ -141,50 +140,56 @@ def render():
         with col2pb:
             st.session_state.ocr_screenshot_refer_used = st.toggle(_t("set_toggle_use_screenshot_as_refer"), False)
 
-        if "ocr_padding_top" not in st.session_state:
-            st.session_state.ocr_padding_top = config.ocr_image_crop_URBL[0]
-        if "ocr_padding_right" not in st.session_state:
-            st.session_state.ocr_padding_right = config.ocr_image_crop_URBL[1]
-        if "ocr_padding_bottom" not in st.session_state:
-            st.session_state.ocr_padding_bottom = config.ocr_image_crop_URBL[2]
-        if "ocr_padding_left" not in st.session_state:
-            st.session_state.ocr_padding_left = config.ocr_image_crop_URBL[3]
+        if (
+            st.session_state.display_count > 1 and config.multi_display_record_strategy == "all"
+        ):  # 当使用多显示器录制时。此处所用变量在 recording.py 先进行初始化
+            crop_display_selector = st.selectbox("设置显示器", st.session_state.display_info_formatted)
+            crop_display_index = st.session_state.display_info_formatted.index(crop_display_selector)
+        else:
+            crop_display_index = 0
+
+        if "ocr_padding_URBL" not in st.session_state:
+            st.session_state.ocr_padding_URBL = utils.ensure_list_divisible_by_num(config.ocr_image_crop_URBL, 4)
+            if len(st.session_state.ocr_padding_URBL) < st.session_state.display_count * 4:
+                for i in range(st.session_state.display_count - (len(st.session_state.ocr_padding_URBL) // 4)):
+                    st.session_state.ocr_padding_URBL.extend([6, 6, 6, 3])
 
         col1pa, col2pa, col3pa = st.columns([0.5, 0.5, 1])
         with col1pa:
-            st.session_state.ocr_padding_top = st.number_input(
+            st.session_state.ocr_padding_URBL[0 + crop_display_index * 4] = st.number_input(
                 _t("set_text_top_padding"),
-                value=st.session_state.ocr_padding_top,
+                value=st.session_state.ocr_padding_URBL[0 + crop_display_index * 4],
                 min_value=0,
                 max_value=40,
             )
-            st.session_state.ocr_padding_bottom = st.number_input(
+            st.session_state.ocr_padding_URBL[2 + crop_display_index * 4] = st.number_input(
                 _t("set_text_bottom_padding"),
-                value=st.session_state.ocr_padding_bottom,
+                value=st.session_state.ocr_padding_URBL[2 + crop_display_index * 4],
                 min_value=0,
                 max_value=40,
             )
 
         with col2pa:
-            st.session_state.ocr_padding_left = st.number_input(
+            st.session_state.ocr_padding_URBL[3 + crop_display_index * 4] = st.number_input(
                 _t("set_text_left_padding"),
-                value=st.session_state.ocr_padding_left,
+                value=st.session_state.ocr_padding_URBL[3 + crop_display_index * 4],
                 min_value=0,
                 max_value=40,
             )
-            st.session_state.ocr_padding_right = st.number_input(
+            st.session_state.ocr_padding_URBL[1 + crop_display_index * 4] = st.number_input(
                 _t("set_text_right_padding"),
-                value=st.session_state.ocr_padding_right,
+                value=st.session_state.ocr_padding_URBL[1 + crop_display_index * 4],
                 min_value=0,
                 max_value=40,
             )
         with col3pa:
             image_setting_crop_refer = screen_ignore_padding(
-                st.session_state.ocr_padding_top,
-                st.session_state.ocr_padding_right,
-                st.session_state.ocr_padding_bottom,
-                st.session_state.ocr_padding_left,
+                st.session_state.ocr_padding_URBL[0 + crop_display_index * 4],
+                st.session_state.ocr_padding_URBL[1 + crop_display_index * 4],
+                st.session_state.ocr_padding_URBL[2 + crop_display_index * 4],
+                st.session_state.ocr_padding_URBL[3 + crop_display_index * 4],
                 use_screenshot=st.session_state.ocr_screenshot_refer_used,
+                screenshot_display_index=crop_display_index + 1,
             )
             st.image(image_setting_crop_refer)
 
@@ -314,12 +319,7 @@ def render():
 
             config.set_and_save_config(
                 "ocr_image_crop_URBL",
-                [
-                    st.session_state.ocr_padding_top,
-                    st.session_state.ocr_padding_right,
-                    st.session_state.ocr_padding_bottom,
-                    st.session_state.ocr_padding_left,
-                ],
+                st.session_state.ocr_padding_URBL,
             )
             config.set_and_save_config(
                 "wordcloud_user_stop_words",
@@ -437,16 +437,29 @@ def legal_ocr_lang_index():
 
 
 # 调整屏幕忽略范围的设置可视化
-def screen_ignore_padding(topP, rightP, bottomP, leftP, use_screenshot=False):
+def screen_ignore_padding(topP, rightP, bottomP, leftP, use_screenshot=False, screenshot_display_index=1):
     image_padding_refer = Image.open("__assets__\\setting-crop-refer-pure.png")
+    indicator_overdraw_color = (100, 0, 255, 80)
 
     if use_screenshot:
-        image_padding_refer = pyautogui.screenshot()
+        image_padding_refer = utils.get_screenshot_of_display(screenshot_display_index)
         image_padding_refer_width, image_padding_refer_height = image_padding_refer.size
+    else:
+        image_padding_refer_width = st.session_state.display_info[screenshot_display_index]["width"]
+        image_padding_refer_height = st.session_state.display_info[screenshot_display_index]["height"]
+
+    if image_padding_refer_width > image_padding_refer_height:
         image_padding_refer_height = int(350 * image_padding_refer_height / image_padding_refer_width)
         image_padding_refer = image_padding_refer.resize((350, image_padding_refer_height))
-        image_padding_refer_fade = Image.new("RGBA", (350, 200), (255, 233, 216, 100))  # 添加背景色蒙层
-        image_padding_refer.paste(image_padding_refer_fade, (0, 0), image_padding_refer_fade)
+        if use_screenshot:
+            image_padding_refer_fade = Image.new("RGBA", (350, image_padding_refer_height), (255, 233, 216, 100))  # 添加背景色蒙层
+            image_padding_refer.paste(image_padding_refer_fade, (0, 0), image_padding_refer_fade)
+    else:
+        image_padding_refer_width = int(350 * image_padding_refer_width / image_padding_refer_height)
+        image_padding_refer = image_padding_refer.resize((image_padding_refer_width, 350))
+        if use_screenshot:
+            image_padding_refer_fade = Image.new("RGBA", (image_padding_refer_width, 350), (255, 233, 216, 100))  # 添加背景色蒙层
+            image_padding_refer.paste(image_padding_refer_fade, (0, 0), image_padding_refer_fade)
 
     image_padding_refer_width, image_padding_refer_height = image_padding_refer.size
     topP_height = round(image_padding_refer_height * topP * 0.01)
@@ -454,17 +467,17 @@ def screen_ignore_padding(topP, rightP, bottomP, leftP, use_screenshot=False):
     leftP_width = round(image_padding_refer_width * leftP * 0.01)
     rightP_width = round(image_padding_refer_width * rightP * 0.01)
 
-    image_color_area = Image.new("RGBA", (image_padding_refer_width, topP_height), (100, 0, 255, 80))
+    image_color_area = Image.new("RGBA", (image_padding_refer_width, topP_height), indicator_overdraw_color)
     image_padding_refer.paste(image_color_area, (0, 0), image_color_area)
-    image_color_area = Image.new("RGBA", (image_padding_refer_width, bottomP_height), (100, 0, 255, 80))
+    image_color_area = Image.new("RGBA", (image_padding_refer_width, bottomP_height), indicator_overdraw_color)
     image_padding_refer.paste(
         image_color_area,
         (0, image_padding_refer_height - bottomP_height),
         image_color_area,
     )
-    image_color_area = Image.new("RGBA", (leftP_width, image_padding_refer_height), (100, 0, 255, 80))
+    image_color_area = Image.new("RGBA", (leftP_width, image_padding_refer_height), indicator_overdraw_color)
     image_padding_refer.paste(image_color_area, (0, 0), image_color_area)
-    image_color_area = Image.new("RGBA", (rightP_width, image_padding_refer_height), (100, 0, 255, 80))
+    image_color_area = Image.new("RGBA", (rightP_width, image_padding_refer_height), indicator_overdraw_color)
     image_padding_refer.paste(
         image_color_area,
         (image_padding_refer_width - rightP_width, 0),

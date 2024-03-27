@@ -787,3 +787,18 @@ def check_ffmpeg_and_ffprobe():
     elif not available_ffprobe:
         return False, "FFprobe is not available.\nPlease check the installation."
     return False, "Unexpected Error on checking ffmpeg and ffprobe available."
+
+
+def ensure_list_divisible_by_num(lst, num: int):
+    while len(lst) % num != 0:
+        lst.append(0)
+    return lst
+
+
+def get_screenshot_of_display(display_index):
+    """display_index start from 1"""
+    with mss.mss() as sct:
+        monitor = sct.monitors[display_index]
+        sct_img = sct.grab(monitor)
+        img = Image.frombytes("RGB", sct_img.size, sct_img.bgra, "raw", "BGRX")
+    return img
