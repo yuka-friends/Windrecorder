@@ -11,7 +11,6 @@ import subprocess
 import threading
 import time
 from contextlib import closing
-from datetime import timedelta
 from io import BytesIO
 
 import cv2
@@ -62,6 +61,17 @@ def get_display_count():
 def get_display_info():
     with mss.mss() as mss_instance:
         return mss_instance.monitors
+
+
+# 根据mss返回的屏幕具体数值格式化显示器信息
+def get_display_info_formatted():
+    info = get_display_info()
+    info_formatted = []
+    index = 1
+    for i in info[1:]:
+        info_formatted.append(f"Display {index}: {i['width']}x{i['height']}")
+        index += 1
+    return info_formatted
 
 
 # 获取视频文件信息
@@ -708,14 +718,6 @@ def change_startup_shortcut(is_create=True):
             logger.info("record: Shortcut already exists")
             os.remove(shortcut_path)
             logger.info("record: Delete shortcut")
-
-
-def is_win11():
-    return sys.getwindowsversion().build >= 22000
-
-
-def get_windows_edition():
-    return platform.win32_edition()
 
 
 def is_process_running(pid, compare_process_name):
