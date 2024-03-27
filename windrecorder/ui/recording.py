@@ -11,6 +11,14 @@ from windrecorder.utils import get_text as _t
 
 
 def render():
+    # 初始化懒状态
+    if "display_count" not in st.session_state:
+        st.session_state["display_count"] = utils.get_display_count()
+    if "display_info" not in st.session_state:
+        st.session_state["display_info"] = utils.get_display_info()
+    if "display_info_formatted" not in st.session_state:
+        st.session_state["display_info_formatted"] = utils.get_display_info_formatted()
+
     st.markdown(_t("rs_md_title"))
 
     settings_col, spacing_col, pic_col = st.columns([1, 0.5, 1.5])
@@ -20,22 +28,31 @@ def render():
         st.markdown(_t("rs_md_record_setting_title"))
 
         # 录制选项
-        col1_record, col2_record = st.columns([1, 1])
-        with col1_record:
-            if "is_create_startup_shortcut" not in st.session_state:
-                st.session_state.is_create_startup_shortcut = utils.is_file_already_in_startup("start_app.bat.lnk")
-            st.session_state.is_create_startup_shortcut = st.checkbox(
-                _t("rs_checkbox_start_record_when_startup"),
-                value=st.session_state.is_create_startup_shortcut,
-                on_change=utils.change_startup_shortcut(is_create=st.session_state.is_create_startup_shortcut),
-                help=_t("rs_checkbox_start_record_when_startup_help"),
-            )
-            is_start_recording_on_start_app = st.checkbox(
-                _t("rs_checkbox_is_start_recording_on_start_app"), value=config.start_recording_on_startup
-            )
+        if "is_create_startup_shortcut" not in st.session_state:
+            st.session_state.is_create_startup_shortcut = utils.is_file_already_in_startup("start_app.bat.lnk")
+        st.session_state.is_create_startup_shortcut = st.checkbox(
+            _t("rs_checkbox_start_record_when_startup"),
+            value=st.session_state.is_create_startup_shortcut,
+            on_change=utils.change_startup_shortcut(is_create=st.session_state.is_create_startup_shortcut),
+            help=_t("rs_checkbox_start_record_when_startup_help"),
+        )
+        is_start_recording_on_start_app = st.checkbox(
+            _t("rs_checkbox_is_start_recording_on_start_app"), value=config.start_recording_on_startup
+        )
 
-        with col2_record:
-            st.markdown(_t("rs_md_only_support_main_monitor"), unsafe_allow_html=True)
+        if st.session_state.display_count > 1:
+            col1_ms, col2_ms = st.columns([1, 1])
+            with col1_ms:
+                display_record_strategy = st.selectbox(
+                    "画面录制范围", [f"录制所有显示器（共 {len(st.session_state.display_info_formatted)} 个）", "仅录制一个显示器"]
+                )
+            with col2_ms:
+                if display_record_strategy == "仅录制一个显示器":
+                    display_record_select = st.selectbox("仅录制屏幕：", options=st.session_state.display_info_formatted)
+                else:
+                    st.empty()
+        record_encoder = st.selectbox("录制编码器", ["开启硬件加速", "CPU", "GPU(NVIDIA)"])  # FIXME 自动检测平台
+        print(display_record_select, record_encoder)  # FIXME remove me
 
         screentime_not_change_to_pause_record = st.number_input(
             _t("rs_input_stop_recording_when_screen_freeze"),
