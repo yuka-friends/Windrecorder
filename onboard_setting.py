@@ -37,7 +37,7 @@ except Exception as e:
 
 # ------------------------------------------------------------------
 
-from windrecorder import file_utils, ocr_manager, record
+from windrecorder import file_utils, ocr_manager
 from windrecorder.utils import get_text as _t
 
 # 全部向导的步骤数
@@ -270,7 +270,6 @@ while True:
 
     monitor_width = utils.get_display_resolution().width
     monitor_height = utils.get_display_resolution().height
-    scale_width, scale_height = record.get_scale_screen_res_strategy(origin_width=monitor_width, origin_height=monitor_height)
 
     print(_t("qs_mo_detect").format(monitor_width=monitor_width, monitor_height=monitor_height))
     print(_t("qs_mo_cta"))
