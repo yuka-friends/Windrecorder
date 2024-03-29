@@ -5,7 +5,11 @@ from PIL import Image
 from streamlit_tags import st_tags
 
 from windrecorder import record, utils
-from windrecorder.config import CONFIG_VIDEO_COMPRESS_PRESET, config
+from windrecorder.config import (
+    CONFIG_RECORD_PRESET,
+    CONFIG_VIDEO_COMPRESS_PRESET,
+    config,
+)
 from windrecorder.utils import find_key_position_in_dict
 from windrecorder.utils import get_text as _t
 
@@ -40,6 +44,7 @@ def render():
             _t("rs_checkbox_is_start_recording_on_start_app"), value=config.start_recording_on_startup
         )
 
+        # 检测到多显示器时，提供设置选项
         if st.session_state.display_count > 1:
             record_strategy_config = {
                 f"录制所有显示器（共 {len(st.session_state.display_info_formatted)} 个）": "all",
@@ -54,7 +59,6 @@ def render():
                 else:
                     display_record_selection = None
                     st.empty()
-        # record_encoder = st.selectbox("录制编码器", ["开启硬件加速", "CPU", "GPU(NVIDIA)"])  # FIXME 自动检测平台
 
         screentime_not_change_to_pause_record = st.number_input(
             _t("rs_input_stop_recording_when_screen_freeze"),
@@ -65,6 +69,31 @@ def render():
         exclude_words = st_tags(
             label=_t("rs_text_skip_recording_by_wintitle"), text=_t("rs_tag_input_tip"), value=config.exclude_words
         )
+
+        if st.toggle("展示高级编码选项", key="expand_encode_option_recording"):
+            col_record_encoder, col_record_quality = st.columns([1, 1])
+            with col_record_encoder:
+                RECORD_ENCODER_LST = list(CONFIG_RECORD_PRESET.keys())
+                record_encoder = st.selectbox(
+                    "录制编码器", index=RECORD_ENCODER_LST.index(config.record_encoder), options=RECORD_ENCODER_LST
+                )
+            with col_record_quality:
+                record_crf = st.number_input(
+                    "录制质量 CRF", value=config.record_crf, min_value=0, max_value=50, help=_t("rs_text_compress_CRF_help")
+                )
+            if st.button(_t("rs_btn_encode_benchmark"), key="rs_btn_encode_benchmark_recording"):
+                with st.spinner(_t("rs_text_encode_benchmark_loading")):
+                    result_df = record.record_encode_preset_benchmark_test()
+                    st.dataframe(
+                        result_df,
+                        column_config={
+                            "encoder preset": st.column_config.TextColumn(_t("rs_text_compress_encoder")),
+                            "support": st.column_config.CheckboxColumn(_t("rs_text_support"), default=False),
+                        },
+                    )
+        else:
+            record_encoder = config.record_encoder
+            record_crf = config.record_crf
 
         st.divider()
 
@@ -104,47 +133,58 @@ def render():
                 help=_t("rs_selectbox_compress_ratio_help"),
             )
 
-        col1_encode, col2_encode, col3_encode = st.columns([1, 1, 1])
-        with col1_encode:
-            video_compress_encoder = st.selectbox(
-                _t("rs_text_compress_encoder"),
-                list(CONFIG_VIDEO_COMPRESS_PRESET.keys()),
-                index=find_key_position_in_dict(CONFIG_VIDEO_COMPRESS_PRESET, config.compress_encoder),
-            )
-        with col2_encode:
-            video_compress_accelerator = st.selectbox(
-                _t("rs_text_compress_accelerator"),
-                list(CONFIG_VIDEO_COMPRESS_PRESET[video_compress_encoder].keys()),
-                index=find_key_position_in_dict(
-                    CONFIG_VIDEO_COMPRESS_PRESET[video_compress_encoder], config.compress_accelerator
-                ),
-            )
-        with col3_encode:
-            video_compress_crf = st.number_input(
-                _t("rs_text_compress_CRF"),
-                value=config.compress_quality,
-                min_value=0,
-                max_value=50,
-                help=_t("rs_text_compress_CRF_help"),
-            )
+        if st.toggle("展示高级编码选项", key="expand_encode_option_compress"):
+            col1_encode, col2_encode, col3_encode = st.columns([1, 1, 1])
+            with col1_encode:
+                video_compress_encoder = st.selectbox(
+                    _t("rs_text_compress_encoder"),
+                    list(CONFIG_VIDEO_COMPRESS_PRESET.keys()),
+                    index=find_key_position_in_dict(CONFIG_VIDEO_COMPRESS_PRESET, config.compress_encoder),
+                )
+            with col2_encode:
+                video_compress_accelerator = st.selectbox(
+                    _t("rs_text_compress_accelerator"),
+                    list(CONFIG_VIDEO_COMPRESS_PRESET[video_compress_encoder].keys()),
+                    index=find_key_position_in_dict(
+                        CONFIG_VIDEO_COMPRESS_PRESET[video_compress_encoder], config.compress_accelerator
+                    ),
+                )
+            with col3_encode:
+                video_compress_crf = st.number_input(
+                    _t("rs_text_compress_CRF"),
+                    value=config.compress_quality,
+                    min_value=0,
+                    max_value=50,
+                    help=_t("rs_text_compress_CRF_help"),
+                )
 
-        if st.button(_t("rs_btn_encode_benchmark")):
-            with st.spinner(_t("rs_text_encode_benchmark_loading")):
-                result_df = record.encode_preset_benchmark_test(
-                    scale_factor=video_compress_rate_selectbox, crf=video_compress_crf
-                )
-                st.dataframe(
-                    result_df,
-                    column_config={
-                        "encoder": st.column_config.TextColumn(_t("rs_text_compress_encoder")),
-                        "accelerator": st.column_config.TextColumn(_t("rs_text_compress_accelerator")),
-                        "support": st.column_config.CheckboxColumn(_t("rs_text_support"), default=False),
-                        "compress_ratio": st.column_config.TextColumn(
-                            _t("rs_text_compress_ratio"), help=_t("rs_text_compress_ratio_help")
-                        ),
-                        "compress_time": st.column_config.TextColumn(_t("rs_text_compress_time")),
-                    },
-                )
+            if st.button(_t("rs_btn_encode_benchmark")):
+                with st.spinner(_t("rs_text_encode_benchmark_loading")):
+                    result_df = record.encode_preset_benchmark_test(
+                        scale_factor=video_compress_rate_selectbox, crf=video_compress_crf
+                    )
+                    if result_df is not None:
+                        st.text(
+                            f'{_t("rs_selectbox_compress_ratio")}: {video_compress_rate_selectbox}, {_t("rs_text_compress_CRF")}: {video_compress_crf}'
+                        )
+                        st.dataframe(
+                            result_df,
+                            column_config={
+                                "encoder": st.column_config.TextColumn(_t("rs_text_compress_encoder")),
+                                "accelerator": st.column_config.TextColumn(_t("rs_text_compress_accelerator")),
+                                "support": st.column_config.CheckboxColumn(_t("rs_text_support"), default=False),
+                                "compress_ratio": st.column_config.TextColumn(
+                                    _t("rs_text_compress_ratio"), help=_t("rs_text_compress_ratio_help")
+                                ),
+                                "compress_time": st.column_config.TextColumn(_t("rs_text_compress_time")),
+                            },
+                        )
+                    else:
+                        st.error("test_video_filepath not found.")
+        else:
+            video_compress_encoder = config.compress_accelerator
+            video_compress_accelerator = config.compress_accelerator
+            video_compress_crf = config.compress_quality
 
         st.divider()
 
@@ -161,6 +201,9 @@ def render():
             config.set_and_save_config("start_recording_on_startup", is_start_recording_on_start_app)
             config.set_and_save_config("OCR_index_strategy", ocr_strategy_option_dict[ocr_strategy_option])
             config.set_and_save_config("exclude_words", [item for item in exclude_words if len(item) >= 2])
+
+            config.set_and_save_config("record_encoder", record_encoder)
+            config.set_and_save_config("record_crf", record_crf)
 
             config.set_and_save_config("vid_store_day", vid_store_day)
             config.set_and_save_config("vid_compress_day", vid_compress_day)

@@ -11,14 +11,8 @@ from os import getpid
 import mss
 import numpy as np
 
-from windrecorder import (  # wordcloud,
-    file_utils,
-    ocr_manager,
-    record,
-    record_wintitle,
-    utils,
-)
-from windrecorder.config import CONFIG_RECORD_PRESET, config
+from windrecorder import file_utils, ocr_manager, record, record_wintitle, utils
+from windrecorder.config import config
 from windrecorder.exceptions import LockExistsException
 from windrecorder.lock import FileLock
 from windrecorder.logger import get_logger
@@ -110,60 +104,6 @@ def index_video_data(video_saved_dir, vid_file_name):
             logger.warning(f"--{full_path} ocr is already in process.")
 
 
-# 录制屏幕
-def record_screen(
-    output_dir=config.record_videos_dir_ud,
-    record_time=config.record_seconds,
-):
-    """
-    用ffmpeg持续录制屏幕,每15分钟保存一个视频文件
-    """
-    # 构建输出文件名
-    now = datetime.datetime.now()
-    video_out_name = now.strftime("%Y-%m-%d_%H-%M-%S") + ".mp4"
-    output_dir_with_date = now.strftime("%Y-%m")  # 将视频存储在日期月份子目录下
-    video_saved_dir = os.path.join(output_dir, output_dir_with_date)
-    file_utils.ensure_dir(video_saved_dir)
-    out_path = os.path.join(video_saved_dir, video_out_name)
-
-    # 获取屏幕分辨率并根据策略决定缩放
-    screen_width, screen_height = utils.get_display_resolution()
-    logger.info(f"screen resolution: {screen_width}x{screen_height}")
-
-    pix_fmt_args = ["-pix_fmt", "yuv420p"]
-    record_encoder_args = [
-        str(config.record_crf) if i == "CRF_NUM" else i for i in CONFIG_RECORD_PRESET[config.record_encoder]["ffmpeg_cmd"]
-    ]
-
-    ffmpeg_cmd = [
-        config.ffmpeg_path,
-        "-f",
-        "gdigrab",
-        "-framerate",
-        f"{config.record_framerate}",
-        "-i",
-        "desktop",
-        *record_encoder_args,
-        *pix_fmt_args,
-        "-hwaccel",
-        "auto",
-        "-t",
-        str(record_time),
-        out_path,
-    ]
-
-    # 执行命令
-    try:
-        logger.info(f"record_screen: ffmpeg cmd: {ffmpeg_cmd}")
-        # 运行ffmpeg
-        subprocess.run(ffmpeg_cmd, check=True)
-        logger.info("Windrecorder: Start Recording via FFmpeg")
-        return video_saved_dir, video_out_name
-    except subprocess.CalledProcessError as ex:
-        logger.error(f"Windrecorder: {ex.cmd} failed with return code {ex.returncode}")
-        return video_saved_dir, video_out_name
-
-
 # 持续录制屏幕的主要线程
 def continuously_record_screen():
     global last_idle_maintain_time
@@ -193,7 +133,7 @@ def continuously_record_screen():
             time.sleep(10)
         else:
             subprocess.run("color 2f", shell=True)  # 设定背景色为活动
-            video_saved_dir, video_out_name = record_screen()  # 录制屏幕
+            video_saved_dir, video_out_name = record.record_screen()  # 录制屏幕
 
             # 自动索引策略
             if config.OCR_index_strategy == 1:

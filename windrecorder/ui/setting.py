@@ -133,16 +133,16 @@ def render():
         st.divider()
 
         # OCR 时忽略屏幕四边的区域范围
-        # FIXME 添加多屏幕设置支持
         col1pb, col2pb = st.columns([1, 1])
         with col1pb:
             st.markdown(_t("set_md_ocr_ignore_area"), help=_t("set_md_ocr_ignore_area_help"))
         with col2pb:
             st.session_state.ocr_screenshot_refer_used = st.toggle(_t("set_toggle_use_screenshot_as_refer"), False)
 
+        # 当检测到多显示器时提供设置选项
         if (
             st.session_state.display_count > 1 and config.multi_display_record_strategy == "all"
-        ):  # 当使用多显示器录制时。此处所用变量在 recording.py 先进行初始化
+        ):  # 当使用多显示器录制时。此处所用变量会在 recording.py 先进行初始化
             crop_display_selector = st.selectbox("设置显示器", st.session_state.display_info_formatted)
             crop_display_index = st.session_state.display_info_formatted.index(crop_display_selector)
         else:

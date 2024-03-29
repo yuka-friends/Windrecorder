@@ -1,3 +1,4 @@
+import datetime
 import os
 import shutil
 import subprocess
@@ -6,11 +7,69 @@ import time
 import pandas as pd
 from send2trash import send2trash
 
-from windrecorder.config import CONFIG_VIDEO_COMPRESS_PRESET, config
+from windrecorder import file_utils, utils
+from windrecorder.config import (
+    CONFIG_RECORD_PRESET,
+    CONFIG_VIDEO_COMPRESS_PRESET,
+    config,
+)
 from windrecorder.logger import get_logger
-from windrecorder.utils import is_process_running
 
 logger = get_logger(__name__)
+
+
+# 录制屏幕
+def record_screen(
+    output_dir=config.record_videos_dir_ud,
+    record_time=config.record_seconds,
+    framerate=config.record_framerate,
+    encoder_preset_name=config.record_encoder,
+):
+    """
+    用ffmpeg持续录制屏幕,默认每15分钟保存一个视频文件
+    """
+    # 构建输出文件名
+    now = datetime.datetime.now()
+    video_out_name = now.strftime("%Y-%m-%d_%H-%M-%S") + ".mp4"
+    output_dir_with_date = now.strftime("%Y-%m")  # 将视频存储在日期月份子目录下
+    video_saved_dir = os.path.join(output_dir, output_dir_with_date)
+    file_utils.ensure_dir(video_saved_dir)
+    out_path = os.path.join(video_saved_dir, video_out_name)
+
+    screen_width, screen_height = utils.get_display_resolution()
+    logger.info(f"screen resolution: {screen_width}x{screen_height}")
+
+    pix_fmt_args = ["-pix_fmt", "yuv420p"]
+    record_encoder_args = [
+        str(config.record_crf) if i == "CRF_NUM" else i for i in CONFIG_RECORD_PRESET[encoder_preset_name]["ffmpeg_cmd"]
+    ]
+
+    ffmpeg_cmd = [
+        config.ffmpeg_path,
+        "-hwaccel",
+        "auto",
+        "-f",
+        "gdigrab",
+        "-framerate",
+        f"{framerate}",
+        "-i",
+        "desktop",
+        *record_encoder_args,
+        *pix_fmt_args,
+        "-t",
+        str(record_time),
+        out_path,
+    ]
+
+    # 执行命令
+    try:
+        logger.info(f"record_screen: ffmpeg cmd: {ffmpeg_cmd}")
+        # 运行ffmpeg
+        subprocess.run(ffmpeg_cmd, check=True)
+        return video_saved_dir, video_out_name
+    except subprocess.CalledProcessError as ex:
+        logger.error(f"Windrecorder: {ex.cmd} failed with return code {ex.returncode}")
+        return video_saved_dir, video_out_name
 
 
 # 检测是否正在录屏
@@ -22,7 +81,7 @@ def is_recording():
         logger.error("record: Screen recording service file lock does not exist.")
         return False
 
-    return is_process_running(check_pid, "python.exe")
+    return utils.is_process_running(check_pid, "python.exe")
 
 
 # 获取视频的原始分辨率
@@ -112,7 +171,7 @@ def encode_preset_benchmark_test(scale_factor, crf):
     test_video_filepath = "__assets__\\test_video_compress.mp4"
     if not os.path.exists(test_video_filepath):
         logger.error("test_video_filepath not found.")
-        return
+        return None
 
     # 准备测试环境
     test_env_folder = "cache\\encode_preset_benchmark_test"
@@ -181,5 +240,40 @@ def encode_preset_benchmark_test(scale_factor, crf):
             else:
                 # 压制失败
                 df_result.loc[len(df_result)] = [encoder_name, encode_accelerator_name, False, 0, 0]
+
+    return df_result
+
+
+# 测试所有的录制参数，由 webui 指定缩放系数与 crf 压缩质量
+def record_encode_preset_benchmark_test():
+    test_env_folder = "cache\\record_preset_benchmark_test"
+    if os.path.exists(test_env_folder):
+        shutil.rmtree(test_env_folder)
+    os.makedirs(test_env_folder)
+
+    df_result = pd.DataFrame(columns=["encoder preset", "support"])
+
+    for encoder_preset_name in CONFIG_RECORD_PRESET.keys():
+        logger.info(f"Testing {encoder_preset_name}")
+        support_res = False
+        try:
+            video_saved_dir, video_out_name = record_screen(
+                output_dir=test_env_folder, record_time=2, framerate=30, encoder_preset_name=encoder_preset_name
+            )
+            output_path = os.path.join(video_saved_dir, video_out_name)
+            if os.path.exists(output_path):
+                if os.stat(output_path).st_size < 1024:
+                    support_res = False
+                else:
+                    support_res = True
+            else:
+                support_res = False
+        except Exception:
+            support_res = False
+
+        df_result.loc[len(df_result)] = [
+            encoder_preset_name,
+            support_res,
+        ]
 
     return df_result
