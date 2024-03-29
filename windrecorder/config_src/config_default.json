@@ -72,5 +72,7 @@
   "enable_3_columns_in_oneday": false,
   "enable_synonyms_recommend": false,
   "multi_display_record_strategy": "all",
-  "record_single_display_index": 1
+  "record_single_display_index": 1,
+  "record_encoder": "cpu_h264",
+  "record_crf": 30
 }

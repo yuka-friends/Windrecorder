@@ -5,7 +5,7 @@ from PIL import Image
 from streamlit_tags import st_tags
 
 from windrecorder import record, utils
-from windrecorder.config import config, config_video_compress_preset
+from windrecorder.config import CONFIG_VIDEO_COMPRESS_PRESET, config
 from windrecorder.utils import find_key_position_in_dict
 from windrecorder.utils import get_text as _t
 
@@ -108,15 +108,15 @@ def render():
         with col1_encode:
             video_compress_encoder = st.selectbox(
                 _t("rs_text_compress_encoder"),
-                list(config_video_compress_preset.keys()),
-                index=find_key_position_in_dict(config_video_compress_preset, config.compress_encoder),
+                list(CONFIG_VIDEO_COMPRESS_PRESET.keys()),
+                index=find_key_position_in_dict(CONFIG_VIDEO_COMPRESS_PRESET, config.compress_encoder),
             )
         with col2_encode:
             video_compress_accelerator = st.selectbox(
                 _t("rs_text_compress_accelerator"),
-                list(config_video_compress_preset[video_compress_encoder].keys()),
+                list(CONFIG_VIDEO_COMPRESS_PRESET[video_compress_encoder].keys()),
                 index=find_key_position_in_dict(
-                    config_video_compress_preset[video_compress_encoder], config.compress_accelerator
+                    CONFIG_VIDEO_COMPRESS_PRESET[video_compress_encoder], config.compress_accelerator
                 ),
             )
         with col3_encode:

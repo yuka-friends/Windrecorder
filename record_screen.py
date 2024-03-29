@@ -18,7 +18,7 @@ from windrecorder import (  # wordcloud,
     record_wintitle,
     utils,
 )
-from windrecorder.config import config
+from windrecorder.config import CONFIG_RECORD_PRESET, config
 from windrecorder.exceptions import LockExistsException
 from windrecorder.lock import FileLock
 from windrecorder.logger import get_logger
@@ -131,6 +131,9 @@ def record_screen(
     logger.info(f"screen resolution: {screen_width}x{screen_height}")
 
     pix_fmt_args = ["-pix_fmt", "yuv420p"]
+    record_encoder_args = [
+        str(config.record_crf) if i == "CRF_NUM" else i for i in CONFIG_RECORD_PRESET[config.record_encoder]["ffmpeg_cmd"]
+    ]
 
     ffmpeg_cmd = [
         config.ffmpeg_path,
@@ -140,13 +143,10 @@ def record_screen(
         f"{config.record_framerate}",
         "-i",
         "desktop",
-        # 默认使用编码成 h264 格式
-        "-c:v",
-        "libx264",
-        # 默认码率为 200kbps
-        "-b:v",
-        f"{config.record_bitrate}k",
+        *record_encoder_args,
         *pix_fmt_args,
+        "-hwaccel",
+        "auto",
         "-t",
         str(record_time),
         out_path,

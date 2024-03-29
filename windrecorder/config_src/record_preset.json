@@ -1,0 +1,14 @@
+{
+    "cpu_h264":{
+        "ffmpeg_cmd":["-c:v", "libx264", "-crf", "CRF_NUM"]
+    },
+    "cpu_h265":{
+        "ffmpeg_cmd":["-c:v", "libx265", "-crf", "CRF_NUM"]
+    },
+    "NVIDIA_h265":{
+        "ffmpeg_cmd":["-c:v", "hevc_nvenc", "-qp", "CRF_NUM"]
+    },
+    "AMD_h265":{
+        "ffmpeg_cmd":["-c:v", "hevc_amf", "-qp_p", "CRF_NUM", "-qp_i", "CRF_NUM"]
+    }
+}

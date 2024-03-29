@@ -11,11 +11,14 @@ logger = get_logger(__name__)
 CONFIG_NAME_USER = "config_user.json"
 CONFIG_NAME_DEFAULT = "config_default.json"
 CONFIG_NAME_VIDEO_COMPRESS_PRESET = "video_compress_preset.json"
+CONFIG_NAME_RECORD_PRESET = "record_preset.json"
+
 DIR_CONFIG_SRC = "windrecorder\\config_src"
 DIR_USERDATA = "userdata"
 FILEPATH_CONFIG_DEFAULT = os.path.join(DIR_CONFIG_SRC, CONFIG_NAME_DEFAULT)
 FILEPATH_CONFIG_USER = os.path.join(DIR_USERDATA, CONFIG_NAME_USER)
 FILEPATH_CONFIG_VIDEO_COMPRESS_PRESET = os.path.join(DIR_CONFIG_SRC, CONFIG_NAME_VIDEO_COMPRESS_PRESET)
+FILEPATH_CONFIG_RECORD_PRESET = os.path.join(DIR_CONFIG_SRC, CONFIG_NAME_RECORD_PRESET)
 
 
 class Config:
@@ -81,6 +84,8 @@ class Config:
         enable_synonyms_recommend,
         multi_display_record_strategy,
         record_single_display_index,
+        record_encoder,
+        record_crf,
         **other_field,
     ) -> None:
         # If need to process input parameters, they should assign another variable name to prevent recursive writing into the config.
@@ -148,6 +153,8 @@ class Config:
         self.enable_synonyms_recommend = enable_synonyms_recommend
         self.multi_display_record_strategy = multi_display_record_strategy  # all:record all   single:record single display
         self.record_single_display_index = record_single_display_index  # start from 1, map to mms display list
+        self.record_encoder = record_encoder
+        self.record_crf = record_crf
 
     def set_and_save_config(self, attr: str, value):
         if not hasattr(self, attr):
@@ -223,8 +230,15 @@ def get_video_compress_preset_json():
     return config_json
 
 
+def get_record_preset_json():
+    with open(FILEPATH_CONFIG_RECORD_PRESET, "r", encoding="utf-8") as f:
+        config_json = json.load(f)
+    return config_json
+
+
 config = Config(**get_config_json())
-config_video_compress_preset = get_video_compress_preset_json()
+CONFIG_VIDEO_COMPRESS_PRESET = get_video_compress_preset_json()
+CONFIG_RECORD_PRESET = get_record_preset_json()
 
 # main 函数，输出 config 内容
 if __name__ == "__main__":

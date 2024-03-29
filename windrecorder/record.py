@@ -6,7 +6,7 @@ import time
 import pandas as pd
 from send2trash import send2trash
 
-from windrecorder.config import config, config_video_compress_preset
+from windrecorder.config import CONFIG_VIDEO_COMPRESS_PRESET, config
 from windrecorder.logger import get_logger
 from windrecorder.utils import is_process_running
 
@@ -53,12 +53,12 @@ def compress_video_resolution(video_path, scale_factor):
     target_height = int(height * scale_factor)
 
     # 获取编码器和加速器
-    encoder_default = config_video_compress_preset["x264"]["cpu"]["encoder"]
-    crf_flag_default = config_video_compress_preset["x264"]["cpu"]["crf_flag"]
+    encoder_default = CONFIG_VIDEO_COMPRESS_PRESET["x264"]["cpu"]["encoder"]
+    crf_flag_default = CONFIG_VIDEO_COMPRESS_PRESET["x264"]["cpu"]["crf_flag"]
     crf_default = 39
     try:
-        encoder = config_video_compress_preset[config.compress_encoder][config.compress_accelerator]["encoder"]
-        crf_flag = config_video_compress_preset[config.compress_encoder][config.compress_accelerator]["crf_flag"]
+        encoder = CONFIG_VIDEO_COMPRESS_PRESET[config.compress_encoder][config.compress_accelerator]["encoder"]
+        crf_flag = CONFIG_VIDEO_COMPRESS_PRESET[config.compress_encoder][config.compress_accelerator]["crf_flag"]
         crf = int(config.compress_quality)
     except KeyError:
         logger.error("Fail to get video compress config correctly. Fallback to default preset.")
@@ -157,7 +157,7 @@ def encode_preset_benchmark_test(scale_factor, crf):
     df_result = pd.DataFrame(columns=["encoder", "accelerator", "support", "compress_ratio", "compress_time"])
 
     # 测试所有参数预设
-    for encoder_name, encoder in config_video_compress_preset.items():
+    for encoder_name, encoder in CONFIG_VIDEO_COMPRESS_PRESET.items():
         logger.info(f"Testing {encoder}")
         for encode_accelerator_name, encode_accelerator in encoder.items():
             logger.info(f"Testing {encode_accelerator}")
