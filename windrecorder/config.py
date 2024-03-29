@@ -125,7 +125,6 @@ class Config:
         self.compress_encoder = compress_encoder
         self.compress_accelerator = compress_accelerator
         self.compress_quality = compress_quality
-        self.compress_preset = get_video_compress_preset_json()
         self.log_dir = log_dir
         self.win_title_dir = win_title_dir
         self.start_recording_on_startup = start_recording_on_startup
@@ -225,6 +224,7 @@ def get_video_compress_preset_json():
 
 
 config = Config(**get_config_json())
+config_video_compress_preset = get_video_compress_preset_json()
 
 # main 函数，输出 config 内容
 if __name__ == "__main__":
