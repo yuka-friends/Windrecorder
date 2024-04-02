@@ -46,7 +46,7 @@ class RepeatingTimer(threading.Thread):
 
 
 # 获得屏幕分辨率
-def get_display_resolution():
+def get_display_resolution():  # FIXME: remove all methods
     with mss.mss() as mss_instance:
         return mss_instance.monitors[0]["width"], mss_instance.monitors[0]["height"]
 

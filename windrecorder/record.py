@@ -36,13 +36,22 @@ def record_screen(
     file_utils.ensure_dir(video_saved_dir)
     out_path = os.path.join(video_saved_dir, video_out_name)
 
-    screen_width, screen_height = utils.get_display_resolution()
-    logger.info(f"screen resolution: {screen_width}x{screen_height}")
-
+    display_info = utils.get_display_info()
     pix_fmt_args = ["-pix_fmt", "yuv420p"]
     record_encoder_args = [
         str(config.record_crf) if i == "CRF_NUM" else i for i in CONFIG_RECORD_PRESET[encoder_preset_name]["ffmpeg_cmd"]
     ]
+
+    record_range_args = []
+    if config.multi_display_record_strategy == "single" and len(display_info) > 2:  # 当有多台显示器、且选择仅录制其中一台时
+        record_range_args = [
+            "-video_size",
+            f"{display_info[config.record_single_display_index]['width']}x{display_info[config.record_single_display_index]['height']}",
+            "-offset_x",
+            f"{display_info[config.record_single_display_index]['left']}",
+            "-offset_y",
+            f"{display_info[config.record_single_display_index]['top']}",
+        ]
 
     ffmpeg_cmd = [
         config.ffmpeg_path,
@@ -52,6 +61,7 @@ def record_screen(
         "gdigrab",
         "-framerate",
         f"{framerate}",
+        *record_range_args,
         "-i",
         "desktop",
         *record_encoder_args,
@@ -70,6 +80,7 @@ def record_screen(
     except subprocess.CalledProcessError as ex:
         logger.error(f"Windrecorder: {ex.cmd} failed with return code {ex.returncode}")
         return video_saved_dir, video_out_name
+        # FIXME 报错录制失败时给用户反馈
 
 
 # 检测是否正在录屏
