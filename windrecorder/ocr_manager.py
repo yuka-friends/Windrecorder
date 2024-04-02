@@ -380,8 +380,10 @@ def ocr_core_logic(file_path, vid_file_name, iframe_path):
     img1_path_temp = ""
     img2_path_temp = ""
     is_first_process_image_similarity = 1
-    # 先清理一波看起来重复的图像
-    for img_file_name in os.listdir(iframe_path):
+    # 根据时间先后顺序，清理一波看起来重复的图像
+    # FIXME 寻找更好的方法可以清理所有重复图像，而不是按时间先后依次比对？
+    sotred_file = sorted(os.listdir(iframe_path), key=lambda x: int("".join(filter(str.isdigit, x))))
+    for img_file_name in sotred_file:
         logger.debug(f"processing IMG - compare:{img_file_name}")
         img = os.path.join(iframe_path, img_file_name)
         logger.debug(f"img={img}")
@@ -418,7 +420,6 @@ def ocr_core_logic(file_path, vid_file_name, iframe_path):
     ]
     dataframe_all = pd.DataFrame(columns=dataframe_column_names)
 
-    # TODO: os.listdir 应该进行正确的数字排序、以确保是按视频顺序索引的
     sotred_file = sorted(os.listdir(iframe_path), key=lambda x: int("".join(filter(str.isdigit, x))))
     for img_file_name in sotred_file:
         logger.debug("_____________________")
@@ -426,11 +427,10 @@ def ocr_core_logic(file_path, vid_file_name, iframe_path):
 
         if "_cropped" not in img_file_name:
             continue
-        img_file_name = img_file_name.replace("_cropped", "")
 
+        img_crop = os.path.join(iframe_path, img_file_name.replace("_cropped", ""))
         img = os.path.join(iframe_path, img_file_name)
-        ocr_result_stringB = ocr_image(img)
-        # logger.debug(f"ocr_result_stringB:{ocr_result_stringB}")
+        ocr_result_stringB = ocr_image(img_crop)
 
         is_str_same, _ = compare_strings(ocr_result_stringA, ocr_result_stringB)
         if is_str_same:
@@ -446,7 +446,9 @@ def ocr_core_logic(file_path, vid_file_name, iframe_path):
                 # 使用os.path.splitext()可以把文件名和文件扩展名分割开来，os.path.splitext(file_name)会返回一个元组,元组的第一个元素是文件名,第二个元素是扩展名
                 calc_to_sec_vidname = os.path.splitext(vid_file_name)[0]
                 calc_to_sec_vidname = calc_to_sec_vidname.replace("-INDEX", "")
-                calc_to_sec_picname = round(int(os.path.splitext(img_file_name)[0]) / 2)
+                calc_to_sec_picname = round(
+                    int(os.path.splitext(img_file_name.replace("_cropped", ""))[0]) / int(config.record_framerate)
+                )  # 用fps折算秒数
                 calc_to_sec_data = date_to_seconds(calc_to_sec_vidname) + calc_to_sec_picname
                 win_title = record_wintitle.get_wintitle_by_timestamp(calc_to_sec_data)
                 win_title = record_wintitle.optimize_wintitle_name(win_title)
