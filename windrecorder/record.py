@@ -43,15 +43,19 @@ def record_screen(
     ]
 
     record_range_args = []
-    if config.multi_display_record_strategy == "single" and len(display_info) > 2:  # 当有多台显示器、且选择仅录制其中一台时
-        record_range_args = [
-            "-video_size",
-            f"{display_info[config.record_single_display_index]['width']}x{display_info[config.record_single_display_index]['height']}",
-            "-offset_x",
-            f"{display_info[config.record_single_display_index]['left']}",
-            "-offset_y",
-            f"{display_info[config.record_single_display_index]['top']}",
-        ]
+    if config.multi_display_record_strategy == "single" and len(display_info) > 1:  # 当有多台显示器、且选择仅录制其中一台时
+        if config.record_single_display_index > len(display_info):
+            logger.warning("display index not detected, reset record_single_display_index to default index 1")
+            config.set_and_save_config("record_single_display_index", 1)
+        else:
+            record_range_args = [
+                "-video_size",
+                f"{display_info[config.record_single_display_index]['width']}x{display_info[config.record_single_display_index]['height']}",
+                "-offset_x",
+                f"{display_info[config.record_single_display_index]['left']}",
+                "-offset_y",
+                f"{display_info[config.record_single_display_index]['top']}",
+            ]
 
     ffmpeg_cmd = [
         config.ffmpeg_path,
