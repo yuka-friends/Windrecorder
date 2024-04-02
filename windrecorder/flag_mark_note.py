@@ -3,7 +3,6 @@ import os
 
 import customtkinter
 import pandas as pd
-import pyautogui
 import streamlit as st
 from PIL import Image, ImageDraw
 from send2trash import send2trash
@@ -37,7 +36,11 @@ def add_new_flag_record_from_tray(datetime_created=None):
         datetime_created = datetime.datetime.now()
     ensure_flag_mark_note_csv_exist()
     df = file_utils.read_dataframe_from_path(config.flag_mark_note_filepath)
-    current_screenshot = pyautogui.screenshot()
+
+    screenshot_display_index = 0
+    if config.multi_display_record_strategy == "single" and config.record_single_display_index <= utils.get_display_count():
+        screenshot_display_index = config.record_single_display_index
+    current_screenshot = utils.get_screenshot_of_display(screenshot_display_index)
     img_b64 = utils.resize_image_as_base64(current_screenshot)
 
     new_data = {
