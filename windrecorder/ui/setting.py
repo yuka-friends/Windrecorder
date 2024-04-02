@@ -68,7 +68,7 @@ def render():
             is_shutdown_pasocon_after_updatedDB = st.checkbox(
                 _t("set_checkbox_shutdown_after_updated"),
                 value=False,
-                disabled=st.session_state.get("update_button_disabled", False),
+                disabled=st.session_state.get("update_button_disabled", False) or config.OCR_index_strategy == 1,
             )
 
         with col2:

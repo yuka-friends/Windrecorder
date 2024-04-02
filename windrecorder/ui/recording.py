@@ -70,7 +70,7 @@ def render():
             label=_t("rs_text_skip_recording_by_wintitle"), text=_t("rs_tag_input_tip"), value=config.exclude_words
         )
 
-        if st.toggle("展示高级编码选项", key="expand_encode_option_recording"):
+        if st.toggle("显示高级编码选项", key="expand_encode_option_recording"):
             col_record_encoder, col_record_quality = st.columns([1, 1])
             with col_record_encoder:
                 RECORD_ENCODER_LST = list(CONFIG_RECORD_PRESET.keys())
@@ -133,7 +133,7 @@ def render():
                 help=_t("rs_selectbox_compress_ratio_help"),
             )
 
-        if st.toggle("展示高级编码选项", key="expand_encode_option_compress"):
+        if st.toggle("显示高级编码选项", key="expand_encode_option_compress"):
             col1_encode, col2_encode, col3_encode = st.columns([1, 1, 1])
             with col1_encode:
                 video_compress_encoder = st.selectbox(

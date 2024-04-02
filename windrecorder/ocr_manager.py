@@ -176,7 +176,7 @@ def crop_iframe(directory):
                 right_boundary = left_boundary + monitor["width"]
                 bottom_boundary = top_boundary + monitor["height"]
 
-            # 计算涂白的区域
+            # 计算涂黑的区域
             top_black = (
                 left_boundary,
                 top_boundary,
@@ -202,11 +202,11 @@ def crop_iframe(directory):
                 bottom_boundary,
             )
 
-            # 在对应区域涂白
-            draw.rectangle(top_black, fill="white")
-            draw.rectangle(bottom_black, fill="white")
-            draw.rectangle(left_black, fill="white")
-            draw.rectangle(right_black, fill="white")
+            # 在对应区域涂黑
+            draw.rectangle(top_black, fill="black")
+            draw.rectangle(bottom_black, fill="black")
+            draw.rectangle(left_black, fill="black")
+            draw.rectangle(right_black, fill="black")
 
         cropped_file_path = os.path.splitext(file_path)[0] + "_cropped" + os.path.splitext(file_path)[1]
         image.save(cropped_file_path)
@@ -303,18 +303,22 @@ def compare_strings(a, b, threshold=70):
 
 
 # 计算两张图片的重合率 - 通过本地文件的方式
+# FIXME 这个函数太慢了，得优化
 def compare_image_similarity(img_path1, img_path2, threshold=0.85):
-    # todo: 将删除操作改为整理为文件列表，降低io开销
     logger.debug("Calculate the coincidence rate of two pictures.")
-    imageA = cv2.imread(img_path1)
-    imageB = cv2.imread(img_path2)
+    # 读取所有需要比较的图片
+    image_paths = [img_path1, img_path2]
+    images = [cv2.imread(path) for path in image_paths]
+
+    # 缩小图像大小
+    scale_factor = 0.3
+    images = [cv2.resize(img, None, fx=scale_factor, fy=scale_factor) for img in images]
 
     # 将图片转换为灰度
-    imageA = cv2.cvtColor(imageA, cv2.COLOR_BGR2GRAY)
-    imageB = cv2.cvtColor(imageB, cv2.COLOR_BGR2GRAY)
+    images_gray = [cv2.cvtColor(img, cv2.COLOR_BGR2GRAY) for img in images]
 
     # 计算两张图片的SSIM
-    score = ssim(imageA, imageB)
+    score = ssim(images_gray[0], images_gray[1])
 
     if score >= threshold:
         logger.debug(f"Images are similar with score {score}, deleting {img_path2}")
@@ -384,6 +388,8 @@ def ocr_core_logic(file_path, vid_file_name, iframe_path):
     # FIXME 寻找更好的方法可以清理所有重复图像，而不是按时间先后依次比对？
     sotred_file = sorted(os.listdir(iframe_path), key=lambda x: int("".join(filter(str.isdigit, x))))
     for img_file_name in sotred_file:
+        if "_cropped" not in img_file_name:
+            continue
         logger.debug(f"processing IMG - compare:{img_file_name}")
         img = os.path.join(iframe_path, img_file_name)
         logger.debug(f"img={img}")
@@ -422,15 +428,16 @@ def ocr_core_logic(file_path, vid_file_name, iframe_path):
 
     sotred_file = sorted(os.listdir(iframe_path), key=lambda x: int("".join(filter(str.isdigit, x))))
     for img_file_name in sotred_file:
-        logger.debug("_____________________")
-        logger.debug(f"processing IMG - OCR:{img_file_name}")
-
         if "_cropped" not in img_file_name:
             continue
+
+        logger.debug("_____________________")
+        logger.debug(f"processing IMG - OCR:{img_file_name}")
 
         img_crop = os.path.join(iframe_path, img_file_name.replace("_cropped", ""))
         img = os.path.join(iframe_path, img_file_name)
         ocr_result_stringB = ocr_image(img_crop)
+        logger.debug(f"OCR res:{ocr_result_stringB}")
 
         is_str_same, _ = compare_strings(ocr_result_stringA, ocr_result_stringB)
         if is_str_same:
@@ -481,62 +488,62 @@ def ocr_core_logic(file_path, vid_file_name, iframe_path):
 
 # 对某个视频进行处理的过程
 def ocr_process_single_video(video_path, vid_file_name, iframe_path, optimize_for_high_framerate_vid=False):
-    with acquire_ocr_lock(vid_file_name):
-        iframe_sub_path = os.path.join(iframe_path, os.path.splitext(vid_file_name)[0])
-        # 整合完整路径
-        file_path = os.path.join(video_path, vid_file_name)
+    # with acquire_ocr_lock(vid_file_name):
+    iframe_sub_path = os.path.join(iframe_path, os.path.splitext(vid_file_name)[0])
+    # 整合完整路径
+    file_path = os.path.join(video_path, vid_file_name)
 
-        # 判断文件是否为上次索引未完成的文件
-        if "-INDEX" in vid_file_name:
-            # 是-执行回滚操作
-            logger.info("INDEX flag exists, perform rollback operation.")
-            # 这里我们保证 vid_file_name 不包含 -INDEX
-            vid_file_name = vid_file_name.replace("-INDEX", "")
-            rollback_data(video_path, vid_file_name)
-            # 保证进入 ocr_core_logic 前 iframe_sub_path 是空的
+    # 判断文件是否为上次索引未完成的文件
+    if "-INDEX" in vid_file_name:
+        # 是-执行回滚操作
+        logger.info("INDEX flag exists, perform rollback operation.")
+        # 这里我们保证 vid_file_name 不包含 -INDEX
+        vid_file_name = vid_file_name.replace("-INDEX", "")
+        rollback_data(video_path, vid_file_name)
+        # 保证进入 ocr_core_logic 前 iframe_sub_path 是空的
+        try:
+            shutil.rmtree(iframe_sub_path)
+        except FileNotFoundError:
+            pass
+    else:
+        # 为正在索引的视频文件改名添加"-INDEX"
+        new_filename = vid_file_name.replace(".", "-INDEX.")
+        new_file_path = os.path.join(video_path, new_filename)
+        os.rename(file_path, new_file_path)
+        file_path = new_file_path
+
+    file_utils.ensure_dir(iframe_sub_path)
+    try:
+        if optimize_for_high_framerate_vid:
+            vid_filepath_optimize = convert_temp_optimize_vidfile_for_ocr(file_path)
+            if vid_filepath_optimize is None:
+                raise FileNotFoundError
+            ocr_core_logic(vid_filepath_optimize, vid_file_name, iframe_sub_path)
             try:
-                shutil.rmtree(iframe_sub_path)
+                os.remove(vid_filepath_optimize)
             except FileNotFoundError:
                 pass
         else:
-            # 为正在索引的视频文件改名添加"-INDEX"
-            new_filename = vid_file_name.replace(".", "-INDEX.")
-            new_file_path = os.path.join(video_path, new_filename)
-            os.rename(file_path, new_file_path)
-            file_path = new_file_path
+            ocr_core_logic(file_path, vid_file_name, iframe_sub_path)
+    except Exception as e:
+        # 记录错误日志
+        logger.error(f"Error occurred while processing :{file_path=}, {e=}")
+        new_name = vid_file_name.split(".")[0] + "-ERROR." + vid_file_name.split(".")[1]
+        new_name_dir = os.path.dirname(file_path)
+        os.rename(file_path, os.path.join(new_name_dir, new_name))
 
-        file_utils.ensure_dir(iframe_sub_path)
-        try:
-            if optimize_for_high_framerate_vid:
-                vid_filepath_optimize = convert_temp_optimize_vidfile_for_ocr(file_path)
-                if vid_filepath_optimize is None:
-                    raise FileNotFoundError
-                ocr_core_logic(vid_filepath_optimize, vid_file_name, iframe_sub_path)
-                try:
-                    os.remove(vid_filepath_optimize)
-                except FileNotFoundError:
-                    pass
-            else:
-                ocr_core_logic(file_path, vid_file_name, iframe_sub_path)
-        except Exception as e:
-            # 记录错误日志
-            logger.error(f"Error occurred while processing :{file_path=}, {e=}")
-            new_name = vid_file_name.split(".")[0] + "-ERROR." + vid_file_name.split(".")[1]
-            new_name_dir = os.path.dirname(file_path)
-            os.rename(file_path, os.path.join(new_name_dir, new_name))
-
-            with open(f"cache\\LOG_ERROR_{new_name}.MD", "w", encoding="utf-8") as f:
-                f.write(f'{datetime.datetime.now().strftime("%Y-%m-%d_%H-%M-%S")}\n{e}')
-        else:
-            logger.info("Add tags to video file")
-            new_file_path = file_path.replace("-INDEX", "-OCRED")
-            os.rename(file_path, new_file_path)
-            logger.info(f"--------- {file_path} Finished! ---------")
-        finally:
-            # 清理文件
-            if not config.enable_img_embed_search:
-                shutil.rmtree(iframe_sub_path)  # 先不清理文件，留给 img embed 流程继续使用，由它清理
-            pass
+        with open(f"cache\\LOG_ERROR_{new_name}.MD", "w", encoding="utf-8") as f:
+            f.write(f'{datetime.datetime.now().strftime("%Y-%m-%d_%H-%M-%S")}\n{e}')
+    else:
+        logger.info("Add tags to video file")
+        new_file_path = file_path.replace("-INDEX", "-OCRED")
+        os.rename(file_path, new_file_path)
+        logger.info(f"--------- {file_path} Finished! ---------")
+    finally:
+        # 清理文件
+        if not config.enable_img_embed_search:
+            shutil.rmtree(iframe_sub_path)  # 先不清理文件，留给 img embed 流程继续使用，由它清理
+        pass
 
 
 def convert_temp_optimize_vidfile_for_ocr(vid_filepath):
