@@ -92,16 +92,15 @@ def extract_iframe_by_ffmpeg(video_file, iframe_path):
 
 # 根据config配置裁剪图片
 def crop_iframe(directory):
-    # FIXME: 重新设计存储多个显示器的数据结构。需要考虑处理异常：比如当前显示器配置和图片不符的fallback
-    monitors_cnt = utils.get_display_count()
-    monitors = utils.get_display_info()
-    monitor_all_in1 = monitors[0]
-    monitors = monitors[1:]
+    display_cnt = utils.get_display_count()
+    display_info = utils.get_display_info()
+    display_all_full_size = display_info[0]
+    display_info = display_info[1:]
     top_percent = []
     bottom_percent = []
     left_percent = []
     right_percent = []
-    for i in range(monitors_cnt):
+    for i in range(display_cnt):
         top_percent.append(config.ocr_image_crop_URBL[i * 4 + 0] * 0.01)
         bottom_percent.append(config.ocr_image_crop_URBL[i * 4 + 1] * 0.01)
         left_percent.append(config.ocr_image_crop_URBL[i * 4 + 2] * 0.01)
@@ -117,25 +116,67 @@ def crop_iframe(directory):
         if "_cropped" in file_name:
             continue
 
-        # 打开图片文件
         image = Image.open(file_path)
         draw = ImageDraw.Draw(image)
 
-        # 获取图片的原始尺寸
-        width, height = image.size
+        # 校验图片
+        img_width, img_height = image.size
+        fallback_condition = False
+        display_index = -1
+        if not config.record_single_display_index <= len(display_info):  # 当记录的显示器索引不存在于所有显示器中时，当作一个完整显示器使用默认参数处理
+            fallback_condition = True
+        elif config.multi_display_record_strategy == "single":
+            # 当图片分辨率符合其中某个显示器的完整尺寸时，对其单独处理
+            for i in display_info:  # 逐个检查显示器，是否与config index吻合
+                if (
+                    abs(display_info[config.record_single_display_index - 1]["width"] - img_width) < 2
+                    and abs(display_info[config.record_single_display_index - 1]["height"] - img_height) < 2
+                ):
+                    monitors_info_process = [display_info[config.record_single_display_index - 1]]
+                    display_index = config.record_single_display_index - 1
+                    fallback_condition = False
+                    break
+                else:
+                    fallback_condition = True
+        # 当显示器配置为录制所有显示器、但与图片不符时，执行fallback策略：当作一个显示器、使用默认涂黑范围处理
+        elif config.multi_display_record_strategy == "all" and (
+            abs(display_all_full_size["width"] - img_width) > 10 or abs(display_all_full_size["height"] - img_height) > 10
+        ):
+            fallback_condition = True
 
-        for i, monitor in enumerate(monitors):
+        if fallback_condition:
+            logger.info(
+                f"video iframe {file_name} not matched with current display configuration({display_info}), fallback to default mask config."
+            )
+            monitors_info_process = [display_all_full_size]
+            top_percent = [0.06]
+            bottom_percent = [0.06]
+            left_percent = [0.06]
+            right_percent = [0.03]
+        else:
+            monitors_info_process = display_info
+
+        for i, monitor in enumerate(monitors_info_process):
             # 计算裁剪区域的像素值
             top = top_percent[i]
             bottom = bottom_percent[i]
             left = left_percent[i]
             right = right_percent[i]
-            left_boundary = monitor["left"] - monitor_all_in1["left"]
-            top_boundary = monitor["top"] - monitor_all_in1["top"]
-            right_boundary = left_boundary + monitor["width"]
-            bottom_boundary = top_boundary + monitor["height"]
 
-            # 计算涂黑的区域
+            # 如果仅录制单显示器，且通过了校验
+            if display_index > 0:
+                i = display_index
+                left_boundary = 0
+                top_boundary = 0
+                right_boundary = img_width
+                bottom_boundary = img_height
+            else:  # 录制所有显示器情况下
+                left_boundary = monitor["left"] - display_all_full_size["left"]
+                top_boundary = monitor["top"] - display_all_full_size["top"]
+                right_boundary = left_boundary + monitor["width"]
+                bottom_boundary = top_boundary + monitor["height"]
+
+            # 计算涂白的区域
             top_black = (
                 left_boundary,
                 top_boundary,
@@ -161,18 +202,16 @@ def crop_iframe(directory):
                 bottom_boundary,
             )
 
-            # 在对应区域涂黑
-            draw.rectangle(top_black, fill="black")
-            draw.rectangle(bottom_black, fill="black")
-            draw.rectangle(left_black, fill="black")
-            draw.rectangle(right_black, fill="black")
+            # 在对应区域涂白
+            draw.rectangle(top_black, fill="white")
+            draw.rectangle(bottom_black, fill="white")
+            draw.rectangle(left_black, fill="white")
+            draw.rectangle(right_black, fill="white")
 
         cropped_file_path = os.path.splitext(file_path)[0] + "_cropped" + os.path.splitext(file_path)[1]
         image.save(cropped_file_path)
 
-        # 关闭图片文件
         image.close()
-
         logger.debug(f"saved croped img {cropped_file_path}")
 
 
