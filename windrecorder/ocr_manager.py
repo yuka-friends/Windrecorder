@@ -96,10 +96,15 @@ def crop_iframe(directory):
     display_info = utils.get_display_info()
     display_all_full_size = display_info[0]
     display_info = display_info[1:]
+    ocr_image_crop_URBL = config.ocr_image_crop_URBL
     top_percent = []
     bottom_percent = []
     left_percent = []
     right_percent = []
+    if len(ocr_image_crop_URBL) < display_cnt * 4:  # 不足时补齐参数 slot
+        for i in range(display_cnt - (len(ocr_image_crop_URBL) // 4)):
+            ocr_image_crop_URBL.extend([6, 6, 6, 3])
+        config.set_and_save_config("ocr_image_crop_URBL", ocr_image_crop_URBL)
     for i in range(display_cnt):
         top_percent.append(config.ocr_image_crop_URBL[i * 4 + 0] * 0.01)
         bottom_percent.append(config.ocr_image_crop_URBL[i * 4 + 1] * 0.01)
@@ -158,10 +163,16 @@ def crop_iframe(directory):
 
         for i, monitor in enumerate(monitors_info_process):
             # 计算裁剪区域的像素值
-            top = top_percent[i]
-            bottom = bottom_percent[i]
-            left = left_percent[i]
-            right = right_percent[i]
+            try:
+                top = top_percent[i]
+                bottom = bottom_percent[i]
+                left = left_percent[i]
+                right = right_percent[i]
+            except IndexError:
+                top = 0.06
+                bottom = 0.06
+                left = 0.06
+                right = 0.03
 
             # 如果仅录制单显示器，且通过了校验
             if display_index > 0:
