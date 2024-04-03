@@ -36,14 +36,22 @@ def record_screen(
     file_utils.ensure_dir(video_saved_dir)
     out_path = os.path.join(video_saved_dir, video_out_name)
 
+    def _replace_value_in_args(lst, bitrate_displays_factor):
+        for i in range(len(lst)):
+            if lst[i] == "CRF_NUM":
+                lst[i] = f"{config.record_crf}"
+            elif lst[i] == "BITRATE":
+                lst[i] = f"{bitrate_displays_factor}k"
+        return lst
+
     display_info = utils.get_display_info()
     pix_fmt_args = ["-pix_fmt", "yuv420p"]
-    record_encoder_args = [
-        str(config.record_crf) if i == "CRF_NUM" else i for i in CONFIG_RECORD_PRESET[encoder_preset_name]["ffmpeg_cmd"]
-    ]
 
     record_range_args = []
     if config.multi_display_record_strategy == "single" and len(display_info) > 1:  # 当有多台显示器、且选择仅录制其中一台时
+        record_encoder_args = _replace_value_in_args(
+            CONFIG_RECORD_PRESET[encoder_preset_name]["ffmpeg_cmd"], config.record_bitrate
+        )
         if config.record_single_display_index > len(display_info):
             logger.warning("display index not detected, reset record_single_display_index to default index 1")
             config.set_and_save_config("record_single_display_index", 1)
@@ -56,6 +64,10 @@ def record_screen(
                 "-offset_y",
                 f"{display_info[config.record_single_display_index]['top']}",
             ]
+    else:
+        record_encoder_args = _replace_value_in_args(
+            CONFIG_RECORD_PRESET[encoder_preset_name]["ffmpeg_cmd"], int(config.record_bitrate) * (len(display_info) - 1)
+        )
 
     ffmpeg_cmd = [
         config.ffmpeg_path,
