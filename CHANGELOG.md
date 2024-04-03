@@ -1,5 +1,17 @@
 # Changelog 更新日志
 
+## 0.0.11
+> 2024-04-03
+
+- 支持多显示器与单个显示器录制；
+- 优化了索引时比较图像的性能；
+
+- Supports multi-monitor and single-monitor recording;
+- Optimized the performance of comparing images during indexing;
+
+### Fixed
+- bug: 当锁屏时程序有几率不会进入空闲暂停状态；There is a chance that the program will not enter the idle pause state when the screen is locked;
+
 ## 0.0.10
 > 2024-03-03
 
