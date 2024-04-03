@@ -129,6 +129,8 @@ def set_username():
             sys_username = getpass.getuser()  # 如果为默认用户名，获取当前系统的用户名
         else:
             sys_username = config.user_name  # 如果配置文件已有自定义用户名，读取之前的用户名
+            print(_t("qs_un_use_current_name").format(sys_username=sys_username))
+            break  # 如果已设定用户名，此项设置跳过以避免误操作
 
         print(_t("qs_un_set_your_username"))
         print(_t("qs_un_describe").format(sys_username=sys_username))
