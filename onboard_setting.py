@@ -142,9 +142,9 @@ def set_username():
             subprocess.run("pause", shell=True)
         elif len(your_username) == 0:
             print(_t("qs_un_use_current_name").format(sys_username=sys_username))
+            config.set_and_save_config("user_name", sys_username)
             break
         else:
-            your_username = your_username.strip()
             print(_t("qs_un_use_custom_name").format(your_username=your_username))
             config.set_and_save_config("user_name", your_username)
             break
