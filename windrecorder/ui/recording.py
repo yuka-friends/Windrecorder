@@ -47,15 +47,19 @@ def render():
         # 检测到多显示器时，提供设置选项
         if st.session_state.display_count > 1:
             record_strategy_config = {
-                f"录制所有显示器（共 {len(st.session_state.display_info_formatted)} 个）": "all",
-                "仅录制一个显示器": "single",
+                _t("rs_text_record_strategy_option_all").format(num=len(st.session_state.display_info_formatted)): "all",
+                _t("rs_text_record_strategy_option_single"): "single",
             }
             col1_ms, col2_ms = st.columns([1, 1])
             with col1_ms:
-                display_record_strategy = st.selectbox("画面录制范围", options=[i for i in record_strategy_config.keys()])
+                display_record_strategy = st.selectbox(
+                    _t("rs_text_record_range"), options=[i for i in record_strategy_config.keys()]
+                )
             with col2_ms:
-                if display_record_strategy == "仅录制一个显示器":
-                    display_record_selection = st.selectbox("仅录制屏幕：", options=st.session_state.display_info_formatted)
+                if display_record_strategy == _t("rs_text_record_strategy_option_single"):
+                    display_record_selection = st.selectbox(
+                        _t("rs_text_record_single_display_select"), options=st.session_state.display_info_formatted
+                    )
                 else:
                     display_record_selection = None
                     st.empty()
@@ -70,16 +74,22 @@ def render():
             label=_t("rs_text_skip_recording_by_wintitle"), text=_t("rs_tag_input_tip"), value=config.exclude_words
         )
 
-        if st.toggle("显示高级编码选项", key="expand_encode_option_recording"):
+        if st.toggle(_t("rs_text_show_encode_option"), key="expand_encode_option_recording"):
             col_record_encoder, col_record_quality = st.columns([1, 1])
             with col_record_encoder:
                 RECORD_ENCODER_LST = list(CONFIG_RECORD_PRESET.keys())
                 record_encoder = st.selectbox(
-                    "录制编码器", index=RECORD_ENCODER_LST.index(config.record_encoder), options=RECORD_ENCODER_LST
+                    _t("rs_text_record_encoder"),
+                    index=RECORD_ENCODER_LST.index(config.record_encoder),
+                    options=RECORD_ENCODER_LST,
                 )
             with col_record_quality:
                 record_crf = st.number_input(
-                    "录制质量 CRF", value=config.record_crf, min_value=0, max_value=50, help=_t("rs_text_compress_CRF_help")
+                    _t("rs_text_record_crf"),
+                    value=config.record_crf,
+                    min_value=0,
+                    max_value=50,
+                    help=_t("rs_text_compress_CRF_help"),
                 )
             if st.button(_t("rs_btn_encode_benchmark"), key="rs_btn_encode_benchmark_recording"):
                 with st.spinner(_t("rs_text_encode_benchmark_loading")):
@@ -133,7 +143,7 @@ def render():
                 help=_t("rs_selectbox_compress_ratio_help"),
             )
 
-        if st.toggle("显示高级编码选项", key="expand_encode_option_compress"):
+        if st.toggle(_t("rs_text_show_encode_option"), key="expand_encode_option_compress"):
             col1_encode, col2_encode, col3_encode = st.columns([1, 1, 1])
             with col1_encode:
                 video_compress_encoder = st.selectbox(

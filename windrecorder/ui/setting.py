@@ -143,14 +143,14 @@ def render():
         if (
             st.session_state.display_count > 1 and config.multi_display_record_strategy == "all"
         ):  # 当使用多显示器录制时。此处所用变量会在 recording.py 先进行初始化
-            crop_display_selector = st.selectbox("设置显示器", st.session_state.display_info_formatted)
+            crop_display_selector = st.selectbox(_t("set_text_choose_displays"), st.session_state.display_info_formatted)
             crop_display_index = st.session_state.display_info_formatted.index(crop_display_selector)
         else:
             crop_display_index = 0
 
         if "ocr_padding_URBL" not in st.session_state:
             st.session_state.ocr_padding_URBL = utils.ensure_list_divisible_by_num(config.ocr_image_crop_URBL, 4)
-            if len(st.session_state.ocr_padding_URBL) < st.session_state.display_count * 4:
+            if len(st.session_state.ocr_padding_URBL) < st.session_state.display_count * 4:  # 不足时补齐参数 slot
                 for i in range(st.session_state.display_count - (len(st.session_state.ocr_padding_URBL) // 4)):
                     st.session_state.ocr_padding_URBL.extend([6, 6, 6, 3])
 
