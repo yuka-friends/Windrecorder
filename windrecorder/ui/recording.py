@@ -45,11 +45,11 @@ def render():
         )
 
         # 检测到多显示器时，提供设置选项
+        record_strategy_config = {
+            _t("rs_text_record_strategy_option_all").format(num=len(st.session_state.display_info_formatted)): "all",
+            _t("rs_text_record_strategy_option_single"): "single",
+        }
         if st.session_state.display_count > 1:
-            record_strategy_config = {
-                _t("rs_text_record_strategy_option_all").format(num=len(st.session_state.display_info_formatted)): "all",
-                _t("rs_text_record_strategy_option_single"): "single",
-            }
             col1_ms, col2_ms = st.columns([1, 1])
             with col1_ms:
                 display_record_strategy = st.selectbox(
@@ -63,6 +63,9 @@ def render():
                 else:
                     display_record_selection = None
                     st.empty()
+        else:
+            display_record_strategy = None
+            display_record_selection = None
 
         screentime_not_change_to_pause_record = st.number_input(
             _t("rs_input_stop_recording_when_screen_freeze"),
@@ -82,15 +85,30 @@ def render():
                     _t("rs_text_record_encoder"),
                     index=RECORD_ENCODER_LST.index(config.record_encoder),
                     options=RECORD_ENCODER_LST,
+                    help=_t("rs_text_record_help"),
                 )
             with col_record_quality:
-                record_crf = st.number_input(
-                    _t("rs_text_record_crf"),
-                    value=config.record_crf,
-                    min_value=0,
-                    max_value=50,
-                    help=_t("rs_text_compress_CRF_help"),
+                record_bitrate = st.number_input(
+                    _t("rs_text_record_bitrate"),
+                    value=config.record_bitrate,
+                    min_value=50,
+                    max_value=10000,
+                    help=_t("rs_text_bitrate_help"),
                 )
+
+            estimate_display_cnt = (
+                1
+                if (display_record_strategy is None)
+                or (display_record_strategy == _t("rs_text_record_strategy_option_single"))
+                else len(st.session_state.display_info_formatted)
+            )
+            st.text(
+                _t("rs_text_estimate_hint").format(
+                    min=round(0.025 * record_bitrate * estimate_display_cnt, 2),
+                    max=round(0.125 * record_bitrate * estimate_display_cnt, 2),
+                )
+            )
+
             if st.button(_t("rs_btn_encode_benchmark"), key="rs_btn_encode_benchmark_recording"):
                 with st.spinner(_t("rs_text_encode_benchmark_loading")):
                     result_df = record.record_encode_preset_benchmark_test()
@@ -103,7 +121,7 @@ def render():
                     )
         else:
             record_encoder = config.record_encoder
-            record_crf = config.record_crf
+            record_bitrate = config.record_bitrate
 
         st.divider()
 
@@ -199,7 +217,8 @@ def render():
         st.divider()
 
         if st.button("Save and Apple All Change / 保存并应用所有更改", type="primary", key="SaveBtnRecord"):
-            config.set_and_save_config("multi_display_record_strategy", record_strategy_config[display_record_strategy])
+            if display_record_strategy is not None:
+                config.set_and_save_config("multi_display_record_strategy", record_strategy_config[display_record_strategy])
             if display_record_selection is None:
                 config.set_and_save_config("record_single_display_index", 1)
             else:
@@ -213,7 +232,7 @@ def render():
             config.set_and_save_config("exclude_words", [item for item in exclude_words if len(item) >= 2])
 
             config.set_and_save_config("record_encoder", record_encoder)
-            config.set_and_save_config("record_crf", record_crf)
+            config.set_and_save_config("record_bitrate", record_bitrate)
 
             config.set_and_save_config("vid_store_day", vid_store_day)
             config.set_and_save_config("vid_compress_day", vid_compress_day)
