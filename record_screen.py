@@ -155,20 +155,28 @@ def continuously_record_screen():
 def monitor_compare_screenshot():
     with mss.mss() as sct:
         while True:
+            global monitor_idle_minutes
+            global last_screenshot_array
             if utils.is_screen_locked() or not utils.is_system_awake():
                 logger.info("Windrecorder: Screen locked / System not awaked")
+                monitor_idle_minutes += 0.5
             else:
                 try:
-                    global monitor_idle_minutes
-                    global last_screenshot_array
-
                     while True:
                         similarity = None
                         screenshot_array = []
-                        for monitor in sct.monitors[1:]:
-                            screenshot = sct.grab(monitor)
-                            logger.debug(f"{monitor=}")
+
+                        if config.multi_display_record_strategy == "single" and config.record_single_display_index < len(
+                            sct.monitors
+                        ):
+                            screenshot = sct.grab(sct.monitors[config.record_single_display_index])
+                            logger.debug(f"{sct.monitors[config.record_single_display_index]=}")
                             screenshot_array.append(np.array(screenshot))
+                        else:
+                            for monitor in sct.monitors[1:]:
+                                screenshot = sct.grab(monitor)
+                                logger.debug(f"{monitor=}")
+                                screenshot_array.append(np.array(screenshot))
 
                         if last_screenshot_array is not None:
                             similarity = []
