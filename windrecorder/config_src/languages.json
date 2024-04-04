@@ -82,7 +82,7 @@
         "stat_text_no_month_lightbox": "No lightbox image for this month.",
         "stat_text_counting": "Counting...",
 
-        "rs_text_need_to_restart_after_save_setting": "After saving the settings on this page, you need to restart the 'start_app.bat' to take effect.",
+        "rs_text_need_to_restart_after_save_setting": "After saving the settings on this page, you need to restart 'Windrecorder' to take effect.",
         "rs_md_title": "### 📼 Recording & Video Storage",
         "rs_md_record_setting_title": "#### Recording options",
         "rs_checkbox_start_record_when_startup": "Run on system startup",
@@ -311,7 +311,7 @@
         "stat_text_no_month_lightbox": "当月未有光箱图片。",
         "stat_text_counting": "统计中……",
 
-        "rs_text_need_to_restart_after_save_setting": "本页的设置在保存后，需重启 「start_app.bat」 才能生效。",
+        "rs_text_need_to_restart_after_save_setting": "本页的设置在保存后，需重启 「捕风记录仪」 才能生效。",
         "rs_md_title": "### 📼 录制与视频存储",
         "rs_md_record_setting_title": "#### 录制选项",
         "rs_checkbox_start_record_when_startup": "开机后自动启动应用",
@@ -541,7 +541,7 @@
         "stat_text_no_month_lightbox": "今月はライトボックス画像がありません。",
         "stat_text_counting": "統計...",
 
-        "rs_text_need_to_restart_after_save_setting": "このページの設定を保存した後、start_app.bat を再起動する必要があります。",
+        "rs_text_need_to_restart_after_save_setting": "このページの設定を保存した後、Windrecorder を再起動する必要があります。",
         "rs_md_title": "### 📼 録画とビデオストレージ",
         "rs_md_record_setting_title": "#### 録画オプション",
         "rs_checkbox_start_record_when_startup": "起動時に自動的にAppを開始する",
