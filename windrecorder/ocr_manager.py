@@ -20,6 +20,8 @@ from windrecorder.lock import FileLock
 from windrecorder.logger import get_logger
 from windrecorder.utils import date_to_seconds
 
+from windrecorder.config import config
+
 logger = get_logger(__name__)
 
 if config.enable_ocr_chineseocr_lite_onnx:
@@ -54,23 +56,26 @@ def is_file_in_use(file_path):
 # todo - 加入检测视频是否为合法视频?
 def extract_iframe(video_file, iframe_path, iframe_interval=4000):
     logger.info(f"extracting video i-frame: {video_file}")
-    cap = cv2.VideoCapture(video_file)
-    fps = cap.get(cv2.CAP_PROP_FPS)
+    if 'av1' not in config.record_encoder.lower():
+        cap = cv2.VideoCapture(video_file)
+        fps = cap.get(cv2.CAP_PROP_FPS)
 
-    frame_step = int(fps * iframe_interval / 1000)
-    frame_cnt = 0
-    while cap.isOpened():
-        ret, frame = cap.read()
-        if not ret:
-            break
+        frame_step = int(fps * iframe_interval / 1000)
+        frame_cnt = 0
+        while cap.isOpened():
+            ret, frame = cap.read()
+            if not ret:
+                break
 
-        if frame_cnt % frame_step == 0:
-            logger.debug(f"extract frame cut:{str(frame_cnt)}")
-            cv2.imwrite(os.path.join(iframe_path, f"{frame_cnt}.jpg"), frame)
+            if frame_cnt % frame_step == 0:
+                logger.debug(f"extract frame cut:{str(frame_cnt)}")
+                cv2.imwrite(os.path.join(iframe_path, f"{frame_cnt}.jpg"), frame)
 
-        frame_cnt += 1
+            frame_cnt += 1
 
-    cap.release()
+        cap.release()
+    else:
+        extract_iframe_by_ffmpeg(video_file, iframe_path)
 
 
 def extract_iframe_by_ffmpeg(video_file, iframe_path):
@@ -86,8 +91,8 @@ def extract_iframe_by_ffmpeg(video_file, iframe_path):
         "image2",
         os.path.join(iframe_path, "%d.jpg"),
     ]
-    logger.debug("extract frame cut:" + " ".join(ffmpeg_cmd))
     subprocess.run(" ".join(ffmpeg_cmd), shell=True, check=True)
+    logger.debug("extract frame cut:" + " ".join(ffmpeg_cmd))
 
 
 # 根据config配置裁剪图片
@@ -223,7 +228,7 @@ def crop_iframe(directory):
         image.save(cropped_file_path)
 
         image.close()
-        logger.debug(f"saved croped img {cropped_file_path}")
+    logger.debug(f"saved croped img in {image_files}")
 
 
 # OCR 分流器

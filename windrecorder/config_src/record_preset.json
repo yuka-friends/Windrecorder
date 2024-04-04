@@ -10,5 +10,8 @@
     },
     "AMD_h265":{
         "ffmpeg_cmd":["-c:v", "hevc_amf", "-b:v", "BITRATE"]
+    },
+    "SVT-AV1":{
+        "ffmpeg_cmd":["-c:v", "libsvtav1", "-b:v", "BITRATE", "-svtav1-params", "fast-decode=1:tbr=400k:rc=1:preset=13:scm=1:lp=4:lookahead=0"]
     }
 }
