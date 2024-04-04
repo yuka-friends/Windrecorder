@@ -251,17 +251,21 @@ def set_display():
             divider()
 
             record_strategy_num = input("> ")
-            if record_strategy_num == "1" or len(record_strategy_num) == 0:
+            if record_strategy_num == "1":
                 config.set_and_save_config("multi_display_record_strategy", "all")
                 print(f"{_t('qs_mo_set_to')} {_t('qs_mo_option_all')}")
                 break
             elif record_strategy_num == "2":
                 config.set_and_save_config("multi_display_record_strategy", "single")
                 break
-            else:
-                print("")
+            elif len(record_strategy_num) == 0:  # set same as before
+                if config.multi_display_record_strategy == "single":
+                    record_strategy_num = "2"
+                elif config.multi_display_record_strategy == "all":
+                    print(f"{_t('qs_mo_set_to')} {_t('qs_mo_option_all')}")
+                break
 
-        while True:
+        while True:  # config record which single display
             if record_strategy_num == "2":
                 print_header(step=4)
                 print(f"{_t('qs_mo_set_to')} {_t('qs_mo_describe_single')}")
