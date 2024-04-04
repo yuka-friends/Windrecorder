@@ -251,7 +251,7 @@ def set_display():
             divider()
 
             record_strategy_num = input("> ")
-            if record_strategy_num == "1":
+            if record_strategy_num == "1" or len(record_strategy_num) == 0:
                 config.set_and_save_config("multi_display_record_strategy", "all")
                 print(f"{_t('qs_mo_set_to')} {_t('qs_mo_option_all')}")
                 break
