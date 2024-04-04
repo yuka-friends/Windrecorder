@@ -9,6 +9,6 @@
         "ffmpeg_cmd":["-c:v", "hevc_nvenc", "-b:v", "BITRATE"]
     },
     "AMD_h265":{
-        "ffmpeg_cmd":["-c:v", "hevc_amf", "-qp_p", "CRF_NUM", "-qp_i", "CRF_NUM"]
+        "ffmpeg_cmd":["-c:v", "hevc_amf", "-b:v", "BITRATE"]
     }
 }

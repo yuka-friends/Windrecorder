@@ -4,9 +4,11 @@
 > 2024-04-03
 
 - 支持多显示器与单个显示器录制；
+- 添加了录制时的编码选项（cpu_h264, cpu_h265, NVIDIA_h265, AMD_h265）；
 - 优化了索引时比较图像的性能；
 
 - Supports multi-monitor and single-monitor recording;
+- Added encoding options when recording (cpu_h264, cpu_h265, NVIDIA_h265, AMD_h265);
 - Optimized the performance of comparing images during indexing;
 
 ### Fixed
