@@ -419,6 +419,11 @@ def ocr_core_logic(file_path, vid_file_name, iframe_path):
     # 裁剪图片
     crop_iframe(iframe_path)
 
+    display_count = utils.get_display_count()
+    # 假设屏幕大小一致，每块屏幕需要 15% 的不同画面，与 30% 的不同文字
+    threshold_img_similarity = 1 - 0.15 / display_count
+    threshold_str_similarity = 100 - 30 / display_count
+
     img1_path_temp = ""
     img2_path_temp = ""
     is_first_process_image_similarity = 1
@@ -440,7 +445,7 @@ def ocr_core_logic(file_path, vid_file_name, iframe_path):
             img2_path_temp = img
             is_first_process_image_similarity = 3
         else:
-            is_img_same = compare_image_similarity(img1_path_temp, img2_path_temp)
+            is_img_same = compare_image_similarity(img1_path_temp, img2_path_temp, threshold_img_similarity)
             if is_img_same:
                 os.remove(img2_path_temp)
                 img1_path_temp = img1_path_temp
@@ -477,7 +482,7 @@ def ocr_core_logic(file_path, vid_file_name, iframe_path):
         ocr_result_stringB = ocr_image(img_crop)
         logger.debug(f"OCR res:{ocr_result_stringB}")
 
-        is_str_same, _ = compare_strings(ocr_result_stringA, ocr_result_stringB)
+        is_str_same, _ = compare_strings(ocr_result_stringA, ocr_result_stringB, threshold_str_similarity)
         if is_str_same:
             logger.debug("[Skip] The content is consistent, not written to the database, skipped.")
         elif len(ocr_result_stringB) < 3:
