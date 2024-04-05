@@ -34,6 +34,7 @@ class Config:
         lang,
         ocr_lang,
         ocr_engine,
+        ocr_short_size,
         max_page_result,
         target_screen_res,
         exclude_words,
@@ -102,6 +103,7 @@ class Config:
         self.lang = lang
         self.ocr_lang = ocr_lang
         self.ocr_engine = ocr_engine
+        self.ocr_short_size = ocr_short_size
         self.max_page_result = max_page_result
         self.target_screen_res = target_screen_res
         self.exclude_words = exclude_words
