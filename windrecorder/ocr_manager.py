@@ -21,7 +21,6 @@ from windrecorder.lock import FileLock
 from windrecorder.logger import get_logger
 from windrecorder.utils import date_to_seconds
 
-from windrecorder.config import config
 
 logger = get_logger(__name__)
 
