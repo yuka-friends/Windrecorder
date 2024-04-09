@@ -117,7 +117,7 @@
         "rs_text_record_single_display_select": "Record display only:",
         "rs_text_show_encode_option": "Show advanced encoding options",
         "rs_text_record_encoder": "Recording Encoder",
-        "rs_text_record_help": "Choose h265 to get better image quality in the same file size, but the performance may be affected during recording and playback. (If supported, hardware acceleration will be automatically enabled)",
+        "rs_text_record_help": "Choose h265/AV1 to get better image quality in the same file size, but the performance may be affected during recording and playback. (If supported, hardware acceleration will be automatically enabled)",
         "rs_text_record_bitrate": "Recording Bitrate (kbps)",
 
         "set_md_title": "### ⚙️ Settings",
@@ -346,7 +346,7 @@
         "rs_text_record_single_display_select": "仅录制显示器：",
         "rs_text_show_encode_option": "显示高级编码选项",
         "rs_text_record_encoder": "录制编码器",
-        "rs_text_record_help": "选择 h265 可以在同等体积下获得更好的画质，但在录制与回放时可能性能较差。（若支持，将会自动启用硬件加速）",
+        "rs_text_record_help": "选择 h265/AV1 可以在同等体积下获得更好的画质，但在录制与回放时可能性能较差。（若支持，将会自动启用硬件加速）",
         "rs_text_record_bitrate": "录制比特率（kbps）",
         "rs_text_bitrate_help": "视频比特率是指视频数据的传输速度或处理速度，会影响视频的画质和文件的大小。具体来说，比特率越高，视频的画质越好，但相应的文件大小也会越大。相反，如果比特率较低，则即使在同样的分辨率下，视频的画质可能就会出现模糊或者失真。为了将画面保持在较小体积，默认为 200kbps。",
         
@@ -576,7 +576,7 @@
         "rs_text_record_single_display_select": "レコード表示のみ:",
         "rs_text_show_encode_option": "高度なエンコード オプションを表示",
         "rs_text_record_encoder": "録音エンコーダー",
-        "rs_text_record_help": "同じボリュームでより良い画質を得るには h265 を選択してください。ただし、録音および再生時のパフォーマンスが低下する可能性があります。(サポートされている場合は、ハードウェア アクセラレーションが自動的に有効になります)",
+        "rs_text_record_help": "同じボリュームでより良い画質を得るには h265/AV1 を選択してください。ただし、録音および再生時のパフォーマンスが低下する可能性があります。(サポートされている場合は、ハードウェア アクセラレーションが自動的に有効になります)",
         "rs_text_record_bitrate": "録音ビットレート(kbps)",
 
         "set_md_title": "### ⚙️ 設定",
