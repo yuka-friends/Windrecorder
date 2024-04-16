@@ -2,6 +2,7 @@ import datetime
 import os
 import shutil
 import subprocess
+import time
 
 import cv2
 import pandas as pd
@@ -14,12 +15,12 @@ import windrecorder.record as record
 import windrecorder.utils as utils
 from windrecorder import file_utils, record_wintitle
 from windrecorder.config import config
+from windrecorder.const import CACHE_DIR_OCR_IMG_PREPROCESSOR
 from windrecorder.db_manager import db_manager
 from windrecorder.exceptions import LockExistsException
 from windrecorder.lock import FileLock
 from windrecorder.logger import get_logger
 from windrecorder.utils import date_to_seconds
-
 
 logger = get_logger(__name__)
 
@@ -55,7 +56,7 @@ def is_file_in_use(file_path):
 # todo - 加入检测视频是否为合法视频?
 def extract_iframe(video_file, iframe_path, iframe_interval=4000):
     logger.info(f"extracting video i-frame: {video_file}")
-    if 'av1' not in config.record_encoder.lower():
+    if "av1" not in config.record_encoder.lower():
         cap = cv2.VideoCapture(video_file)
         fps = cap.get(cv2.CAP_PROP_FPS)
 
@@ -228,6 +229,94 @@ def crop_iframe(directory):
 
         image.close()
     logger.debug(f"saved croped img in {image_files}")
+
+
+# OCR 输入图片预处理器
+def ocr_img_preprocessor(img_input):
+    def _save_cache_img(img: Image):
+        img_save_name = f"preprocess_{int(time.time()*100000000000)}.jpg"
+        try:
+            file_utils.ensure_dir(CACHE_DIR_OCR_IMG_PREPROCESSOR)
+            save_filepath = os.path.join(CACHE_DIR_OCR_IMG_PREPROCESSOR, img_save_name)
+            img.save(save_filepath)
+            return save_filepath
+        except Exception as e:
+            logger.error(f"img({img_input}) pre process fail: {e}, {display_info=}")
+            return None
+
+    def _fallback_cropper(img: Image):
+        """策略：平均地切开图像，同时确保每部分小于最大输入尺寸"""
+        res = []
+        img_to_process_width, img_to_process_height = img.size
+        divide_factor_width = 1
+        divide_factor_height = 1
+        for i in range(10):  # 最多切10次，不用while来执行
+            if (img_to_process_width / divide_factor_width) < SINGLE_IMG_MAX_LONG_SIDE:
+                break
+            divide_factor_width += 1
+        for i in range(10):
+            if (img_to_process_height / divide_factor_height) < SINGLE_IMG_MAX_LONG_SIDE:
+                break
+            divide_factor_height += 1
+
+        crop_block_width = int(img_to_process_width / divide_factor_width)
+        crop_block_height = int(img_to_process_height / divide_factor_height)
+        for height_i in range(divide_factor_height):
+            for width_i in range(divide_factor_width):
+                cropped_img = img.crop(
+                    (
+                        width_i * crop_block_width,
+                        height_i * crop_block_height,
+                        width_i * crop_block_width + crop_block_width,
+                        height_i * crop_block_height + crop_block_height,
+                    )
+                )
+                saved_res = _save_cache_img(cropped_img)
+                if saved_res is None:
+                    return False
+                else:
+                    res.append(saved_res)
+        return res
+
+    res = []
+    display_info = utils.get_display_info()
+    display_all_full_size = display_info[0]
+    display_info = display_info[1:]
+    SINGLE_IMG_MAX_LONG_SIDE = 4000
+
+    img = Image.open(img_input)
+    img_width, img_height = img.size
+
+    if img_width < SINGLE_IMG_MAX_LONG_SIDE and img_height < SINGLE_IMG_MAX_LONG_SIDE:  # 未超出ocr识别范围
+        logger.debug("img under single 4k display")
+        return [img_input]
+    elif len(display_info) > 1 and (
+        abs(display_all_full_size["width"] - img_width) < 10 or abs(display_all_full_size["height"] - img_height) < 10
+    ):  # 逐个裁剪显示器，若单个显示器有超过最大范围，则对其进行分块裁剪
+        logger.debug("img is consistent with the current display info")
+        for display in display_info:
+            cropped_img = img.crop(
+                (display["left"], display["top"], display["left"] + display["width"], display["top"] + display["height"])
+            )
+            if (cropped_img.size[0] > SINGLE_IMG_MAX_LONG_SIDE) or (cropped_img.size[1] > SINGLE_IMG_MAX_LONG_SIDE):
+                fallback_crop_res = _fallback_cropper(cropped_img)
+                if fallback_crop_res:
+                    res.extend(fallback_crop_res)
+                else:
+                    return [img_input]
+            else:
+                saved_res = _save_cache_img(cropped_img)
+                if saved_res is not None:
+                    res.append(saved_res)
+                else:
+                    return [img_input]
+    else:
+        fallback_crop_res = _fallback_cropper(img)
+        if fallback_crop_res:
+            res.extend(fallback_crop_res)
+        else:
+            return [img_input]
+    return res
 
 
 # OCR 分流器
@@ -411,25 +500,25 @@ def ocr_core_logic(file_path, vid_file_name, iframe_path):
         if "_cropped" not in img_file_name:
             continue
         logger.debug(f"processing IMG - compare:{img_file_name}")
-        img = os.path.join(iframe_path, img_file_name)
-        logger.debug(f"img={img}")
+        img_filepath = os.path.join(iframe_path, img_file_name)
+        logger.debug(f"img={img_filepath}")
 
         # 填充用于对比的slot队列
         if is_first_process_image_similarity == 1:
-            img1_path_temp = img
+            img1_path_temp = img_filepath
             is_first_process_image_similarity = 2
         elif is_first_process_image_similarity == 2:
-            img2_path_temp = img
+            img2_path_temp = img_filepath
             is_first_process_image_similarity = 3
         else:
             is_img_same = compare_image_similarity(img1_path_temp, img2_path_temp, threshold_img_similarity)
             if is_img_same:
                 os.remove(img2_path_temp)
                 img1_path_temp = img1_path_temp
-                img2_path_temp = img
+                img2_path_temp = img_filepath
             else:
                 img1_path_temp = img2_path_temp
-                img2_path_temp = img
+                img2_path_temp = img_filepath
 
     # - OCR所有i帧图像
     ocr_result_stringA = ""
@@ -454,9 +543,12 @@ def ocr_core_logic(file_path, vid_file_name, iframe_path):
         logger.debug("_____________________")
         logger.debug(f"processing IMG - OCR:{img_file_name}")
 
-        img_crop = os.path.join(iframe_path, img_file_name.replace("_cropped", ""))
-        img = os.path.join(iframe_path, img_file_name)
-        ocr_result_stringB = ocr_image(img_crop)
+        img_orgin_not_crop_filepath = os.path.join(iframe_path, img_file_name.replace("_cropped", ""))
+        img_crop_filepath = os.path.join(iframe_path, img_file_name)
+        img_crop_preprocess_list = ocr_img_preprocessor(img_crop_filepath)
+        ocr_result_stringB = ""
+        for img_filepath in img_crop_preprocess_list:
+            ocr_result_stringB += ocr_image(img_filepath)
         logger.debug(f"OCR res:{ocr_result_stringB}")
 
         is_str_same, _ = compare_strings(ocr_result_stringA, ocr_result_stringB, threshold_str_similarity)
@@ -486,7 +578,7 @@ def ocr_core_logic(file_path, vid_file_name, iframe_path):
                     )
                     continue
                 # 计算图片预览图
-                img_thumbnail = resize_image_as_base64(img)
+                img_thumbnail = resize_image_as_base64(img_orgin_not_crop_filepath)
                 # 清理ocr数据
                 ocr_result_write = utils.clean_dirty_text(ocr_result_stringB) + " -||- " + str(win_title)
                 # 为准备写入数据库dataframe添加记录
@@ -504,6 +596,8 @@ def ocr_core_logic(file_path, vid_file_name, iframe_path):
 
     # 将完成的dataframe写入数据库
     db_manager.db_add_dataframe_to_db_process(dataframe_all)
+    # 清理缓存
+    file_utils.empty_directory(CACHE_DIR_OCR_IMG_PREPROCESSOR)
 
 
 # 对某个视频进行处理的过程
