@@ -211,7 +211,7 @@ def render():
                 help=_t("set_help_enable_3_columns_in_oneday"),
             )
             # 使用中文形近字进行搜索
-            if (config.lang == "sc" or config.lang == "tc") and str(config.ocr_lang).startswith("zh"):
+            if str(config.ocr_lang).startswith("zh"):
                 config_use_similar_ch_char_to_search = st.checkbox(
                     _t("set_checkbox_use_similar_zh_char_to_search"),
                     value=config.use_similar_ch_char_to_search,
