@@ -125,6 +125,8 @@ class OneDay:
                     if file_dt < target_datetime:
                         file_times.append((file, file_dt))
         # 寻找时间距离target_datetime最近的先前时间的视频文件
+        if len(file_times) == 0:
+            return False, None
         closest_file = max(file_times, key=lambda x: x[1])
 
         # 判断时间差是否在阈值内

@@ -11,12 +11,11 @@ import subprocess
 import threading
 import time
 from contextlib import closing
-from datetime import timedelta
 from io import BytesIO
 
 import cv2
+import mss
 import psutil
-import pyautogui
 import requests
 from PIL import Image
 from pyshortcuts import make_shortcut
@@ -47,8 +46,32 @@ class RepeatingTimer(threading.Thread):
 
 
 # 获得屏幕分辨率
-def get_screen_resolution():
-    return pyautogui.size()
+def get_display_resolution():  # FIXME: remove all methods
+    with mss.mss() as mss_instance:
+        return mss_instance.monitors[0]["width"], mss_instance.monitors[0]["height"]
+
+
+# 获得屏幕数量
+def get_display_count():
+    with mss.mss() as mss_instance:
+        return len(mss_instance.monitors) - 1
+
+
+# 获得屏幕具体数值
+def get_display_info():
+    with mss.mss() as mss_instance:
+        return mss_instance.monitors
+
+
+# 根据mss返回的屏幕具体数值格式化显示器信息
+def get_display_info_formatted():
+    info = get_display_info()
+    info_formatted = []
+    index = 1
+    for i in info[1:]:
+        info_formatted.append(f"Display {index}: {i['width']}x{i['height']}")
+        index += 1
+    return info_formatted
 
 
 # 获取视频文件信息
@@ -697,14 +720,6 @@ def change_startup_shortcut(is_create=True):
             logger.info("record: Delete shortcut")
 
 
-def is_win11():
-    return sys.getwindowsversion().build >= 22000
-
-
-def get_windows_edition():
-    return platform.win32_edition()
-
-
 def is_process_running(pid, compare_process_name):
     """根据进程 PID 与名字比对检测进程是否存在"""
     pid = int(pid)
@@ -772,3 +787,18 @@ def check_ffmpeg_and_ffprobe():
     elif not available_ffprobe:
         return False, "FFprobe is not available.\nPlease check the installation."
     return False, "Unexpected Error on checking ffmpeg and ffprobe available."
+
+
+def ensure_list_divisible_by_num(lst, num: int):
+    while len(lst) % num != 0:
+        lst.append(0)
+    return lst
+
+
+def get_screenshot_of_display(display_index):
+    """display_index start from 1"""
+    with mss.mss() as sct:
+        monitor = sct.monitors[display_index]
+        sct_img = sct.grab(monitor)
+        img = Image.frombytes("RGB", sct_img.size, sct_img.bgra, "raw", "BGRX")
+    return img

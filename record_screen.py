@@ -8,16 +8,10 @@ import threading
 import time
 from os import getpid
 
+import mss
 import numpy as np
-import pyautogui
 
-from windrecorder import (  # wordcloud,
-    file_utils,
-    ocr_manager,
-    record,
-    record_wintitle,
-    utils,
-)
+from windrecorder import file_utils, ocr_manager, record, record_wintitle, utils
 from windrecorder.config import config
 from windrecorder.exceptions import LockExistsException
 from windrecorder.lock import FileLock
@@ -110,69 +104,6 @@ def index_video_data(video_saved_dir, vid_file_name):
             logger.warning(f"--{full_path} ocr is already in process.")
 
 
-# 录制屏幕
-def record_screen(
-    output_dir=config.record_videos_dir_ud,
-    record_time=config.record_seconds,
-):
-    """
-    用ffmpeg持续录制屏幕,每15分钟保存一个视频文件
-    """
-    # 构建输出文件名
-    now = datetime.datetime.now()
-    video_out_name = now.strftime("%Y-%m-%d_%H-%M-%S") + ".mp4"
-    output_dir_with_date = now.strftime("%Y-%m")  # 将视频存储在日期月份子目录下
-    video_saved_dir = os.path.join(output_dir, output_dir_with_date)
-    file_utils.ensure_dir(video_saved_dir)
-    out_path = os.path.join(video_saved_dir, video_out_name)
-
-    # 获取屏幕分辨率并根据策略决定缩放
-    screen_width, screen_height = utils.get_screen_resolution()
-    target_scale_width, target_scale_height = record.get_scale_screen_res_strategy(
-        origin_width=screen_width, origin_height=screen_height
-    )
-    logger.info(
-        f"Origin screen resolution: {screen_width}x{screen_height}, Resized to {target_scale_width}x{target_scale_height}."
-    )
-
-    pix_fmt_args = ["-pix_fmt", "yuv420p"]
-
-    ffmpeg_cmd = [
-        config.ffmpeg_path,
-        "-f",
-        "gdigrab",
-        "-video_size",
-        f"{screen_width}x{screen_height}",
-        "-framerate",
-        f"{config.record_framerate}",
-        "-i",
-        "desktop",
-        "-vf",
-        f"scale={target_scale_width}:{target_scale_height}",
-        # 默认使用编码成 h264 格式
-        "-c:v",
-        "libx264",
-        # 默认码率为 200kbps
-        "-b:v",
-        f"{config.record_bitrate}k",
-        *pix_fmt_args,
-        "-t",
-        str(record_time),
-        out_path,
-    ]
-
-    # 执行命令
-    try:
-        logger.info(f"record_screen: ffmpeg cmd: {ffmpeg_cmd}")
-        # 运行ffmpeg
-        subprocess.run(ffmpeg_cmd, check=True)
-        logger.info("Windrecorder: Start Recording via FFmpeg")
-        return video_saved_dir, video_out_name
-    except subprocess.CalledProcessError as ex:
-        logger.error(f"Windrecorder: {ex.cmd} failed with return code {ex.returncode}")
-        return video_saved_dir, video_out_name
-
-
 # 持续录制屏幕的主要线程
 def continuously_record_screen():
     global last_idle_maintain_time
@@ -202,7 +133,7 @@ def continuously_record_screen():
             time.sleep(10)
         else:
             subprocess.run("color 2f", shell=True)  # 设定背景色为活动
-            video_saved_dir, video_out_name = record_screen()  # 录制屏幕
+            video_saved_dir, video_out_name = record.record_screen()  # 录制屏幕
 
             # 自动索引策略
             if config.OCR_index_strategy == 1:
@@ -222,38 +153,52 @@ def continuously_record_screen():
 
 # 每隔一段截图对比是否屏幕内容缺少变化
 def monitor_compare_screenshot():
-    while True:
-        if utils.is_screen_locked() or not utils.is_system_awake():
-            logger.info("Windrecorder: Screen locked / System not awaked")
-        else:
-            try:
-                global monitor_idle_minutes
-                global last_screenshot_array
+    with mss.mss() as sct:
+        while True:
+            global monitor_idle_minutes
+            global last_screenshot_array
+            if utils.is_screen_locked() or not utils.is_system_awake():
+                logger.info("Windrecorder: Screen locked / System not awaked")
+                monitor_idle_minutes += 0.5
+            else:
+                try:
+                    while True:
+                        similarity = None
+                        screenshot_array = []
 
-                while True:
-                    similarity = None
-                    screenshot = pyautogui.screenshot()
-                    screenshot_array = np.array(screenshot)
-
-                    if last_screenshot_array is not None:
-                        similarity = ocr_manager.compare_image_similarity_np(last_screenshot_array, screenshot_array)
-
-                        if similarity > 0.9:  # 对比检测阈值
-                            monitor_idle_minutes += 0.5
+                        if config.multi_display_record_strategy == "single" and config.record_single_display_index < len(
+                            sct.monitors
+                        ):
+                            screenshot = sct.grab(sct.monitors[config.record_single_display_index])
+                            logger.debug(f"{sct.monitors[config.record_single_display_index]=}")
+                            screenshot_array.append(np.array(screenshot))
                         else:
-                            monitor_idle_minutes = 0
+                            for monitor in sct.monitors[1:]:
+                                screenshot = sct.grab(monitor)
+                                logger.debug(f"{monitor=}")
+                                screenshot_array.append(np.array(screenshot))
 
-                    last_screenshot_array = screenshot_array.copy()
-                    logger.info(f"monitor_idle_minutes:{monitor_idle_minutes}, similarity:{similarity}")
-                    time.sleep(30)
-            except Exception as e:
-                logger.warning(f"{str(e)}")
-                if "batchDistance" in str(e):  # 如果是抓不到画面导致出错，可以认为是进入了休眠等情况
-                    monitor_idle_minutes += 0.5
-                else:
-                    monitor_idle_minutes = 0
+                        if last_screenshot_array is not None:
+                            similarity = []
+                            for last_screen, now_screen in zip(last_screenshot_array, screenshot_array):
+                                similarity.append(ocr_manager.compare_image_similarity_np(last_screen, now_screen))
 
-        time.sleep(5)
+                            if all(sim > 0.90 for sim in similarity):  # 对比检测阈值
+                                monitor_idle_minutes += 0.5
+                            else:
+                                monitor_idle_minutes = 0
+
+                        last_screenshot_array = screenshot_array.copy()
+                        logger.info(f"monitor_idle_minutes:{monitor_idle_minutes}, similarity:{similarity}")
+                        time.sleep(30)
+                except Exception as e:
+                    logger.warning(f"Error occurred:{str(e)}")
+                    if "batchDistance" in str(e):  # 如果是抓不到画面导致出错，可以认为是进入了休眠等情况
+                        monitor_idle_minutes += 0.5
+                    else:
+                        monitor_idle_minutes = 0
+
+            time.sleep(5)
 
 
 # 定时记录前台窗口标题页名

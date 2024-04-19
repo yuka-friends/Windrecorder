@@ -1,3 +1,4 @@
+import datetime
 import os
 import shutil
 import subprocess
@@ -6,11 +7,96 @@ import time
 import pandas as pd
 from send2trash import send2trash
 
-from windrecorder.config import config
+from windrecorder import file_utils, utils
+from windrecorder.config import (
+    CONFIG_RECORD_PRESET,
+    CONFIG_VIDEO_COMPRESS_PRESET,
+    config,
+)
 from windrecorder.logger import get_logger
-from windrecorder.utils import is_process_running
 
 logger = get_logger(__name__)
+
+
+# 录制屏幕
+def record_screen(
+    output_dir=config.record_videos_dir_ud,
+    record_time=config.record_seconds,
+    framerate=config.record_framerate,
+    encoder_preset_name=config.record_encoder,
+):
+    """
+    用ffmpeg持续录制屏幕,默认每15分钟保存一个视频文件
+    """
+    # 构建输出文件名
+    now = datetime.datetime.now()
+    video_out_name = now.strftime("%Y-%m-%d_%H-%M-%S") + ".mp4"
+    output_dir_with_date = now.strftime("%Y-%m")  # 将视频存储在日期月份子目录下
+    video_saved_dir = os.path.join(output_dir, output_dir_with_date)
+    file_utils.ensure_dir(video_saved_dir)
+    out_path = os.path.join(video_saved_dir, video_out_name)
+
+    def _replace_value_in_args(lst, bitrate_displays_factor):
+        for i in range(len(lst)):
+            if lst[i] == "CRF_NUM":
+                lst[i] = f"{config.record_crf}"
+            elif lst[i] == "BITRATE":
+                lst[i] = f"{bitrate_displays_factor}k"
+        return lst
+
+    display_info = utils.get_display_info()
+    pix_fmt_args = ["-pix_fmt", "yuv420p"]
+
+    record_range_args = []
+    if config.multi_display_record_strategy == "single" and len(display_info) > 1:  # 当有多台显示器、且选择仅录制其中一台时
+        record_encoder_args = _replace_value_in_args(
+            CONFIG_RECORD_PRESET[encoder_preset_name]["ffmpeg_cmd"], config.record_bitrate
+        )
+        if config.record_single_display_index > len(display_info):
+            logger.warning("display index not detected, reset record_single_display_index to default index 1")
+            config.set_and_save_config("record_single_display_index", 1)
+        else:
+            record_range_args = [
+                "-video_size",
+                f"{display_info[config.record_single_display_index]['width']}x{display_info[config.record_single_display_index]['height']}",
+                "-offset_x",
+                f"{display_info[config.record_single_display_index]['left']}",
+                "-offset_y",
+                f"{display_info[config.record_single_display_index]['top']}",
+            ]
+    else:
+        record_encoder_args = _replace_value_in_args(
+            CONFIG_RECORD_PRESET[encoder_preset_name]["ffmpeg_cmd"], int(config.record_bitrate) * (len(display_info) - 1)
+        )
+
+    ffmpeg_cmd = [
+        config.ffmpeg_path,
+        "-hwaccel",
+        "auto",
+        "-f",
+        "gdigrab",
+        "-framerate",
+        f"{framerate}",
+        *record_range_args,
+        "-i",
+        "desktop",
+        *record_encoder_args,
+        *pix_fmt_args,
+        "-t",
+        str(record_time),
+        out_path,
+    ]
+
+    # 执行命令
+    try:
+        logger.info(f"record_screen: ffmpeg cmd: {ffmpeg_cmd}")
+        # 运行ffmpeg
+        subprocess.run(ffmpeg_cmd, check=True)
+        return video_saved_dir, video_out_name
+    except subprocess.CalledProcessError as ex:
+        logger.error(f"Windrecorder: {ex.cmd} failed with return code {ex.returncode}")
+        return video_saved_dir, video_out_name
+        # FIXME 报错录制失败时给用户反馈
 
 
 # 检测是否正在录屏
@@ -22,19 +108,7 @@ def is_recording():
         logger.error("record: Screen recording service file lock does not exist.")
         return False
 
-    return is_process_running(check_pid, "python.exe")
-
-
-# 获取录屏时目标缩放分辨率策略
-def get_scale_screen_res_strategy(origin_width=1920, origin_height=1080):
-    target_scale_width = origin_width
-    target_scale_height = origin_height
-
-    if origin_height > 1500 and config.record_screen_enable_half_res_while_hidpi:  # 高分屏缩放至四分之一策略
-        target_scale_width = int(origin_width / 2)
-        target_scale_height = int(origin_height / 2)
-
-    return target_scale_width, target_scale_height
+    return utils.is_process_running(check_pid, "python.exe")
 
 
 # 获取视频的原始分辨率
@@ -65,12 +139,12 @@ def compress_video_resolution(video_path, scale_factor):
     target_height = int(height * scale_factor)
 
     # 获取编码器和加速器
-    encoder_default = config.compress_preset["x264"]["cpu"]["encoder"]
-    crf_flag_default = config.compress_preset["x264"]["cpu"]["crf_flag"]
+    encoder_default = CONFIG_VIDEO_COMPRESS_PRESET["x264"]["cpu"]["encoder"]
+    crf_flag_default = CONFIG_VIDEO_COMPRESS_PRESET["x264"]["cpu"]["crf_flag"]
     crf_default = 39
     try:
-        encoder = config.compress_preset[config.compress_encoder][config.compress_accelerator]["encoder"]
-        crf_flag = config.compress_preset[config.compress_encoder][config.compress_accelerator]["crf_flag"]
+        encoder = CONFIG_VIDEO_COMPRESS_PRESET[config.compress_encoder][config.compress_accelerator]["encoder"]
+        crf_flag = CONFIG_VIDEO_COMPRESS_PRESET[config.compress_encoder][config.compress_accelerator]["crf_flag"]
         crf = int(config.compress_quality)
     except KeyError:
         logger.error("Fail to get video compress config correctly. Fallback to default preset.")
@@ -124,7 +198,7 @@ def encode_preset_benchmark_test(scale_factor, crf):
     test_video_filepath = "__assets__\\test_video_compress.mp4"
     if not os.path.exists(test_video_filepath):
         logger.error("test_video_filepath not found.")
-        return
+        return None
 
     # 准备测试环境
     test_env_folder = "cache\\encode_preset_benchmark_test"
@@ -169,7 +243,7 @@ def encode_preset_benchmark_test(scale_factor, crf):
     df_result = pd.DataFrame(columns=["encoder", "accelerator", "support", "compress_ratio", "compress_time"])
 
     # 测试所有参数预设
-    for encoder_name, encoder in config.compress_preset.items():
+    for encoder_name, encoder in CONFIG_VIDEO_COMPRESS_PRESET.items():
         logger.info(f"Testing {encoder}")
         for encode_accelerator_name, encode_accelerator in encoder.items():
             logger.info(f"Testing {encode_accelerator}")
@@ -193,5 +267,40 @@ def encode_preset_benchmark_test(scale_factor, crf):
             else:
                 # 压制失败
                 df_result.loc[len(df_result)] = [encoder_name, encode_accelerator_name, False, 0, 0]
+
+    return df_result
+
+
+# 测试所有的录制参数，由 webui 指定缩放系数与 crf 压缩质量
+def record_encode_preset_benchmark_test():
+    test_env_folder = "cache\\record_preset_benchmark_test"
+    if os.path.exists(test_env_folder):
+        shutil.rmtree(test_env_folder)
+    os.makedirs(test_env_folder)
+
+    df_result = pd.DataFrame(columns=["encoder preset", "support"])
+
+    for encoder_preset_name in CONFIG_RECORD_PRESET.keys():
+        logger.info(f"Testing {encoder_preset_name}")
+        support_res = False
+        try:
+            video_saved_dir, video_out_name = record_screen(
+                output_dir=test_env_folder, record_time=2, framerate=30, encoder_preset_name=encoder_preset_name
+            )
+            output_path = os.path.join(video_saved_dir, video_out_name)
+            if os.path.exists(output_path):
+                if os.stat(output_path).st_size < 1024:
+                    support_res = False
+                else:
+                    support_res = True
+            else:
+                support_res = False
+        except Exception:
+            support_res = False
+
+        df_result.loc[len(df_result)] = [
+            encoder_preset_name,
+            support_res,
+        ]
 
     return df_result

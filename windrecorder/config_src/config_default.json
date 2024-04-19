@@ -47,7 +47,6 @@
   "video_compress_rate":"0.5",
   "oneday_timeline_pic_num":50,
   "enable_ocr_chineseocr_lite_onnx":false,
-  "record_screen_enable_half_res_while_hidpi": false,
   "compress_encoder": "x264",
   "compress_accelerator": "cpu",
   "compress_quality": 39,
@@ -71,5 +70,9 @@
   "batch_size_remove_video_in_idle": 80,
   "batch_size_compress_video_in_idle": 50,
   "enable_3_columns_in_oneday": false,
-  "enable_synonyms_recommend": false
+  "enable_synonyms_recommend": false,
+  "multi_display_record_strategy": "all",
+  "record_single_display_index": 1,
+  "record_encoder": "cpu_h264",
+  "record_crf": 39
 }

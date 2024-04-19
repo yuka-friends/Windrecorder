@@ -1,5 +1,19 @@
 # Changelog 更新日志
 
+## 0.0.11
+> 2024-04-19
+
+- 支持多显示器与单个显示器录制；
+- 添加了录制时的编码选项（cpu_h264, cpu_h265, NVIDIA_h265, AMD_h265, SVT-AV1）；
+- 优化了索引时比较图像的性能；
+
+- Supports multi-monitor and single-monitor recording;
+- Added encoding options when recording (cpu_h264, cpu_h265, NVIDIA_h265, AMD_h265, SVT-AV1);
+- Optimized the performance of comparing images during indexing;
+
+### Fixed
+- bug: 当锁屏时程序有几率不会进入空闲暂停状态；There is a chance that the program will not enter the idle pause state when the screen is locked;
+
 ## 0.0.10
 > 2024-03-03
 
