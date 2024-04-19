@@ -33,6 +33,7 @@
 # 🦝 安装
 
 - 下载 [ffmpeg](https://github.com/BtbN/FFmpeg-Builds/releases)（下载文件名为：`ffmpeg-master-latest-win64-gpl-shared.zip`） ，将 bin 目录下的所有文件复制至 `C:\Windows\System32` 下（或其他位于 PATH 的目录下）（不包括 bin 目录本身）
+    - ffmpeg 可能有“在录制屏幕时光标会闪烁”的 bug，可以先根据底下 Q&A 进行修复后、再拷贝至系统目录；
 
 - 安装 [Git](https://git-scm.com/download/win)，一路下一步即可；
 
@@ -42,6 +43,8 @@
 - 在文件管理器中，导航到想要安装此工具目录（推荐放在空间富足的分区中），通过终端命令 `git clone https://github.com/yuka-friends/Windrecorder` 下载该工具；
 
     - 可以打开想要安装的文件夹，在路径栏输入`cmd` 并回车，即可在终端定位到当前目录，将以上命令贴入、回车执行；
+
+    - 如果目录路径中包含空格，启动 app 时可能会失败；[#110](https://github.com/yuka-friends/Windrecorder/issues/110)
 
 - 打开目录下的 `install_update.bat` 进行工具安装与配置，顺利的话就可以开始使用了！
 

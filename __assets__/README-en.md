@@ -30,15 +30,16 @@ Windrecorder is a memory search app by records everything on your screen in smal
 # 🦝 Installation
 
 - Download [ffmpeg](https://github.com/BtbN/FFmpeg-Builds/releases) (the download file name is: `ffmpeg-master-latest-win64-gpl-shared.zip`), extract all files in `bin` directory(excluding the bin directory itself) to `C:\Windows\System32` (or other directories located in PATH)
+     - ffmpeg may have a bug that "the mouse pointer flicker during screen recording". You can fix it according to the Q&A below and then copy to the system directory;
 
-- Install [Git](https://git-scm.com/download/win), just keep clicking next.
+- Install [Git](https://git-scm.com/download/win), just keep clicking next step.
 
 - Install [Python](https://www.python.org/ftp/python/3.11.7/python-3.11.7-amd64.exe), make sure to check `Add python.exe to PATH` when installing.
      - **Currently, Python 3.12 is not supported**. It is recommended to use python 3.11, which is the version pointed to by the link above.
 
-- In file explorer, navigate to the directory where you want to install Windrecorder (it is recommended to place it in a partition with sufficient space), and download the tool through the terminal command `git clone https://github.com/yuka-friends/Windrecorder`;
+- In file explorer, navigate to the directory where you want to install Windrecorder (it is recommended to place it in a partition with sufficient space), and download the app through the terminal command `git clone https://github.com/yuka-friends/Windrecorder`;
 
-     - You can open the folder you want to install, enter `cmd` in the path bar and press Enter, you will be located into current directory in terminal, then paste the above command and press Enter to execute;
+     - You can open the folder you want to install, enter `cmd` in the path bar and press Enter, and you will be located into current directory in terminal, then paste the above command and press Enter to execute;
 
      - Currently, if there are spaces in the installation path, an error may occur on app startup. [#110](https://github.com/yuka-friends/Windrecorder/issues/110)
 
