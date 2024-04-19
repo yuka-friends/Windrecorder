@@ -614,7 +614,8 @@ def ocr_core_logic(file_path, vid_file_name, iframe_path):
     # 将完成的dataframe写入数据库
     db_manager.db_add_dataframe_to_db_process(dataframe_all)
     # 清理缓存
-    file_utils.empty_directory(CACHE_DIR_OCR_IMG_PREPROCESSOR)
+    if os.path.exists(CACHE_DIR_OCR_IMG_PREPROCESSOR):
+        file_utils.empty_directory(CACHE_DIR_OCR_IMG_PREPROCESSOR)
 
 
 # 对某个视频进行处理的过程
