@@ -309,6 +309,8 @@ def component_month_wintitle_stat(month_dt: datetime.datetime):
             int(value) for value in st.session_state["month_wintitle_stat_dict"].values()
         )
 
+    st.session_state.month_wintitle_filter = st.text_input(label="filter")
+
     if len(st.session_state[month_wintitle_df_statename]) > 0:
         st.dataframe(
             st.session_state[month_wintitle_df_statename],
