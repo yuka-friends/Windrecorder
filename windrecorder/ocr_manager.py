@@ -474,12 +474,14 @@ def resize_image_as_base64(img_path):
 
 # 移除df中指定列包含重复项的行
 def remove_duplicates_in_df(df: pd.DataFrame, column: str):
+    logger.debug("started.")
     duplicate_rows_to_drop = []
     for i in range(len(df)):
         for j in range(i + 1, len(df)):
             is_duplicate, similarity = compare_strings(df.iloc[i][column], df.iloc[j][column], threshold=94)
             if is_duplicate:
                 duplicate_rows_to_drop.append(j)
+    logger.debug("done.")
     return df.drop(df.index[duplicate_rows_to_drop])
 
 
