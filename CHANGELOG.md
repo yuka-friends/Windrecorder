@@ -15,6 +15,7 @@
 
 ### Fixed
 - bug: 当锁屏时程序有几率不会进入空闲暂停状态；There is a chance that the program will not enter the idle pause state when the screen is locked;
+- bug: INDEX 标签被添加在 iframe cache 目录名中，导致不会被 img embedding 索引和清理；The INDEX tag should not been added to the iframe cache directory name, which resulting in it not being indexed and cleaned by img embedding;
 
 ## 0.0.10
 > 2024-03-03
