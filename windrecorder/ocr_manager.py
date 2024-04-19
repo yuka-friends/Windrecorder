@@ -632,6 +632,7 @@ def ocr_process_single_video(video_path, vid_file_name, iframe_path, optimize_fo
         # 这里我们保证 vid_file_name 不包含 -INDEX
         vid_file_name = vid_file_name.replace("-INDEX", "")
         rollback_data(video_path, vid_file_name)
+        iframe_sub_path = os.path.join(iframe_path, os.path.splitext(vid_file_name)[0])
         # 保证进入 ocr_core_logic 前 iframe_sub_path 是空的
         try:
             shutil.rmtree(iframe_sub_path)
