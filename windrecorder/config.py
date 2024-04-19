@@ -86,6 +86,7 @@ class Config:
         record_single_display_index,
         record_encoder,
         record_crf,
+        index_reduce_same_content_at_different_time,
         **other_field,
     ) -> None:
         # If need to process input parameters, they should assign another variable name to prevent recursive writing into the config.
@@ -155,6 +156,7 @@ class Config:
         self.record_single_display_index = record_single_display_index  # start from 1, map to mms display list
         self.record_encoder = record_encoder
         self.record_crf = record_crf
+        self.index_reduce_same_content_at_different_time = index_reduce_same_content_at_different_time
 
     def set_and_save_config(self, attr: str, value):
         if not hasattr(self, attr):

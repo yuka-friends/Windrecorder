@@ -74,5 +74,6 @@
   "multi_display_record_strategy": "all",
   "record_single_display_index": 1,
   "record_encoder": "cpu_h264",
-  "record_crf": 39
+  "record_crf": 39,
+  "index_reduce_same_content_at_different_time": true
 }

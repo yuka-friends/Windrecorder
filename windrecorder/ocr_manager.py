@@ -472,6 +472,19 @@ def resize_image_as_base64(img_path):
     return img_b64
 
 
+# 移除df中指定列包含重复项的行
+def remove_duplicates_in_df(df: pd.DataFrame, column: str):
+    logger.debug("started.")
+    duplicate_rows_to_drop = []
+    for i in range(len(df)):
+        for j in range(i + 1, len(df)):
+            is_duplicate, similarity = compare_strings(df.iloc[i][column], df.iloc[j][column], threshold=94)
+            if is_duplicate:
+                duplicate_rows_to_drop.append(j)
+    logger.debug("done.")
+    return df.drop(df.index[duplicate_rows_to_drop])
+
+
 # 回滚操作
 def rollback_data(video_path, vid_file_name):
     # 擦除db中没索引完全的数据
@@ -593,6 +606,10 @@ def ocr_core_logic(file_path, vid_file_name, iframe_path):
                     win_title,
                 ]
                 ocr_result_stringA = ocr_result_stringB
+
+    # 对dataframe去重
+    if config.index_reduce_same_content_at_different_time:
+        dataframe_all = remove_duplicates_in_df(dataframe_all, "ocr_text")
 
     # 将完成的dataframe写入数据库
     db_manager.db_add_dataframe_to_db_process(dataframe_all)
