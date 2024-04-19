@@ -53,12 +53,16 @@ def render():
             col1_ms, col2_ms = st.columns([1, 1])
             with col1_ms:
                 display_record_strategy = st.selectbox(
-                    _t("rs_text_record_range"), options=[i for i in record_strategy_config.keys()]
+                    _t("rs_text_record_range"),
+                    index=1 if config.multi_display_record_strategy == "single" else 0,
+                    options=[i for i in record_strategy_config.keys()],
                 )
             with col2_ms:
                 if display_record_strategy == _t("rs_text_record_strategy_option_single"):
                     display_record_selection = st.selectbox(
-                        _t("rs_text_record_single_display_select"), options=st.session_state.display_info_formatted
+                        _t("rs_text_record_single_display_select"),
+                        index=config.record_single_display_index - 1,
+                        options=st.session_state.display_info_formatted,
                     )
                 else:
                     display_record_selection = None
