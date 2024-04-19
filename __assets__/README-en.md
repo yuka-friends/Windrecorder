@@ -98,11 +98,7 @@ Q: Windows.Media.Ocr.Cli OCR is not available/the recognition rate is too low
 
 - A1: Check whether the language pack/input method of the target language has been added to the system: https://learn.microsoft.com/en-us/uwp/api/windows.media.ocr
 
-- A2: The default policy of earlier versions will treat screen resolutions with a height greater than 1500 as "high DPI/high resolution screens", and their recorded video resolution will be reduced to a quarter of the original. For example, on a 3840x2160 4k monitor, the resolution of the recorded video will be 1920x1080, which may lead to a decrease in OCR recognition accuracy. If you use smaller fonts or scaling on a high-resolution screen, you can turn off this option in Recording and Video Storage, and set the number of days to keep the original video before compressing it to a smaller value. value, thereby compressing the video volume some time after the video OCR index.
-
-- A3: Windows.Media.Ocr.Cli may have poor recognition rate for smaller text. You can improve the recall hit rate during search by turning on the "similar glyph search" option in the settings.
-
-> We will add more OCR extension support in the future.
+- A2: Windows.Media.Ocr.Cli may have poor recognition rate for text. We will add more OCR extension support in the future.
 
 # 🧡
 Thanks to the following projects
