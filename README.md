@@ -12,14 +12,14 @@
 ![Windrecorder](https://github.com/yuka-friends/Windrecorder/blob/main/__assets__/product-preview-cn.jpg)
 
 **Windrecorder 目前可以做到：**
-- 以较小的文件体积稳定持续地录制屏幕。只索引发生变化的画面，记录其 OCR 文本、页面标题等信息到数据库；在无人使用电脑时，自动维护数据库、清理、压缩视频；
+- 以较小的文件体积稳定持续地录制多个或单个屏幕；
+- 只索引发生变化的画面，记录其 OCR 文本、页面标题等信息到数据库；在无人使用电脑时，自动维护数据库、清理、压缩视频；
 - 完善的 webui 界面，可以回溯画面、进行 OCR /图像语义等查询；
 - 提供活动统计、词云、时间轴、光箱、散点图等数据摘要；
 - 支持多语言。目前内建有：简体中文、English、日本語。Welcome to contribute multilingual translations and help us improve copywriting quality.
 - _coming soon... 请关注我们的 PR_
 
 **Windrecorder 目前局限：**
-- 仅支持主屏幕的录制索引，多屏幕支持仍在开发中；
 - FFmpeg 在部分情况下可能会有较大内存占用；
 
 ---

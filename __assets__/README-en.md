@@ -11,7 +11,8 @@ Windrecorder is a memory search app by records everything on your screen in smal
 ![Windrecorder](https://github.com/yuka-friends/Windrecorder/blob/main/__assets__/product-preview-en.jpg)
 
 **Windrecorder currently does:**
-- Record the screen stably and continuously with a smaller file size. Only index the changed scenes and update the OCR text, page title and other information to the database; automatically maintain the database, clean and compress the video when no one is using the computer;
+- Record multiple or single displays stably and continuously with a small file size;
+- Only index the changed scenes and update the OCR text, page title and other information to the database; automatically maintain the database, clean and compress the video when no one is using the computer;
 - Complete webui interface, which can review the screen, conduct OCR/image semantics and other queries;
 - Provide data summaries such as activity statistics, word clouds, timelines, light boxes, scatter plots, etc.;
 - Supports multiple languages. Currently built-in: Simplified Chinese, English, and Japanese. Welcome to contribute multilingual translations and help us improve copywriting quality.
