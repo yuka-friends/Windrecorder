@@ -110,6 +110,11 @@ def render():
         if not st.session_state.is_cuda_available and option_enable_img_embed_search:
             st.warning(_t("set_text_img_emb_not_suppport_cuda"))
 
+        index_reduce_same_content_at_different_time = st.checkbox(
+            label=_t("set_checkbox_reduce_same_content_at_different_time"),
+            value=config.index_reduce_same_content_at_different_time,
+        )
+
         # 更新数据库按钮
         if update_db_btn:
             try:
@@ -312,6 +317,9 @@ def render():
             # config.set_and_save_config("ocr_engine", config_ocr_engine)
             config.set_and_save_config("ocr_lang", config_ocr_lang)
             config.set_and_save_config("enable_img_embed_search", option_enable_img_embed_search)
+            config.set_and_save_config(
+                "index_reduce_same_content_at_different_time", index_reduce_same_content_at_different_time
+            )
             config.set_and_save_config("use_similar_ch_char_to_search", config_use_similar_ch_char_to_search)
             config.set_and_save_config("enable_synonyms_recommend", config_enable_synonyms_recommend)
             config.set_and_save_config("img_embed_search_recall_result_per_db", config_img_embed_search_recall_result_per_db)

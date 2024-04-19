@@ -172,6 +172,7 @@
         "set_help_day_begin_minutes": "You can divide the records for a period of time after midnight into the same natural day, instead of dividing each day by zero.",
         "set_checkbox_synonyms_recommand": "Recommend synonyms when searching",
         "set_help_synonyms_recommand": "If the language is not supported, it will not be enabled. Check the supported languages under config_src\\synonyms.",
+        "set_checkbox_reduce_same_content_at_different_time": "When the same content is shown at different time points in a video slice, only the first occurrence is recorded.",
 
         "qs_la_text_same_as_previous": "The interface language remains the same as before: English",
         "qs_un_set_your_username": "Set your username as a database identifier.",
@@ -402,6 +403,7 @@
         "set_help_day_begin_minutes": "可以把凌晨后的一段时间记录划分到同个自然天中，而非以零点来划分每天。",
         "set_checkbox_synonyms_recommand": "搜索时推荐近义词",
         "set_help_synonyms_recommand": "若语言不支持将不启用，在 config_src\\synonyms 下查看已支持语言。",
+        "set_checkbox_reduce_same_content_at_different_time": "当视频文件有相同内容显示在不同时间点，只记录第一次出现时间点。",
 
         "qs_la_text_same_as_previous": "界面语言保持与先前一致的：简体中文",
         "qs_un_set_your_username": "设定你的用户名，以作为数据库标识。",
@@ -632,6 +634,7 @@
         "set_help_day_begin_minutes": "毎日をゼロで割るのではなく、午前 0 時以降の一定期間のレコードを同じ自然な日に分割できます。",
         "set_checkbox_synonyms_recommand": "検索時に同義語を推奨する",
         "set_help_synonyms_recommand": "言語がサポートされていない場合、有効になりません。config_src\\synonyms でサポートされている言語を確認してください。",
+        "set_checkbox_reduce_same_content_at_different_time": "ビデオ スライスに同じコンテンツが異なる時点で表示されている場合、最初のコンテンツのみが記録されます。",
 
         "qs_la_text_same_as_previous": "インターフェイス言語は以前と同じで日本語です。",
         "qs_un_set_your_username": "データベースの識別子として使用するユーザー名を設定してください。",
