@@ -58,20 +58,6 @@ def render():
 
         col1, col2 = st.columns([1, 1])
         with col1:
-            update_db_btn = st.button(
-                _t("set_btn_update_db_manual"),
-                type="secondary",
-                key="update_button_key",
-                disabled=st.session_state.get("update_button_disabled", False),
-                on_click=update_database_clicked,
-            )
-            is_shutdown_pasocon_after_updatedDB = st.checkbox(
-                _t("set_checkbox_shutdown_after_updated"),
-                value=False,
-                disabled=st.session_state.get("update_button_disabled", False),
-            )
-
-        with col2:
             # 设置ocr引擎
             # if config.enable_ocr_chineseocr_lite_onnx:
             #     check_ocr_engine()
@@ -101,6 +87,25 @@ def render():
                 )
             else:
                 option_enable_img_embed_search = False
+
+        with col2:
+            if config.OCR_index_strategy == 0:
+                update_db_btn = st.button(
+                    _t("set_btn_update_db_manual"),
+                    type="secondary",
+                    key="update_button_key",
+                    disabled=st.session_state.get("update_button_disabled", False),
+                    on_click=update_database_clicked,
+                )
+                is_shutdown_pasocon_after_updatedDB = st.checkbox(
+                    _t("set_checkbox_shutdown_after_updated"),
+                    value=False,
+                    disabled=st.session_state.get("update_button_disabled", False),
+                )
+            else:
+                update_db_btn = False
+                is_shutdown_pasocon_after_updatedDB = False
+                st.empty()
 
         if not st.session_state.is_cuda_available and option_enable_img_embed_search:
             st.warning(_t("set_text_img_emb_not_suppport_cuda"))
@@ -206,11 +211,14 @@ def render():
                 help=_t("set_help_enable_3_columns_in_oneday"),
             )
             # 使用中文形近字进行搜索
-            config_use_similar_ch_char_to_search = st.checkbox(
-                _t("set_checkbox_use_similar_zh_char_to_search"),
-                value=config.use_similar_ch_char_to_search,
-                help=_t("set_checkbox_use_similar_zh_char_to_search_help"),
-            )
+            if (config.lang == "sc" or config.lang == "tc") and str(config.ocr_lang).startswith("zh"):
+                config_use_similar_ch_char_to_search = st.checkbox(
+                    _t("set_checkbox_use_similar_zh_char_to_search"),
+                    value=config.use_similar_ch_char_to_search,
+                    help=_t("set_checkbox_use_similar_zh_char_to_search_help"),
+                )
+            else:
+                config_use_similar_ch_char_to_search = config.use_similar_ch_char_to_search
             # 搜索中推荐近似词
             if config.img_embed_module_install:
                 config_enable_synonyms_recommend = st.checkbox(
