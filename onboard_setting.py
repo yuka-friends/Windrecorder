@@ -268,7 +268,7 @@ def set_display():
         while True:  # config record which single display
             if record_strategy_num == "2":
                 print_header(step=4)
-                print(f"{_t('qs_mo_set_to')} {_t('qs_mo_describe_single')}")
+                print(f"{_t('qs_mo_set_to')} {_t('qs_mo_option_single')}")
                 print(_t("qs_mo_choose_one_display"))
                 utils.print_numbered_list(display_info_formatted)
                 divider()
