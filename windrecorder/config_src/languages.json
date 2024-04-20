@@ -405,7 +405,7 @@
         "set_help_day_begin_minutes": "可以把凌晨后的一段时间记录划分到同个自然天中，而非以零点来划分每天。",
         "set_checkbox_synonyms_recommand": "搜索时推荐近义词",
         "set_help_synonyms_recommand": "若语言不支持将不启用，在 config_src\\synonyms 下查看已支持语言。",
-        "set_checkbox_reduce_same_content_at_different_time": "当视频文件有相同内容显示在不同时间点，只记录第一次出现时间点。",
+        "set_checkbox_reduce_same_content_at_different_time": "当视频片段内有相同内容显示在不同时间点，只记录第一次出现时间点。",
 
         "qs_la_text_same_as_previous": "界面语言保持与先前一致的：简体中文",
         "qs_un_set_your_username": "设定你的用户名，以作为数据库标识。",
