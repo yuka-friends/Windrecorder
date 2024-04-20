@@ -108,7 +108,7 @@ def get_dir_size(dir):
 
 # 查询文件的修改时间是否超过一定间隔
 def is_file_modified_recently(file_path, time_gap=30):
-    # time_gap 为 minutes
+    """time_gap 为 minutes"""
     # 获取文件的修改时间戳
     modified_timestamp = os.path.getmtime(file_path)
 

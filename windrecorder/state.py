@@ -10,6 +10,7 @@ from PIL import Image
 import windrecorder.utils as utils
 from windrecorder import file_utils
 from windrecorder.config import config
+from windrecorder.const import FOOTER_STATE_CAHCE_FILEPATH
 from windrecorder.db_manager import db_manager
 
 
@@ -147,3 +148,27 @@ def generate_month_lightbox(
     img_saved_path = os.path.join(img_saved_folder, img_saved_name)
     lightbox_img.save(img_saved_path, format="PNG")
     return True
+
+
+def get_footer_state_data():
+    res = {}
+    res["first_record_time_str"] = utils.seconds_to_date_goodlook_formart(db_manager.db_first_earliest_record_time())
+    res["latest_record_time_str"] = utils.seconds_to_date_goodlook_formart(db_manager.db_latest_record_time())
+    res["latest_db_records_num"] = db_manager.db_num_records()
+    res["videos_file_size"] = round(file_utils.get_dir_size(config.record_videos_dir_ud) / (1024 * 1024 * 1024), 3)
+    res["videos_files_count"], _ = file_utils.get_videos_and_ocred_videos_count(config.record_videos_dir_ud)
+
+    return res
+
+
+def make_webui_footer_state_data_cache():
+    if os.path.exists(FOOTER_STATE_CAHCE_FILEPATH):
+        if not file_utils.is_file_modified_recently(FOOTER_STATE_CAHCE_FILEPATH, time_gap=2880):
+            # time to update state cache
+            file_utils.save_dict_as_json_to_path(data=get_footer_state_data(), filepath=FOOTER_STATE_CAHCE_FILEPATH)
+        return file_utils.read_json_as_dict_from_path(FOOTER_STATE_CAHCE_FILEPATH)
+    else:
+        file_utils.ensure_dir(os.path.dirname(FOOTER_STATE_CAHCE_FILEPATH))
+        footer_state_data = get_footer_state_data()
+        file_utils.save_dict_as_json_to_path(data=footer_state_data, filepath=FOOTER_STATE_CAHCE_FILEPATH)
+        return footer_state_data
