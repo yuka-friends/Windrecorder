@@ -557,6 +557,9 @@ def ocr_core_logic(file_path, vid_file_name, iframe_path):
         logger.debug(f"processing IMG - OCR:{img_file_name}")
 
         img_orgin_not_crop_filepath = os.path.join(iframe_path, img_file_name.replace("_cropped", ""))
+        if not os.path.exists(img_orgin_not_crop_filepath):
+            logger.debug(f"{img_orgin_not_crop_filepath=} not existed.")
+            continue
         img_crop_filepath = os.path.join(iframe_path, img_file_name)
         img_crop_preprocess_list = ocr_img_preprocessor(img_crop_filepath)
         ocr_result_stringB = ""
