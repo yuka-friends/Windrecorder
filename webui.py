@@ -34,7 +34,7 @@ if "update_badge_emoji" not in st.session_state:
 def web_footer_state():
     # 懒加载，只在刷新时第一次获取
     if "footer_state_dict" not in st.session_state:
-        st.session_state["footer_state_dict"] = state.make_webui_footer_state_data_cache()
+        st.session_state["footer_state_dict"] = state.make_webui_footer_state_data_cache(ask_from="webui")
 
     # webUI draw
     st.divider()
@@ -47,7 +47,8 @@ def web_footer_state():
                 latest_db_records=st.session_state.footer_state_dict["latest_db_records_num"],
                 videos_file_size=st.session_state.footer_state_dict["videos_file_size"],
                 videos_files_count=st.session_state.footer_state_dict["videos_files_count"],
-            )
+            ),
+            help=_t("footer_info_help"),
         )
     with col2:
         st.markdown(

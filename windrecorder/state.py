@@ -161,9 +161,12 @@ def get_footer_state_data():
     return res
 
 
-def make_webui_footer_state_data_cache():
+def make_webui_footer_state_data_cache(ask_from="idle"):
+    time_gap = 2880
+    if ask_from == "idle":
+        time_gap = 720
     if os.path.exists(FOOTER_STATE_CAHCE_FILEPATH):
-        if not file_utils.is_file_modified_recently(FOOTER_STATE_CAHCE_FILEPATH, time_gap=2880):
+        if not file_utils.is_file_modified_recently(FOOTER_STATE_CAHCE_FILEPATH, time_gap=time_gap):
             # time to update state cache
             file_utils.save_dict_as_json_to_path(data=get_footer_state_data(), filepath=FOOTER_STATE_CAHCE_FILEPATH)
         return file_utils.read_json_as_dict_from_path(FOOTER_STATE_CAHCE_FILEPATH)
