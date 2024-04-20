@@ -7,11 +7,13 @@
 - 添加了录制时的编码选项（cpu_h264, cpu_h265, NVIDIA_h265, AMD_h265, SVT-AV1）；
 - 优化了索引时比较图像的性能；
 - 索引视频切片时，如果有相同内容显示在不同时间点，可以只记录第一次出现、而不重复记录；
+- 优化 webui 底部统计信息缓存机制，在数据多的情况下获得更快加载体验；
 
 - Supports multi-monitor and single-monitor recording;
 - Added encoding options when recording (cpu_h264, cpu_h265, NVIDIA_h265, AMD_h265, SVT-AV1);
 - Optimized the performance of comparing images during indexing;
 - When indexing video slices, if the same content is displayed at different points in time, only the first occurrence can be recorded without repeated recording;
+- Optimize the statistical information caching mechanism at webui footer to obtain a faster loading experience when there is a lot of data;
 
 ### Fixed
 - bug: 当锁屏时程序有几率不会进入空闲暂停状态；There is a chance that the program will not enter the idle pause state when the screen is locked;

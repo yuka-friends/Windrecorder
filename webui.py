@@ -1,5 +1,4 @@
 import hashlib
-import os
 
 import streamlit as st
 
@@ -8,9 +7,8 @@ import windrecorder.ui.recording
 import windrecorder.ui.search
 import windrecorder.ui.setting
 import windrecorder.ui.state
-from windrecorder import file_utils, utils
+from windrecorder import state
 from windrecorder.config import config
-from windrecorder.db_manager import db_manager
 from windrecorder.utils import get_text as _t
 
 if config.img_embed_module_install:
@@ -34,30 +32,9 @@ if "update_badge_emoji" not in st.session_state:
 
 # footer状态信息
 def web_footer_state():
-    FOOTER_STATE_CAHCE_FILEPATH = "cache\\footer_info_cache.json"
-
-    def get_footer_state_data():
-        res = {}
-        res["first_record_time_str"] = utils.seconds_to_date_goodlook_formart(db_manager.db_first_earliest_record_time())
-        res["latest_record_time_str"] = utils.seconds_to_date_goodlook_formart(db_manager.db_latest_record_time())
-        res["latest_db_records_num"] = db_manager.db_num_records()
-        res["videos_file_size"] = round(file_utils.get_dir_size(config.record_videos_dir_ud) / (1024 * 1024 * 1024), 3)
-        res["videos_files_count"], _ = file_utils.get_videos_and_ocred_videos_count(config.record_videos_dir_ud)
-
-        return res
-
     # 懒加载，只在刷新时第一次获取
     if "footer_state_dict" not in st.session_state:
-        if os.path.exists(FOOTER_STATE_CAHCE_FILEPATH):
-            if not file_utils.is_file_modified_recently(FOOTER_STATE_CAHCE_FILEPATH, time_gap=1440):
-                # time to update state cache
-                file_utils.save_dict_as_json_to_path(data=get_footer_state_data(), filepath=FOOTER_STATE_CAHCE_FILEPATH)
-            st.session_state["footer_state_dict"] = file_utils.read_json_as_dict_from_path(FOOTER_STATE_CAHCE_FILEPATH)
-        else:
-            file_utils.ensure_dir(os.path.dirname(FOOTER_STATE_CAHCE_FILEPATH))
-            footer_state_data = get_footer_state_data()
-            file_utils.save_dict_as_json_to_path(data=footer_state_data, filepath=FOOTER_STATE_CAHCE_FILEPATH)
-            st.session_state["footer_state_dict"] = footer_state_data
+        st.session_state["footer_state_dict"] = state.make_webui_footer_state_data_cache(ask_from="webui")
 
     # webUI draw
     st.divider()
@@ -70,7 +47,8 @@ def web_footer_state():
                 latest_db_records=st.session_state.footer_state_dict["latest_db_records_num"],
                 videos_file_size=st.session_state.footer_state_dict["videos_file_size"],
                 videos_files_count=st.session_state.footer_state_dict["videos_files_count"],
-            )
+            ),
+            help=_t("footer_info_help"),
         )
     with col2:
         st.markdown(

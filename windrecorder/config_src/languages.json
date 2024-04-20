@@ -13,6 +13,7 @@
         "text_search_not_found": "No results found for \"{search_content}\".",
         "utils_toast_setting_saved": "Changes applied.",
         "footer_info": "Earliest record time: **{first_record_time_str}**, latest record time: **{latest_record_time_str}**, index lines: **{latest_db_records}**, video storage: **{videos_file_size} GB** ({videos_files_count} video files)",
+        "footer_info_help": "There may be a delay of up to two days in updating statistics.",
 
         "text_welcome_to_windrecorder":"Welcome to Windrecorder!",
         "text_updating_month_stat": "Updating statistics for this month...",
@@ -244,6 +245,7 @@
         "text_search_not_found": "没有找到 \"{search_content}\"。",
         "utils_toast_setting_saved": "已应用更改。",
         "footer_info": "最早的数据时间：**{first_record_time_str}**，最新的数据时间： **{latest_record_time_str}**， 数据库记录了行数： **{latest_db_records}**，视频文件占用空间： **{videos_file_size} GB** ({videos_files_count} 个视频文件)",
+        "footer_info_help": "统计更新可能存在最多两天的延迟。",
 
         "text_welcome_to_windrecorder":"欢迎使用 Windrecorder！",
         "text_updating_month_stat": "更新本月统计中……",
@@ -403,7 +405,7 @@
         "set_help_day_begin_minutes": "可以把凌晨后的一段时间记录划分到同个自然天中，而非以零点来划分每天。",
         "set_checkbox_synonyms_recommand": "搜索时推荐近义词",
         "set_help_synonyms_recommand": "若语言不支持将不启用，在 config_src\\synonyms 下查看已支持语言。",
-        "set_checkbox_reduce_same_content_at_different_time": "当视频文件有相同内容显示在不同时间点，只记录第一次出现时间点。",
+        "set_checkbox_reduce_same_content_at_different_time": "当视频片段内有相同内容显示在不同时间点，只记录第一次出现时间点。",
 
         "qs_la_text_same_as_previous": "界面语言保持与先前一致的：简体中文",
         "qs_un_set_your_username": "设定你的用户名，以作为数据库标识。",
@@ -475,6 +477,7 @@
         "text_search_not_found": "\"{search_content}\" が見つかりませんでした。",
         "utils_toast_setting_saved": "変更が適用されました。",
         "footer_info": "最も早いデータの時間：**{first_record_time_str}** , 最新のデータ時間： **{latest_record_time_str}** ,データベースのレコード数： **{latest_db_records}** ,ビデオファイルの使用スペース： **{videos_file_size} GB** ({videos_files_count} 個のビデオファイル)",
+        "footer_info_help": "統計情報の更新には最大 2 日の遅れが生じる可能性があります。",
 
         "text_welcome_to_windrecorder":"Windrecorderへようこそ！",
         "text_updating_month_stat": "今月の統計を更新しています...",

@@ -11,7 +11,7 @@ from os import getpid
 import mss
 import numpy as np
 
-from windrecorder import file_utils, ocr_manager, record, record_wintitle, utils
+from windrecorder import file_utils, ocr_manager, record, record_wintitle, state, utils
 from windrecorder.config import config
 from windrecorder.exceptions import LockExistsException
 from windrecorder.lock import FileLock
@@ -84,6 +84,8 @@ def idle_maintain_process_main():
         ocr_manager.remove_outdated_videofiles(video_queue_batch=config.batch_size_remove_video_in_idle)
         # 压缩过期视频
         ocr_manager.compress_outdated_videofiles(video_queue_batch=config.batch_size_compress_video_in_idle)
+        # 统计webui footer info
+        state.make_webui_footer_state_data_cache(ask_from="idle")
         # 生成随机词表
         # wordcloud.generate_all_word_lexicon_by_month()
     except Exception as e:
