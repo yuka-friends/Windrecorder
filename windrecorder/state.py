@@ -12,6 +12,9 @@ from windrecorder import file_utils
 from windrecorder.config import config
 from windrecorder.const import FOOTER_STATE_CAHCE_FILEPATH
 from windrecorder.db_manager import db_manager
+from windrecorder.logger import get_logger
+
+logger = get_logger(__name__)
 
 
 # 统计当月数据概览：条形图
@@ -169,9 +172,11 @@ def make_webui_footer_state_data_cache(ask_from="idle"):
         if not file_utils.is_file_modified_recently(FOOTER_STATE_CAHCE_FILEPATH, time_gap=time_gap):
             # time to update state cache
             file_utils.save_dict_as_json_to_path(data=get_footer_state_data(), filepath=FOOTER_STATE_CAHCE_FILEPATH)
+            logger.info("footer info updated.")
         return file_utils.read_json_as_dict_from_path(FOOTER_STATE_CAHCE_FILEPATH)
     else:
         file_utils.ensure_dir(os.path.dirname(FOOTER_STATE_CAHCE_FILEPATH))
         footer_state_data = get_footer_state_data()
         file_utils.save_dict_as_json_to_path(data=footer_state_data, filepath=FOOTER_STATE_CAHCE_FILEPATH)
+        logger.info("footer info updated.")
         return footer_state_data
