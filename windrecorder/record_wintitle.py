@@ -256,7 +256,7 @@ def component_month_wintitle_stat(month_dt: datetime.datetime):
     if "month_wintitle_filter_lazy" not in st.session_state:
         st.session_state.month_wintitle_filter_lazy = ""
     if "month_wintitle_df_fliter" not in st.session_state:
-        st.session_state["month_wintitle_df_fliter"] = None
+        st.session_state["month_wintitle_df_fliter"] = pd.DataFrame()
     if "month_wintitle_df_fliter_screentime_sum" not in st.session_state:
         st.session_state["month_wintitle_df_fliter_screentime_sum"] = 0
 
@@ -308,7 +308,6 @@ def component_month_wintitle_stat(month_dt: datetime.datetime):
             res_dict = _filter_stat_by_keywords_match(st.session_state.month_wintitle_filter)
             st.session_state["month_wintitle_df_fliter"] = turn_dict_into_display_dataframe(res_dict)
             st.session_state["month_wintitle_df_fliter_screentime_sum"] = sum(int(value) for value in res_dict.values())
-
             st.session_state.month_wintitle_filter_lazy = st.session_state.month_wintitle_filter
 
     if st.session_state[month_wintitle_df_statename].empty or update_condition:
@@ -336,7 +335,7 @@ def component_month_wintitle_stat(month_dt: datetime.datetime):
 
     # ---ui drawing
     st.session_state.month_wintitle_filter = st.text_input(
-        label=_t("stat_text_wintitle_keyword_filter"), help=_t("stat_text_wintitle_filter_help")
+        label="🧩 " + _t("stat_text_wintitle_keyword_filter"), help=_t("stat_text_wintitle_filter_help")
     )
 
     if len(st.session_state[month_wintitle_df_statename]) > 0 and len(st.session_state.month_wintitle_filter) == 0:
@@ -360,6 +359,7 @@ def component_month_wintitle_stat(month_dt: datetime.datetime):
         st.markdown(f"`{current_month_wintitle_stat_json_filepath}`")
     elif len(st.session_state.month_wintitle_filter) > 0:
         _update_filter_stat_by_keywords_res()
+
         st.dataframe(
             st.session_state["month_wintitle_df_fliter"],
             column_config={
