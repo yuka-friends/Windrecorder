@@ -335,7 +335,10 @@ def component_month_wintitle_stat(month_dt: datetime.datetime):
 
     # ---ui drawing
     st.session_state.month_wintitle_filter = st.text_input(
-        label="🧩 " + _t("stat_text_wintitle_keyword_filter"), help=_t("stat_text_wintitle_filter_help")
+        label=_t("stat_text_wintitle_keyword_filter"),
+        help=_t("stat_text_wintitle_filter_help"),
+        placeholder=_t("stat_text_wintitle_keyword_filter"),
+        label_visibility="collapsed",
     )
 
     if len(st.session_state[month_wintitle_df_statename]) > 0 and len(st.session_state.month_wintitle_filter) == 0:
