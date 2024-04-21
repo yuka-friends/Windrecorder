@@ -253,6 +253,12 @@ def component_wintitle_stat(day_date_input):
 def component_month_wintitle_stat(month_dt: datetime.datetime):
     if "wintitle_month_dt_last_time" not in st.session_state:  # diff 当前显示表的日期，用于和控件用户输入对比判断是否更新
         st.session_state.wintitle_month_dt_last_time = month_dt
+    if "month_wintitle_filter_lazy" not in st.session_state:
+        st.session_state.month_wintitle_filter_lazy = ""
+    if "month_wintitle_df_fliter" not in st.session_state:
+        st.session_state["month_wintitle_df_fliter"] = None
+    if "month_wintitle_df_fliter_screentime_sum" not in st.session_state:
+        st.session_state["month_wintitle_df_fliter_screentime_sum"] = 0
 
     month_wintitle_df_statename_date = month_dt.strftime("%Y-%m")
     month_wintitle_df_statename = f"wintitle_stat_{month_wintitle_df_statename_date}"
@@ -286,6 +292,25 @@ def component_month_wintitle_stat(month_dt: datetime.datetime):
             current_month_wintitle_stat_json_filepath
         )
 
+    def _filter_stat_by_keywords_match(keywords: str):
+        """根据输入关键词过滤统计结果"""
+        keywords = re.sub(" +", " ", keywords)  # remove extra space
+        keywords_lst = keywords.split(" ")
+        res_dict = {}
+        for key, value in st.session_state["month_wintitle_stat_dict"].items():
+            if all(s.lower() in key.lower() for s in keywords_lst):
+                res_dict[key] = value
+        return res_dict
+
+    def _update_filter_stat_by_keywords_res():
+        """更新关键词过滤"""
+        if st.session_state.month_wintitle_filter_lazy != st.session_state.month_wintitle_filter:
+            res_dict = _filter_stat_by_keywords_match(st.session_state.month_wintitle_filter)
+            st.session_state["month_wintitle_df_fliter"] = turn_dict_into_display_dataframe(res_dict)
+            st.session_state["month_wintitle_df_fliter_screentime_sum"] = sum(int(value) for value in res_dict.values())
+
+            st.session_state.month_wintitle_filter_lazy = st.session_state.month_wintitle_filter
+
     if st.session_state[month_wintitle_df_statename].empty or update_condition:
         # 检查磁盘上有无统计缓存，然后检查是否过时
         if os.path.exists(current_month_wintitle_stat_json_filepath):
@@ -309,9 +334,12 @@ def component_month_wintitle_stat(month_dt: datetime.datetime):
             int(value) for value in st.session_state["month_wintitle_stat_dict"].values()
         )
 
-    st.session_state.month_wintitle_filter = st.text_input(label="filter")
+    # ---ui drawing
+    st.session_state.month_wintitle_filter = st.text_input(
+        label=_t("stat_text_wintitle_keyword_filter"), help=_t("stat_text_wintitle_filter_help")
+    )
 
-    if len(st.session_state[month_wintitle_df_statename]) > 0:
+    if len(st.session_state[month_wintitle_df_statename]) > 0 and len(st.session_state.month_wintitle_filter) == 0:
         st.dataframe(
             st.session_state[month_wintitle_df_statename],
             column_config={
@@ -330,5 +358,24 @@ def component_month_wintitle_stat(month_dt: datetime.datetime):
             use_container_width=True,
         )
         st.markdown(f"`{current_month_wintitle_stat_json_filepath}`")
+    elif len(st.session_state.month_wintitle_filter) > 0:
+        _update_filter_stat_by_keywords_res()
+        st.dataframe(
+            st.session_state["month_wintitle_df_fliter"],
+            column_config={
+                "Page": st.column_config.TextColumn(
+                    "⏱️ "
+                    + _t("oneday_wt_text")
+                    + "   -   "
+                    + utils.convert_seconds_to_hhmmss(
+                        st.session_state["month_wintitle_df_fliter_screentime_sum"], complete_with_zero=False
+                    ),
+                    help=_t("oneday_wt_help"),
+                )
+            },
+            height=1000,
+            hide_index=True,
+            use_container_width=True,
+        )
     else:
         st.markdown(_t("oneday_ls_text_no_wintitle_stat_momnth"), unsafe_allow_html=True)

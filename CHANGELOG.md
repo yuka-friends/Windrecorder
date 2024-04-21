@@ -1,5 +1,10 @@
 # Changelog 更新日志
 
+## 0.0.12
+> 2024-04-21
+- 添加了月度统计中对窗口标题的过滤，现在可以查看具体关于某件事的屏幕时间了；
+- Added filtering for window titles in monthly statistics, now you can view screen time specifically about something;
+
 ## 0.0.11
 > 2024-04-19
 
