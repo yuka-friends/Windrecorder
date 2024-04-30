@@ -11,7 +11,7 @@ python -m pip install -i https://pypi.tuna.tsinghua.edu.cn/simple poetry
 python -m poetry config virtualenvs.in-project true
 python -m poetry install
 
-for /F "usebackq tokens=*" %%A in (`python -m poetry env info --path`) do call %%A\Scripts\activate.bat
+for /F "usebackq tokens=*" %%A in (`python -m poetry env info --path`) do call "%%A\Scripts\activate.bat"
 
 color 0e
 title Windrecorder - Quick Setup
