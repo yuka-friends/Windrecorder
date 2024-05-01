@@ -195,7 +195,7 @@
         "qs_ocr_cta": "Please select the OCR engine for extracting screen content:",
         "qs_ocr_option_recommand": "(Recommended & Default)",
         "qs_ocr_engine_chosen": "OCR Engine Used:",
-        "qs_ocr_not_has_lang_test_support": "No suitable test case was found for the currently selected language and will be tested on an en-US image. Don't worry, the OCR can still work correctly to recognize your language, just the wizard lacks appropriate testing, so the recognition rate may not reflect the actual situation.",
+        "qs_ocr_not_has_lang_test_support": "No suitable test case was found for the currently selected language and will be tested on en-US image. Don't worry, the OCR can still work correctly to recognize your language, just the wizard lacks appropriate testing, so the recognition rate may not reflect the actual situation.",
         "qs_mo_describe_all": "Multiple displays have been detected. Choose recording mode: (Press enter to apply the current option directly)\n",
         "qs_mo_describe_single": "Single display ({width}x{height}) detected.\n\nIf you use multiple displays in the future, you can always adjust the multi-screen recording mode in the recording settings.\n",
         "qs_mo_option_all": "Record all displays",
