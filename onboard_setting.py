@@ -4,7 +4,7 @@ import subprocess
 import sys
 import time
 
-from windrecorder import utils
+from windrecorder import __version__, utils
 from windrecorder.config import config
 
 # ------------------------------------------------------------------
@@ -70,7 +70,7 @@ def divider():
 # 画抬头的
 def print_header(step=1, toast=""):
     subprocess.run("cls", shell=True)
-    print("Weclome to Windrecorder | 欢迎使用捕风记录仪\n")
+    print(f"Weclome to Windrecorder {__version__} | 欢迎使用捕风记录仪\n")
     print("Thanks for downloading! This Quick Wizard will help you set it up. \n感谢下载使用！本向导将协助你完成基础配置项。不用担心，所有选项之后都可以再次调整。")
     divider()
     print(step, "/", ALLSTEPS, toast)
@@ -186,36 +186,34 @@ def set_ocr_lang():
 
 # 测试与设置 ocr 引擎
 def set_ocr_engine():
+    not_has_lang_test_support = False
     test_img_filepath = "__assets__\\OCR_test_1080_" + config.ocr_lang + ".png"  # 读取测试图像
-    if not os.path.exists(test_img_filepath):
-        test_img_filepath = "OCR_test_1080_en-US.png"  # fallback 读取为英文图像
+    test_validation_filepath = "__assets__\\OCR_test_1080_words_" + config.ocr_lang + ".txt"
+    if not os.path.exists(test_img_filepath) or not os.path.exists(test_validation_filepath):
+        test_img_filepath = "__assets__\\OCR_test_1080_en-US.png"  # fallback: read EN img
+        test_validation_filepath = "__assets__\\OCR_test_1080_words_en-US.txt"
+        not_has_lang_test_support = True
 
-    with open("__assets__\\OCR_test_1080_words_" + config.ocr_lang + ".txt", encoding="utf-8") as f:  # 读取比对参考文本
-        ocr_text_refer = f.read()
-        ocr_text_refer = utils.wrap_text_by_remove_break(ocr_text_refer)
+    try:
+        with open(test_validation_filepath, encoding="utf-8") as f:  # read validation text
+            ocr_text_refer = f.read()
+            ocr_text_refer = utils.wrap_text_by_remove_break(ocr_text_refer)
 
-    # 测试COL - 已废弃
-    # try:
-    #     time_cost_col = time.time()
-    #     ocr_result_col = ocr_manager.ocr_image_col(test_img_filepath)
-    #     time_cost_col = time.time() - time_cost_col
-    #     ocr_result_col = utils.wrap_text_by_remove_break(ocr_result_col)
-    #     _, ocr_correct_col = ocr_manager.compare_strings(ocr_result_col, ocr_text_refer)
-
-    # except Exception as e:
-    #     ocr_result_col = ""
-    #     print(e)
-
-    # 测试ms ocr
-    time_cost_ms = time.time()
-    ocr_result_ms = ocr_manager.ocr_image_ms(test_img_filepath)
-    time_cost_ms = time.time() - time_cost_ms
-    ocr_result_ms = utils.wrap_text_by_remove_break(ocr_result_ms)
-    _, ocr_correct_ms = ocr_manager.compare_strings(ocr_result_ms, ocr_text_refer)
+        time_cost_ms = time.time()
+        ocr_result_ms = ocr_manager.ocr_image_ms(test_img_filepath)
+        time_cost_ms = time.time() - time_cost_ms
+        ocr_result_ms = utils.wrap_text_by_remove_break(ocr_result_ms)
+        _, ocr_correct_ms = ocr_manager.compare_strings(ocr_result_ms, ocr_text_refer)
+    except FileNotFoundError:
+        print(f"Validation text not found: {test_validation_filepath}")
+        not_has_lang_test_support = True
 
     while True:
         print_header(step=3)
         print(_t("qs_ocr_title"))
+
+        if not_has_lang_test_support:
+            print(_t("qs_ocr_not_has_lang_test_support"))
 
         if ocr_result_ms:
             print("- Windows.Media.Ocr.Cli   OCR languages: ", config.ocr_lang)
@@ -228,6 +226,8 @@ def set_ocr_engine():
             )
             if ocr_correct_ms < 50:
                 print(_t("qs_ocr_tips_low_accuracy"))
+        else:
+            print("Seems OCR test fail. OCR result not found :(")
 
         break
 

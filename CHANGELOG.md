@@ -5,6 +5,9 @@
 - 添加了月度统计中对窗口标题的过滤，现在可以查看具体关于某件事的屏幕时间了；
 - Added filtering for window titles in monthly statistics, now you can view screen time specifically about something;
 
+### Fixed
+- bug: 当 OCR 支持语言找不到对应测试集时，将会阻塞 onboarding 向导；When the OCR supported language cannot find the corresponding test set, the onboarding wizard will be blocked;
+
 ## 0.0.11
 > 2024-04-19
 
