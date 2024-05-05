@@ -37,7 +37,6 @@ def render():
         st.session_state.is_create_startup_shortcut = st.checkbox(
             _t("rs_checkbox_start_record_when_startup"),
             value=st.session_state.is_create_startup_shortcut,
-            on_change=utils.change_startup_shortcut(is_create=st.session_state.is_create_startup_shortcut),
             help=_t("rs_checkbox_start_record_when_startup_help"),
         )
         is_start_recording_on_start_app = st.checkbox(
@@ -229,6 +228,8 @@ def render():
                 config.set_and_save_config(
                     "record_single_display_index", st.session_state.display_info_formatted.index(display_record_selection) + 1
                 )
+
+            utils.change_startup_shortcut(is_create=st.session_state.is_create_startup_shortcut)
 
             config.set_and_save_config("screentime_not_change_to_pause_record", screentime_not_change_to_pause_record)
             config.set_and_save_config("start_recording_on_startup", is_start_recording_on_start_app)
