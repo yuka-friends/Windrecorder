@@ -7,6 +7,7 @@
 
 ### Fixed
 - bug: 当 OCR 支持语言找不到对应测试集时，将会阻塞 onboarding 向导；When the OCR supported language cannot find the corresponding test set, the onboarding wizard will be blocked;
+- 添加更多尝试隐藏 CLI 窗口次数重试，以应对未解锁屏幕时隐藏失败；Added more retries to try to hide the CLI window in case hiding fails when the screen is not unlocked;
 
 ## 0.0.11
 > 2024-04-19

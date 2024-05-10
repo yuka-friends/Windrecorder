@@ -282,7 +282,7 @@ def hide_cli_window():
     subprocess.run("cls", shell=True)
     print()
 
-    timeout_count = 10
+    timeout_count = 1200
     for i in range(timeout_count):
         print(f"   Trying to hide CLI window... ({i}/{timeout_count})")
         try:
@@ -292,6 +292,7 @@ def hide_cli_window():
                 win32gui.ShowWindow(hide_CLI, win32con.SW_HIDE)
                 break
         except Exception as e:
+            print(f"   -Exception: {e}")
             logger.error(e)
             continue
         time.sleep(1)
