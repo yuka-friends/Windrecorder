@@ -42,6 +42,7 @@ goto start_install
 @REM -------------------------------------------------
 :install_cpu
 poetry run pip install -i https://pypi.tuna.tsinghua.edu.cn/simple uform
+poetry run pip install -i https://pypi.tuna.tsinghua.edu.cn/simple torch
 goto :finish
 
 
