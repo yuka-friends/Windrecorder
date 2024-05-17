@@ -634,20 +634,8 @@ def ocr_process_single_video(video_path, vid_file_name, iframe_path, optimize_fo
     file_path = os.path.join(video_path, vid_file_name)
     error_retry_time = 1
 
-    # 判断文件是否为出错需要重试的文件
-    if "-ERROR" in vid_file_name:
-        error_retry_time = vid_file_name[vid_file_name.find("-ERROR") + len("-ERROR")]
-        if error_retry_time.isdigit():
-            vid_file_name = vid_file_name.replace(f"-ERROR{error_retry_time}", "")
-            error_retry_time = int(error_retry_time) + 1
-        else:
-            vid_file_name = vid_file_name.replace("-ERROR", "")
-            error_retry_time = 1
-        rollback_data(vid_file_name)
-        iframe_sub_path = os.path.join(iframe_path, os.path.splitext(vid_file_name)[0])
-
     # 判断文件是否为上次索引未完成的文件
-    if "-INDEX" in vid_file_name:
+    if "-INDEX" in vid_file_name and "-ERROR" not in vid_file_name:
         # 是-执行回滚操作
         logger.info("INDEX flag exists, perform rollback operation.")
         # 这里我们保证 vid_file_name 不包含 -INDEX
@@ -655,6 +643,18 @@ def ocr_process_single_video(video_path, vid_file_name, iframe_path, optimize_fo
         rollback_data(vid_file_name)
         iframe_sub_path = os.path.join(iframe_path, os.path.splitext(vid_file_name)[0])
     else:
+        # 判断文件是否为出错需要重试的文件
+        if "-ERROR" in vid_file_name:
+            error_retry_time = vid_file_name[vid_file_name.find("-ERROR") + len("-ERROR")]
+            if error_retry_time.isdigit():
+                vid_file_name = vid_file_name.replace(f"-ERROR{error_retry_time}", "")
+                error_retry_time = int(error_retry_time) + 1
+            else:
+                vid_file_name = vid_file_name.replace("-ERROR", "")
+                error_retry_time = 1
+            rollback_data(vid_file_name)
+            iframe_sub_path = os.path.join(iframe_path, os.path.splitext(vid_file_name)[0])
+
         # 为正在索引的视频文件改名添加"-INDEX"
         new_filename = vid_file_name.replace(".", "-INDEX.")
         new_file_path = os.path.join(video_path, new_filename)
