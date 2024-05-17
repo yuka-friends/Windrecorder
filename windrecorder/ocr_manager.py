@@ -494,7 +494,7 @@ def rollback_data(vid_file_name):
 
 def ocr_core_logic(file_path, vid_file_name, iframe_path):
     """
-    vid_file_name just for db index, make sure no tag suffix
+    vid_file_name just for db index, make sure no suffix tag
     """
     # - 提取i帧
     extract_iframe(file_path, iframe_path)
@@ -627,7 +627,7 @@ def ocr_core_logic(file_path, vid_file_name, iframe_path):
 # 对某个视频进行处理的过程
 def ocr_process_single_video(video_path, vid_file_name, iframe_path, optimize_for_high_framerate_vid=False):
     """
-    vid_file_name for db index only, make sure no tag suffix
+    vid_file_name for db index only, make sure no suffix tag
     """
     iframe_sub_path = os.path.join(iframe_path, os.path.splitext(vid_file_name)[0])
     # 整合完整路径
