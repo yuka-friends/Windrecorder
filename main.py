@@ -295,7 +295,8 @@ def hide_cli_window():
             print(f"   -Exception: {e}")
             logger.error(e)
             continue
-        time.sleep(1)
+        finally:
+            time.sleep(1)
     print("\n   Hide CLI window fail. Please minimize this window manually.")
 
 
