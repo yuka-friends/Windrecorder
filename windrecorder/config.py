@@ -87,6 +87,7 @@ class Config:
         record_encoder,
         record_crf,
         index_reduce_same_content_at_different_time,
+        error_video_retry_times,
         **other_field,
     ) -> None:
         # If need to process input parameters, they should assign another variable name to prevent recursive writing into the config.
@@ -157,6 +158,7 @@ class Config:
         self.record_encoder = record_encoder
         self.record_crf = record_crf
         self.index_reduce_same_content_at_different_time = index_reduce_same_content_at_different_time
+        self.error_video_retry_times = error_video_retry_times
 
     def set_and_save_config(self, attr: str, value):
         if not hasattr(self, attr):

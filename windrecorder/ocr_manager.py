@@ -744,7 +744,7 @@ def ocr_process_videos(video_path, iframe_path):
                 error_retry_time = file[file.find("-ERROR") + len("-ERROR")]
                 if error_retry_time.isdigit():
                     error_retry_time = int(error_retry_time)
-                    if error_retry_time > 3:
+                    if error_retry_time > config.error_video_retry_times:
                         continue
                 else:
                     continue
