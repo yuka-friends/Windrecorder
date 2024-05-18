@@ -15,7 +15,7 @@ import windrecorder.record as record
 import windrecorder.utils as utils
 from windrecorder import file_utils, record_wintitle
 from windrecorder.config import config
-from windrecorder.const import CACHE_DIR_OCR_IMG_PREPROCESSOR
+from windrecorder.const import CACHE_DIR_OCR_IMG_PREPROCESSOR, ERROR_VIDEO_RETRY_TIMES
 from windrecorder.db_manager import db_manager
 from windrecorder.exceptions import LockExistsException
 from windrecorder.lock import FileLock
@@ -744,7 +744,7 @@ def ocr_process_videos(video_path, iframe_path):
                 error_retry_time = file[file.find("-ERROR") + len("-ERROR")]
                 if error_retry_time.isdigit():
                     error_retry_time = int(error_retry_time)
-                    if error_retry_time > config.error_video_retry_times:
+                    if error_retry_time > ERROR_VIDEO_RETRY_TIMES:
                         continue
                 else:
                     continue
