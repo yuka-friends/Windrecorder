@@ -15,7 +15,7 @@ import windrecorder.record as record
 import windrecorder.utils as utils
 from windrecorder import file_utils, record_wintitle
 from windrecorder.config import config
-from windrecorder.const import CACHE_DIR_OCR_IMG_PREPROCESSOR
+from windrecorder.const import CACHE_DIR_OCR_IMG_PREPROCESSOR, ERROR_VIDEO_RETRY_TIMES
 from windrecorder.db_manager import db_manager
 from windrecorder.exceptions import LockExistsException
 from windrecorder.lock import FileLock
@@ -486,13 +486,16 @@ def remove_duplicates_in_df(df: pd.DataFrame, column: str):
 
 
 # 回滚操作
-def rollback_data(video_path, vid_file_name):
+def rollback_data(vid_file_name):
     # 擦除db中没索引完全的数据
     logger.info(f"rollback {vid_file_name}")
     db_manager.db_rollback_delete_video_refer_record(vid_file_name)
 
 
 def ocr_core_logic(file_path, vid_file_name, iframe_path):
+    """
+    vid_file_name just for db index, make sure no suffix tag
+    """
     # - 提取i帧
     extract_iframe(file_path, iframe_path)
     # 裁剪图片
@@ -623,30 +626,46 @@ def ocr_core_logic(file_path, vid_file_name, iframe_path):
 
 # 对某个视频进行处理的过程
 def ocr_process_single_video(video_path, vid_file_name, iframe_path, optimize_for_high_framerate_vid=False):
-    # with acquire_ocr_lock(vid_file_name):
+    """
+    vid_file_name for db index only, make sure no suffix tag
+    """
     iframe_sub_path = os.path.join(iframe_path, os.path.splitext(vid_file_name)[0])
     # 整合完整路径
     file_path = os.path.join(video_path, vid_file_name)
+    error_retry_time = 1
 
     # 判断文件是否为上次索引未完成的文件
-    if "-INDEX" in vid_file_name:
+    if "-INDEX" in vid_file_name and "-ERROR" not in vid_file_name:
         # 是-执行回滚操作
         logger.info("INDEX flag exists, perform rollback operation.")
         # 这里我们保证 vid_file_name 不包含 -INDEX
         vid_file_name = vid_file_name.replace("-INDEX", "")
-        rollback_data(video_path, vid_file_name)
+        rollback_data(vid_file_name)
         iframe_sub_path = os.path.join(iframe_path, os.path.splitext(vid_file_name)[0])
-        # 保证进入 ocr_core_logic 前 iframe_sub_path 是空的
-        try:
-            shutil.rmtree(iframe_sub_path)
-        except FileNotFoundError:
-            pass
     else:
+        # 判断文件是否为出错需要重试的文件
+        if "-ERROR" in vid_file_name:
+            error_retry_time = vid_file_name[vid_file_name.find("-ERROR") + len("-ERROR")]
+            if error_retry_time.isdigit():
+                vid_file_name = vid_file_name.replace(f"-ERROR{error_retry_time}", "")
+                error_retry_time = int(error_retry_time) + 1
+            else:
+                vid_file_name = vid_file_name.replace("-ERROR", "")
+                error_retry_time = 1
+            rollback_data(vid_file_name)
+            iframe_sub_path = os.path.join(iframe_path, os.path.splitext(vid_file_name)[0])
+
         # 为正在索引的视频文件改名添加"-INDEX"
         new_filename = vid_file_name.replace(".", "-INDEX.")
         new_file_path = os.path.join(video_path, new_filename)
         os.rename(file_path, new_file_path)
         file_path = new_file_path
+
+    # 保证进入 ocr_core_logic 前 iframe_sub_path 是空的
+    try:
+        shutil.rmtree(iframe_sub_path)
+    except (FileNotFoundError, PermissionError, OSError):
+        pass
 
     file_utils.ensure_dir(iframe_sub_path)
     try:
@@ -664,7 +683,7 @@ def ocr_process_single_video(video_path, vid_file_name, iframe_path, optimize_fo
     except Exception as e:
         # 记录错误日志
         logger.error(f"Error occurred while processing :{file_path=}, {e=}")
-        new_name = vid_file_name.split(".")[0] + "-ERROR." + vid_file_name.split(".")[1]
+        new_name = vid_file_name.split(".")[0] + f"-ERROR{error_retry_time}." + vid_file_name.split(".")[1]
         new_name_dir = os.path.dirname(file_path)
         os.rename(file_path, os.path.join(new_name_dir, new_name))
 
@@ -717,8 +736,18 @@ def ocr_process_videos(video_path, iframe_path):
             logger.debug(f"processing VID: {full_file_path}")
 
             # 检查视频文件是否已被索引
-            if not file.endswith(".mp4") or "-OCRED" in file or "-ERROR" in file:
+            if not file.endswith(".mp4") or "-OCRED" in file:
                 continue
+
+            # ERROR retry
+            if "-ERROR" in file:
+                error_retry_time = file[file.find("-ERROR") + len("-ERROR")]
+                if error_retry_time.isdigit():
+                    error_retry_time = int(error_retry_time)
+                    if error_retry_time > ERROR_VIDEO_RETRY_TIMES:
+                        continue
+                else:
+                    continue
 
             # 判断文件是否正在被占用
             if is_file_in_use(full_file_path):
