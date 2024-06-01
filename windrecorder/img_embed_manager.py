@@ -67,7 +67,8 @@ def embed_text(model_text, processor_text, text_query, detach_numpy=True):
 
     # 预处理张量
     if detach_numpy:
-        text_np = text_embedding.detach().cpu().numpy()
+        # text_np = text_embedding.detach().cpu().numpy()
+        text_np = text_embedding
         text_np = np.float32(text_np)
         faiss.normalize_L2(text_np)
         return text_np
@@ -113,7 +114,7 @@ class VectorDatabase:
         :param vector: 图像 embedding 后的向量
         :param rowid: sqlite 对应的 ROWID
         """
-        vector = vector.detach().cpu().numpy()  # 转换为numpy数组
+        # vector = vector.detach().cpu().numpy()  # 转换为numpy数组
         vector = np.float32(vector)  # 转换为float32类型的numpy数组
         faiss.normalize_L2(vector)  # 规范化向量，避免在搜索时出现错误的结果
 
