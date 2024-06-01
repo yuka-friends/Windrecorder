@@ -1,7 +1,7 @@
 ![Windrecorder](https://github.com/yuka-friends/Windrecorder/blob/main/__assets__/product-header-cn.jpg)
 <h1 align="center"> 🦝 Windrecorder | 捕风记录仪</h1>
 <p align="center"> An Open Source <a href="https://www.rewind.ai/">Rewind</a>'s alternative tool on Windows to help you retrieve memory cues.</p>
-<p align="center">一款运行在 Windows 平台上的 <a href="https://www.rewind.ai/">Rewind</a> 替代工具，帮助你找回记忆线索</p>
+<p align="center">一款运行在 Windows 平台上的 <a href="https://www.rewind.ai/">Rewind</a> / Copilot Recall 替代工具，帮助你找回记忆线索</p>
 
 <p align="center"> <a href="https://github.com/yuka-friends/Windrecorder/blob/main/README.md">English</a>  | <a href="https://github.com/yuka-friends/Windrecorder/blob/main/__assets__/README-sc.md">简体中文</a></p>
 

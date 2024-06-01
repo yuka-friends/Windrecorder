@@ -1,6 +1,6 @@
 ![Windrecorder](https://github.com/yuka-friends/Windrecorder/blob/main/__assets__/product-header-en.jpg)
 <h1 align="center"> 🦝 Windrecorder | Personal Memory Search Engine</h1>
-<p align="center"> An Open Source Mac App <a href="https://www.rewind.ai/">Rewind</a>'s alternative tool on Windows to help you retrieve memory cues.</p>
+<p align="center"> An Open Source Mac App <a href="https://www.rewind.ai/">Rewind</a> / Copilot Recall alternative tool on Windows to help you retrieve memory cues.</p>
 
 <p align="center"> <a href="https://github.com/yuka-friends/Windrecorder/blob/main/README.md">English</a>  | <a href="https://github.com/yuka-friends/Windrecorder/blob/main/__assets__/README-sc.md">简体中文</a></p>
 
