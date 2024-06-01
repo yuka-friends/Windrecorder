@@ -2,8 +2,8 @@
 
 ## 0.0.14
 > 2024-06-01
-- 升级了图像嵌入模型到 unum-cloud/uform v3，模型不再依赖庞大的 torch 环境，而使用更加节能轻便的 onnx 进行推理，速度、能耗与召回质量均得到提升。如果你之前安装了旧版本，可通过 extension/install_img_embedding_module 中的脚本安装新版、并对旧数据进行回滚以重新索引。
-- Upgraded the image embedding model to unum-cloud/uform v3. The model no longer relies on the huge torch environment, but uses the more energy-efficient and lightweight onnx for reasoning, which improves speed, energy consumption, and recall quality. If you have installed an old version before, you can install the new version through the script in extension/install_img_embedding_module and roll back the old data to re-index.
+- 升级了图像嵌入模型到 unum-cloud/uform v3，模型不再依赖庞大的 torch 环境，而使用更加节能轻便的 ONNX 进行推理，速度、能耗与召回质量均得到提升。如果你之前安装了旧版本，可通过 extension/install_img_embedding_module 中的脚本安装新版、并对旧数据进行回滚以重新索引。
+- Upgraded the image embedding model to unum-cloud/uform v3. The model no longer relies on the huge torch environment, but uses the more energy-efficient and lightweight ONNX for reasoning, which improves speed, energy consumption, and recall quality. If you have installed an old version before, you can install the new version through the script in extension/install_img_embedding_module and roll back the old data to re-index.
 
 ## 0.0.13
 > 2024-05-18

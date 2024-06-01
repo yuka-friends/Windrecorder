@@ -85,3 +85,24 @@ def oneday_side_toolbar():
         record_wintitle.component_wintitle_stat(st.session_state.day_date_input)
     with lefttab_flagnote:
         flag_mark_note.component_flag_mark()
+
+
+# 读取嵌入模型缓存
+def load_emb_model_cache():
+    if config.img_embed_module_install:
+        try:
+            from windrecorder import img_embed_manager
+
+            try:
+                if "emb_model_text" not in st.session_state or "emb_model_image" not in st.session_state:
+                    with st.spinner(_t("gs_text_loading_embed_model")):
+                        (
+                            st.session_state["emb_model_text"],
+                            st.session_state["emb_model_image"],
+                            st.session_state["emb_processor_text"],
+                            st.session_state["emb_processor_image"],
+                        ) = img_embed_manager.get_model_and_processor()
+            except ModuleNotFoundError:
+                config.set_and_save_config("img_embed_module_install", False)
+        except ModuleNotFoundError:
+            config.set_and_save_config("img_embed_module_install", False)

@@ -2,6 +2,7 @@ import hashlib
 
 import streamlit as st
 
+import windrecorder.ui.components
 import windrecorder.ui.oneday
 import windrecorder.ui.recording
 import windrecorder.ui.search
@@ -10,12 +11,6 @@ import windrecorder.ui.state
 from windrecorder import state
 from windrecorder.config import config
 from windrecorder.utils import get_text as _t
-
-if config.img_embed_module_install:
-    try:
-        from windrecorder import img_embed_manager
-    except ModuleNotFoundError:
-        config.set_and_save_config("img_embed_module_install", False)
 
 update_button_key = "update_button"
 
@@ -90,12 +85,7 @@ def main_webui():
 
     # 尝试预加载嵌入模型
     if config.img_embed_module_install and config.enable_synonyms_recommend:
-        try:
-            if "text_img_embed_model" not in st.session_state:
-                with st.spinner(_t("gs_text_loading_embed_model")):
-                    st.session_state["text_img_embed_model"] = img_embed_manager.get_model(mode="cpu")
-        except ModuleNotFoundError:
-            config.set_and_save_config("img_embed_module_install", False)
+        windrecorder.ui.components.load_emb_model_cache()
 
 
 # 检查 webui 是否启用密码保护

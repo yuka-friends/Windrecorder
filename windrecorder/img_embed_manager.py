@@ -142,7 +142,7 @@ def find_closest_iframe_img_dict_item(target: str, img_dict: dict, threshold=3):
     min_difference = float("inf")
 
     for key, value in img_dict.items():
-        difference = abs(int(value.split(".")[0]) - int(target.split(".")[0]))
+        difference = abs(int(value.replace("_cropped", "").split(".")[0]) - int(target.replace("_cropped", "").split(".")[0]))
         if difference <= threshold and difference < min_difference:
             closest_item = value
             min_difference = difference

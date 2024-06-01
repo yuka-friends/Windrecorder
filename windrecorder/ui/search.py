@@ -297,9 +297,7 @@ def ui_vector_img_search():
     图像语义搜索：使用自然语言匹配检索图像
     """
     # 预加载嵌入模型，这样每次搜索就不需要重复加载、提升时间
-    if "text_img_embed_model" not in st.session_state:
-        with st.spinner(_t("gs_text_loading_embed_model")):
-            st.session_state["text_img_embed_model"] = img_embed_manager.get_model(mode="cpu")
+    components.load_emb_model_cache()
 
     # 获得全局图像语义搜索结果
     def do_global_vector_img_search():
@@ -323,7 +321,9 @@ def ui_vector_img_search():
         with st.spinner(_t("gs_text_searching")):
             st.session_state.timeCost_globalSearch = time.time()  # 预埋搜索用时
             text_vector = img_embed_manager.embed_text(
-                model=st.session_state.text_img_embed_model, text_query=st.session_state.search_content
+                model_text=st.session_state["emb_model_text"],
+                processor_text=st.session_state["emb_processor_text"],
+                text_query=st.session_state.search_content,
             )
             logger.info(
                 f"search {st.session_state.search_content}, {st.session_state.search_date_range_in}, {st.session_state.search_date_range_out}"
@@ -363,9 +363,7 @@ def ui_similar_img_search():
     以图搜图
     """
     # 预加载嵌入模型，这样每次搜索就不需要重复加载、提升时间
-    if "text_img_embed_model" not in st.session_state:
-        with st.spinner(_t("gs_text_loading_embed_model")):
-            st.session_state["text_img_embed_model"] = img_embed_manager.get_model(mode="cpu")
+    components.load_emb_model_cache()
 
     def do_global_similar_img_search():
         # 如果搜索所需入参状态改变了，进行搜索
@@ -391,11 +389,11 @@ def ui_similar_img_search():
         with st.spinner(_t("gs_text_searching")):
             st.session_state.timeCost_globalSearch = time.time()  # 预埋搜索用时
             img_vector = img_embed_manager.embed_img(
-                model=st.session_state.text_img_embed_model,
+                model_image=st.session_state["emb_model_image"],
+                processor_image=st.session_state["emb_processor_image"],
                 img_filepath=st.session_state.similar_img_file_input,
-                is_cuda_available=False,
             )
-            img_vector = img_vector.detach().numpy()
+            # img_vector = img_vector.detach().numpy()
             logger.info(
                 f"search {st.session_state.similar_img_file_input}, {st.session_state.search_date_range_in}, {st.session_state.search_date_range_out}"
             )
@@ -498,12 +496,8 @@ def get_query_synonyms(keyword, lang=config.lang):
         return empty_list
 
     # 读取模型
-    if "text_img_embed_model" not in st.session_state:
-        try:
-            with st.spinner(_t("gs_text_loading_embed_model")):
-                st.session_state["text_img_embed_model"] = img_embed_manager.get_model(mode="cpu")
-        except ModuleNotFoundError:
-            return empty_list
+    components.load_emb_model_cache()
+
     # 读取近义词库
     if "synonyms_vdb" not in st.session_state and "synonyms_words" not in st.session_state:
         vdb_filepath, txt_filepath = file_utils.get_synonyms_vdb_txt_filepath(lang=lang)
@@ -516,7 +510,9 @@ def get_query_synonyms(keyword, lang=config.lang):
 
     # 向量召回
     keyword_vector = img_embed_manager.embed_text(
-        model=st.session_state.text_img_embed_model, text_query=st.session_state.search_content
+        model_text=st.session_state["emb_model_text"],
+        processor_text=st.session_state["emb_processor_text"],
+        text_query=st.session_state.search_content,
     )
     prob_res = st.session_state.synonyms_vdb.search_vector(vector=keyword_vector, k=3)
     word_res = [st.session_state.synonyms_words[i[0]] for i in prob_res]

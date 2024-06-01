@@ -37,14 +37,8 @@ videos_filepath_filter_num = len(videos_filepath_filter)
 def main():
     while True:
         subprocess.run("cls", shell=True)
-        if img_embed_manager.is_cuda_available:
-            print("√ Your device support CUDA acceleration.")
-            time_cost = 2  # 在使用 cuda 的情况下，每 900s 视频需要 2 分钟完成索引。其中拆 iframe 占了大部分时间
-        else:
-            print("X Your device seems not support CUDA acceleration, embedding performance might be slow.")
-            time_cost = 8
 
-        per_video_embedding_time = datetime.timedelta(minutes=time_cost) * config.record_seconds / 900
+        per_video_embedding_time = datetime.timedelta(minutes=1.5) * config.record_seconds / 900
         eta_process_all_video = videos_filepath_filter_num * per_video_embedding_time
 
         text_intro = f"""
@@ -74,15 +68,14 @@ Tip: During the indexing process, you can close the terminal window at any time 
         if user_input.lower() == "y":
             img_embed_manager.all_videofile_do_img_embedding_routine(video_queue_batch=videos_filepath_filter_num)
             break
-        try:
+        if user_input.isdigit():
             val = int(user_input)
             if 0 < val < videos_filepath_filter_num:
                 img_embed_manager.all_videofile_do_img_embedding_routine(video_queue_batch=val)
                 break
-        except ValueError:
-            pass
 
-    subprocess.run("cls", shell=True)
+    # subprocess.run("cls", shell=True)
+    print()
     print("指定的选项下视频已索引完成，你可以在 webui 使用自然语言描述来查找对应图像画面。")
 
 
