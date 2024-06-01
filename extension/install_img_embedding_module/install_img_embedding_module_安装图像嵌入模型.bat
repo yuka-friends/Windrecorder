@@ -14,7 +14,6 @@ echo   After installation, you can index and search for corresponding images usi
 echo   This functionality is powered by the unum-cloud/uform model.
 echo.
 echo   本向导将为捕风记录仪安装图像语义索引功能。安装完毕后，可以索引并用自然语言描述来搜索对应画面。
-echo   该功能由 unum-cloud/uform 模型提供支持。
 echo.
 echo   Enter Y and press Enter to install the image semantic recognition module.
 echo   输入 Y 后回车以安装图像语义识别模块。
