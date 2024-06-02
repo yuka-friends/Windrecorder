@@ -6,13 +6,13 @@
 
 ---
 
-Windrecorder is a memory search app by records everything on your screen in small size, to let you rewind what you have seen, query through OCR text or image description, and get activity statistics. All its capabilities run completely locally, without the need for an Internet connection or uploading any data, you should own all your data.**
+Windrecorder is a memory search app by records everything on your screen in small size, to let you rewind what you have seen, query through OCR text or image description, and get activity statistics. All its capabilities run completely locally, without the need for an Internet connection or uploading any data, you should own all your data.
 
 ![Windrecorder](https://github.com/yuka-friends/Windrecorder/blob/main/__assets__/product-preview-en.jpg)
 
 **Windrecorder currently does:**
 - Record multiple or single displays stably and continuously with a small file size;
-- Only index the changed scenes and update the OCR text, page title and other information to the database; automatically maintain the database, clean and compress the video when no one is using the computer;
+- Only index the changed scenes and update the OCR text, page title and other information to the database; Custom skip conditions (by window title, included text, or screen still time); Automatically maintain the database, clean and compress the video when no one is using the computer;
 - Complete webui interface, which can review the screen, conduct OCR/image semantics and other queries;
 - Provide data summaries such as activity statistics, word clouds, timelines, light boxes, scatter plots, etc.;
 - Supports multiple languages. Currently built-in: Simplified Chinese, English, and Japanese. Welcome to contribute multilingual translations and help us improve copywriting quality.
