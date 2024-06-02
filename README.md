@@ -41,8 +41,6 @@ Windrecorder is a memory search app by records everything on your screen in smal
 
      - You can open the folder you want to install, enter `cmd` in the path bar and press Enter, and you will be located into current directory in terminal, then paste the above command and press Enter to execute;
 
-     - Currently, if there are spaces in the installation path, an error may occur on app startup. [#110](https://github.com/yuka-friends/Windrecorder/issues/110)
-
 - Open `install_update.bat` in the directory to install dependencies and configure the app. If everything goes well, you can start using it!
 
 

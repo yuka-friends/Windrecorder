@@ -45,8 +45,6 @@
 
     - 可以打开想要安装的文件夹，在路径栏输入`cmd` 并回车，即可在终端定位到当前目录，将以上命令贴入、回车执行；
 
-    - 如果目录路径中包含空格，启动 app 时可能会失败；[#110](https://github.com/yuka-friends/Windrecorder/issues/110)
-
 - 打开目录下的 `install_update.bat` 进行工具安装与配置，顺利的话就可以开始使用了！
 
 
