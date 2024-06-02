@@ -15,12 +15,6 @@ from windrecorder.utils import get_text as _t
 
 logger = get_logger(__name__)
 
-if config.img_embed_module_install:
-    try:
-        from windrecorder import img_embed_manager
-    except ModuleNotFoundError:
-        config.set_and_save_config("img_embed_module_install", False)
-
 lang_map = utils.d_lang["lang_map"]
 
 
@@ -36,13 +30,6 @@ def set_config_lang(lang_name):
 
 
 def render():
-    # 初始化全局状态
-    if "is_cuda_available" not in st.session_state:
-        if config.img_embed_module_install:
-            st.session_state.is_cuda_available = img_embed_manager.is_cuda_available
-        else:
-            st.session_state.is_cuda_available = False
-
     st.markdown(_t("set_md_title"))
 
     col1b, col2b, col3b = st.columns([1, 0.5, 1.5])
@@ -106,9 +93,6 @@ def render():
                 update_db_btn = False
                 is_shutdown_pasocon_after_updatedDB = False
                 st.empty()
-
-        if not st.session_state.is_cuda_available and option_enable_img_embed_search:
-            st.warning(_t("set_text_img_emb_not_suppport_cuda"))
 
         index_reduce_same_content_at_different_time = st.checkbox(
             label=_t("set_checkbox_reduce_same_content_at_different_time"),

@@ -10,6 +10,8 @@ os.chdir("..")
 
 from windrecorder.config import config  # noqa: E402
 
+# ------------------------------------------------------------
+
 print("writing config...")
 config.set_and_save_config("img_embed_module_install", False)
 config.set_and_save_config("enable_img_embed_search", False)

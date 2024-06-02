@@ -37,9 +37,7 @@ poetry run pip uninstall torch
 poetry run pip uninstall torchaudio
 poetry run pip uninstall torchvision
 
-goto :finish
-
-python uninstall.py
+python _uninstall.py
 echo.
 echo   The uninstallation script has been completed. 已执行完卸载脚本。
 echo.

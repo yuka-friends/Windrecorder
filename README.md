@@ -118,3 +118,26 @@ Thanks to the following projects
 Vote **Windrecorder** on Product Hunt:
 
 <a href="https://www.producthunt.com/posts/windrecorder?utm_source=badge-featured&utm_medium=badge&utm_souce=badge-windrecorder" target="_blank"><img src="https://api.producthunt.com/widgets/embed-image/v1/featured.svg?post_id=441411&theme=neutral" alt="Windrecorder - search&#0032;&#0038;&#0032;rewind&#0032;everything&#0032;happened&#0032;on&#0032;your&#0032;screen | Product Hunt" style="width: 250px; height: 54px;" width="250" height="54" /></a>
+
+---
+
+### 🧠 In addition to Windrecorder, what other tools provide similar functions?
+
+Feel free to supplement, and hope you find the tool that suits you:
+
+- Windows:
+     - (commercial) https://timesnapper.com/
+     - (commercial) https://www.manictime.com/
+     - (commercial) https://apse.io/
+- Linux:
+     - (open source) https://github.com/apirrone/Memento
+- MacOS:
+     - (open source) https://github.com/jasonjmcghee/rem
+     - (commercial) https://screenmemory.app
+     - (commercial) https://www.rewind.ai/
+- Android:
+     - (free, in-app purchases) https://play.google.com/store/apps/details?id=io.github.mthli.snapseek
+
+For more research and discussion on HackerNews:
+- https://news.ycombinator.com/item?id=38787892
+- https://news.ycombinator.com/item?id=40105371

@@ -19,69 +19,57 @@ import shutil
 import faiss
 import numpy as np
 import pandas as pd
-import torch
-import uform
 from PIL import Image
 from tqdm import tqdm
+from uform import Modality, get_model
 
 from windrecorder import file_utils, utils
 from windrecorder.config import config
 from windrecorder.db_manager import db_manager
 from windrecorder.logger import get_logger
-from windrecorder.ocr_manager import extract_iframe
+from windrecorder.ocr_manager import crop_iframe, extract_iframe
 
 logger = get_logger(__name__)
 
-DEBUG_MODULE_NAME = "img_embed_manager: "
-
-is_cuda_available = torch.cuda.is_available()
-device = torch.device("cuda" if is_cuda_available else "cpu")
+MODEL_NAME = "unum-cloud/uform3-image-text-multilingual-base"
 
 
-def get_model(mode="cpu"):
-    """
-    加载模型
-    """
-    model = uform.get_model("unum-cloud/uform-vl-multilingual-v2")
-    if mode == "cpu":
-        logger.info(f"{DEBUG_MODULE_NAME} emb run on cpu.")
-    if mode == "cuda":
-        logger.info(f"{DEBUG_MODULE_NAME} emb run on cuda.")
-        if is_cuda_available:
-            model.to(device=device)
-        else:
-            logger.warning(f"{DEBUG_MODULE_NAME} cude not available, emb run on cpu.")
+def get_model_and_processor():
+    # model_text, model_image, processor_text, processor_image = get_model_and_processor()
+    processors, models = get_model("unum-cloud/uform3-image-text-multilingual-base")
+    model_text = models[Modality.TEXT_ENCODER]
+    model_image = models[Modality.IMAGE_ENCODER]
+    processor_text = processors[Modality.TEXT_ENCODER]
+    processor_image = processors[Modality.IMAGE_ENCODER]
 
-    return model
+    return model_text, model_image, processor_text, processor_image
 
 
-def embed_img(model: uform.models.VLM, img_filepath, is_cuda_available=is_cuda_available):
+def embed_img(model_image, processor_image, img_filepath):
     """
     将图像转为 embedding vector
     """
     image = Image.open(img_filepath)
-    image_data = model.preprocess_image(image)
-    if is_cuda_available:
-        image_features, image_embedding = model.encode_image(image_data.to(device=device), return_features=True)
-    else:
-        image_features, image_embedding = model.encode_image(image_data, return_features=True)
+    image_data = processor_image(image)
+    image_features, image_embedding = model_image.encode(image_data, return_features=True)
+
     return image_embedding
 
 
-def embed_text(model: uform.models.VLM, text_query, detach_numpy=True):
+def embed_text(model_text, processor_text, text_query, detach_numpy=True):
     """
     将文本转为 embedding vector
-    注意：model 必须运行在 cpu 模式下
 
     :param detach_numpy 是否预处理张量
     """
     # 对文本进行编码
-    text_data = model.preprocess_text(text_query)
-    text_features, text_embedding = model.encode_text(text_data, return_features=True)
+    text_data = processor_text(text_query)
+    text_features, text_embedding = model_text.encode(text_data, return_features=True)
 
     # 预处理张量
     if detach_numpy:
-        text_np = text_embedding.detach().cpu().numpy()
+        # text_np = text_embedding.detach().cpu().numpy()
+        text_np = text_embedding
         text_np = np.float32(text_np)
         faiss.normalize_L2(text_np)
         return text_np
@@ -127,7 +115,7 @@ class VectorDatabase:
         :param vector: 图像 embedding 后的向量
         :param rowid: sqlite 对应的 ROWID
         """
-        vector = vector.detach().cpu().numpy()  # 转换为numpy数组
+        # vector = vector.detach().cpu().numpy()  # 转换为numpy数组
         vector = np.float32(vector)  # 转换为float32类型的numpy数组
         faiss.normalize_L2(vector)  # 规范化向量，避免在搜索时出现错误的结果
 
@@ -155,7 +143,7 @@ def find_closest_iframe_img_dict_item(target: str, img_dict: dict, threshold=3):
     min_difference = float("inf")
 
     for key, value in img_dict.items():
-        difference = abs(int(value.split(".")[0]) - int(target.split(".")[0]))
+        difference = abs(int(value.replace("_cropped", "").split(".")[0]) - int(target.replace("_cropped", "").split(".")[0]))
         if difference <= threshold and difference < min_difference:
             closest_item = value
             min_difference = difference
@@ -163,33 +151,41 @@ def find_closest_iframe_img_dict_item(target: str, img_dict: dict, threshold=3):
     return closest_item
 
 
-def embed_img_in_iframe_by_rowid_dict(model: uform.models.VLM, img_dict: dict, img_dir_filepath, vdb: VectorDatabase):
+def embed_img_in_iframe_by_rowid_dict(model_image, processor_image, img_dict: dict, img_dir_filepath, vdb: VectorDatabase):
     """
     流程：根据 dict {sqlite_ROWID:图像文件名} 对应关系，
     将（i_frame 临时）文件夹中的对应图像转为对应的 embedding 并写入 vdb.index
     """
+    print(f"{img_dict=}")
     for rowid, img_filename in img_dict.items():
-        logger.debug(f"{DEBUG_MODULE_NAME} Embedding {rowid=}, {img_filename=}")
+        print(f"Embedding {rowid=}, {img_filename=}")
+        logger.debug(f"Embedding {rowid=}, {img_filename=}")
         img_filepath = os.path.join(img_dir_filepath, img_filename)
         if not os.path.exists(img_filepath):
+            print(f"not os.path.exists({img_filepath})")
+            logger.info(f"not os.path.exists({img_filepath})")
             # 提取的图像列表有时出于换了提取iframe方式、cv可能的随机性等缘故，可能无法保证与db过去记录的完全一致，在 embedding 时有则 embed，无则寻找最近的阈值、再无则跳过。但考虑到相似图像仍会出现在附近时间范围，结果应尚可。
             closest_img_filename = find_closest_iframe_img_dict_item(target=img_filename, img_dict=img_dict)
             if closest_img_filename is None:
+                print(f"{img_filepath} closest item not found, skipped.")
                 logger.info(f"{img_filepath} closest item not found, skipped.")
                 continue
             else:
+                print(f"{img_filepath} closest item found: {closest_img_filename}")
                 img_filepath = os.path.join(img_dir_filepath, closest_img_filename)
                 if not os.path.exists(img_filepath):
+                    print(f"{img_filepath} not existed, skipped.")
                     logger.info(f"{img_filepath} not existed, skipped.")
                     continue
-                logger.info(f"{img_filepath} replaced.")
-        vdb.add_vector(vector=embed_img(model, img_filepath), rowid=rowid)
+                logger.info(f"{img_filepath} replaced as {closest_img_filename}.")
+        vdb.add_vector(vector=embed_img(model_image, processor_image, img_filepath), rowid=rowid)
 
     vdb.save_to_file()
 
 
 def embed_vid_file(
-    model: uform.models.VLM,
+    model_image,
+    processor_image,
     vdb: VectorDatabase,
     vid_file_name,
     video_saved_dir=config.record_videos_dir_ud,
@@ -209,6 +205,7 @@ def embed_vid_file(
     for index, row in df_video_related.iterrows():
         img_db_recorded_dict[row["rowid"]] = row["picturefile_name"]
     if len(img_db_recorded_dict) == 0:
+        logger.info(f"{vid_file_name}: no record in OCR db")
         return False
 
     # 判断是否存在图片缓存文件，若无则提取
@@ -227,10 +224,16 @@ def embed_vid_file(
             pass
         file_utils.ensure_dir(iframe_sub_path)
         extract_iframe(video_file=vid_filepath, iframe_path=iframe_sub_path)
-        # FIXME 提取后需要对图像进行遮减处理？
+        crop_iframe(iframe_sub_path)  # 提取后需要对图像进行遮减处理。不确定这个策略
 
     # 因为是原子操作，不用添加回滚机制，完成了所有的索引才写入 faiss index db file
-    embed_img_in_iframe_by_rowid_dict(model=model, img_dict=img_db_recorded_dict, img_dir_filepath=iframe_sub_path, vdb=vdb)
+    embed_img_in_iframe_by_rowid_dict(
+        model_image=model_image,
+        processor_image=processor_image,
+        img_dict=img_db_recorded_dict,
+        img_dir_filepath=iframe_sub_path,
+        vdb=vdb,
+    )
     # 清理图像缓存
     try:
         shutil.rmtree(iframe_sub_path)
@@ -247,15 +250,13 @@ def all_videofile_do_img_embedding_routine(video_queue_batch=14):
     """
     video_process_count = 0
 
-    model = get_model(mode="cuda")
+    model_text, model_image, processor_text, processor_image = get_model_and_processor()
 
     video_dirs = os.listdir(config.record_videos_dir_ud)[::-1]  # 倒序列表，以先索引较新的视频
     for video_dir in tqdm(video_dirs):
         videos_names = os.listdir(os.path.join(config.record_videos_dir_ud, video_dir))[::-1]
         for video_name in tqdm(videos_names):
-            logger.debug(
-                f"{DEBUG_MODULE_NAME} img_embed({video_process_count}/{video_queue_batch}): embedding {video_dir}, {video_name}"
-            )
+            logger.debug(f"img_embed({video_process_count}/{video_queue_batch}): embedding {video_dir}, {video_name}")
             # 确认视频已被 OCR 索引，且没含有 -IMGEMB 标签
             # 如果视频被压缩了，目前跳过；TODO 未来如果使用时间戳手段提取、或者可以接受iframe提取的时域误差，则不需要这条规则了
             if "-OCRED" not in video_name:
@@ -264,7 +265,7 @@ def all_videofile_do_img_embedding_routine(video_queue_batch=14):
                 continue
             vdb = VectorDatabase(vdb_filename=get_vdb_filename_via_video_filename(video_name))
             print(f"embedding {video_name}")
-            embed_vid_file(model=model, vdb=vdb, vid_file_name=video_name)
+            embed_vid_file(model_image=model_image, processor_image=processor_image, vdb=vdb, vid_file_name=video_name)
             video_process_count += 1
             if video_process_count > video_queue_batch:
                 break
@@ -306,7 +307,7 @@ def query_vector_in_img_vdbs(vector, start_datetime, end_datetime):
 
     df_list = []
     for vdb_filename in vdb_filenames:
-        logger.info(f"{DEBUG_MODULE_NAME} recalling {vdb_filename}")
+        logger.info(f"recalling {vdb_filename}")
         vdb = VectorDatabase(vdb_filename=vdb_filename)
         res_tuple_list = vdb.search_vector(vector, k=config.img_embed_search_recall_result_per_db)
         res_tuple_list = [t for t in res_tuple_list if t[0] != -1]  # 相似度结果不足时，会以 -1 的 index 填充，在进 sqlite 搜索前需过滤
@@ -328,6 +329,7 @@ def text_embedding_all_sqlitedb_ocr_text():
     """
     流程：嵌入 sqlite 数据库中的 ocr text
     """
+    # FIXME
     # 读取所有rowid，维护一个rowid表。通过维护ROWID判断有无被嵌入，有则跳过
     # 因为嵌入速度很快，所以可以一次对所有sqlite完成嵌入。整个表完成嵌入后，给一个标志（区分是否为当月、还有更新可能性
 
@@ -345,15 +347,18 @@ if __name__ == "__main__":
         test_dataset_dict[len(test_dataset_dict)] = item
 
     # 2. 将图片嵌入为向量
-    model = get_model(mode="cuda")
+    model_text, model_image, processor_text, processor_image = get_model_and_processor()
     vdb = VectorDatabase(vdb_filename="test.index", db_dir="")
     vector = embed_img_in_iframe_by_rowid_dict(
-        model=model, img_dict=test_dataset_dict, img_dir_filepath=img_dataset_filepath, vdb=vdb
+        model_image=model_image,
+        processor_image=processor_image,
+        img_dict=test_dataset_dict,
+        img_dir_filepath=img_dataset_filepath,
+        vdb=vdb,
     )
 
     # 3. 使用语义查询 ROWID / 图片
-    model = get_model("cpu")
-    text_query_vector = embed_text(model=model, text_query="棕色头发的人")
+    text_query_vector = embed_text(model_text=model_text, processor_text=processor_text, text_query="棕色头发的人")
     res = vdb.search_vector(vector=text_query_vector)
     res_parse = []
     for item in res:
