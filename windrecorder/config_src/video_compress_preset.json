@@ -11,6 +11,10 @@
         "nvenc": {
             "encoder": "hevc_nvenc",
             "crf_flag": "-cq"
+        },
+        "amf": {
+            "encoder": "hevc_amf",
+            "crf_flag": "-cq"
         }
     },
     "x264": {
@@ -25,12 +29,28 @@
         "nvenc": {
             "encoder": "h264_nvenc",
             "crf_flag": "-cq"
+        },
+        "amf": {
+            "encoder": "h264_amf",
+            "crf_flag": "-cq"
         }
     },
-    "av1": {
+   "av1": {
         "cpu": {
             "encoder": "libaom-av1",
             "crf_flag": "-cpu-used 5 -row-mt 1 -tile-columns 2 -tile-rows 2 -crf"
+        },
+        "qsv": {
+            "encoder": "av1_qsv",
+            "crf_flag": "-global_quality:v"
+        },
+        "nvenc": {
+            "encoder": "av1_nvenc",
+            "crf_flag": "-cq"
+        },
+        "amf": {
+            "encoder": "av1_amf",
+            "crf_flag": "-cq"
         }
     }
 }
