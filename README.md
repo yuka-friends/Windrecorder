@@ -19,13 +19,13 @@ Windrecorder is a memory search app by records everything on your screen in smal
 - _coming soon... pay attention to our PR :)_
 
 **Windrecorder current limitations:**
-- Only supports recording for the main display, multi-display support is still under development;
 - FFmpeg may occupy a large amount of memory in some cases;
+- Playback may be delayed up to 15 minutes;
 
 ---
 
 > [!WARNING]
-> This project is still in the early stages of development, and you may encounter some minor problems in experience and use, feel free to submit issue feedback, follow updates, and initiate discussions or roadmap in [Discussions](https://github.com/yuka-friends/Windrecorder/discussions).You are also welcome to help us optimize and build the project, submit PR/review.
+> This project is still in the early stages of development, and you may encounter some minor problems in experience and use, feel free to submit issue feedback, follow updates, and initiate discussions or roadmap in [Discussions](https://github.com/yuka-friends/Windrecorder/discussions). You are also welcome to help us optimize and build the project, submit PR / code review.
 
 # 🦝 Installation
 
@@ -48,11 +48,11 @@ Windrecorder is a memory search app by records everything on your screen in smal
 
 # 🦝 How to use
 
-- Open `start_app.bat` in the directory, the tool will run in the system tray and be used through the right-click menu;
-- All data (video, database, statistical information) will be stored in `userdata` directory in Windrecorder. If you want to copy or move the app location (for example, if you change the computer), you can delete `.venv` in the directory and moved, then re-run `install_update.bat` to install the virtual environment to use it;
+- Open `start_app.bat` in the directory, the tool will run on the system tray and be used through the right-click menu;
+- All data (video, database, statistical information) will be stored in `userdata` directory under Windrecorder. If you want to copy or move the app location (for example, if you change the computer), you can delete `.venv` in the directory and moved, then re-run `install_update.bat` to install the virtual environment to use it;
 
 > [!TIP]
-> Best practice: Set up auto-start in webui to record everything without any fuss.
+> Best practice: Set `Run on system startup` in webui to record everything without any fuss.
 >
 > **Recording will be automatically paused when there is no change in the picture or the screen is sleeping. When the computer is idle and no one is using it, the tool will automatically maintain the database, compress, and clean up expired videos.**
 >
@@ -79,7 +79,7 @@ When recording is started, the Windrecorder will record each 15 minutes of video
 
 Q: The mouse pointer flicker during recording
 
-- A: It's a Windows historical issues, you can try [this post](https://stackoverflow.com/questions/34023630/how-to-avoid-mouse-pointer-flicker-when-capture-a-window-by-ffmpeg ) method to solve.
+- A: It's a Windows historical issues, you can try [this post](https://stackoverflow.com/questions/34023630/how-to-avoid-mouse-pointer-flicker-when-capture-a-window-by-ffmpeg ) method to solve. TL;DR:
      - Use any hex editor (such as [HxD](https://mh-nexus.de/en/downloads.php?product=HxD20)) to open `avdevice-XX.dll` in the previously downloaded `FFmpeg/bin`;
      - Search for hex code `20 00 cc 40` and change the last two digits of `40` to `00`;
      - Save the file;
