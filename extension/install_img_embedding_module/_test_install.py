@@ -51,7 +51,9 @@ except ModuleNotFoundError:
 print(
     """
    提示：图像嵌入模块仍然是一项实验性功能，目前由 unum-cloud/uform uform3-image-text-multilingual-base 模型驱动，可能存在嵌入、识别与召回效果不佳问题。
+   安装完毕后，需重启 捕风记录仪 以生效。
 
    Tip: The image embedding module is still an experimental feature and is currently driven by the unum-cloud/uform uform3-image-text-multilingual-base model. It may have poor embedding, recognition, and recall effects.
+   Restart Windrecorder app to apply installation.
 """
 )

@@ -73,7 +73,7 @@ class _DBManager:
             now = datetime.datetime.now()
             now_name = now.strftime("%Y-%m-%d_%H-%M-%S")
             now_time = int(utils.date_to_seconds(now_name))
-            # default_base64 = "iVBORw0KGgoAAAANSUhEUgAAAEYAAAAnCAYAAACyhj57AAAAoUlEQVRoBe3BAQEAAAwBMCrpp6RCHkCFb7RSvEErxRu0UrxBK8UbtFK8QSvFG7RSvEErxRu0UrxBK8UbtFK8QSvFG7RSvEErxRu0UrxBK8UbtFK8QSvFG7RSvEErxRu0UrxBK8UbtFK8QSvFG7RSvEErxRu0UrxBK8UbtFK8QSvFG7RSvEErxRu0UrxBK8UbtFK8QSvFG7RSvEErxRu0UrxxUOdhqPjngTYAAAAASUVORK5CYII="
+            default_base64 = "iVBORw0KGgoAAAANSUhEUgAAAEYAAAAnCAYAAACyhj57AAAAoUlEQVRoBe3BAQEAAAwBMCrpp6RCHkCFb7RSvEErxRu0UrxBK8UbtFK8QSvFG7RSvEErxRu0UrxBK8UbtFK8QSvFG7RSvEErxRu0UrxBK8UbtFK8QSvFG7RSvEErxRu0UrxBK8UbtFK8QSvFG7RSvEErxRu0UrxBK8UbtFK8QSvFG7RSvEErxRu0UrxBK8UbtFK8QSvFG7RSvEErxRu0UrxxUOdhqPjngTYAAAAASUVORK5CYII="
             self.db_update_data(
                 now_name + ".mp4",
                 "0.jpg",
@@ -81,7 +81,7 @@ class _DBManager:
                 "Welcome! Go to Setting and Update your screen recording files.",
                 False,
                 False,
-                None,
+                default_base64,
                 None,
             )
         else:
@@ -433,8 +433,9 @@ class _DBManager:
             axis=1,
         )
         df["timestamp"] = df.apply(lambda row: utils.seconds_to_date_dayHMS(row["videofile_time"]), axis=1)
-        if "data:image/png;base64," not in df["thumbnail"].iloc[0]:
-            df["thumbnail"] = "data:image/png;base64," + df["thumbnail"]
+        if df["thumbnail"].iloc[0] is not None:
+            if "data:image/png;base64," not in df["thumbnail"].iloc[0]:
+                df["thumbnail"] = "data:image/png;base64," + df["thumbnail"]
 
         # 磁盘上有无对应视频检测
         cache_videofile_ondisk_str = ""
