@@ -2,8 +2,14 @@
 
 ## 0.0.14
 > 2024-06-01
-- 升级了图像嵌入模型到 unum-cloud/uform v3，模型不再依赖庞大的 torch 环境，而使用更加节能轻便的 ONNX 进行推理，速度、能耗与召回质量均得到提升。如果你之前安装了旧版本，可通过 extension/install_img_embedding_module 中的脚本安装新版、并对旧数据进行回滚以重新索引。
+- 升级了图像嵌入模型到 unum-cloud/uform v3，模型不再依赖庞大的 torch 环境，而使用更加节能轻便的 ONNX 进行推理，速度、能耗与召回质量均得到提升。如果你之前安装了旧版本，可通过 extension/install_img_embedding_module 中的脚本安装新版、并对旧数据进行回滚以重新索引；
+- 压缩视频：添加 AMF（AMD Advanced Media Framework）编码器选项；(@arrio464)
+
 - Upgraded the image embedding model to unum-cloud/uform v3. The model no longer relies on the huge torch environment, but uses the more energy-efficient and lightweight ONNX for reasoning, which improves speed, energy consumption, and recall quality. If you have installed an old version before, you can install the new version through the script in extension/install_img_embedding_module and roll back the old data to re-index.
+- Compressed video: added AMF (AMD Advanced Media Framework) encoder option;(@arrio464)
+
+### Fixed
+- bug: 当试图列出每月第一天的所有数据时，会因为首条记录预览图为 None 而阻塞报错；When trying to list all data on the first day of each month, an error will be reported because the preview image of the first record is None;
 
 ## 0.0.13
 > 2024-05-18
@@ -18,18 +24,19 @@
 ### Fixed
 - bug: 当 OCR 支持语言找不到对应测试集时，将会阻塞 onboarding 向导；When the OCR supported language cannot find the corresponding test set, the onboarding wizard will be blocked;
 - 添加更多尝试隐藏 CLI 窗口次数重试，以应对未解锁屏幕时隐藏失败；Added more retries to try to hide the CLI window in case hiding fails when the screen is not unlocked;
+- Fix: Startup path now supports spaces;(@zetaloop)
 
 ## 0.0.11
 > 2024-04-19
 
 - 支持多显示器与单个显示器录制；
-- 添加了录制时的编码选项（cpu_h264, cpu_h265, NVIDIA_h265, AMD_h265, SVT-AV1）；
+- 添加了录制时的编码选项（cpu_h264, cpu_h265, NVIDIA_h265, AMD_h265, SVT-AV1）；(@myshzzx)
 - 优化了索引时比较图像的性能；
 - 索引视频切片时，如果有相同内容显示在不同时间点，可以只记录第一次出现、而不重复记录；
 - 优化 webui 底部统计信息缓存机制，在数据多的情况下获得更快加载体验；
 
 - Supports multi-monitor and single-monitor recording;
-- Added encoding options when recording (cpu_h264, cpu_h265, NVIDIA_h265, AMD_h265, SVT-AV1);
+- Added encoding options when recording (cpu_h264, cpu_h265, NVIDIA_h265, AMD_h265, SVT-AV1);(@myshzzx)
 - Optimized the performance of comparing images during indexing;
 - When indexing video slices, if the same content is displayed at different points in time, only the first occurrence can be recorded without repeated recording;
 - Optimize the statistical information caching mechanism at webui footer to obtain a faster loading experience when there is a lot of data;
