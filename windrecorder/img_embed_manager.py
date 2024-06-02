@@ -27,7 +27,7 @@ from windrecorder import file_utils, utils
 from windrecorder.config import config
 from windrecorder.db_manager import db_manager
 from windrecorder.logger import get_logger
-from windrecorder.ocr_manager import extract_iframe
+from windrecorder.ocr_manager import crop_iframe, extract_iframe
 
 logger = get_logger(__name__)
 
@@ -35,6 +35,7 @@ MODEL_NAME = "unum-cloud/uform3-image-text-multilingual-base"
 
 
 def get_model_and_processor():
+    # model_text, model_image, processor_text, processor_image = get_model_and_processor()
     processors, models = get_model("unum-cloud/uform3-image-text-multilingual-base")
     model_text = models[Modality.TEXT_ENCODER]
     model_image = models[Modality.IMAGE_ENCODER]
@@ -155,21 +156,28 @@ def embed_img_in_iframe_by_rowid_dict(model_image, processor_image, img_dict: di
     流程：根据 dict {sqlite_ROWID:图像文件名} 对应关系，
     将（i_frame 临时）文件夹中的对应图像转为对应的 embedding 并写入 vdb.index
     """
+    print(f"{img_dict=}")
     for rowid, img_filename in img_dict.items():
+        print(f"Embedding {rowid=}, {img_filename=}")
         logger.debug(f"Embedding {rowid=}, {img_filename=}")
         img_filepath = os.path.join(img_dir_filepath, img_filename)
         if not os.path.exists(img_filepath):
+            print(f"not os.path.exists({img_filepath})")
+            logger.info(f"not os.path.exists({img_filepath})")
             # 提取的图像列表有时出于换了提取iframe方式、cv可能的随机性等缘故，可能无法保证与db过去记录的完全一致，在 embedding 时有则 embed，无则寻找最近的阈值、再无则跳过。但考虑到相似图像仍会出现在附近时间范围，结果应尚可。
             closest_img_filename = find_closest_iframe_img_dict_item(target=img_filename, img_dict=img_dict)
             if closest_img_filename is None:
+                print(f"{img_filepath} closest item not found, skipped.")
                 logger.info(f"{img_filepath} closest item not found, skipped.")
                 continue
             else:
+                print(f"{img_filepath} closest item found: {closest_img_filename}")
                 img_filepath = os.path.join(img_dir_filepath, closest_img_filename)
                 if not os.path.exists(img_filepath):
+                    print(f"{img_filepath} not existed, skipped.")
                     logger.info(f"{img_filepath} not existed, skipped.")
                     continue
-                logger.info(f"{img_filepath} replaced.")
+                logger.info(f"{img_filepath} replaced as {closest_img_filename}.")
         vdb.add_vector(vector=embed_img(model_image, processor_image, img_filepath), rowid=rowid)
 
     vdb.save_to_file()
@@ -197,6 +205,7 @@ def embed_vid_file(
     for index, row in df_video_related.iterrows():
         img_db_recorded_dict[row["rowid"]] = row["picturefile_name"]
     if len(img_db_recorded_dict) == 0:
+        logger.info(f"{vid_file_name}: no record in OCR db")
         return False
 
     # 判断是否存在图片缓存文件，若无则提取
@@ -215,7 +224,7 @@ def embed_vid_file(
             pass
         file_utils.ensure_dir(iframe_sub_path)
         extract_iframe(video_file=vid_filepath, iframe_path=iframe_sub_path)
-        # FIXME 提取后需要对图像进行遮减处理？
+        crop_iframe(iframe_sub_path)  # 提取后需要对图像进行遮减处理。不确定这个策略
 
     # 因为是原子操作，不用添加回滚机制，完成了所有的索引才写入 faiss index db file
     embed_img_in_iframe_by_rowid_dict(

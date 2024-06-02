@@ -10,6 +10,8 @@ os.chdir("..")
 
 from windrecorder.config import config  # noqa: E402
 
+# ------------------------------------------------------------
+
 
 def set_config_module_install(state: bool):
     config.set_and_save_config("img_embed_module_install", state)
@@ -45,3 +47,11 @@ except ModuleNotFoundError:
         "   uform was not successfully installed. If the installation still fails after retrying, please copy the above error message and send it to GitHub issue for feedback."
     )
     set_config_module_install(False)
+
+print(
+    """
+   提示：图像嵌入模块仍然是一项实验性功能，目前由 unum-cloud/uform uform3-image-text-multilingual-base 模型驱动，可能存在嵌入、识别与召回效果不佳问题。
+
+   Tip: The image embedding module is still an experimental feature and is currently driven by the unum-cloud/uform uform3-image-text-multilingual-base model. It may have poor embedding, recognition, and recall effects.
+"""
+)
