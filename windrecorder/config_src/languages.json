@@ -123,6 +123,7 @@
         "rs_text_record_help": "Choose h265/AV1 to get better image quality in the same file size, but the performance may be affected during recording and playback. (If supported, hardware acceleration will be automatically enabled)",
         "rs_text_record_bitrate": "Recording Bitrate (kbps)",
         "rs_text_bitrate_help": "Video bitrate refers to the transmission speed or processing speed of video data, which will affect the video quality and file size. Specifically, the higher the bitrate, the better the video quality, but the corresponding file The size will also be larger. On the contrary, if the bit rate is lower, the video quality may be blurred or distorted even at the same resolution. In order to keep the picture size smaller, the default is 200kbps.",
+        "rs_text_hevc_tips": "To playback HEVC (h265) videos on Microsoft Edge / Firefox, you may need to install the HEVC video extension: https://apps.microsoft.com/detail/9NMZLZ57R3T7",
 
         "set_md_title": "### ⚙️ Settings",
         "set_md_index_db": "#### Database Index\n",
@@ -358,6 +359,7 @@
         "rs_text_record_help": "选择 h265/AV1 可以在同等体积下获得更好的画质，但在录制与回放时可能性能较差。（若支持，将会自动启用硬件加速）",
         "rs_text_record_bitrate": "录制比特率（kbps）",
         "rs_text_bitrate_help": "视频比特率是指视频数据的传输速度或处理速度，会影响视频的画质和文件的大小。具体来说，比特率越高，视频的画质越好，但相应的文件大小也会越大。相反，如果比特率较低，则即使在同样的分辨率下，视频的画质可能就会出现模糊或者失真。为了将画面保持在较小体积，默认为 200kbps。",
+        "rs_text_hevc_tips": "在 Microsoft Edge / Firefox 等浏览器上回放 HEVC (h265) 视频，可能需要先安装 HEVC 视频扩展：https://apps.microsoft.com/detail/9NMZLZ57R3T7",
         
         "set_md_title": "### ⚙️ 设置",
         "set_md_index_db": "#### 数据库索引\n",
@@ -593,6 +595,7 @@
         "rs_text_record_help": "同じボリュームでより良い画質を得るには h265/AV1 を選択してください。ただし、録音および再生時のパフォーマンスが低下する可能性があります。(サポートされている場合は、ハードウェア アクセラレーションが自動的に有効になります)",
         "rs_text_record_bitrate": "録音ビットレート(kbps)",
         "rs_text_bitrate_help": "ビデオのビットレートとは、ビデオ データの送信速度または処理速度を指し、ビデオの品質とファイル サイズに影響します。具体的には、ビットレートが高いほどビデオの品質は向上しますが、対応するファイルのサイズも異なります。逆に、ビットレートが低い場合は、同じ解像度でもビデオ品質がぼやけたり歪んだりする可能性があります。画像サイズを小さくするために、デフォルトは 200kbps です。",
+        "rs_text_hevc_tips": "Microsoft Edge / Firefox などのブラウザーで HEVC (h265) ビデオを再生するには、最初に HEVC ビデオ拡張機能をインストールする必要がある場合があります: https://apps.microsoft.com/detail/9NMZLZ57R3T7",
 
         "set_md_title": "### ⚙️ 設定",
         "set_md_index_db": "#### データベースインデックス\n",

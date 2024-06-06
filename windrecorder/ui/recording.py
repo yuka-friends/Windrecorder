@@ -98,6 +98,8 @@ def render():
                     max_value=10000,
                     help=_t("rs_text_bitrate_help"),
                 )
+            if "265" in record_encoder:
+                st.warning(_t("rs_text_hevc_tips"), icon="🌚")
 
             estimate_display_cnt = (
                 1
@@ -188,6 +190,8 @@ def render():
                     max_value=50,
                     help=_t("rs_text_compress_CRF_help"),
                 )
+            if "265" in video_compress_encoder:
+                st.warning(_t("rs_text_hevc_tips"), icon="🌚")
 
             if st.button(_t("rs_btn_encode_benchmark")):
                 with st.spinner(_t("rs_text_encode_benchmark_loading")):

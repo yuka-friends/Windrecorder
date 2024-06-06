@@ -4,9 +4,11 @@
 > 2024-06-01
 - 升级了图像嵌入模型到 unum-cloud/uform v3，模型不再依赖庞大的 torch 环境，而使用更加节能轻便的 ONNX 进行推理，速度、能耗与召回质量均得到提升。如果你之前安装了旧版本，可通过 extension/install_img_embedding_module 中的脚本先卸载旧版、再安装新版、并可以对旧数据进行回滚以重新索引；
 - 压缩视频：添加 AMF（AMD Advanced Media Framework）编码器选项；(@arrio464)
+- 添加针对 Microsoft Edge / Firefox 的 h265 解码提示；
 
 - Upgraded the image embedding model to unum-cloud/uform v3. The model no longer relies on the huge torch environment, but uses the more energy-efficient and lightweight ONNX for reasoning, which improves speed, energy consumption, and recall quality. If you have installed an old version before, you can use the script in extension/install_img_embedding_module to uninstall the old version first, then install the new version, and roll back the old data to re-index.
 - Compressed video: added AMF (AMD Advanced Media Framework) encoder option;(@arrio464)
+- Added h265 decoding tips for Microsoft Edge/Firefox;
 
 ### Fixed
 - bug: 当试图列出每月第一天的所有数据时，会因为首条记录预览图为 None 而阻塞报错；When trying to list all data on the first day of each month, an error will be reported because the preview image of the first record is None;
