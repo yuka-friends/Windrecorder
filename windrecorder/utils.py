@@ -658,7 +658,11 @@ def extract_datetime_from_db_backup_filename(db_file_name, user_name=config.user
 
 # 判断是否已锁屏
 def is_screen_locked():
-    return ctypes.windll.User32.GetForegroundWindow() == 0
+    # return ctypes.windll.User32.GetForegroundWindow() == 0
+    for proc in psutil.process_iter(["name"]):
+        if proc.info["name"] == "LogonUI.exe":
+            return True  # locked
+    return False  # not lock
 
 
 # 判断是否正在休眠

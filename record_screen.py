@@ -112,8 +112,10 @@ def continuously_record_screen():
 
     while True:
         # 主循环过程
-        if monitor_idle_minutes > config.screentime_not_change_to_pause_record or utils.is_str_contain_list_word(
-            record_wintitle.get_current_wintitle(), config.exclude_words
+        if (
+            monitor_idle_minutes > config.screentime_not_change_to_pause_record
+            or utils.is_str_contain_list_word(record_wintitle.get_current_wintitle(), config.exclude_words)
+            or utils.is_screen_locked()
         ):
             logger.info("Windrecorder: Screen content not updated, stop recording.")
             subprocess.run("color 60", shell=True)  # 设定背景色为不活动
