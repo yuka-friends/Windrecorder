@@ -123,6 +123,8 @@ Vote **Windrecorder** on Product Hunt:
 
 Feel free to supplement, and hope you find the tool that suits you:
 
+- Cross-platform Desktop:
+     - (open source) https://github.com/openrecall/openrecall
 - Windows:
      - (commercial) https://timesnapper.com/
      - (commercial) https://www.manictime.com/

@@ -125,8 +125,10 @@ Q: Windows.Media.Ocr.Cli OCR 不可用/识别率过低
 
 ### 🧠 除了 捕风记录仪，还有哪些工具提供了类似的功能？
 
-欢迎补充，并希望你能找到适合的工具：
+欢迎补充，希望你能找到适合的工具：
 
+- 跨平台桌面端:
+     - (开源) https://github.com/openrecall/openrecall
 - Windows:
     - （商业付费）https://timesnapper.com/
     - （商业付费）https://www.manictime.com/
