@@ -1,5 +1,11 @@
 # Changelog 更新日志
 
+## 0.0.15
+> 2024-06-09
+
+### Fixed
+- bug: 修复了锁屏检测在 Windows 11 上不起作用；Fixed lock screen detection not working on Windows 11;
+
 ## 0.0.14
 > 2024-06-01
 - 升级了图像嵌入模型到 unum-cloud/uform v3，模型不再依赖庞大的 torch 环境，而使用更加节能轻便的 ONNX 进行推理，速度、能耗与召回质量均得到提升。如果你之前安装了旧版本，可通过 extension/install_img_embedding_module 中的脚本先卸载旧版、再安装新版、并可以对旧数据进行回滚以重新索引；
