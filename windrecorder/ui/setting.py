@@ -283,7 +283,7 @@ def render():
         lang_index = lang_selection.index(lang_map[config.lang])
 
         language_option = st.selectbox(
-            "🌎 Interface Language / 更改显示语言 / 表示言語を変更する",
+            "🌎 Interface Language / 更改显示语言 / 表示言語を変更する / Язык интерфейса",
             lang_selection,
             index=lang_index,
         )
@@ -291,7 +291,7 @@ def render():
         st.divider()
 
         if st.button(
-            "Save and Apple All Change / 保存并应用所有更改",
+            "Save and Apply All Changes / 保存并应用所有更改 / Сохранить изменения",
             type="primary",
             key="SaveBtnGeneral",
         ):

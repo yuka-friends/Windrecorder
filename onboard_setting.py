@@ -20,6 +20,7 @@ def check_is_running():
             subprocess.run("cls", shell=True)
             print("Windrecorder seems to be running, please try to close it and retry.")
             print("捕风记录仪似乎正在运行，请尝试关闭后重试。")
+            print("Windrecorder запущен. Пожалуйста закройте его и повторите попытку.")
             print()
             print(f"PID: {check_pid}")
             sys.exit()
@@ -70,8 +71,8 @@ def divider():
 # 画抬头的
 def print_header(step=1, toast=""):
     subprocess.run("cls", shell=True)
-    print(f"Weclome to Windrecorder {__version__} | 欢迎使用捕风记录仪\n")
-    print("Thanks for downloading! This Quick Wizard will help you set it up. \n感谢下载使用！本向导将协助你完成基础配置项。不用担心，所有选项之后都可以再次调整。")
+    print(f"Weclome to Windrecorder {__version__} | 欢迎使用捕风记录仪 | Добро пожаловать в Windrecorder\n")
+    print("Thanks for downloading! This Quick Wizard will help you set it up. \n感谢下载使用！本向导将协助你完成基础配置项。不用担心，所有选项之后都可以再次调整。\n Спасибо за загрузку! Эта программа поможет вам настроить Windrecorder.")
     divider()
     print(step, "/", ALLSTEPS, toast)
     print("\n")
@@ -94,12 +95,14 @@ def set_lang():
         print_header(step=1)
         print("First, please choose your interface language. (Enter the number option and press Enter to confirm.)")
         print("首先，请设置你的界面语言。（输入数字项后回车确认）")
+        print("Сперва, выберете язык интерфейса. (Выберите любою цифру из списка и нажмите Enter чтобы продолжить.)")
         divider()
         print(
             f"""
             1. English {config_indicator(config.lang,"en")}
             2. 简体中文 {config_indicator(config.lang,"sc")}
             3. 日本語 {config_indicator(config.lang,"ja")}
+            4. Русский{config_indicator(config.lang,"ru")}
             """
         )
         input_lang_num = input("> ")
@@ -115,6 +118,10 @@ def set_lang():
         if input_lang_num == "3":
             config.set_and_save_config("lang", "ja")
             print("インターフェース言語は日本語に設定されています。")
+            break
+        if input_lang_num == "4":
+            config.set_and_save_config("lang", "ru")
+            print("Язык интерфейса переключён на русский.")
             break
         else:
             print(_t("qs_la_text_same_as_previous"))
