@@ -291,7 +291,9 @@ def render():
         st.divider()
 
         if st.button(
+
             "Save and Apply All Changes / 保存并应用所有更改 / Сохранить изменения",
+
             type="primary",
             key="SaveBtnGeneral",
         ):
