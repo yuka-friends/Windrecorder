@@ -2,6 +2,8 @@
 import os
 import shutil
 
+from send2trash import send2trash
+
 from windrecorder import file_utils, utils
 from windrecorder.config import config
 
@@ -33,7 +35,11 @@ def main():
 
     if os.path.exists("userdata\\db"):
         if file_utils.get_dir_size("userdata\\db") < 1024 * 1024:
-            shutil.rmtree("userdata\\db")
+            # shutil.rmtree("userdata\\db")
+            try:
+                send2trash("userdata\\db")
+            except Exception as e:
+                print(e)
 
     move_filepath_list = [
         "videos",
