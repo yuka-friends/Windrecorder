@@ -595,7 +595,14 @@ with open(os.path.join(config.config_src_dir, "languages.json"), encoding="utf-8
 
 
 def get_text(text_key):
-    return d_lang[config.lang].get(text_key, "Text here not found in i18n, please feedback to contributors.")
+    fallback_copy = "Text here not found in i18n, please feedback to contributors."
+    if text_key in d_lang[config.lang]:
+        return d_lang[config.lang].get(text_key, fallback_copy)
+    else:
+        if text_key in d_lang["en"]:
+            return d_lang["en"].get(text_key, fallback_copy)
+        else:
+            return fallback_copy
 
 
 # 查找db字典中最早一项的key值

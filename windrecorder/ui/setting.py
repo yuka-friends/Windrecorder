@@ -291,7 +291,9 @@ def render():
         st.divider()
 
         if st.button(
-            "Save and Apply All Changes / 保存并应用所有更改",
+            "Save and Apply All Changes / " + _t("text_apply_changes")
+            if config.lang != "en"
+            else "Save and Apply All Changes",
             type="primary",
             key="SaveBtnGeneral",
         ):
