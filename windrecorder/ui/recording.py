@@ -223,7 +223,13 @@ def render():
 
         st.divider()
 
-        if st.button("Save and Apple All Change / 保存并应用所有更改", type="primary", key="SaveBtnRecord"):
+        if st.button(
+            "Save and Apply All Changes / " + _t("text_apply_changes")
+            if config.lang != "en"
+            else "Save and Apply All Changes",
+            type="primary",
+            key="SaveBtnRecord",
+        ):
             if display_record_strategy is not None:
                 config.set_and_save_config("multi_display_record_strategy", record_strategy_config[display_record_strategy])
             if display_record_selection is None:
