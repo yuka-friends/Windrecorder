@@ -5,6 +5,7 @@
 
 ### Fixed
 - bug: 修复了锁屏检测在 Windows 11 上不起作用；Fixed lock screen detection not working on Windows 11;
+- 优化 i18n 逻辑；
 
 ## 0.0.14
 > 2024-06-01
