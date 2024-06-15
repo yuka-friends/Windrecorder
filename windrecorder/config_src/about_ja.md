@@ -7,3 +7,7 @@
 This language is translated using Google translate. Please help us improve the quality of multilingual translations.
 
 このツールが気に入りましたか？**長瀬有花 / YUKA NAGASE** の優しい癒しの音楽をサポートするために、[YouTube](https://www.youtube.com/channel/UCf-PcSHzYAtfcoiBr5C9DZA) や[ストリーミング音楽プラットフォーム](https://stlink.to/YUKA-NAGASE_DSP_YT) で応援していただけると嬉しいです。ありがとうございます！🥰🧡
+
+---
+
+<p style="color: rgba(0, 0, 0, 0.5)">Multilingual Contributors: <a href="https://translate.google.com">Google Translation</a> | Feel free to help us improve multilingual copy text quality.</p>
