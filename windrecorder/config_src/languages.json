@@ -98,7 +98,7 @@
         "rs_text_ocr_manual_update": "Manual index only",
         "rs_text_ocr_auto_update": "Automatically index when the video clip is recorded (Recommended)",
         "rs_selectbox_ocr_strategy": "OCR Indexing Strategy",
-        "rs_input_vid_store_time_help": "0 for never delete. Even if a video file has been cleaned, the indexed data will still be retained and can be retrieved, it will just be missing the footage.",
+        "rs_input_vid_store_time_help": "0 for never delete. Even if video file has been cleaned, the indexed data will still be retained and can be retrieved, it will just be missing the footage.",
         "rs_input_vid_compress_time": "Compress original video after days",
         "rs_input_vid_compress_time_help": "0 for never compress.",
         "rs_selectbox_compress_ratio": "Picture compression ratio",
