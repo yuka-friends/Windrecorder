@@ -66,15 +66,6 @@ def render():
                 index=ocr_lang_index,
             )
 
-            if config.img_embed_module_install:
-                option_enable_img_embed_search = st.checkbox(
-                    _t("set_checkbox_enable_img_emb"),
-                    help=_t("set_text_enable_img_emb_help"),
-                    value=config.enable_img_embed_search,
-                )
-            else:
-                option_enable_img_embed_search = False
-
         with col2:
             if config.OCR_index_strategy == 0:
                 update_db_btn = st.button(
@@ -93,6 +84,15 @@ def render():
                 update_db_btn = False
                 is_shutdown_pasocon_after_updatedDB = False
                 st.empty()
+
+        if config.img_embed_module_install:
+            option_enable_img_embed_search = st.checkbox(
+                _t("set_checkbox_enable_img_emb"),
+                help=_t("set_text_enable_img_emb_help"),
+                value=config.enable_img_embed_search,
+            )
+        else:
+            option_enable_img_embed_search = False
 
         index_reduce_same_content_at_different_time = st.checkbox(
             label=_t("set_checkbox_reduce_same_content_at_different_time"),
