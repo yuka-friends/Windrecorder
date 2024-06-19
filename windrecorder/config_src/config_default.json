@@ -77,5 +77,9 @@
   "record_encoder": "cpu_h264",
   "record_crf": 39,
   "index_reduce_same_content_at_different_time": true,
-  "screenshot_interval_second": 2
+  "record_mode":"ffmpeg",
+  "record_screenshot_method_capture_foreground_window_only": true,
+  "screenshot_interval_second": 2,
+  "screenshot_compare_similarity": 0.8,
+  "ocr_compare_similarity": 0.7
 }

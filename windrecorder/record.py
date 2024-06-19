@@ -4,7 +4,11 @@ import shutil
 import subprocess
 import time
 
+import mss
+import numpy as np
 import pandas as pd
+import pygetwindow
+from ocr_manager import compare_image_similarity_np, compare_strings, ocr_image
 from send2trash import send2trash
 
 from windrecorder import file_utils, utils
@@ -308,20 +312,66 @@ def record_encode_preset_benchmark_test():
 
 def record_screen_via_screenshot_process():
     time_counter = 0
-    # screenshot_current = None
-    # screenshot_previous = None
+    screenshot_previous = None
+    ocr_res_previous = ""
+    # output_dir_path = ""
 
     while time_counter < config.record_seconds:
         # screenshot implement
+        if config.record_screenshot_method_capture_foreground_window_only:
+            screenshot_current = get_screenshot_foreground_window()
+        else:
+            if config.multi_display_record_strategy == "single":
+                screenshot_current = get_screenshot_single_display(config.record_single_display_index)
+            else:
+                screenshot_current = get_screenshot_full_range()
 
         # compare screenshots similarity
+        if screenshot_previous is not None:
+            img_similarity = compare_image_similarity_np(np.array(screenshot_previous), np.array(screenshot_current))
+            if img_similarity > config.screenshot_compare_similarity:
+                logger.debug(f"img_similarity {img_similarity} higher than config, continue")
+                continue
+            logger.debug(f"img_similarity {img_similarity} lower than config")
+        screenshot_previous = screenshot_current
+
+        # store img file
+        mss.tools.to_png(screenshot_current.rgb, screenshot_current.size, output="??????????????")
 
         # compare OCR result similarity
+        ocr_res_current = ocr_image("?????????????")
+        ocr_res_similarity, _ = compare_strings(ocr_res_previous, ocr_res_current, threshold=config.ocr_compare_similarity)
+        if ocr_res_similarity:
+            continue
+        ocr_res_previous = ocr_res_current
 
         # OCR index cache store
 
         time.sleep(config.screenshot_interval_second)
         time_counter += config.screenshot_interval_second
+
+
+def get_screenshot_foreground_window():
+    fg_window = pygetwindow.getActiveWindow()
+    if fg_window:
+        left, top, right, bottom = fg_window.left, fg_window.top, fg_window.right, fg_window.bottom
+
+        with mss.mss() as sct:
+            monitor = {"top": top, "left": left, "width": right - left, "height": bottom - top}
+            sct_img = sct.grab(monitor)
+            return sct_img
+
+
+def get_screenshot_single_display(display_index: int):
+    if display_index > len(utils.get_display_count()):
+        logger.info("config display index larger than existed displays number")
+        display_index = 1
+    # wip
+
+
+def get_screenshot_full_range():
+    # wip
+    pass
 
 
 def make_screenshots_into_video():
