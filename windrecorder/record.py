@@ -304,3 +304,26 @@ def record_encode_preset_benchmark_test():
         ]
 
     return df_result
+
+
+def record_screen_via_screenshot_process():
+    time_counter = 0
+    # screenshot_current = None
+    # screenshot_previous = None
+
+    while time_counter < config.record_seconds:
+        # screenshot implement
+
+        # compare screenshots similarity
+
+        # compare OCR result similarity
+
+        # OCR index cache store
+
+        time.sleep(config.screenshot_interval_second)
+        time_counter += config.screenshot_interval_second
+
+
+def make_screenshots_into_video():
+    # feasibility check
+    pass

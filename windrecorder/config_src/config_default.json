@@ -76,5 +76,6 @@
   "record_single_display_index": 1,
   "record_encoder": "cpu_h264",
   "record_crf": 39,
-  "index_reduce_same_content_at_different_time": true
+  "index_reduce_same_content_at_different_time": true,
+  "screenshot_interval_second": 2
 }
