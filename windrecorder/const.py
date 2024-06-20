@@ -5,5 +5,8 @@ CACHE_DIR = "cache"
 CACHE_DIR_OCR_IMG_PREPROCESSOR = os.path.join(CACHE_DIR, "temp_ocr_img_preprocess")
 
 FOOTER_STATE_CAHCE_FILEPATH = "cache\\footer_info_cache.json"
+SCREENSHOT_CACHE_FILEPATH = "cache_screenshot"
 
 ERROR_VIDEO_RETRY_TIMES = 3
+
+DATETIME_FORMAT = "%Y-%m-%d_%H-%M-%S"

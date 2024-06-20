@@ -8,7 +8,6 @@ import mss
 import numpy as np
 import pandas as pd
 import pygetwindow
-from ocr_manager import compare_image_similarity_np, compare_strings, ocr_image
 from send2trash import send2trash
 
 from windrecorder import file_utils, utils
@@ -17,7 +16,14 @@ from windrecorder.config import (
     CONFIG_VIDEO_COMPRESS_PRESET,
     config,
 )
+from windrecorder.const import DATETIME_FORMAT, SCREENSHOT_CACHE_FILEPATH
 from windrecorder.logger import get_logger
+from windrecorder.ocr_manager import (
+    compare_image_similarity_np,
+    compare_strings,
+    ocr_image,
+)
+from windrecorder.record_wintitle import get_current_wintitle
 
 logger = get_logger(__name__)
 
@@ -34,7 +40,7 @@ def record_screen(
     """
     # 构建输出文件名
     now = datetime.datetime.now()
-    video_out_name = now.strftime("%Y-%m-%d_%H-%M-%S") + ".mp4"
+    video_out_name = now.strftime(DATETIME_FORMAT) + ".mp4"
     output_dir_with_date = now.strftime("%Y-%m")  # 将视频存储在日期月份子目录下
     video_saved_dir = os.path.join(output_dir, output_dir_with_date)
     file_utils.ensure_dir(video_saved_dir)
@@ -314,16 +320,30 @@ def record_screen_via_screenshot_process():
     time_counter = 0
     screenshot_previous = None
     ocr_res_previous = ""
-    # output_dir_path = ""
+    start_record = False
 
     while time_counter < config.record_seconds:
+        time.sleep(config.screenshot_interval_second)
+        time_counter += config.screenshot_interval_second
+
+        win_title = get_current_wintitle()
+        screenshot_saved_filename = datetime.datetime.now().strftime(DATETIME_FORMAT) + "###" + win_title + ".png"
+
+        # skip custom rule
+        if utils.is_str_contain_list_word(win_title, config.exclude_words):
+            logger.debug(f"wintitle {win_title} contains exclude words {config.exclude_words}")
+            continue
+
         # screenshot implement
         if config.record_screenshot_method_capture_foreground_window_only:
+            logger.debug("capture_foreground_window_only")
             screenshot_current = get_screenshot_foreground_window()
         else:
             if config.multi_display_record_strategy == "single":
+                logger.debug("capture_single_display_window")
                 screenshot_current = get_screenshot_single_display(config.record_single_display_index)
             else:
+                logger.debug("capture_full_range_display")
                 screenshot_current = get_screenshot_full_range()
 
         # compare screenshots similarity
@@ -335,20 +355,27 @@ def record_screen_via_screenshot_process():
             logger.debug(f"img_similarity {img_similarity} lower than config")
         screenshot_previous = screenshot_current
 
+        if not start_record:
+            # init behavior
+            saved_dir_name = datetime.datetime.now().strftime(DATETIME_FORMAT)
+            file_utils.ensure_dir(SCREENSHOT_CACHE_FILEPATH)
+            start_record = True
         # store img file
-        mss.tools.to_png(screenshot_current.rgb, screenshot_current.size, output="??????????????")
+        screenshot_saved_filepath = os.path.join(SCREENSHOT_CACHE_FILEPATH, saved_dir_name, screenshot_saved_filename)
+        mss.tools.to_png(screenshot_current.rgb, screenshot_current.size, output=screenshot_saved_filepath)
+        logger.info(f"saved screenshot to {screenshot_saved_filepath}")
 
         # compare OCR result similarity
-        ocr_res_current = ocr_image("?????????????")
-        ocr_res_similarity, _ = compare_strings(ocr_res_previous, ocr_res_current, threshold=config.ocr_compare_similarity)
-        if ocr_res_similarity:
+        ocr_res_current = ocr_image(screenshot_saved_filepath)
+        ocr_res_over_threshold_similarity, _ = compare_strings(
+            ocr_res_previous, ocr_res_current, threshold=config.ocr_compare_similarity
+        )
+        if ocr_res_over_threshold_similarity:
+            logger.debug("ocr res overlaps with the previous, skip")
             continue
         ocr_res_previous = ocr_res_current
 
         # OCR index cache store
-
-        time.sleep(config.screenshot_interval_second)
-        time_counter += config.screenshot_interval_second
 
 
 def get_screenshot_foreground_window():

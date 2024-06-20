@@ -381,8 +381,6 @@ def ocr_image_ms(img_input):
 
 # 计算两次结果的重合率
 def compare_strings(a, b, threshold=70):
-    logger.debug("Calculate the coincidence rate of two results")
-
     # a 和 b 都不含任何文字
     if not a and not b:
         return True, 0
