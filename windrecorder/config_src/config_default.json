@@ -81,5 +81,6 @@
   "record_screenshot_method_capture_foreground_window_only": true,
   "screenshot_interval_second": 2,
   "screenshot_compare_similarity": 0.8,
-  "ocr_compare_similarity": 0.7
+  "ocr_compare_similarity": 0.7,
+  "ocr_compare_similarity_in_table": 0.94
 }

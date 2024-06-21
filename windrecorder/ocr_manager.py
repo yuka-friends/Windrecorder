@@ -380,7 +380,7 @@ def ocr_image_ms(img_input):
 
 
 # 计算两次结果的重合率
-def compare_strings(a, b, threshold=70):
+def compare_strings(a, b, threshold=70.0):
     # a 和 b 都不含任何文字
     if not a and not b:
         return True, 0
@@ -758,6 +758,11 @@ def ocr_process_videos(video_path, iframe_path):
                 )
             except LockExistsException:
                 pass
+
+
+def ocr_process_all_screenshots_dir():
+    # as fallback rollback?
+    pass
 
 
 # 检查视频文件夹中所有文件的日期，对超出储存时限的文件进行删除操作

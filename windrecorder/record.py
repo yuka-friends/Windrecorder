@@ -321,13 +321,18 @@ def record_screen_via_screenshot_process():
     screenshot_previous = None
     ocr_res_previous = ""
     start_record = False
+    tmp_db_json = {}
+    last_execute_time = time.time()
 
+    logger.debug(f"{config.record_seconds=}")
     while time_counter < config.record_seconds:
+        logger.debug(f"{time_counter=}")
         time.sleep(config.screenshot_interval_second)
-        time_counter += config.screenshot_interval_second
+        time_counter += config.screenshot_interval_second + (time.time() - last_execute_time)
 
+        last_execute_time = time.time()
         win_title = get_current_wintitle()
-        screenshot_saved_filename = datetime.datetime.now().strftime(DATETIME_FORMAT) + "###" + win_title + ".png"
+        screenshot_saved_filename = datetime.datetime.now().strftime(DATETIME_FORMAT) + ".png"
 
         # skip custom rule
         if utils.is_str_contain_list_word(win_title, config.exclude_words):
@@ -335,16 +340,20 @@ def record_screen_via_screenshot_process():
             continue
 
         # screenshot implement
-        if config.record_screenshot_method_capture_foreground_window_only:
-            logger.debug("capture_foreground_window_only")
-            screenshot_current = get_screenshot_foreground_window()
-        else:
-            if config.multi_display_record_strategy == "single":
-                logger.debug("capture_single_display_window")
-                screenshot_current = get_screenshot_single_display(config.record_single_display_index)
+        try:
+            if config.record_screenshot_method_capture_foreground_window_only:
+                logger.debug("capture_foreground_window_only")
+                screenshot_current = get_screenshot_foreground_window()
             else:
-                logger.debug("capture_full_range_display")
-                screenshot_current = get_screenshot_full_range()
+                if config.multi_display_record_strategy == "single":
+                    logger.debug("capture_single_display_window")
+                    screenshot_current = get_screenshot_single_display(config.record_single_display_index)
+                else:
+                    logger.debug("capture_full_range_display")
+                    screenshot_current = get_screenshot_full_range()
+        except Exception as e:
+            logger.error(f"capture screenshot error: {e}")
+            continue
 
         # compare screenshots similarity
         if screenshot_previous is not None:
@@ -358,8 +367,10 @@ def record_screen_via_screenshot_process():
         if not start_record:
             # init behavior
             saved_dir_name = datetime.datetime.now().strftime(DATETIME_FORMAT)
-            file_utils.ensure_dir(SCREENSHOT_CACHE_FILEPATH)
+            file_utils.ensure_dir(os.path.join(SCREENSHOT_CACHE_FILEPATH, saved_dir_name))
+            tmp_json_db_filepath = os.path.join(SCREENSHOT_CACHE_FILEPATH, saved_dir_name, "tmp_db.json")
             start_record = True
+
         # store img file
         screenshot_saved_filepath = os.path.join(SCREENSHOT_CACHE_FILEPATH, saved_dir_name, screenshot_saved_filename)
         mss.tools.to_png(screenshot_current.rgb, screenshot_current.size, output=screenshot_saved_filepath)
@@ -367,15 +378,30 @@ def record_screen_via_screenshot_process():
 
         # compare OCR result similarity
         ocr_res_current = ocr_image(screenshot_saved_filepath)
-        ocr_res_over_threshold_similarity, _ = compare_strings(
-            ocr_res_previous, ocr_res_current, threshold=config.ocr_compare_similarity
+        is_ocr_res_over_threshold_similarity, _ = compare_strings(
+            ocr_res_previous, ocr_res_current, threshold=config.ocr_compare_similarity * 100
         )
-        if ocr_res_over_threshold_similarity:
+        if is_ocr_res_over_threshold_similarity:
             logger.debug("ocr res overlaps with the previous, skip")
             continue
-        ocr_res_previous = ocr_res_current
 
         # OCR index cache store
+        if config.index_reduce_same_content_at_different_time:
+            # deduplication res before
+            for k, v in tmp_db_json.items():
+                is_ocr_res_over_threshold_similarity, _ = compare_strings(
+                    v["ocr_res"], ocr_res_current, threshold=config.ocr_compare_similarity_in_table * 100
+                )
+                if is_ocr_res_over_threshold_similarity:
+                    continue
+
+        logger.info("ocr res writing")
+        ocr_res_previous = ocr_res_current
+        tmp_db_json[screenshot_saved_filepath] = {"ocr_res": ocr_res_current, "win_title": win_title}
+        os.rename(
+            screenshot_saved_filepath, screenshot_saved_filepath.replace(".png", "-OCRED.png")
+        )  # FIXME: deal with this case during querying
+        file_utils.save_dict_as_json_to_path(tmp_db_json, tmp_json_db_filepath)
 
 
 def get_screenshot_foreground_window():

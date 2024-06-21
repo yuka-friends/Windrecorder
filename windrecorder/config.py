@@ -92,6 +92,7 @@ class Config:
         record_mode,
         screenshot_compare_similarity,
         ocr_compare_similarity,
+        ocr_compare_similarity_in_table,
         **other_field,
     ) -> None:
         # If need to process input parameters, they should assign another variable name to prevent recursive writing into the config.
@@ -167,6 +168,7 @@ class Config:
         self.record_screenshot_method_capture_foreground_window_only = record_screenshot_method_capture_foreground_window_only
         self.screenshot_compare_similarity = screenshot_compare_similarity
         self.ocr_compare_similarity = ocr_compare_similarity
+        self.ocr_compare_similarity_in_table = ocr_compare_similarity_in_table
 
     def set_and_save_config(self, attr: str, value):
         if not hasattr(self, attr):
