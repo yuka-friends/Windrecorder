@@ -79,6 +79,7 @@
   "index_reduce_same_content_at_different_time": true,
   "record_mode":"ffmpeg",
   "record_screenshot_method_capture_foreground_window_only": true,
+  "foreground_window_video_background_color": "#EEE3DA",
   "screenshot_interval_second": 3,
   "screenshot_compare_similarity": 0.8,
   "ocr_compare_similarity": 0.7,

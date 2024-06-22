@@ -4,10 +4,12 @@ import shutil
 import subprocess
 import time
 
+import cv2
 import mss
 import numpy as np
 import pandas as pd
 import pygetwindow
+from PIL import Image
 from send2trash import send2trash
 
 from windrecorder import file_utils, utils
@@ -16,7 +18,7 @@ from windrecorder.config import (
     CONFIG_VIDEO_COMPRESS_PRESET,
     config,
 )
-from windrecorder.const import DATETIME_FORMAT, SCREENSHOT_CACHE_FILEPATH
+from windrecorder.const import DATE_FORMAT, DATETIME_FORMAT, SCREENSHOT_CACHE_FILEPATH
 from windrecorder.logger import get_logger
 from windrecorder.ocr_manager import (
     compare_image_similarity_np,
@@ -41,7 +43,7 @@ def record_screen(
     # 构建输出文件名
     now = datetime.datetime.now()
     video_out_name = now.strftime(DATETIME_FORMAT) + ".mp4"
-    output_dir_with_date = now.strftime("%Y-%m")  # 将视频存储在日期月份子目录下
+    output_dir_with_date = now.strftime(DATE_FORMAT)  # 将视频存储在日期月份子目录下
     video_saved_dir = os.path.join(output_dir, output_dir_with_date)
     file_utils.ensure_dir(video_saved_dir)
     out_path = os.path.join(video_saved_dir, video_out_name)
@@ -322,7 +324,9 @@ def record_screen_via_screenshot_process():
     ocr_res_previous = ""
     start_record = False
     saved_dir_name = None
-    tmp_db_json = {}
+    saved_dir_filepath = None
+    tmp_db_json = {"data": []}
+    tmp_db_json_all_files = {"data": []}
     last_execute_time = time.time()
 
     logger.debug(f"{config.record_seconds=}")
@@ -373,13 +377,24 @@ def record_screen_via_screenshot_process():
         if not start_record:
             # init behavior
             saved_dir_name = datetime.datetime.now().strftime(DATETIME_FORMAT)
-            file_utils.ensure_dir(os.path.join(SCREENSHOT_CACHE_FILEPATH, saved_dir_name))
+            saved_dir_filepath = os.path.join(SCREENSHOT_CACHE_FILEPATH, saved_dir_name)
+            file_utils.ensure_dir(saved_dir_filepath)
             tmp_json_db_filepath = os.path.join(SCREENSHOT_CACHE_FILEPATH, saved_dir_name, "tmp_db.json")
+            tmp_db_json_all_files_filepath = os.path.join(
+                SCREENSHOT_CACHE_FILEPATH, saved_dir_name, "tmp_db_json_all_files.json"
+            )
             start_record = True
 
         # store img file
         screenshot_saved_filepath = os.path.join(SCREENSHOT_CACHE_FILEPATH, saved_dir_name, screenshot_saved_filename)
         mss.tools.to_png(screenshot_current.rgb, screenshot_current.size, output=screenshot_saved_filepath)
+        tmp_db_json_all_files["data"].append(
+            {
+                "vid_file_name": saved_dir_name + ".mp4",
+                "img_file_name": screenshot_saved_filepath,
+            }
+        )  # Used to count all file information that will be converted to video
+        file_utils.save_dict_as_json_to_path(tmp_db_json_all_files, tmp_db_json_all_files_filepath)
         logger.info(f"saved screenshot to {screenshot_saved_filepath}")
 
         # compare OCR result similarity
@@ -394,7 +409,7 @@ def record_screen_via_screenshot_process():
         # OCR index cache store
         if config.index_reduce_same_content_at_different_time:
             # deduplication res before
-            for k, v in tmp_db_json.items():
+            for v in tmp_db_json["data"]:
                 is_ocr_res_over_threshold_similarity, _ = compare_strings(
                     v["ocr_text"], ocr_res_current, threshold=config.ocr_compare_similarity_in_table * 100
                 )
@@ -403,20 +418,31 @@ def record_screen_via_screenshot_process():
 
         logger.info("ocr res writing")
         ocr_res_previous = ocr_res_current
-        tmp_db_json[screenshot_saved_filepath] = {
-            "ocr_text": ocr_res_current,
-            "win_title": win_title,
-            "videofile_time": datetime_unix_timestamp_record,
-        }
+        tmp_db_json["data"].append(
+            {
+                "vid_file_name": saved_dir_name + ".mp4",
+                "img_file_name": screenshot_saved_filepath,
+                "ocr_text": ocr_res_current,
+                "win_title": win_title,
+                "videofile_time": datetime_unix_timestamp_record,
+                "thumbnail": utils.resize_image_as_base64_as_thumbnail_via_filepath(screenshot_saved_filepath),
+            }
+        )  # Used to index to sqlite db
         file_utils.save_dict_as_json_to_path(tmp_db_json, tmp_json_db_filepath)
 
     # verification data
+    if len(tmp_db_json["data"]) < 2:
+        logger.info(f"{saved_dir_filepath} tmp_db_json records not enough")
+        return
+
+    # persistent writing to db
+    # convert tmp_db_json to dataframe
+    # WIP
 
     # convert to video startegy
     if not config.convert_screenshots_to_vid_while_only_when_idle_or_plugged_in:
-        pass
-
-    # persistent writing to db
+        if saved_dir_filepath is not None:
+            make_screenshots_into_video_via_dir_path(saved_dir_filepath)
 
 
 def get_screenshot_foreground_window():
@@ -434,14 +460,161 @@ def get_screenshot_single_display(display_index: int):
     if display_index > len(utils.get_display_count()):
         logger.info("config display index larger than existed displays number")
         display_index = 1
-    # wip
+
+    with mss.mss() as sct:
+        sct_img = sct.grab(sct.monitors[display_index])
+        return sct_img
 
 
 def get_screenshot_full_range():
-    # wip
-    pass
+    with mss.mss() as sct:
+        sct_img = sct.grab(sct.monitors[0])
+        return sct_img
 
 
-def make_screenshots_into_video():
-    # feasibility check
-    pass
+def convert_screenshots_dir_into_same_size_to_cache(
+    src_folder, canvas_color=utils.hex_to_rgb(config.foreground_window_video_background_color)
+):
+    """
+    遍历src_folder中的所有图片，找出最大的图片尺寸，
+    然后将每张图片居中放到这样大小的指定颜色空画布上，
+    并保存到dest_folder中。
+    :param src_folder: 源文件夹路径
+    :param canvas_color: 画布颜色
+    """
+
+    def check_are_image_sizes_same(directory):
+        """
+        检查指定目录下所有图片文件是否都具有相同的尺寸大小。
+        Returns:
+            bool: 如果所有图片尺寸相同返回True，否则返回False。
+            tuple: 返回第一张图片的尺寸(width, height)。如果目录为空或无图片文件，则返回(None, None)。
+        """
+        image_files = [f for f in os.listdir(directory) if f.endswith((".png", ".jpg", ".jpeg"))]
+
+        if not image_files:
+            logger.debug(f"No image files were found in {directory}.")
+            return True, (None, None)
+
+        first_image = os.path.join(directory, image_files[0])
+        reference_size = Image.open(first_image).size
+
+        for image_file in image_files[1:]:
+            image_path = os.path.join(directory, image_file)
+            image_size = Image.open(image_path).size
+
+            if image_size != reference_size:
+                logger.debug(
+                    f"The size {image_size} of {image_file} is different from the size {reference_size} of {image_files[0]}."
+                )
+                return False, reference_size
+
+        return True, reference_size
+
+    check_are_screenshots_sizes_same, _ = check_are_image_sizes_same(src_folder)
+    if check_are_screenshots_sizes_same:
+        logger.debug("screenshots got same size")
+        return
+
+    logger.debug("uniform screenshots size...")
+    # 查找最大的图片尺寸
+    max_width, max_height = 0, 0
+    for img_name in os.listdir(src_folder):
+        if not img_name.lower().endswith((".png", ".jpg", ".jpeg")):
+            continue
+        img_path = os.path.join(src_folder, img_name)
+        with Image.open(img_path) as img:
+            width, height = img.size
+            max_width, max_height = max(max_width, width), max(max_height, height)
+
+    # 调整图片大小并保存
+    for img_name in os.listdir(src_folder):
+        if not img_name.lower().endswith((".png", ".jpg", ".jpeg")):
+            continue
+        img_path = os.path.join(src_folder, img_name)
+        logger.debug(f"process screenshots size: {img_path}")
+        with Image.open(img_path) as img:
+            width, height = img.size
+            new_img = Image.new("RGB", (max_width, max_height), color=canvas_color)
+            x = (max_width - width) // 2
+            y = (max_height - height) // 2
+            new_img.paste(img, (x, y))
+            new_img.save(os.path.join(src_folder, img_name))
+
+
+def make_screenshots_into_video_via_dir_path(saved_dir_filepath):
+    """将文件夹中的截图合并为视频，根据文件夹中的临时数据库"""
+
+    def calc_screenshot_filepath_to_unix_timestamp(screenshot_filepath):
+        return utils.date_to_seconds(os.path.basename(screenshot_filepath).split(".")[0])
+
+    def calc_screenshot_time_to_video_time(tmp_db_json_datalist: list):
+        pic_timestamp_mapping = []  # second: screenshot filepath
+        sec_base_unix_timestamp = calc_screenshot_filepath_to_unix_timestamp(tmp_db_json_datalist[0]["img_file_name"])
+
+        for i, v in enumerate(tmp_db_json_datalist):
+            res = {
+                "timestamp": calc_screenshot_filepath_to_unix_timestamp(v["img_file_name"]) - sec_base_unix_timestamp,
+                "screenshot_saved_filepath": v["img_file_name"],
+            }
+            pic_timestamp_mapping.append(res)
+
+        res_buffer = {
+            "timestamp": calc_screenshot_filepath_to_unix_timestamp(tmp_db_json_datalist[-1]["img_file_name"])
+            - sec_base_unix_timestamp
+            + 2,
+            "screenshot_saved_filepath": tmp_db_json_datalist[-1]["img_file_name"],
+        }
+        pic_timestamp_mapping.append(res_buffer)
+
+        logger.debug(f"{pic_timestamp_mapping=}")
+        return pic_timestamp_mapping
+
+    def create_video_from_images(tmp_db_json_datalist, output_video):
+        pic_timestamp_mapping = calc_screenshot_time_to_video_time(tmp_db_json_datalist)
+
+        # 假定所有图片大小相同，获取第一张图片的尺寸来设置视频的分辨率
+        frame = cv2.imread(pic_timestamp_mapping[0]["screenshot_saved_filepath"])
+        height, width, layers = frame.shape
+        video = cv2.VideoWriter(output_video, cv2.VideoWriter_fourcc(*"mp4v"), 1, (width, height))
+
+        prev_time = 0
+        for v in pic_timestamp_mapping:
+            seconds = v["timestamp"]
+            duration = seconds - prev_time
+            prev_time = seconds
+
+            logger.debug(f"writing frame: {v['screenshot_saved_filepath']}, {duration=}")
+            frame = cv2.imread(v["screenshot_saved_filepath"])
+            for j in range(duration):  # 根据持续时间重复帧
+                video.write(frame)
+
+        cv2.destroyAllWindows()
+        video.release()
+
+    # main
+    # read temp database
+    tmp_db_json_filepath = os.path.join(saved_dir_filepath, "tmp_db_json_all_files.json")
+    if not os.path.exists(tmp_db_json_filepath):
+        logger.error(f"{tmp_db_json_filepath} not existed")
+        return
+    tmp_db_json_datalist = file_utils.read_json_as_dict_from_path(tmp_db_json_filepath)
+    tmp_db_json_datalist = tmp_db_json_datalist["data"]
+    output_video_filepath = os.path.join(
+        config.record_videos_dir_ud,
+        utils.date_to_datetime(tmp_db_json_datalist[0]["vid_file_name"].replace(".mp4", "")).strftime(DATE_FORMAT),
+        tmp_db_json_datalist[0]["vid_file_name"].replace(".mp4", "-OCRED.mp4"),
+    )
+    # uniform screenshots
+    try:
+        convert_screenshots_dir_into_same_size_to_cache(saved_dir_filepath)
+    except Exception as e:
+        logger.error(f"convert screenshots to uniform size fail {saved_dir_filepath}: {e}")
+        return
+    # make video
+    try:
+        create_video_from_images(tmp_db_json_datalist, output_video_filepath)
+    except Exception as e:
+        logger.error(f"convert screenshots to video fail {output_video_filepath}: {e}")
+        return
+    logger.info(f"converted screenshots to video: {output_video_filepath}")

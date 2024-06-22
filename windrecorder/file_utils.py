@@ -38,7 +38,7 @@ def ensure_dir(folder_name):
     # 检查文件夹是否存在
     if not os.path.exists(folder_path):
         # 创建文件夹
-        os.makedirs(folder_path)
+        os.makedirs(folder_path, exist_ok=True)
         logger.info(f"files: created folder {folder_name}")
     else:
         logger.debug(f"files: folder existed:{folder_name}")

@@ -94,6 +94,7 @@ class Config:
         ocr_compare_similarity,
         ocr_compare_similarity_in_table,
         convert_screenshots_to_vid_while_only_when_idle_or_plugged_in,
+        foreground_window_video_background_color,
         **other_field,
     ) -> None:
         # If need to process input parameters, they should assign another variable name to prevent recursive writing into the config.
@@ -173,6 +174,7 @@ class Config:
         self.convert_screenshots_to_vid_while_only_when_idle_or_plugged_in = (
             convert_screenshots_to_vid_while_only_when_idle_or_plugged_in
         )
+        self.foreground_window_video_background_color = foreground_window_video_background_color
 
     def set_and_save_config(self, attr: str, value):
         if not hasattr(self, attr):

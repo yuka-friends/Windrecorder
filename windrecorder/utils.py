@@ -22,6 +22,7 @@ from pyshortcuts import make_shortcut
 
 from windrecorder import __version__, file_utils
 from windrecorder.config import config
+from windrecorder.const import DATETIME_FORMAT
 from windrecorder.logger import get_logger
 
 logger = get_logger(__name__)
@@ -96,7 +97,7 @@ def get_vidfilepath_info(vid_filepath) -> dict:
 # 将输入的文件（ %Y-%m-%d_%H-%M-%S str）时间转为时间戳秒数
 def date_to_seconds(date_str):
     # 这里我们先定义了时间格式,然后设置一个epoch基准时间为1970年1月1日。使用strptime()将输入的字符串解析为datetime对象,然后计算这个时间和epoch时间的时间差,转换为秒数返回。
-    format = "%Y-%m-%d_%H-%M-%S"
+    format = DATETIME_FORMAT
     # epoch = datetime.datetime(2000, 1, 1)
     epoch = datetime.datetime(1970, 1, 1)
     target_date = datetime.datetime.strptime(date_str, format)
@@ -106,7 +107,7 @@ def date_to_seconds(date_str):
 
 # 将输入的文件（ %Y-%m-%d_%H-%M-%S str）时间转为datetime
 def date_to_datetime(date_str):
-    datetime_obj = datetime.datetime.strptime(date_str, "%Y-%m-%d_%H-%M-%S")
+    datetime_obj = datetime.datetime.strptime(date_str, DATETIME_FORMAT)
     return datetime_obj
 
 
@@ -115,7 +116,7 @@ def seconds_to_date(seconds):
     # start_time = 946684800
     start_time = 0
     dt = datetime.datetime.utcfromtimestamp(start_time + seconds)
-    return dt.strftime("%Y-%m-%d_%H-%M-%S")
+    return dt.strftime(DATETIME_FORMAT)
 
     # 旧实现
     # current_seconds = seconds + 946684800 - 28800  # 2000/1/1 00:00:00 的秒数，减去八小时
@@ -176,7 +177,7 @@ def datetime_to_24numfloat(dt):
 
 # 将datetime输入的时间转为  %Y-%m-%d_%H-%M-%S str
 def datetime_to_dateStr(dt):
-    return dt.strftime("%Y-%m-%d_%H-%M-%S")
+    return dt.strftime(DATETIME_FORMAT)
 
 
 # 将datetime输入的时间转为  %Y-%m-%d str
@@ -487,6 +488,14 @@ def resize_image_as_base64(img: Image.Image, target_width=config.thumbnail_gener
     output_buffer = BytesIO()
     img.save(output_buffer, format="JPEG", quality=config.thumbnail_generation_jpg_quality, optimize=True)
     img_b64 = base64.b64encode(output_buffer.getvalue()).decode("utf-8")
+
+    return img_b64
+
+
+def resize_image_as_base64_as_thumbnail_via_filepath(img_path):
+    """将图片缩小到等比例、宽度为70px的thumbnail，并返回base64"""
+    img = Image.open(img_path)
+    img_b64 = resize_image_as_base64(img)
 
     return img_b64
 
@@ -813,3 +822,16 @@ def get_screenshot_of_display(display_index):
         sct_img = sct.grab(monitor)
         img = Image.frombytes("RGB", sct_img.size, sct_img.bgra, "raw", "BGRX")
     return img
+
+
+def hex_to_rgb(hex_color):
+    """
+    将十六进制颜色字符串转换为RGB元组。
+    :param hex_color: 十六进制颜色字符串，例如"#FFFFFF"或"FFFFFF"
+    :return: RGB元组，例如(255, 255, 255)
+    """
+    # 移除可能的'#'符号
+    hex_color = hex_color.strip("#")
+    # 按RGB三个部分分割并转换为整数
+    rgb = tuple(int(hex_color[i : i + 2], 16) for i in (0, 2, 4))
+    return rgb

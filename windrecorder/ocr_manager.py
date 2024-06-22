@@ -462,14 +462,6 @@ def compare_image_similarity_np(img1, img2):
     return similarity
 
 
-# 将图片缩小到等比例、宽度为70px的thumbnail，并返回base64
-def resize_image_as_base64(img_path):
-    img = Image.open(img_path)
-    img_b64 = utils.resize_image_as_base64(img)
-
-    return img_b64
-
-
 # 移除df中指定列包含重复项的行
 def remove_duplicates_in_df(df: pd.DataFrame, column: str):
     logger.debug("started.")
@@ -595,7 +587,7 @@ def ocr_core_logic(file_path, vid_file_name, iframe_path):
                     )
                     continue
                 # 计算图片预览图
-                img_thumbnail = resize_image_as_base64(img_orgin_not_crop_filepath)
+                img_thumbnail = utils.resize_image_as_base64_as_thumbnail_via_filepath(img_orgin_not_crop_filepath)
                 # 清理ocr数据
                 ocr_result_write = utils.clean_dirty_text(ocr_result_stringB) + " -||- " + str(win_title)
                 # 为准备写入数据库dataframe添加记录

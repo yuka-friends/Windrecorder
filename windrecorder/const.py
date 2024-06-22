@@ -10,3 +10,4 @@ SCREENSHOT_CACHE_FILEPATH = "cache_screenshot"
 ERROR_VIDEO_RETRY_TIMES = 3
 
 DATETIME_FORMAT = "%Y-%m-%d_%H-%M-%S"
+DATE_FORMAT = "%Y-%m"
