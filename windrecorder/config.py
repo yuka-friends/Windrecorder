@@ -93,6 +93,7 @@ class Config:
         screenshot_compare_similarity,
         ocr_compare_similarity,
         ocr_compare_similarity_in_table,
+        convert_screenshots_to_vid_while_only_when_idle_or_plugged_in,
         **other_field,
     ) -> None:
         # If need to process input parameters, they should assign another variable name to prevent recursive writing into the config.
@@ -169,6 +170,9 @@ class Config:
         self.screenshot_compare_similarity = screenshot_compare_similarity
         self.ocr_compare_similarity = ocr_compare_similarity
         self.ocr_compare_similarity_in_table = ocr_compare_similarity_in_table
+        self.convert_screenshots_to_vid_while_only_when_idle_or_plugged_in = (
+            convert_screenshots_to_vid_while_only_when_idle_or_plugged_in
+        )
 
     def set_and_save_config(self, attr: str, value):
         if not hasattr(self, attr):

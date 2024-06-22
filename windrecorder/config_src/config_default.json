@@ -79,8 +79,9 @@
   "index_reduce_same_content_at_different_time": true,
   "record_mode":"ffmpeg",
   "record_screenshot_method_capture_foreground_window_only": true,
-  "screenshot_interval_second": 2,
+  "screenshot_interval_second": 3,
   "screenshot_compare_similarity": 0.8,
   "ocr_compare_similarity": 0.7,
-  "ocr_compare_similarity_in_table": 0.94
+  "ocr_compare_similarity_in_table": 0.94,
+  "convert_screenshots_to_vid_while_only_when_idle_or_plugged_in": false
 }

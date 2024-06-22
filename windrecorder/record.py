@@ -321,18 +321,24 @@ def record_screen_via_screenshot_process():
     screenshot_previous = None
     ocr_res_previous = ""
     start_record = False
+    saved_dir_name = None
     tmp_db_json = {}
     last_execute_time = time.time()
 
     logger.debug(f"{config.record_seconds=}")
     while time_counter < config.record_seconds:
-        logger.debug(f"{time_counter=}")
-        time.sleep(config.screenshot_interval_second)
-        time_counter += config.screenshot_interval_second + (time.time() - last_execute_time)
+        sleep_time_second = config.screenshot_interval_second - (time.time() - last_execute_time)
+        if sleep_time_second < 1:
+            sleep_time_second = 1
+        time.sleep(sleep_time_second)
+        time_counter += config.screenshot_interval_second
+        logger.debug(f"{time_counter=}, {sleep_time_second=}")
 
         last_execute_time = time.time()
         win_title = get_current_wintitle()
-        screenshot_saved_filename = datetime.datetime.now().strftime(DATETIME_FORMAT) + ".png"
+        datetime_str_record = datetime.datetime.now().strftime(DATETIME_FORMAT)
+        datetime_unix_timestamp_record = int(time.time())
+        screenshot_saved_filename = datetime_str_record + ".png"
 
         # skip custom rule
         if utils.is_str_contain_list_word(win_title, config.exclude_words):
@@ -390,18 +396,27 @@ def record_screen_via_screenshot_process():
             # deduplication res before
             for k, v in tmp_db_json.items():
                 is_ocr_res_over_threshold_similarity, _ = compare_strings(
-                    v["ocr_res"], ocr_res_current, threshold=config.ocr_compare_similarity_in_table * 100
+                    v["ocr_text"], ocr_res_current, threshold=config.ocr_compare_similarity_in_table * 100
                 )
                 if is_ocr_res_over_threshold_similarity:
                     continue
 
         logger.info("ocr res writing")
         ocr_res_previous = ocr_res_current
-        tmp_db_json[screenshot_saved_filepath] = {"ocr_res": ocr_res_current, "win_title": win_title}
-        os.rename(
-            screenshot_saved_filepath, screenshot_saved_filepath.replace(".png", "-OCRED.png")
-        )  # FIXME: deal with this case during querying
+        tmp_db_json[screenshot_saved_filepath] = {
+            "ocr_text": ocr_res_current,
+            "win_title": win_title,
+            "videofile_time": datetime_unix_timestamp_record,
+        }
         file_utils.save_dict_as_json_to_path(tmp_db_json, tmp_json_db_filepath)
+
+    # verification data
+
+    # convert to video startegy
+    if not config.convert_screenshots_to_vid_while_only_when_idle_or_plugged_in:
+        pass
+
+    # persistent writing to db
 
 
 def get_screenshot_foreground_window():
