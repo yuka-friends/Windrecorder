@@ -5,6 +5,7 @@
 
 ### Fixed
 - bug: 修复了锁屏检测在 Windows 11 上不起作用；Fixed lock screen detection not working on Windows 11;
+- 优化 i18n 逻辑，当 key 不存在时会 fallback 到 English 文案；Optimizing i18n logic, when the key does not exist, it will fallback to English copy text;
 
 ## 0.0.14
 > 2024-06-01
