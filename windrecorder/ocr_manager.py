@@ -11,16 +11,19 @@ from PIL import Image, ImageDraw
 from send2trash import send2trash
 from skimage.metrics import structural_similarity as ssim
 
-import windrecorder.record as record
 import windrecorder.utils as utils
 from windrecorder import file_utils, record_wintitle
 from windrecorder.config import config
-from windrecorder.const import CACHE_DIR_OCR_IMG_PREPROCESSOR, ERROR_VIDEO_RETRY_TIMES
+from windrecorder.const import (
+    CACHE_DIR_OCR_IMG_PREPROCESSOR,
+    DATAFRAME_COLUMN_NAMES,
+    ERROR_VIDEO_RETRY_TIMES,
+)
 from windrecorder.db_manager import db_manager
 from windrecorder.exceptions import LockExistsException
 from windrecorder.lock import FileLock
 from windrecorder.logger import get_logger
-from windrecorder.utils import date_to_seconds
+from windrecorder.utils import dtstr_to_seconds
 
 logger = get_logger(__name__)
 
@@ -468,7 +471,9 @@ def remove_duplicates_in_df(df: pd.DataFrame, column: str):
     duplicate_rows_to_drop = []
     for i in range(len(df)):
         for j in range(i + 1, len(df)):
-            is_duplicate, similarity = compare_strings(df.iloc[i][column], df.iloc[j][column], threshold=94)
+            is_duplicate, similarity = compare_strings(
+                df.iloc[i][column], df.iloc[j][column], threshold=config.ocr_compare_similarity_in_table * 100
+            )
             if is_duplicate:
                 duplicate_rows_to_drop.append(j)
     logger.debug("done.")
@@ -529,17 +534,7 @@ def ocr_core_logic(file_path, vid_file_name, iframe_path):
     # - OCR所有i帧图像
     ocr_result_stringA = ""
     ocr_result_stringB = ""
-    dataframe_column_names = [
-        "videofile_name",
-        "picturefile_name",
-        "videofile_time",
-        "ocr_text",
-        "is_videofile_exist",
-        "is_picturefile_exist",
-        "thumbnail",
-        "win_title",
-    ]
-    dataframe_all = pd.DataFrame(columns=dataframe_column_names)
+    dataframe_all = pd.DataFrame(columns=DATAFRAME_COLUMN_NAMES)
 
     sotred_file = sorted(os.listdir(iframe_path), key=lambda x: int("".join(filter(str.isdigit, x))))
     for img_file_name in sotred_file:
@@ -577,7 +572,7 @@ def ocr_core_logic(file_path, vid_file_name, iframe_path):
                 calc_to_sec_picname = round(
                     int(os.path.splitext(img_file_name.replace("_cropped", ""))[0]) / int(config.record_framerate)
                 )  # 用fps折算秒数
-                calc_to_sec_data = date_to_seconds(calc_to_sec_vidname) + calc_to_sec_picname
+                calc_to_sec_data = dtstr_to_seconds(calc_to_sec_vidname) + calc_to_sec_picname
                 win_title = record_wintitle.get_wintitle_by_timestamp(calc_to_sec_data)
                 win_title = record_wintitle.optimize_wintitle_name(win_title)
                 # 检查窗口标题是否在跳过词中
@@ -782,42 +777,6 @@ def remove_outdated_videofiles(video_queue_batch=60):
             video_process_count += 1
             if video_process_count > video_queue_batch:
                 break
-
-
-# 检查视频文件夹中所有文件的日期，对超出储存时限的文件进行压缩操作(todo)
-def compress_outdated_videofiles(video_queue_batch=30):
-    if config.vid_compress_day == 0:
-        return None
-
-    video_process_count = 0
-
-    today_datetime = datetime.datetime.today()
-    days_to_subtract = config.vid_compress_day
-    start_datetime = datetime.datetime(2000, 1, 1, 0, 0, 1)
-    end_datetime = today_datetime - datetime.timedelta(days=days_to_subtract)
-
-    video_filepath_list = file_utils.get_file_path_list(config.record_videos_dir_ud)
-    video_filepath_list_outdate = file_utils.get_videofile_path_list_by_time_range(
-        video_filepath_list, start_datetime, end_datetime
-    )
-    logger.info(f"file to compress {video_filepath_list_outdate}")
-
-    if len(video_filepath_list_outdate) > 0:
-        for item in video_filepath_list_outdate:
-            if "-COMPRESS" not in item and "-OCRED" in item and "-ERROR" not in item:
-                logger.info(f"compressing {item}, {video_process_count=}, {video_queue_batch=}")
-                try:
-                    record.compress_video_resolution(item, config.video_compress_rate)
-                    send2trash(item)
-                    video_process_count += 1
-                except subprocess.CalledProcessError as e:
-                    logger.error(f"{item} seems invalid, error: {e}")
-                    os.rename(item, item.replace("-OCRED", "-OCRED-ERROR"))
-                except Exception as e:
-                    logger.error(f"{item} compress fail, error: {e}")
-                if video_process_count > video_queue_batch:
-                    break
-        logger.info("All compress tasks done!")
 
 
 # 备份数据库

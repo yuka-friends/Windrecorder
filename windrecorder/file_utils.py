@@ -176,7 +176,7 @@ def get_videofile_path_list_by_time_range(filepath_list, start_datetime=None, en
                 filepath_list_daterange.append(filepath)
             else:
                 filename_extract_date = os.path.basename(filepath)[:18]
-                file_datetime = utils.date_to_datetime(filename_extract_date)
+                file_datetime = utils.dtstr_to_datetime(filename_extract_date)
                 if start_datetime <= file_datetime <= end_datetime:
                     filepath_list_daterange.append(filepath)
 
@@ -188,7 +188,7 @@ def get_videofile_path_dict_datetime(filepath_list):
     result_dict = {}
     for filepath in filepath_list:
         filename = os.path.basename(filepath)[:18]
-        datetime_value = utils.date_to_datetime(filename)
+        datetime_value = utils.dtstr_to_datetime(filename)
         result_dict[filepath] = datetime_value
     return result_dict
 

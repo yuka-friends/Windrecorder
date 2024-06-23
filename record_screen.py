@@ -83,7 +83,7 @@ def idle_maintain_process_main():
         # 清理过时视频
         ocr_manager.remove_outdated_videofiles(video_queue_batch=config.batch_size_remove_video_in_idle)
         # 压缩过期视频
-        ocr_manager.compress_outdated_videofiles(video_queue_batch=config.batch_size_compress_video_in_idle)
+        record.compress_outdated_videofiles(video_queue_batch=config.batch_size_compress_video_in_idle)
         # 统计webui footer info
         state.make_webui_footer_state_data_cache(ask_from="idle")
         # 生成随机词表
@@ -137,20 +137,33 @@ def continuously_record_screen():
             time.sleep(10)
         else:
             subprocess.run("color 2f", shell=True)  # 设定背景色为活动
-            video_saved_dir, video_out_name = record.record_screen()  # 录制屏幕
+            if config.record_mode == "ffmpeg":
+                video_saved_dir, video_out_name = record.record_screen_via_ffmpeg()  # 使用 ffmpeg 录制屏幕
 
-            # 自动索引策略
-            if config.OCR_index_strategy == 1:
-                logger.info(f"Windrecorder: Starting Indexing video data: '{video_out_name}'")
-                thread_index_video_data = threading.Thread(
-                    target=index_video_data,
-                    args=(
-                        video_saved_dir,
-                        video_out_name,
-                    ),
-                    daemon=True,
-                )
-                thread_index_video_data.start()
+                # 自动索引策略
+                if config.OCR_index_strategy == 1:
+                    logger.info(f"Windrecorder: Starting Indexing video data: '{video_out_name}'")
+                    thread_index_video_data = threading.Thread(
+                        target=index_video_data,
+                        args=(
+                            video_saved_dir,
+                            video_out_name,
+                        ),
+                        daemon=True,
+                    )
+                    thread_index_video_data.start()
+            elif config.record_mode == "screenshot_array":
+                saved_dir_filepath = record.record_screen_via_screenshot_process()  # 使用连续截图录制屏幕
+
+                # convert to video startegy
+                if not config.convert_screenshots_to_vid_while_only_when_idle_or_plugged_in:
+                    if saved_dir_filepath is not None:
+                        thread_convert_screenshots_into_video = threading.Thread(
+                            target=record.convert_screenshots_dir_into_video_process,
+                            args=(saved_dir_filepath),
+                            daemon=True,
+                        )
+                        thread_convert_screenshots_into_video.start()
 
             time.sleep(2)
 
@@ -238,6 +251,7 @@ def main():
             if config.OCR_index_strategy == 1:
                 # 维护之前退出没留下的视频（如果有）
                 threading.Thread(target=ocr_manager.ocr_manager_main, daemon=True).start()
+                threading.Thread(target=record.index_cache_screenshots_dir_process, daemon=True).start()
 
             # 屏幕内容多长时间不变则暂停录制
             logger.info(

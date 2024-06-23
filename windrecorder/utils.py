@@ -95,7 +95,7 @@ def get_vidfilepath_info(vid_filepath) -> dict:
 
 
 # 将输入的文件（ %Y-%m-%d_%H-%M-%S str）时间转为时间戳秒数
-def date_to_seconds(date_str):
+def dtstr_to_seconds(date_str):
     # 这里我们先定义了时间格式,然后设置一个epoch基准时间为1970年1月1日。使用strptime()将输入的字符串解析为datetime对象,然后计算这个时间和epoch时间的时间差,转换为秒数返回。
     format = DATETIME_FORMAT
     # epoch = datetime.datetime(2000, 1, 1)
@@ -106,7 +106,7 @@ def date_to_seconds(date_str):
 
 
 # 将输入的文件（ %Y-%m-%d_%H-%M-%S str）时间转为datetime
-def date_to_datetime(date_str):
+def dtstr_to_datetime(date_str):
     datetime_obj = datetime.datetime.strptime(date_str, DATETIME_FORMAT)
     return datetime_obj
 
@@ -220,7 +220,7 @@ def calc_vid_name_to_timestamp(filename):
     pattern = r"(\d{4}-\d{2}-\d{2}_\d{2}-\d{2}-\d{2})"
     match = re.search(pattern, filename)
     if match:
-        return date_to_seconds(match.group(1))
+        return dtstr_to_seconds(match.group(1))
     else:
         return None
 
@@ -320,7 +320,7 @@ def get_video_timestamp_by_filename_and_abs_timestamp(videofile_name: str, video
     # videofile_name like 2023-09-08_17-23-50.mp4
     videofile_name = videofile_name[:19]  # 确保只截取到str时间部分
     # vidfilename = os.path.splitext(videofile_name)[0]
-    vid_timestamp = videofile_time - date_to_seconds(videofile_name)
+    vid_timestamp = videofile_time - dtstr_to_seconds(videofile_name)
     return vid_timestamp
 
 
@@ -351,7 +351,7 @@ def calc_vid_inside_time(df, num):
     fulltime = df.iloc[num]["videofile_time"]
     vidfilename = os.path.splitext(df.iloc[num]["videofile_name"])[0][:19]
     # 用记录时的总时间减去视频文件时间（开始记录的时间）即可得到相对的时间
-    vid_timestamp = fulltime - date_to_seconds(vidfilename)
+    vid_timestamp = fulltime - dtstr_to_seconds(vidfilename)
     logger.info(f"utils: video file fulltime:{fulltime}\n" f" vidfilename:{vidfilename}\n" f" vid_timestamp:{vid_timestamp}\n")
     return vid_timestamp
 
@@ -504,7 +504,7 @@ def resize_image_as_base64_as_thumbnail_via_filepath(img_path):
 def is_maintain_lock_valid(timeout=datetime.timedelta(minutes=16)):
     if os.path.exists(config.maintain_lock_path):
         with open(config.maintain_lock_path, "r", encoding="utf-8") as f:
-            last_maintain_locktime = date_to_datetime(f.read())
+            last_maintain_locktime = dtstr_to_datetime(f.read())
         if datetime.datetime.now() - last_maintain_locktime > timeout:
             return False
         else:
@@ -666,7 +666,7 @@ def extract_date_from_db_filename(db_file_name, user_name=config.user_name):
 def extract_datetime_from_db_backup_filename(db_file_name, user_name=config.user_name):
     try:
         db_file_name_extract = db_file_name[-22:-3]
-        db_file_name_extract_datetime = date_to_datetime(db_file_name_extract)
+        db_file_name_extract_datetime = dtstr_to_datetime(db_file_name_extract)
         return db_file_name_extract_datetime
     except (IndexError, ValueError):
         return None

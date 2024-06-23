@@ -77,7 +77,7 @@
   "record_encoder": "cpu_h264",
   "record_crf": 39,
   "index_reduce_same_content_at_different_time": true,
-  "record_mode":"ffmpeg",
+  "record_mode":"screenshot_array",
   "record_screenshot_method_capture_foreground_window_only": true,
   "foreground_window_video_background_color": "#EEE3DA",
   "screenshot_interval_second": 3,

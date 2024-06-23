@@ -6,6 +6,7 @@ import streamlit as st
 
 from windrecorder import file_utils, flag_mark_note, utils
 from windrecorder.config import config
+from windrecorder.const import SCREENSHOT_CACHE_FILEPATH
 from windrecorder.db_manager import db_manager
 from windrecorder.logger import get_logger
 from windrecorder.oneday import OneDay
@@ -90,6 +91,17 @@ def render():
             day_max_timestamp_dt,
             day_df,
         ) = OneDay().checkout_daily_data_meta(dt_in)
+        # 如果有比数据库更早或更晚的截图数据，则使用其范围
+        if config.record_mode == "screenshot_array":
+            earliest_screenshot_dt, latest_screenshot_dt = OneDay().find_earliest_latest_screenshots_cache_datetime_via_date(
+                st.session_state.day_date_input
+            )
+            if earliest_screenshot_dt and latest_screenshot_dt:
+                if day_min_timestamp_dt > earliest_screenshot_dt:
+                    day_min_timestamp_dt = earliest_screenshot_dt
+                if day_max_timestamp_dt < latest_screenshot_dt:
+                    day_max_timestamp_dt = latest_screenshot_dt
+
         logger.info(f"{day_min_timestamp_dt=}, {day_max_timestamp_dt=}")
     with spacing_col:
         st.empty()
@@ -387,32 +399,48 @@ def render():
                     show_and_locate_video_timestamp_by_filename_and_time(day_video_file_name, shown_timestamp)
                     st.markdown(_t("oneday_md_rewinding_video_name").format(day_video_file_name=day_video_file_name))
                 else:
-                    # 没有对应的视频，查一下有无索引了的数据
-                    is_data_found, found_row = OneDay().find_closest_video_by_database(
-                        day_df, utils.datetime_to_seconds(day_full_select_datetime)
+                    # 是否有缓存的截图
+                    (
+                        day_is_screenshot_result_exist,
+                        day_screenshot_filepath,
+                    ) = OneDay().find_closest_video_by_filesys(
+                        day_full_select_datetime, threshold=8, dir_path=SCREENSHOT_CACHE_FILEPATH, return_as_full_filepath=True
                     )
-                    if is_data_found:
-                        st.info(_t("oneday_text_not_found_vid_but_has_data"), icon="🎐")
-                        found_row = db_manager.db_refine_search_data_day(
-                            found_row,
-                            cache_videofile_ondisk_list=st.session_state.cache_videofile_ondisk_list_oneday,
-                        )  # 优化下数据展示
-                        components.video_dataframe(found_row, heightIn=0)
+                    if day_is_screenshot_result_exist:
+                        if os.path.exists(day_screenshot_filepath):
+                            st.image(day_screenshot_filepath, caption=day_screenshot_filepath)
                     else:
-                        # 如果是当天第一次打开但数据库正在索引因而无法访问
-                        if (
-                            st.session_state.day_date_input == utils.set_full_datetime_to_YYYY_MM_DD(datetime.datetime.today())
-                            and utils.is_maintain_lock_valid()
-                        ):
-                            st.warning(
-                                _t("oneday_text_data_indexing_wait_and_refresh"),
-                                icon="🦫",
-                            )
+                        # 没有对应的视频和缓存截图，查一下有无索引了的数据
+                        is_data_found, found_row = OneDay().find_closest_video_by_database(
+                            day_df, utils.datetime_to_seconds(day_full_select_datetime)
+                        )
+                        if is_data_found:
+                            # screenshots compatible
+                            if os.path.exists(found_row["picturefile_name"].iloc[0]):
+                                st.image(found_row["picturefile_name"].iloc[0], caption=found_row["picturefile_name"].iloc[0])
+                            else:
+                                st.info(_t("oneday_text_not_found_vid_but_has_data"), icon="🎐")
+                                found_row = db_manager.db_refine_search_data_day(
+                                    found_row,
+                                    cache_videofile_ondisk_list=st.session_state.cache_videofile_ondisk_list_oneday,
+                                )  # 优化下数据展示
+                                components.video_dataframe(found_row, heightIn=0)
                         else:
-                            st.warning(
-                                _t("oneday_text_no_found_record_and_vid_on_disk"),
-                                icon="🦫",
-                            )
+                            # 如果是当天第一次打开但数据库正在索引因而无法访问
+                            if (
+                                st.session_state.day_date_input
+                                == utils.set_full_datetime_to_YYYY_MM_DD(datetime.datetime.today())
+                                and utils.is_maintain_lock_valid()
+                            ):
+                                st.warning(
+                                    _t("oneday_text_data_indexing_wait_and_refresh"),
+                                    icon="🦫",
+                                )
+                            else:
+                                st.warning(
+                                    _t("oneday_text_no_found_record_and_vid_on_disk"),
+                                    icon="🦫",
+                                )
 
         if config.enable_3_columns_in_oneday:  # 是否启用三栏
             with col3a:
