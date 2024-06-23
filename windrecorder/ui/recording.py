@@ -22,6 +22,10 @@ def render():
         st.session_state["display_info"] = utils.get_display_info()
     if "display_info_formatted" not in st.session_state:
         st.session_state["display_info_formatted"] = utils.get_display_info_formatted()
+    record_encoder = config.record_encoder
+    record_bitrate = config.record_bitrate
+    screenshot_interval_second = config.screenshot_interval_second
+    record_screenshot_method_capture_foreground_window_only = config.record_screenshot_method_capture_foreground_window_only
 
     st.markdown(_t("rs_md_title"))
 
@@ -42,6 +46,25 @@ def render():
         is_start_recording_on_start_app = st.checkbox(
             _t("rs_checkbox_is_start_recording_on_start_app"), value=config.start_recording_on_startup
         )
+
+        record_mode_option = [("ffmpeg", "直接录制视频（使用 FFmpeg）"), ("screenshot_array", "自动灵活截图（使用 MSS）")]
+        record_mode_col1, record_mode_col2 = st.columns([2, 1])
+        with record_mode_col1:
+            record_mode = st.selectbox(
+                "录制模式",
+                options=[i[1] for i in record_mode_option],
+                index=[index for index, value in enumerate(record_mode_option) if value[0] == config.record_mode][0],
+            )
+        with record_mode_col2:
+            st.empty()
+            if record_mode == record_mode_option[1][1]:  # screenshot_array
+                screenshot_interval_second = st.number_input(
+                    "截图分析时间间隔（秒）",
+                    value=config.screenshot_interval_second,
+                    min_value=3,
+                    max_value=15,
+                    help="为了保证实时分析性能，截图间隔需要大于每帧计算分析占用时间，因此限定在了 3 秒以上",
+                )
 
         # 检测到多显示器时，提供设置选项
         record_strategy_config = {
@@ -70,6 +93,35 @@ def render():
             display_record_strategy = None
             display_record_selection = None
 
+        record_screenshot_method_capture_foreground_window_only = (
+            config.record_screenshot_method_capture_foreground_window_only
+        )
+        record_mode_col_tip1, record_mode_col_tip2 = st.columns([1, 3])
+        if record_mode == record_mode_option[0][1]:  # ffmpeg
+            with record_mode_col_tip1:
+                st.image("__assets__\\record_method_ffmpeg.png")
+            with record_mode_col_tip2:
+                st.markdown(
+                    "- 适用于想完整记录电脑活动视频、性能较高的用户；\n- 索引时可以跳过自定义窗口与内容，但相关画面仍可能被录制、只是无法被检索到；\n- 录制时将占用较高的内存，在录制完成索引时可能占用较多系统资源；\n- 回溯存在最多15分钟的延迟；"
+                )
+
+        elif record_mode == record_mode_option[1][1]:  # screenshot_array
+            record_screenshot_method_capture_foreground_window_only = st.checkbox(
+                "只截图前台活动窗口", value=config.record_screenshot_method_capture_foreground_window_only
+            )
+            convert_screenshots_to_vid_while_only_when_idle_or_plugged_in = st.checkbox(
+                "（节能）仅在电脑空闲时或接入电源时将截图转换为视频", value=config.convert_screenshots_to_vid_while_only_when_idle_or_plugged_in
+            )
+            with record_mode_col_tip1:
+                if record_screenshot_method_capture_foreground_window_only:
+                    st.image("__assets__\\record_method_screenshots_foreground_window.png")
+                else:
+                    st.image("__assets__\\record_method_screenshots.png")
+            with record_mode_col_tip2:
+                st.markdown(
+                    "- 适用于存储、回忆、搜索记忆线索的大多数用户；\n- 占用低系统资源，实时分析、只索引存在变化的画面；\n- 可以马上回溯已记录画面；\n- 可以精确跳过自定义窗口与内容，同时可以仅录制前台窗口；"
+                )
+
         screentime_not_change_to_pause_record = st.number_input(
             _t("rs_input_stop_recording_when_screen_freeze"),
             value=config.screentime_not_change_to_pause_record,
@@ -80,53 +132,51 @@ def render():
             label=_t("rs_text_skip_recording_by_wintitle"), text=_t("rs_tag_input_tip"), value=config.exclude_words
         )
 
-        if st.toggle(_t("rs_text_show_encode_option"), key="expand_encode_option_recording"):
-            col_record_encoder, col_record_quality = st.columns([1, 1])
-            with col_record_encoder:
-                RECORD_ENCODER_LST = list(CONFIG_RECORD_PRESET.keys())
-                record_encoder = st.selectbox(
-                    _t("rs_text_record_encoder"),
-                    index=RECORD_ENCODER_LST.index(config.record_encoder),
-                    options=RECORD_ENCODER_LST,
-                    help=_t("rs_text_record_help"),
-                )
-            with col_record_quality:
-                record_bitrate = st.number_input(
-                    _t("rs_text_record_bitrate"),
-                    value=config.record_bitrate,
-                    min_value=50,
-                    max_value=10000,
-                    help=_t("rs_text_bitrate_help"),
-                )
-            if "265" in record_encoder:
-                st.warning(_t("rs_text_hevc_tips"), icon="🌚")
-
-            estimate_display_cnt = (
-                1
-                if (display_record_strategy is None)
-                or (display_record_strategy == _t("rs_text_record_strategy_option_single"))
-                else len(st.session_state.display_info_formatted)
-            )
-            st.text(
-                _t("rs_text_estimate_hint").format(
-                    min=round(0.025 * record_bitrate * estimate_display_cnt, 2),
-                    max=round(0.125 * record_bitrate * estimate_display_cnt, 2),
-                )
-            )
-
-            if st.button(_t("rs_btn_encode_benchmark"), key="rs_btn_encode_benchmark_recording"):
-                with st.spinner(_t("rs_text_encode_benchmark_loading")):
-                    result_df = record.record_encode_preset_benchmark_test()
-                    st.dataframe(
-                        result_df,
-                        column_config={
-                            "encoder preset": st.column_config.TextColumn(_t("rs_text_compress_encoder")),
-                            "support": st.column_config.CheckboxColumn(_t("rs_text_support"), default=False),
-                        },
+        if record_mode == record_mode_option[0][1]:  # ffmpeg
+            if st.toggle(_t("rs_text_show_encode_option"), key="expand_encode_option_recording"):
+                col_record_encoder, col_record_quality = st.columns([1, 1])
+                with col_record_encoder:
+                    RECORD_ENCODER_LST = list(CONFIG_RECORD_PRESET.keys())
+                    record_encoder = st.selectbox(
+                        _t("rs_text_record_encoder"),
+                        index=RECORD_ENCODER_LST.index(config.record_encoder),
+                        options=RECORD_ENCODER_LST,
+                        help=_t("rs_text_record_help"),
                     )
-        else:
-            record_encoder = config.record_encoder
-            record_bitrate = config.record_bitrate
+                with col_record_quality:
+                    record_bitrate = st.number_input(
+                        _t("rs_text_record_bitrate"),
+                        value=config.record_bitrate,
+                        min_value=50,
+                        max_value=10000,
+                        help=_t("rs_text_bitrate_help"),
+                    )
+                if "265" in record_encoder:
+                    st.warning(_t("rs_text_hevc_tips"), icon="🌚")
+
+                estimate_display_cnt = (
+                    1
+                    if (display_record_strategy is None)
+                    or (display_record_strategy == _t("rs_text_record_strategy_option_single"))
+                    else len(st.session_state.display_info_formatted)
+                )
+                st.text(
+                    _t("rs_text_estimate_hint").format(
+                        min=round(0.025 * record_bitrate * estimate_display_cnt, 2),
+                        max=round(0.125 * record_bitrate * estimate_display_cnt, 2),
+                    )
+                )
+
+                if st.button(_t("rs_btn_encode_benchmark"), key="rs_btn_encode_benchmark_recording"):
+                    with st.spinner(_t("rs_text_encode_benchmark_loading")):
+                        result_df = record.record_encode_preset_benchmark_test()
+                        st.dataframe(
+                            result_df,
+                            column_config={
+                                "encoder preset": st.column_config.TextColumn(_t("rs_text_compress_encoder")),
+                                "support": st.column_config.CheckboxColumn(_t("rs_text_support"), default=False),
+                            },
+                        )
 
         st.divider()
 
@@ -240,6 +290,17 @@ def render():
                 )
 
             utils.change_startup_shortcut(is_create=st.session_state.is_create_startup_shortcut)
+
+            config.set_and_save_config("record_mode", [value for value in record_mode_option if value[1] == record_mode][0][0])
+            config.set_and_save_config("screenshot_interval_second", screenshot_interval_second)
+            config.set_and_save_config(
+                "record_screenshot_method_capture_foreground_window_only",
+                record_screenshot_method_capture_foreground_window_only,
+            )
+            config.set_and_save_config(
+                "convert_screenshots_to_vid_while_only_when_idle_or_plugged_in",
+                convert_screenshots_to_vid_while_only_when_idle_or_plugged_in,
+            )
 
             config.set_and_save_config("screentime_not_change_to_pause_record", screentime_not_change_to_pause_record)
             config.set_and_save_config("start_recording_on_startup", is_start_recording_on_start_app)

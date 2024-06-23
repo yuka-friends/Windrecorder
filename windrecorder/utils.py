@@ -11,6 +11,7 @@ import subprocess
 import threading
 import time
 from contextlib import closing
+from ctypes import wintypes
 from io import BytesIO
 
 import cv2
@@ -835,3 +836,30 @@ def hex_to_rgb(hex_color):
     # 按RGB三个部分分割并转换为整数
     rgb = tuple(int(hex_color[i : i + 2], 16) for i in (0, 2, 4))
     return rgb
+
+
+def is_power_plugged_in():
+    class SYSTEM_POWER_STATUS(ctypes.Structure):
+        _fields_ = [
+            ("ACLineStatus", wintypes.BYTE),
+            ("BatteryFlag", wintypes.BYTE),
+            ("BatteryLifePercent", wintypes.BYTE),
+            ("SystemStatusFlag", wintypes.BYTE),
+            ("BatteryLifeTime", wintypes.DWORD),
+            ("BatteryFullLifeTime", wintypes.DWORD),
+        ]
+
+    GetSystemPowerStatus = ctypes.windll.kernel32.GetSystemPowerStatus
+    GetSystemPowerStatus.argtypes = [ctypes.POINTER(SYSTEM_POWER_STATUS)]
+    GetSystemPowerStatus.restype = wintypes.BOOL
+
+    status = SYSTEM_POWER_STATUS()
+    if GetSystemPowerStatus(ctypes.byref(status)):
+        # 如果ACLineStatus为1，则表示笔记本电脑接入了电源
+        if status.ACLineStatus == 1:
+            return True
+        else:
+            return False
+    else:
+        # 如果获取电源状态失败，则假设为台式机，返回True
+        return True
