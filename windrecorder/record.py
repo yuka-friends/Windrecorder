@@ -579,18 +579,23 @@ def submit_data_to_sqlite_db_process(saved_dir_filepath):
 
 def convert_screenshots_dir_into_video_process(saved_dir_filepath):
     """流程：将缓存的截图文件夹转换为视频"""
-    if saved_dir_filepath is None:
-        logger.error("saved_dir_filepath is None")
-        return
-    output_video_filepath = make_screenshots_into_video_via_dir_path(saved_dir_filepath)
-    if output_video_filepath:
-        compress_video_resolution(
-            output_video_filepath, 1, custom_output_name=os.path.basename(output_video_filepath).replace("-NOTCOMPRESS", "")
-        )
-        send2trash(output_video_filepath)
-        os.rename(saved_dir_filepath, saved_dir_filepath + "-VIDEO")
-        return saved_dir_filepath + "-VIDEO"
-    return saved_dir_filepath
+    try:
+        if saved_dir_filepath is None:
+            logger.error("saved_dir_filepath is None")
+            return
+        output_video_filepath = make_screenshots_into_video_via_dir_path(saved_dir_filepath)
+        if output_video_filepath:
+            compress_video_resolution(
+                output_video_filepath,
+                1,
+                custom_output_name=os.path.basename(output_video_filepath).replace("-NOTCOMPRESS", ""),
+            )
+            send2trash(output_video_filepath)
+            os.rename(saved_dir_filepath, saved_dir_filepath + "-VIDEO")
+            return saved_dir_filepath + "-VIDEO"
+        return saved_dir_filepath
+    except Exception as e:
+        logger.error(e)
 
 
 def index_cache_screenshots_dir_process():

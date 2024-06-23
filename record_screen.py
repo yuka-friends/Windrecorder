@@ -159,7 +159,7 @@ def continuously_record_screen():
                 if not config.convert_screenshots_to_vid_while_only_when_idle_or_plugged_in:
                     thread_convert_screenshots_into_video = threading.Thread(
                         target=record.convert_screenshots_dir_into_video_process,
-                        args=(saved_dir_filepath),
+                        args=(saved_dir_filepath,),
                         daemon=True,
                     )
                     thread_convert_screenshots_into_video.start()
