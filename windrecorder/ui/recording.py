@@ -26,6 +26,7 @@ def render():
     record_bitrate = config.record_bitrate
     screenshot_interval_second = config.screenshot_interval_second
     record_screenshot_method_capture_foreground_window_only = config.record_screenshot_method_capture_foreground_window_only
+    is_record_system_sound = config.is_record_system_sound
 
     st.markdown(_t("rs_md_title"))
 
@@ -47,11 +48,14 @@ def render():
             _t("rs_checkbox_is_start_recording_on_start_app"), value=config.start_recording_on_startup
         )
 
-        record_mode_option = [("ffmpeg", "直接录制视频（使用 FFmpeg）"), ("screenshot_array", "自动灵活截图（使用 MSS）")]
-        record_mode_col1, record_mode_col2 = st.columns([2, 1])
+        record_mode_option = [
+            ("ffmpeg", _t("rs_text_record_mode_option_ffmpeg")),
+            ("screenshot_array", _t("rs_text_record_mode_option_screenshot_array")),
+        ]
+        record_mode_col1, record_mode_col2 = st.columns([1.5, 1])
         with record_mode_col1:
             record_mode = st.selectbox(
-                "录制模式",
+                _t("rs_text_record_mode"),
                 options=[i[1] for i in record_mode_option],
                 index=[index for index, value in enumerate(record_mode_option) if value[0] == config.record_mode][0],
             )
@@ -59,11 +63,11 @@ def render():
             st.empty()
             if record_mode == record_mode_option[1][1]:  # screenshot_array
                 screenshot_interval_second = st.number_input(
-                    "截图分析时间间隔（秒）",
+                    _t("rs_input_screenshot_interval_second"),
                     value=config.screenshot_interval_second,
                     min_value=3,
                     max_value=15,
-                    help="为了保证实时分析性能，截图间隔需要大于每帧计算分析占用时间，因此限定在了 3 秒以上",
+                    help=_t("rs_text_screenshot_interval_second_help"),
                 )
 
         # 检测到多显示器时，提供设置选项
@@ -101,16 +105,22 @@ def render():
             with record_mode_col_tip1:
                 st.image("__assets__\\record_method_ffmpeg.png")
             with record_mode_col_tip2:
-                st.markdown(
-                    "- 适用于想完整记录电脑活动视频、性能较高的用户；\n- 索引时可以跳过自定义窗口与内容，但相关画面仍可能被录制、只是无法被检索到；\n- 录制时将占用较高的内存，在录制完成索引时可能占用较多系统资源；\n- 回溯存在最多15分钟的延迟；"
-                )
+                st.markdown(_t("rs_text_ffmpeg_help"))
+            is_record_system_sound = st.checkbox(
+                _t("rs_checkbox_is_record_system_sound"),
+                config.is_record_system_sound,
+                disabled=True,
+                help="Features still work in progress, please stay tuned.",
+            )
 
         elif record_mode == record_mode_option[1][1]:  # screenshot_array
             record_screenshot_method_capture_foreground_window_only = st.checkbox(
-                "只截图前台活动窗口", value=config.record_screenshot_method_capture_foreground_window_only
+                _t("rs_checkbox_record_screenshot_method_capture_foreground_window_only"),
+                value=config.record_screenshot_method_capture_foreground_window_only,
             )
             convert_screenshots_to_vid_while_only_when_idle_or_plugged_in = st.checkbox(
-                "（节能）仅在电脑空闲时或接入电源时将截图转换为视频", value=config.convert_screenshots_to_vid_while_only_when_idle_or_plugged_in
+                _t("rs_checkbox_convert_screenshots_to_vid_while_only_when_idle_or_plugged_in"),
+                value=config.convert_screenshots_to_vid_while_only_when_idle_or_plugged_in,
             )
             with record_mode_col_tip1:
                 if record_screenshot_method_capture_foreground_window_only:
@@ -118,9 +128,7 @@ def render():
                 else:
                     st.image("__assets__\\record_method_screenshots.png")
             with record_mode_col_tip2:
-                st.markdown(
-                    "- 适用于存储、回忆、搜索记忆线索的大多数用户；\n- 占用低系统资源，实时分析、只索引存在变化的画面；\n- 可以马上回溯已记录画面；\n- 可以精确跳过自定义窗口与内容，同时可以仅录制前台窗口；"
-                )
+                st.markdown(_t("rs_text_screenshot_array_help"))
 
         screentime_not_change_to_pause_record = st.number_input(
             _t("rs_input_stop_recording_when_screen_freeze"),
@@ -301,6 +309,7 @@ def render():
                 "convert_screenshots_to_vid_while_only_when_idle_or_plugged_in",
                 convert_screenshots_to_vid_while_only_when_idle_or_plugged_in,
             )
+            config.set_and_save_config("is_record_system_sound", is_record_system_sound)
 
             config.set_and_save_config("screentime_not_change_to_pause_record", screentime_not_change_to_pause_record)
             config.set_and_save_config("start_recording_on_startup", is_start_recording_on_start_app)
