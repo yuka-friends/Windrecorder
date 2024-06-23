@@ -404,7 +404,10 @@ def render():
                         day_is_screenshot_result_exist,
                         day_screenshot_filepath,
                     ) = OneDay().find_closest_video_by_filesys(
-                        day_full_select_datetime, threshold=8, dir_path=SCREENSHOT_CACHE_FILEPATH, return_as_full_filepath=True
+                        day_full_select_datetime,
+                        threshold=20,
+                        dir_path=SCREENSHOT_CACHE_FILEPATH,
+                        return_as_full_filepath=True,
                     )
                     if day_is_screenshot_result_exist:
                         if os.path.exists(day_screenshot_filepath):

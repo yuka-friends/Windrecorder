@@ -10,7 +10,7 @@ import mss
 import numpy as np
 import pandas as pd
 import pygetwindow
-from PIL import Image
+from PIL import Image, ImageDraw
 from send2trash import send2trash
 
 from windrecorder import file_utils, utils
@@ -369,6 +369,49 @@ def record_encode_preset_benchmark_test():
 
 def record_screen_via_screenshot_process():
     """流程：持续地截图录制"""
+
+    def _crop_ocr_image(image_filepath):
+        if len(config.ocr_image_crop_URBL) >= 4:
+            ocr_image_crop_URBL = config.ocr_image_crop_URBL
+        else:
+            ocr_image_crop_URBL = [6, 6, 6, 3]
+        image = Image.open(image_filepath)
+        draw = ImageDraw.Draw(image)
+        img_width, img_height = image.size
+
+        # 计算涂黑的区域
+        top_black = (
+            0,
+            0,
+            img_width,
+            int(img_height * (ocr_image_crop_URBL[0] / 100)),
+        )
+        bottom_black = (
+            0,
+            int(img_height * (1 - (ocr_image_crop_URBL[2] / 100))),
+            img_width,
+            img_height,
+        )
+        left_black = (
+            0,
+            0,
+            int(img_width * (ocr_image_crop_URBL[3] / 100)),
+            img_height,
+        )
+        right_black = (
+            int(img_width * (1 - (ocr_image_crop_URBL[1] / 100))),
+            0,
+            img_width,
+            img_height,
+        )
+        draw.rectangle(top_black, fill="black")
+        draw.rectangle(bottom_black, fill="black")
+        draw.rectangle(left_black, fill="black")
+        draw.rectangle(right_black, fill="black")
+        screenshot_cropped_saved_filepath = image_filepath.replace(".png", "_cropped.png")
+        image.save(screenshot_cropped_saved_filepath)
+        return screenshot_cropped_saved_filepath
+
     time_counter = 0
     screenshot_previous = None
     ocr_res_previous = ""
@@ -451,6 +494,7 @@ def record_screen_via_screenshot_process():
         # store img file
         screenshot_saved_filepath = os.path.join(SCREENSHOT_CACHE_FILEPATH, saved_dir_name, screenshot_saved_filename)
         mss.tools.to_png(screenshot_current.rgb, screenshot_current.size, output=screenshot_saved_filepath)
+        screenshot_cropped_saved_filepath = _crop_ocr_image(screenshot_saved_filepath)
         tmp_db_json_all_files["data"].append(
             {
                 "vid_file_name": saved_dir_name + ".mp4",
@@ -462,7 +506,7 @@ def record_screen_via_screenshot_process():
         logger.info(f"saved screenshot to {screenshot_saved_filepath}")
 
         # compare OCR result similarity
-        ocr_res_current = ocr_image(screenshot_saved_filepath)
+        ocr_res_current = ocr_image(screenshot_cropped_saved_filepath)
         is_ocr_res_over_threshold_similarity, _ = compare_strings(
             ocr_res_previous, ocr_res_current, threshold=config.ocr_compare_similarity * 100
         )

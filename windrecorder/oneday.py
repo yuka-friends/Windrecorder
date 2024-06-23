@@ -127,6 +127,8 @@ class OneDay:
         file_times = []
         for root, dirs, files in os.walk(dir_path):
             for file in files:
+                if "_cropped" in file:
+                    continue
                 match = re.match(r"(\d{4}-\d{2}-\d{2}_\d{2}-\d{2}-\d{2})", file)
                 if match:
                     file_dt = datetime.datetime.strptime(match.group(1), "%Y-%m-%d_%H-%M-%S")
