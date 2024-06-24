@@ -79,7 +79,11 @@ def idle_maintain_process_main():
                         os.remove(config.tray_lock_path)
                     except FileNotFoundError:
                         pass
-
+        # 将缓存截图转换为视频
+        if not config.convert_screenshots_to_vid_while_only_when_idle_or_plugged_in or utils.is_power_plugged_in():
+            record.index_cache_screenshots_dir_process()
+        # 清理过期与已转换为视频的截图缓存文件夹
+        record.clean_cache_screenshots_dir_process()
         # 清理过时视频
         ocr_manager.remove_outdated_videofiles(video_queue_batch=config.batch_size_remove_video_in_idle)
         # 压缩过期视频
@@ -156,7 +160,7 @@ def continuously_record_screen():
                 saved_dir_filepath = record.record_screen_via_screenshot_process()  # 使用连续截图录制屏幕
 
                 # convert to video startegy
-                if not config.convert_screenshots_to_vid_while_only_when_idle_or_plugged_in:
+                if not config.convert_screenshots_to_vid_while_only_when_idle_or_plugged_in or utils.is_power_plugged_in():
                     thread_convert_screenshots_into_video = threading.Thread(
                         target=record.convert_screenshots_dir_into_video_process,
                         args=(saved_dir_filepath,),
@@ -250,7 +254,13 @@ def main():
             if config.OCR_index_strategy == 1:
                 # 维护之前退出没留下的视频（如果有）
                 threading.Thread(target=ocr_manager.ocr_manager_main, daemon=True).start()
+
+            # 将未转换为视频的截图缓存进行转换
+            if not config.convert_screenshots_to_vid_while_only_when_idle_or_plugged_in or utils.is_power_plugged_in():
                 threading.Thread(target=record.index_cache_screenshots_dir_process, daemon=True).start()
+
+            # 清理已转换为视频的截图缓存
+            threading.Thread(target=record.clean_cache_screenshots_dir_process, daemon=True).start()
 
             # 屏幕内容多长时间不变则暂停录制
             logger.info(

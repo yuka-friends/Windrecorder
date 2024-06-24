@@ -261,7 +261,7 @@ def all_videofile_do_img_embedding_routine(video_queue_batch=14):
             # 如果视频被压缩了，目前跳过；TODO 未来如果使用时间戳手段提取、或者可以接受iframe提取的时域误差，则不需要这条规则了
             if "-OCRED" not in video_name:
                 continue
-            if "-IMGEMB" in video_name or "-COMPRESS" in video_name:
+            if "-IMGEMB" in video_name or "-COMPRESS" in video_name or "-SCREENSHOTS" in video_name:
                 continue
             vdb = VectorDatabase(vdb_filename=get_vdb_filename_via_video_filename(video_name))
             print(f"embedding {video_name}")

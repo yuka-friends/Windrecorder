@@ -24,6 +24,8 @@ from windrecorder.const import (
     DATE_FORMAT,
     DATETIME_FORMAT,
     DATETIME_FORMAT_PATTERN,
+    OUTDATE_DAY_TO_DELETE_SCREENSHOTS_CACHE_CONVERTED_TO_VID,
+    OUTDATE_DAY_TO_DELETE_SCREENSHOTS_CACHE_CONVERTED_TO_VID_WITHOUT_IMGEMB,
     SCREENSHOT_CACHE_FILEPATH,
     SCREENSHOT_CACHE_FILEPATH_TMP_DB_ALL_FILES_NAME,
     SCREENSHOT_CACHE_FILEPATH_TMP_DB_NAME,
@@ -598,19 +600,20 @@ def convert_screenshots_dir_into_video_process(saved_dir_filepath):
         logger.error(e)
 
 
+def get_screenshots_cache_dir_lst(directory=SCREENSHOT_CACHE_FILEPATH):
+    """获取所有合法的截图缓存文件夹目录"""
+    pattern = DATETIME_FORMAT_PATTERN
+    matching_folders = []
+    for item in os.listdir(directory):
+        folder_path = os.path.join(directory, item)
+        if os.path.isdir(folder_path) and re.match(pattern, item):
+            matching_folders.append(folder_path)
+    return matching_folders
+
+
 def index_cache_screenshots_dir_process():
     """流程：索引所有未转换为视频、未提交到数据库的文件夹截图"""
-
-    def _get_cache_dir_lst(directory=SCREENSHOT_CACHE_FILEPATH):
-        pattern = DATETIME_FORMAT_PATTERN
-        matching_folders = []
-        for item in os.listdir(directory):
-            folder_path = os.path.join(directory, item)
-            if os.path.isdir(folder_path) and re.match(pattern, item):
-                matching_folders.append(folder_path)
-        return matching_folders
-
-    dir_lst = _get_cache_dir_lst()
+    dir_lst = get_screenshots_cache_dir_lst()
     for dir_path in dir_lst:
         if not os.path.exists(os.path.join(dir_path, "-SUBMIT")):
             logger.debug(f"{dir_path} not submit to db, submiting...")
@@ -618,6 +621,23 @@ def index_cache_screenshots_dir_process():
         if "-VIDEO" not in dir_path:
             logger.debug(f"{dir_path} not convert to video, converting...")
             convert_screenshots_dir_into_video_process(dir_path)
+
+
+def clean_cache_screenshots_dir_process():
+    """流程：清理已转换为视频、已经完成图像嵌入的文件夹（若安装开启了图像嵌入），超出存储日期范围的文件夹（区分开启与无开启图像嵌入）"""
+    outdate_day = OUTDATE_DAY_TO_DELETE_SCREENSHOTS_CACHE_CONVERTED_TO_VID
+    if config.enable_img_embed_search and config.img_embed_module_install:
+        outdate_day = OUTDATE_DAY_TO_DELETE_SCREENSHOTS_CACHE_CONVERTED_TO_VID_WITHOUT_IMGEMB
+    dir_lst = get_screenshots_cache_dir_lst()
+    video_lst = file_utils.get_file_path_list(config.record_videos_dir_ud)
+    for dir_path in dir_lst:
+        if "-VIDEO" in dir_path and "-IMGEMB" in dir_path:
+            send2trash(dir_path)
+        elif "-VIDEO" in dir_path or any(os.path.basename(dir_path)[:19] in word for word in video_lst):
+            if datetime.datetime.now() - utils.dtstr_to_datetime(os.path.basename(dir_path)[:19]) > datetime.timedelta(
+                days=outdate_day
+            ):
+                send2trash(dir_path)
 
 
 def get_screenshot_foreground_window():
