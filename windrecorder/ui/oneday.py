@@ -97,7 +97,14 @@ def render():
                 st.session_state.day_date_input
             )
             if earliest_screenshot_dt and latest_screenshot_dt:
-                if day_min_timestamp_dt > earliest_screenshot_dt:
+                if day_min_timestamp_dt > earliest_screenshot_dt and earliest_screenshot_dt > datetime.datetime(
+                    earliest_screenshot_dt.year,
+                    earliest_screenshot_dt.month,
+                    earliest_screenshot_dt.day,
+                    int(config.day_begin_minutes / 60),
+                    int(config.day_begin_minutes % 60),
+                    0,
+                ):
                     day_min_timestamp_dt = earliest_screenshot_dt
                 if day_max_timestamp_dt < latest_screenshot_dt:
                     day_max_timestamp_dt = latest_screenshot_dt
