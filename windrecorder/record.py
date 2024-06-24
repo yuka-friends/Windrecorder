@@ -420,6 +420,8 @@ def record_screen_via_screenshot_process():
     start_record = False
     saved_dir_name = None
     saved_dir_filepath = None
+    screen_lock_interrupt_counter = 0
+    screen_lock_interrupt_timeout = 3
     tmp_db_json = {"data": []}
     tmp_db_json_all_files = {"data": []}
     last_execute_time = time.time()
@@ -440,6 +442,20 @@ def record_screen_via_screenshot_process():
             datetime_str_record
         )  # ignore timezone convert walkaround FIXME
         screenshot_saved_filename = datetime_str_record + ".png"
+
+        # if screen lock or system sleep
+        if utils.is_screen_locked():
+            screen_lock_interrupt_counter += 1
+            logger.info(f"screen locked, {screen_lock_interrupt_counter=}")
+            continue
+        if not utils.is_system_awake():
+            logger.info("system sleep, recording break")
+            break
+        if screen_lock_interrupt_counter > screen_lock_interrupt_timeout:
+            logger.info(
+                f"screen locked {screen_lock_interrupt_counter=} longer than timeout {screen_lock_interrupt_timeout=}, recording stopped"
+            )
+            break
 
         # skip custom rule
         if utils.is_str_contain_list_word(win_title, config.exclude_words):
