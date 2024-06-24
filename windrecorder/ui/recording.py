@@ -27,6 +27,9 @@ def render():
     screenshot_interval_second = config.screenshot_interval_second
     record_screenshot_method_capture_foreground_window_only = config.record_screenshot_method_capture_foreground_window_only
     is_record_system_sound = config.is_record_system_sound
+    convert_screenshots_to_vid_while_only_when_idle_or_plugged_in = (
+        config.convert_screenshots_to_vid_while_only_when_idle_or_plugged_in
+    )
 
     st.markdown(_t("rs_md_title"))
 
@@ -194,11 +197,14 @@ def render():
             _t("rs_text_ocr_manual_update"): 0,
             _t("rs_text_ocr_auto_update"): 1,
         }
-        ocr_strategy_option = st.selectbox(
-            _t("rs_selectbox_ocr_strategy"),
-            (list(ocr_strategy_option_dict.keys())),
-            index=config.OCR_index_strategy,
-        )
+        if record_mode == record_mode_option[0][1]:  # ffmpeg
+            ocr_strategy_option = st.selectbox(
+                _t("rs_selectbox_ocr_strategy"),
+                (list(ocr_strategy_option_dict.keys())),
+                index=config.OCR_index_strategy,
+            )
+        else:
+            ocr_strategy_option = _t("rs_text_ocr_auto_update")
 
         col1d, col2d, col3d = st.columns([1, 1, 1])
         with col1d:
