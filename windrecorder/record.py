@@ -573,8 +573,15 @@ def submit_data_to_sqlite_db_process(saved_dir_filepath):
         if tmp_db_json is None:
             logger.info("tmp_db_json is None")
             return None
-        if len(tmp_db_json["data"]) < 2:
+        if len(tmp_db_json["data"]) < 3:
             logger.info("tmp_db_json records not enough")
+            try:
+                if len(file_utils.get_file_path_list(saved_dir_filepath)) < 10:
+                    send2trash(saved_dir_filepath)
+                else:
+                    os.rename(saved_dir_filepath, saved_dir_filepath + "-DISCARD")
+            except Exception as e:
+                logger.error(f"discard incomplete cache fail: {e}")
             return None
         # convert tmp_db_json to dataframe
         dataframe_all = pd.DataFrame(columns=DATAFRAME_COLUMN_NAMES)
@@ -654,6 +661,8 @@ def clean_cache_screenshots_dir_process():
                 days=outdate_day
             ):
                 send2trash(dir_path)
+        elif "-DISCARD" in dir_path:
+            send2trash(dir_path)
 
 
 def get_screenshot_foreground_window():
@@ -731,7 +740,7 @@ def convert_screenshots_dir_into_same_size_to_cache(
     # 查找最大的图片尺寸
     max_width, max_height = 0, 0
     for img_name in os.listdir(src_folder):
-        if not img_name.lower().endswith((".png", ".jpg", ".jpeg")):
+        if not img_name.lower().endswith((".png", ".jpg", ".jpeg")) or "_cropped" in img_name:
             continue
         img_path = os.path.join(src_folder, img_name)
         with Image.open(img_path) as img:
@@ -740,7 +749,7 @@ def convert_screenshots_dir_into_same_size_to_cache(
 
     # 调整图片大小并保存
     for img_name in os.listdir(src_folder):
-        if not img_name.lower().endswith((".png", ".jpg", ".jpeg")):
+        if not img_name.lower().endswith((".png", ".jpg", ".jpeg")) or "_cropped" in img_name:
             continue
         img_path = os.path.join(src_folder, img_name)
         logger.debug(f"process screenshots size: {img_path}")
