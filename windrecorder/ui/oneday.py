@@ -96,7 +96,7 @@ def render():
             earliest_screenshot_dt, latest_screenshot_dt = OneDay().find_earliest_latest_screenshots_cache_datetime_via_date(
                 st.session_state.day_date_input
             )
-            if earliest_screenshot_dt and latest_screenshot_dt:
+            if earliest_screenshot_dt and latest_screenshot_dt and day_min_timestamp_dt and day_max_timestamp_dt:
                 if day_min_timestamp_dt > earliest_screenshot_dt and earliest_screenshot_dt > datetime.datetime(
                     earliest_screenshot_dt.year,
                     earliest_screenshot_dt.month,
