@@ -169,10 +169,11 @@ def render():
 
             st.session_state.day_search_keyword = st.text_input(
                 _t("text_search_keyword"),
-                "Keyword",
+                "",
                 key=2,
                 label_visibility="collapsed",
                 disabled=not st.session_state.day_time_slider_disable,
+                placeholder="Keyword",
             )
             do_day_keyword_search()
 
