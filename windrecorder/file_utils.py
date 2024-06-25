@@ -1,5 +1,6 @@
 import json
 import os
+import re
 import shutil
 import time
 
@@ -7,6 +8,7 @@ import pandas as pd
 
 import windrecorder.utils as utils
 from windrecorder.config import config
+from windrecorder.const import DATETIME_FORMAT_PATTERN, SCREENSHOT_CACHE_FILEPATH
 from windrecorder.logger import get_logger
 
 logger = get_logger(__name__)
@@ -171,7 +173,7 @@ def get_file_dir_list_first_level(dir):
 def get_videofile_path_list_by_time_range(filepath_list, start_datetime=None, end_datetime=None):
     filepath_list_daterange = []
     for filepath in filepath_list:
-        if "-OCRED.mp4" in filepath:
+        if "-OCRED" in filepath:
             if start_datetime is None or end_datetime is None:  # 如果不指定时间段，返回所有结果
                 filepath_list_daterange.append(filepath)
             else:
@@ -181,6 +183,27 @@ def get_videofile_path_list_by_time_range(filepath_list, start_datetime=None, en
                     filepath_list_daterange.append(filepath)
 
     return filepath_list_daterange
+
+
+def get_screenshots_cache_dir_lst(directory=SCREENSHOT_CACHE_FILEPATH):
+    """获取所有合法的截图缓存文件夹目录"""
+    pattern = DATETIME_FORMAT_PATTERN
+    matching_folders = []
+    for item in os.listdir(directory):
+        folder_path = os.path.join(directory, item)
+        if os.path.isdir(folder_path) and re.match(pattern, item):
+            matching_folders.append(folder_path)
+    return matching_folders
+
+
+def get_screenshots_cache_dir_by_video_file_name(video_filename):
+    """根据视频文件名获取其截图缓存文件夹目录"""
+    cache_dir_lst = get_screenshots_cache_dir_lst()
+    res_lst = [dir for dir in cache_dir_lst if video_filename[:19] in dir]
+    if res_lst:
+        return res_lst[0]
+    else:
+        return None
 
 
 # 根据已有的视频文件夹路径列表，生成对应datetime的词典

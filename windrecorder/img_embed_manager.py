@@ -151,7 +151,9 @@ def find_closest_iframe_img_dict_item(target: str, img_dict: dict, threshold=3):
     return closest_item
 
 
-def embed_img_in_iframe_by_rowid_dict(model_image, processor_image, img_dict: dict, img_dir_filepath, vdb: VectorDatabase):
+def embed_img_in_iframe_by_rowid_dict(
+    model_image, processor_image, img_dict: dict, img_dir_filepath, vdb: VectorDatabase, enable_find_closest_img_strategy=True
+):
     """
     流程：根据 dict {sqlite_ROWID:图像文件名} 对应关系，
     将（i_frame 临时）文件夹中的对应图像转为对应的 embedding 并写入 vdb.index
@@ -164,20 +166,23 @@ def embed_img_in_iframe_by_rowid_dict(model_image, processor_image, img_dict: di
         if not os.path.exists(img_filepath):
             print(f"not os.path.exists({img_filepath})")
             logger.info(f"not os.path.exists({img_filepath})")
-            # 提取的图像列表有时出于换了提取iframe方式、cv可能的随机性等缘故，可能无法保证与db过去记录的完全一致，在 embedding 时有则 embed，无则寻找最近的阈值、再无则跳过。但考虑到相似图像仍会出现在附近时间范围，结果应尚可。
-            closest_img_filename = find_closest_iframe_img_dict_item(target=img_filename, img_dict=img_dict)
-            if closest_img_filename is None:
-                print(f"{img_filepath} closest item not found, skipped.")
-                logger.info(f"{img_filepath} closest item not found, skipped.")
-                continue
-            else:
-                print(f"{img_filepath} closest item found: {closest_img_filename}")
-                img_filepath = os.path.join(img_dir_filepath, closest_img_filename)
-                if not os.path.exists(img_filepath):
-                    print(f"{img_filepath} not existed, skipped.")
-                    logger.info(f"{img_filepath} not existed, skipped.")
+            if enable_find_closest_img_strategy:
+                # 提取的图像列表有时出于换了提取iframe方式、cv可能的随机性等缘故，可能无法保证与db过去记录的完全一致，在 embedding 时有则 embed，无则寻找最近的阈值、再无则跳过。但考虑到相似图像仍会出现在附近时间范围，结果应尚可。
+                closest_img_filename = find_closest_iframe_img_dict_item(target=img_filename, img_dict=img_dict)
+                if closest_img_filename is None:
+                    print(f"{img_filepath} closest item not found, skipped.")
+                    logger.info(f"{img_filepath} closest item not found, skipped.")
                     continue
-                logger.info(f"{img_filepath} replaced as {closest_img_filename}.")
+                else:
+                    print(f"{img_filepath} closest item found: {closest_img_filename}")
+                    img_filepath = os.path.join(img_dir_filepath, closest_img_filename)
+                    if not os.path.exists(img_filepath):
+                        print(f"{img_filepath} not existed, skipped.")
+                        logger.info(f"{img_filepath} not existed, skipped.")
+                        continue
+                    logger.info(f"{img_filepath} replaced as {closest_img_filename}.")
+            else:
+                continue
         vdb.add_vector(vector=embed_img(model_image, processor_image, img_filepath), rowid=rowid)
 
     vdb.save_to_file()
@@ -208,37 +213,57 @@ def embed_vid_file(
         logger.info(f"{vid_file_name}: no record in OCR db")
         return False
 
-    # 判断是否存在图片缓存文件，若无则提取
-    iframe_sub_path = os.path.join(iframe_path, os.path.splitext(vid_file_name)[0][:19])  # FIXME 硬编码取了文件名的日期范围
-    iframe_img_list = []
-    if os.path.exists(iframe_sub_path):
-        iframe_img_list = os.listdir(iframe_sub_path)
+    if "-SCREENSHOTS" in vid_file_name:
+        for k, v in img_db_recorded_dict.items():
+            img_db_recorded_dict[k] = os.path.join(v.split("\\")[0], v.split("\\")[1] + "-VIDEO", v.split("\\")[2])
+        for img_filepath in list(img_db_recorded_dict.values()):
+            if not os.path.exists(img_filepath):
+                logger.info(f"Screenshot cache integrity check failed: {img_filepath} not existed.")
+                return False
 
-    if not all(
-        element in iframe_img_list for element in list(img_db_recorded_dict.values())
-    ):  # 已有缓存图像文件是否包含了sqlite db中记录的图像文件，否则重新提取
-        # 清理缓存
+        embed_img_in_iframe_by_rowid_dict(
+            model_image=model_image,
+            processor_image=processor_image,
+            img_dict=img_db_recorded_dict,
+            img_dir_filepath="",
+            vdb=vdb,
+            enable_find_closest_img_strategy=False,
+        )
+        screenshot_cache_dir_path = file_utils.get_screenshots_cache_dir_by_video_file_name(vid_file_name)
+        os.rename(screenshot_cache_dir_path, screenshot_cache_dir_path + "-IMGEMB")
+
+    else:
+        # 判断是否存在图片缓存文件，若无则提取
+        iframe_sub_path = os.path.join(iframe_path, os.path.splitext(vid_file_name)[0][:19])  # FIXME 硬编码取了文件名的日期范围
+        iframe_img_list = []
+        if os.path.exists(iframe_sub_path):
+            iframe_img_list = os.listdir(iframe_sub_path)
+
+        if not all(
+            element in iframe_img_list for element in list(img_db_recorded_dict.values())
+        ):  # 已有缓存图像文件是否包含了sqlite db中记录的图像文件，否则重新提取
+            # 清理缓存
+            try:
+                shutil.rmtree(iframe_sub_path)
+            except FileNotFoundError:
+                pass
+            file_utils.ensure_dir(iframe_sub_path)
+            extract_iframe(video_file=vid_filepath, iframe_path=iframe_sub_path)
+            crop_iframe(iframe_sub_path)  # 提取后需要对图像进行遮减处理。不确定这个策略
+
+        # 因为是原子操作，不用添加回滚机制，完成了所有的索引才写入 faiss index db file
+        embed_img_in_iframe_by_rowid_dict(
+            model_image=model_image,
+            processor_image=processor_image,
+            img_dict=img_db_recorded_dict,
+            img_dir_filepath=iframe_sub_path,
+            vdb=vdb,
+        )
+        # 清理图像缓存
         try:
             shutil.rmtree(iframe_sub_path)
         except FileNotFoundError:
             pass
-        file_utils.ensure_dir(iframe_sub_path)
-        extract_iframe(video_file=vid_filepath, iframe_path=iframe_sub_path)
-        crop_iframe(iframe_sub_path)  # 提取后需要对图像进行遮减处理。不确定这个策略
-
-    # 因为是原子操作，不用添加回滚机制，完成了所有的索引才写入 faiss index db file
-    embed_img_in_iframe_by_rowid_dict(
-        model_image=model_image,
-        processor_image=processor_image,
-        img_dict=img_db_recorded_dict,
-        img_dir_filepath=iframe_sub_path,
-        vdb=vdb,
-    )
-    # 清理图像缓存
-    try:
-        shutil.rmtree(iframe_sub_path)
-    except FileNotFoundError:
-        pass
 
     os.rename(vid_filepath, vid_filepath.replace("-OCRED", "-IMGEMB-OCRED"))
     return True
@@ -261,7 +286,7 @@ def all_videofile_do_img_embedding_routine(video_queue_batch=14):
             # 如果视频被压缩了，目前跳过；TODO 未来如果使用时间戳手段提取、或者可以接受iframe提取的时域误差，则不需要这条规则了
             if "-OCRED" not in video_name:
                 continue
-            if "-IMGEMB" in video_name or "-COMPRESS" in video_name or "-SCREENSHOTS" in video_name:
+            if "-IMGEMB" in video_name or "-COMPRESS" in video_name:
                 continue
             vdb = VectorDatabase(vdb_filename=get_vdb_filename_via_video_filename(video_name))
             print(f"embedding {video_name}")

@@ -73,36 +73,6 @@ def render():
                     help=_t("rs_text_screenshot_interval_second_help"),
                 )
 
-        # 检测到多显示器时，提供设置选项
-        record_strategy_config = {
-            _t("rs_text_record_strategy_option_all").format(num=len(st.session_state.display_info_formatted)): "all",
-            _t("rs_text_record_strategy_option_single"): "single",
-        }
-        if st.session_state.display_count > 1:
-            col1_ms, col2_ms = st.columns([1, 1])
-            with col1_ms:
-                display_record_strategy = st.selectbox(
-                    _t("rs_text_record_range"),
-                    index=1 if config.multi_display_record_strategy == "single" else 0,
-                    options=[i for i in record_strategy_config.keys()],
-                )
-            with col2_ms:
-                if display_record_strategy == _t("rs_text_record_strategy_option_single"):
-                    display_record_selection = st.selectbox(
-                        _t("rs_text_record_single_display_select"),
-                        index=config.record_single_display_index - 1,
-                        options=st.session_state.display_info_formatted,
-                    )
-                else:
-                    display_record_selection = None
-                    st.empty()
-        else:
-            display_record_strategy = None
-            display_record_selection = None
-
-        record_screenshot_method_capture_foreground_window_only = (
-            config.record_screenshot_method_capture_foreground_window_only
-        )
         record_mode_col_tip1, record_mode_col_tip2 = st.columns([1, 3])
         if record_mode == record_mode_option[0][1]:  # ffmpeg
             with record_mode_col_tip1:
@@ -132,6 +102,35 @@ def render():
                     st.image("__assets__\\record_method_screenshots.png")
             with record_mode_col_tip2:
                 st.markdown(_t("rs_text_screenshot_array_help"))
+
+        # 检测到多显示器时，提供设置选项
+        record_strategy_config = {
+            _t("rs_text_record_strategy_option_all").format(num=len(st.session_state.display_info_formatted)): "all",
+            _t("rs_text_record_strategy_option_single"): "single",
+        }
+        if st.session_state.display_count > 1 and (
+            record_mode == record_mode_option[0][1] or record_screenshot_method_capture_foreground_window_only is False
+        ):
+            col1_ms, col2_ms = st.columns([1, 1])
+            with col1_ms:
+                display_record_strategy = st.selectbox(
+                    _t("rs_text_record_range"),
+                    index=1 if config.multi_display_record_strategy == "single" else 0,
+                    options=[i for i in record_strategy_config.keys()],
+                )
+            with col2_ms:
+                if display_record_strategy == _t("rs_text_record_strategy_option_single"):
+                    display_record_selection = st.selectbox(
+                        _t("rs_text_record_single_display_select"),
+                        index=config.record_single_display_index - 1,
+                        options=st.session_state.display_info_formatted,
+                    )
+                else:
+                    display_record_selection = None
+                    st.empty()
+        else:
+            display_record_strategy = None
+            display_record_selection = None
 
         screentime_not_change_to_pause_record = st.number_input(
             _t("rs_input_stop_recording_when_screen_freeze"),

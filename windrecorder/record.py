@@ -1,6 +1,5 @@
 import datetime
 import os
-import re
 import shutil
 import subprocess
 import time
@@ -23,7 +22,6 @@ from windrecorder.const import (
     DATAFRAME_COLUMN_NAMES,
     DATE_FORMAT,
     DATETIME_FORMAT,
-    DATETIME_FORMAT_PATTERN,
     OUTDATE_DAY_TO_DELETE_SCREENSHOTS_CACHE_CONVERTED_TO_VID,
     OUTDATE_DAY_TO_DELETE_SCREENSHOTS_CACHE_CONVERTED_TO_VID_WITHOUT_IMGEMB,
     SCREENSHOT_CACHE_FILEPATH,
@@ -525,6 +523,8 @@ def record_screen_via_screenshot_process():
 
         # compare OCR result similarity
         ocr_res_current = ocr_image(screenshot_cropped_saved_filepath)
+        if len(ocr_res_current) < 5:
+            continue
         is_ocr_res_over_threshold_similarity, _ = compare_strings(
             ocr_res_previous, ocr_res_current, threshold=config.ocr_compare_similarity * 100
         )
@@ -623,20 +623,9 @@ def convert_screenshots_dir_into_video_process(saved_dir_filepath):
         logger.error(e)
 
 
-def get_screenshots_cache_dir_lst(directory=SCREENSHOT_CACHE_FILEPATH):
-    """获取所有合法的截图缓存文件夹目录"""
-    pattern = DATETIME_FORMAT_PATTERN
-    matching_folders = []
-    for item in os.listdir(directory):
-        folder_path = os.path.join(directory, item)
-        if os.path.isdir(folder_path) and re.match(pattern, item):
-            matching_folders.append(folder_path)
-    return matching_folders
-
-
 def index_cache_screenshots_dir_process():
     """流程：索引所有未转换为视频、未提交到数据库的文件夹截图"""
-    dir_lst = get_screenshots_cache_dir_lst()
+    dir_lst = file_utils.get_screenshots_cache_dir_lst()
     for dir_path in dir_lst:
         if not os.path.exists(os.path.join(dir_path, "-SUBMIT")):
             logger.debug(f"{dir_path} not submit to db, submiting...")
@@ -651,7 +640,7 @@ def clean_cache_screenshots_dir_process():
     outdate_day = OUTDATE_DAY_TO_DELETE_SCREENSHOTS_CACHE_CONVERTED_TO_VID
     if config.enable_img_embed_search and config.img_embed_module_install:
         outdate_day = OUTDATE_DAY_TO_DELETE_SCREENSHOTS_CACHE_CONVERTED_TO_VID_WITHOUT_IMGEMB
-    dir_lst = get_screenshots_cache_dir_lst()
+    dir_lst = file_utils.get_screenshots_cache_dir_lst()
     video_lst = file_utils.get_file_path_list(config.record_videos_dir_ud)
     for dir_path in dir_lst:
         if "-VIDEO" in dir_path and "-IMGEMB" in dir_path:
@@ -759,7 +748,7 @@ def convert_screenshots_dir_into_same_size_to_cache(
             x = (max_width - width) // 2
             y = (max_height - height) // 2
             new_img.paste(img, (x, y))
-            new_img.save(os.path.join(src_folder, img_name))
+            new_img.save(img_path)
 
 
 def make_screenshots_into_video_via_dir_path(saved_dir_filepath):

@@ -418,7 +418,7 @@ def render():
                     )
                     if day_is_screenshot_result_exist:
                         if os.path.exists(day_screenshot_filepath):
-                            st.image(day_screenshot_filepath, caption=day_screenshot_filepath)
+                            display_screenshot_recall(day_screenshot_filepath)
                     else:
                         # 没有对应的视频和缓存截图，查一下有无索引了的数据
                         is_data_found, found_row = OneDay().find_closest_video_by_database(
@@ -427,7 +427,7 @@ def render():
                         if is_data_found:
                             # screenshots compatible
                             if os.path.exists(found_row["picturefile_name"].iloc[0]):
-                                st.image(found_row["picturefile_name"].iloc[0], caption=found_row["picturefile_name"].iloc[0])
+                                display_screenshot_recall(found_row["picturefile_name"].iloc[0])
                             else:
                                 st.info(_t("oneday_text_not_found_vid_but_has_data"), icon="🎐")
                                 found_row = db_manager.db_refine_search_data_day(
@@ -486,3 +486,14 @@ def daily_timeline_html(image_b64):
         f"<img style='max-width: 97%;max-height: 100%;margin: 0 0px 5px 50px' src='data:image/png;base64, {image_b64}'/>",
         unsafe_allow_html=True,
     )
+
+
+# 优化显示回溯截图
+def display_screenshot_recall(day_screenshot_filepath):
+    screenshot_col1, screenshot_col2, screenshot_col3 = st.columns([0.15, 1, 0.15])
+    with screenshot_col1:
+        st.empty()
+    with screenshot_col2:
+        st.image(day_screenshot_filepath, caption=day_screenshot_filepath)
+    with screenshot_col3:
+        st.empty()
