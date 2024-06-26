@@ -57,6 +57,7 @@ subprocess.run("color 06", shell=True)
 # 清理缓存
 if os.path.exists("cache"):
     try:
+        print("cleaning cache...")
         file_utils.empty_directory("cache")
     except PermissionError:
         pass
@@ -76,7 +77,6 @@ def print_header(step=1, toast="", localization=True):
         print(_t("qs_header_2"))
     else:
         print(f"Weclome to Windrecorder {__version__} | 欢迎使用捕风记录仪\n")
-        print()
         print("Thanks for downloading! This Quick Wizard will help you set it up. \n感谢下载使用！本向导将协助你完成基础配置项。不用担心，所有选项之后都可以再次调整。")
 
     divider()
@@ -268,7 +268,7 @@ def set_record_mode():
     if display_count > 1:
         while True:
             print_header(step=4)
-            print(f"{_t('qs_record_current_record')}{current_record_hint}")
+            print(f"{_t('qs_record_current_record')} {current_record_hint}")
             print(
                 f"""
 
@@ -325,7 +325,7 @@ def set_record_mode():
     else:
         while True:
             print_header(step=4)
-            print(f"{_t('qs_record_current_record')}{current_record_hint}")
+            print(f"{_t('qs_record_current_record')} {current_record_hint}")
             print(
                 f"""
 

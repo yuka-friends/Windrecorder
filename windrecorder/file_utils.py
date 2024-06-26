@@ -20,6 +20,7 @@ def empty_directory(path):
         return
     with os.scandir(path) as it:
         for entry in it:
+            print(f"cleaning: {entry.path}")
             try:
                 if entry.is_dir():
                     shutil.rmtree(entry.path)

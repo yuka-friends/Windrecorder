@@ -226,7 +226,7 @@
         "qs_et_describe": "Windrecorder also provides some extension functions, which you can later install/use in the extension directory.",
         "qs_end_describe": "Congratulations! You have completed all initial settings. Don't worry, you can adjust the settings anytime in the app! \n\nNow, you can open [start_app.bat] in the directory to start using it. \n",
         "qs_end_slogan": "> Capture and preserve the fleeting moments of the wind, as seen through your eyes.",
-        "qs_end_feedback": "> Encountered a problem or have suggestions? Feel free to submit issues and PRs at\nhttps://github.com/yuka-friends/Windrecorder",
+        "qs_end_feedback": "> Encountered a problem or have suggestions? Feel free to submit issues and PRs at\n   https://github.com/yuka-friends/Windrecorder",
 
         "tray_add_flag_mark_note_for_now": "🚩 Add mark for now",
         "tray_webui_start": "🦝 Start Search/Setting webui",
@@ -480,7 +480,7 @@
         "qs_et_describe": "捕风记录仪 还提供了一些扩展功能，你可以稍后在 extension 目录下安装/使用。",
         "qs_end_describe": "恭喜！你已完成所有初始设定。别担心，你可以随时在应用内调整设置！\n\n现在，你可以打开目录下的 【start_app.bat】 来开始使用啦。\n",
         "qs_end_slogan": "> 一起捕捉贮藏风一般掠过的、你的目之所见。",
-        "qs_end_feedback": "> 遇到问题、想反馈建议？欢迎提交 issue 与 PR: \nhttps://github.com/yuka-friends/Windrecorder",
+        "qs_end_feedback": "> 遇到问题、想反馈建议？欢迎提交 issue 与 PR: \n   https://github.com/yuka-friends/Windrecorder",
         
         "tray_add_flag_mark_note_for_now": "🚩 为现在时间添加标记",
         "tray_webui_start": "🦝 启动搜索/设置界面",

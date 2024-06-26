@@ -212,11 +212,11 @@ class OneDay:
         if folder_filepath[0] is not None and folder_filepath[1] is not None:
             earliest_all_files_json_filepath = os.path.join(folder_filepath[0], SCREENSHOT_CACHE_FILEPATH_TMP_DB_NAME)
             tmp_db_json_all_files = file_utils.read_json_as_dict_from_path(earliest_all_files_json_filepath)
-            if tmp_db_json_all_files:
+            if len(tmp_db_json_all_files) > 3:
                 earliest_screenshot_datetime = utils.dtstr_to_datetime(tmp_db_json_all_files["data"][0]["datetime_str_record"])
             latest_all_files_json_filepath = os.path.join(folder_filepath[1], SCREENSHOT_CACHE_FILEPATH_TMP_DB_NAME)
             tmp_db_json_all_files = file_utils.read_json_as_dict_from_path(latest_all_files_json_filepath)
-            if tmp_db_json_all_files:
+            if len(tmp_db_json_all_files) > 3:
                 latest_screenshot_datetime = utils.dtstr_to_datetime(tmp_db_json_all_files["data"][-1]["datetime_str_record"])
 
         return (earliest_screenshot_datetime, latest_screenshot_datetime)
