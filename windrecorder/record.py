@@ -551,6 +551,7 @@ def record_screen_via_screenshot_process():
                 "ocr_text": ocr_res_current,
                 "win_title": win_title,
                 "videofile_time": datetime_unix_timestamp_record,
+                "datetime_str_record": datetime_str_record,
                 "thumbnail": utils.resize_image_as_base64_as_thumbnail_via_filepath(screenshot_saved_filepath),
             }
         )  # Used to index to sqlite db
