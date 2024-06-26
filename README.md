@@ -11,16 +11,12 @@ Windrecorder is a memory search app by records everything on your screen in smal
 ![Windrecorder](https://github.com/yuka-friends/Windrecorder/blob/main/__assets__/product-preview-en.jpg)
 
 **Windrecorder currently does:**
-- Record multiple or single displays stably and continuously with a small file size;
+- Record multiple or single screens, or just the active window, with smaller file sizes and lower system resources, ensuring stable, continuous capture and the ability to rewind live footage;
 - Only index the changed scenes and update the OCR text, page title and other information to the database; Custom skip conditions (by window title, included text, or screen still time); Automatically maintain the database, clean and compress the video when no one is using the computer;
 - Complete webui interface, which can review the screen, conduct OCR/image semantics and other queries;
 - Provide data summaries such as activity statistics, word clouds, timelines, light boxes, scatter plots, etc.;
 - Supports multiple languages. Currently built-in: Simplified Chinese, English, and Japanese. Welcome to contribute multilingual translations and help us improve copywriting quality.
 - _coming soon... pay attention to our PR :)_
-
-**Windrecorder current limitations:**
-- FFmpeg may occupy a large amount of memory in some cases;
-- Playback may be delayed up to 15 minutes;
 
 ---
 
@@ -30,7 +26,6 @@ Windrecorder is a memory search app by records everything on your screen in smal
 # 🦝 Installation
 
 - Download [ffmpeg](https://github.com/BtbN/FFmpeg-Builds/releases) (the download file name is: `ffmpeg-master-latest-win64-gpl-shared.zip`), extract all files in `bin` directory(excluding the bin directory itself) to `C:\Windows\System32` (or other directories located in PATH)
-     - ffmpeg may have a bug that "the mouse pointer flicker during screen recording". You can fix it according to the Q&A below and then copy to the system directory;
 
 - Install [Git](https://git-scm.com/download/win), just keep clicking next step.
 
@@ -60,7 +55,21 @@ Windrecorder is a memory search app by records everything on your screen in smal
 # 🦝 How it works
 ![Windrecorder](https://github.com/yuka-friends/Windrecorder/blob/main/__assets__/how-it-work-en.jpg)
 
-When recording is started, the Windrecorder will record each 15 minutes of video segment by segment, and the video segments will be indexed after the recorded (therefore, there may be a 15-minute delay while querying the data). When the screen content not change, or the foreground windows title in skip list, or the computer enters the lock screen/sleep state, recording will be automatically paused and idle maintenance will be performed (compressing and cleaning videos, image embedding recognition, etc.) until the user comes back and continues to use the computer.
+Windrecorder offers two recording modes for your convenience:
+
+1. **Automatic Flexible Screenshots**:
+
+    Upon starting the recording, Windrecorder takes screenshots every 3 seconds (by default), indexing them when content or text changes, allowing real-time rewind. Additionally, every 15 minutes, past screenshots are automatically converted into videos.
+
+    This option consumes low system resources and is suitable for users who need to store, rewind, and search for memory cues.
+
+2. **Direct Video Recording via FFmpeg**:
+
+    When recording begins, Windrecorder records video in 15-minute segments, indexing the video clips after recording completion (hence, there may be a 15-minute delay in data querying).
+
+    This option consumes moderate system resources and enables smooth and complete recording of computer activities.
+
+When the screen remains static, window titles or screen content are on the exclusion list, or the computer enters lock screen, recording pauses automatically and performs idle maintenance (compressing and cleaning videos, conducting image recognition embedding, etc.) until the user returns to continue operating the computer.
 
 - _Image Embedding is provided as an extension and can be installed under the directory `extension/install_img_embedding_module`._
 
@@ -70,12 +79,9 @@ When recording is started, the Windrecorder will record each 15 minutes of video
 | Per Hour: 2-100 Mb (depends on screen change\number of monitors)                                                                    |                              |
 | Per Month: 10-20 Gb (depends on screen time)  Different video compression presets can compress these data to 0.1-0.7 times the size | Per Month: About 160 Mb      |
 
-> In the future, the recording method may be improved to reduce ffmpeg usage and eliminate the need to wait for traceback.
-
-
 # 🦝 Q&A | Frequently Asked Questions
 
-Q: The mouse pointer flicker during recording
+Q: The mouse pointer flicker during recording (Direct Video Recording via FFmpeg)
 
 - A: It's a Windows historical issues, you can try [this post](https://stackoverflow.com/questions/34023630/how-to-avoid-mouse-pointer-flicker-when-capture-a-window-by-ffmpeg ) method to solve. TL;DR:
      - Use any hex editor (such as [HxD](https://mh-nexus.de/en/downloads.php?product=HxD20)) to open `avdevice-XX.dll` in the previously downloaded `FFmpeg/bin`;
@@ -97,6 +103,8 @@ Q: Windows.Media.Ocr.Cli OCR is not available/the recognition rate is too low
 - A1: Check whether the language pack/input method of the target language has been added to the system: https://learn.microsoft.com/en-us/uwp/api/windows.media.ocr
 
 - A2: Windows.Media.Ocr.Cli may have poor recognition rate for text. We will add more OCR extension support in the future.
+
+> More third-party OCR support will be added in the future;
 
 # 🧡
 Thanks to the following projects

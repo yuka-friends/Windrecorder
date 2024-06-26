@@ -11,6 +11,7 @@ import subprocess
 import threading
 import time
 from contextlib import closing
+from ctypes import wintypes
 from io import BytesIO
 
 import cv2
@@ -22,6 +23,7 @@ from pyshortcuts import make_shortcut
 
 from windrecorder import __version__, file_utils
 from windrecorder.config import config
+from windrecorder.const import DATETIME_FORMAT
 from windrecorder.logger import get_logger
 
 logger = get_logger(__name__)
@@ -94,9 +96,9 @@ def get_vidfilepath_info(vid_filepath) -> dict:
 
 
 # 将输入的文件（ %Y-%m-%d_%H-%M-%S str）时间转为时间戳秒数
-def date_to_seconds(date_str):
+def dtstr_to_seconds(date_str):
     # 这里我们先定义了时间格式,然后设置一个epoch基准时间为1970年1月1日。使用strptime()将输入的字符串解析为datetime对象,然后计算这个时间和epoch时间的时间差,转换为秒数返回。
-    format = "%Y-%m-%d_%H-%M-%S"
+    format = DATETIME_FORMAT
     # epoch = datetime.datetime(2000, 1, 1)
     epoch = datetime.datetime(1970, 1, 1)
     target_date = datetime.datetime.strptime(date_str, format)
@@ -105,8 +107,8 @@ def date_to_seconds(date_str):
 
 
 # 将输入的文件（ %Y-%m-%d_%H-%M-%S str）时间转为datetime
-def date_to_datetime(date_str):
-    datetime_obj = datetime.datetime.strptime(date_str, "%Y-%m-%d_%H-%M-%S")
+def dtstr_to_datetime(date_str):
+    datetime_obj = datetime.datetime.strptime(date_str, DATETIME_FORMAT)
     return datetime_obj
 
 
@@ -115,7 +117,7 @@ def seconds_to_date(seconds):
     # start_time = 946684800
     start_time = 0
     dt = datetime.datetime.utcfromtimestamp(start_time + seconds)
-    return dt.strftime("%Y-%m-%d_%H-%M-%S")
+    return dt.strftime(DATETIME_FORMAT)
 
     # 旧实现
     # current_seconds = seconds + 946684800 - 28800  # 2000/1/1 00:00:00 的秒数，减去八小时
@@ -176,7 +178,7 @@ def datetime_to_24numfloat(dt):
 
 # 将datetime输入的时间转为  %Y-%m-%d_%H-%M-%S str
 def datetime_to_dateStr(dt):
-    return dt.strftime("%Y-%m-%d_%H-%M-%S")
+    return dt.strftime(DATETIME_FORMAT)
 
 
 # 将datetime输入的时间转为  %Y-%m-%d str
@@ -219,7 +221,7 @@ def calc_vid_name_to_timestamp(filename):
     pattern = r"(\d{4}-\d{2}-\d{2}_\d{2}-\d{2}-\d{2})"
     match = re.search(pattern, filename)
     if match:
-        return date_to_seconds(match.group(1))
+        return dtstr_to_seconds(match.group(1))
     else:
         return None
 
@@ -319,7 +321,7 @@ def get_video_timestamp_by_filename_and_abs_timestamp(videofile_name: str, video
     # videofile_name like 2023-09-08_17-23-50.mp4
     videofile_name = videofile_name[:19]  # 确保只截取到str时间部分
     # vidfilename = os.path.splitext(videofile_name)[0]
-    vid_timestamp = videofile_time - date_to_seconds(videofile_name)
+    vid_timestamp = videofile_time - dtstr_to_seconds(videofile_name)
     return vid_timestamp
 
 
@@ -350,7 +352,7 @@ def calc_vid_inside_time(df, num):
     fulltime = df.iloc[num]["videofile_time"]
     vidfilename = os.path.splitext(df.iloc[num]["videofile_name"])[0][:19]
     # 用记录时的总时间减去视频文件时间（开始记录的时间）即可得到相对的时间
-    vid_timestamp = fulltime - date_to_seconds(vidfilename)
+    vid_timestamp = fulltime - dtstr_to_seconds(vidfilename)
     logger.info(f"utils: video file fulltime:{fulltime}\n" f" vidfilename:{vidfilename}\n" f" vid_timestamp:{vid_timestamp}\n")
     return vid_timestamp
 
@@ -491,11 +493,19 @@ def resize_image_as_base64(img: Image.Image, target_width=config.thumbnail_gener
     return img_b64
 
 
+def resize_image_as_base64_as_thumbnail_via_filepath(img_path):
+    """将图片缩小到等比例、宽度为70px的thumbnail，并返回base64"""
+    img = Image.open(img_path)
+    img_b64 = resize_image_as_base64(img)
+
+    return img_b64
+
+
 # 检查db是否是有合法的、正在维护中的锁（超过一定时间则解锁）
 def is_maintain_lock_valid(timeout=datetime.timedelta(minutes=16)):
     if os.path.exists(config.maintain_lock_path):
         with open(config.maintain_lock_path, "r", encoding="utf-8") as f:
-            last_maintain_locktime = date_to_datetime(f.read())
+            last_maintain_locktime = dtstr_to_datetime(f.read())
         if datetime.datetime.now() - last_maintain_locktime > timeout:
             return False
         else:
@@ -576,9 +586,13 @@ def get_cmd_tool_echo(command):
 
 
 # 将list打印为列表项
-def print_numbered_list(lst):
+def print_numbered_list(lst, indent=True):
     for i, item in enumerate(lst, 1):
-        print(f"{i}. {item}")
+        print_res = ""
+        if indent:
+            print_res += "    "
+        print_res += f"{i}. {item}"
+        print(print_res)
 
 
 # 获取系统支持的ocr语言
@@ -595,7 +609,7 @@ with open(os.path.join(config.config_src_dir, "languages.json"), encoding="utf-8
 
 
 def get_text(text_key):
-    fallback_copy = "Text here not found in i18n, please feedback to contributors."
+    fallback_copy = f"({text_key}) not found in i18n, please feedback to contributors."
     if text_key in d_lang[config.lang]:
         return d_lang[config.lang].get(text_key, fallback_copy)
     else:
@@ -657,7 +671,7 @@ def extract_date_from_db_filename(db_file_name, user_name=config.user_name):
 def extract_datetime_from_db_backup_filename(db_file_name, user_name=config.user_name):
     try:
         db_file_name_extract = db_file_name[-22:-3]
-        db_file_name_extract_datetime = date_to_datetime(db_file_name_extract)
+        db_file_name_extract_datetime = dtstr_to_datetime(db_file_name_extract)
         return db_file_name_extract_datetime
     except (IndexError, ValueError):
         return None
@@ -813,3 +827,43 @@ def get_screenshot_of_display(display_index):
         sct_img = sct.grab(monitor)
         img = Image.frombytes("RGB", sct_img.size, sct_img.bgra, "raw", "BGRX")
     return img
+
+
+def hex_to_rgb(hex_color):
+    """
+    将十六进制颜色字符串转换为RGB元组。
+    :param hex_color: 十六进制颜色字符串，例如"#FFFFFF"或"FFFFFF"
+    :return: RGB元组，例如(255, 255, 255)
+    """
+    # 移除可能的'#'符号
+    hex_color = hex_color.strip("#")
+    # 按RGB三个部分分割并转换为整数
+    rgb = tuple(int(hex_color[i : i + 2], 16) for i in (0, 2, 4))
+    return rgb
+
+
+def is_power_plugged_in():
+    class SYSTEM_POWER_STATUS(ctypes.Structure):
+        _fields_ = [
+            ("ACLineStatus", wintypes.BYTE),
+            ("BatteryFlag", wintypes.BYTE),
+            ("BatteryLifePercent", wintypes.BYTE),
+            ("SystemStatusFlag", wintypes.BYTE),
+            ("BatteryLifeTime", wintypes.DWORD),
+            ("BatteryFullLifeTime", wintypes.DWORD),
+        ]
+
+    GetSystemPowerStatus = ctypes.windll.kernel32.GetSystemPowerStatus
+    GetSystemPowerStatus.argtypes = [ctypes.POINTER(SYSTEM_POWER_STATUS)]
+    GetSystemPowerStatus.restype = wintypes.BOOL
+
+    status = SYSTEM_POWER_STATUS()
+    if GetSystemPowerStatus(ctypes.byref(status)):
+        # 如果ACLineStatus为1，则表示笔记本电脑接入了电源
+        if status.ACLineStatus == 1:
+            return True
+        else:
+            return False
+    else:
+        # 如果获取电源状态失败，则假设为台式机，返回True
+        return True

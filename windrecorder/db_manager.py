@@ -72,7 +72,7 @@ class _DBManager:
             self.db_create_table(db_filepath)
             now = datetime.datetime.now()
             now_name = now.strftime("%Y-%m-%d_%H-%M-%S")
-            now_time = int(utils.date_to_seconds(now_name))
+            now_time = int(utils.dtstr_to_seconds(now_name))
             default_base64 = "iVBORw0KGgoAAAANSUhEUgAAAEYAAAAnCAYAAACyhj57AAAAoUlEQVRoBe3BAQEAAAwBMCrpp6RCHkCFb7RSvEErxRu0UrxBK8UbtFK8QSvFG7RSvEErxRu0UrxBK8UbtFK8QSvFG7RSvEErxRu0UrxBK8UbtFK8QSvFG7RSvEErxRu0UrxBK8UbtFK8QSvFG7RSvEErxRu0UrxBK8UbtFK8QSvFG7RSvEErxRu0UrxBK8UbtFK8QSvFG7RSvEErxRu0UrxxUOdhqPjngTYAAAAASUVORK5CYII="
             self.db_update_data(
                 now_name + ".mp4",
@@ -260,8 +260,8 @@ class _DBManager:
         keyword_input = keyword_input.replace("'", "''")
         # 初始化查询数据
         self.db_update_read_config(config)
-        date_in_ts = int(utils.date_to_seconds(date_in.strftime("%Y-%m-%d_%H-%M-%S")))
-        date_out_ts = int(utils.date_to_seconds(date_out.strftime("%Y-%m-%d_%H-%M-%S")))
+        date_in_ts = int(utils.dtstr_to_seconds(date_in.strftime("%Y-%m-%d_%H-%M-%S")))
+        date_out_ts = int(utils.dtstr_to_seconds(date_out.strftime("%Y-%m-%d_%H-%M-%S")))
         # date_in_ts = int(utils.date_to_seconds(date_in.strftime("%Y-%m-%d_00-00-00")))
         # date_out_ts = int(utils.date_to_seconds(date_out.strftime("%Y-%m-%d_23-59-59")))
 
@@ -476,7 +476,7 @@ class _DBManager:
     # 根据视频文件名字返回对应行列 dataframe (rowid included)
     def db_get_row_from_vid_filename(self, vid_filename):
         vid_filepath = file_utils.convert_vid_filename_as_vid_filepath(vid_filename)
-        vid_datetime_start = utils.date_to_datetime(vid_filename[:19])
+        vid_datetime_start = utils.dtstr_to_datetime(vid_filename[:19])
         if os.path.exists(vid_filepath):  # 视频文件存在情况下，尝试拿其真实时长，若无用 config 录制值兜底
             try:
                 vid_datetime_end = vid_datetime_start + datetime.timedelta(
@@ -595,7 +595,7 @@ class _DBManager:
         logger.info(f"removing record {videofile_name}")
         # 根据文件名定位数据库文件地址
         db_filepath = file_utils.get_db_filepath_by_datetime(
-            utils.set_full_datetime_to_YYYY_MM(utils.date_to_datetime(os.path.splitext(videofile_name)[0]))
+            utils.set_full_datetime_to_YYYY_MM(utils.dtstr_to_datetime(os.path.splitext(videofile_name)[0]))
         )
 
         conn = sqlite3.connect(db_filepath)

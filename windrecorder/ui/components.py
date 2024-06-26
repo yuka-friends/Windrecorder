@@ -52,7 +52,7 @@ def video_dataframe(df, heightIn=800):
 
 def record_search_history(search_content, search_type, search_datetime=None):
     """记录搜索历史"""
-    skip_words = ["", "keyword"]
+    skip_words = [""]
     if search_content in skip_words:
         return
     try:

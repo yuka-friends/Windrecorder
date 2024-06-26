@@ -164,7 +164,7 @@ def count_all_page_times_by_raw_dataframe(df: pd.DataFrame):
     stat = {}
     for index, row in df.iterrows():
         win_title_name = str(row["win_title"])
-        if win_title_name == "None" or win_title_name == "nan":
+        if win_title_name == "None" or win_title_name == "nan" or win_title_name == "":
             continue
         if win_title_name not in stat:
             stat[win_title_name] = 0

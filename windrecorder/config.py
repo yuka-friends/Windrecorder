@@ -87,6 +87,15 @@ class Config:
         record_encoder,
         record_crf,
         index_reduce_same_content_at_different_time,
+        record_screenshot_method_capture_foreground_window_only,
+        screenshot_interval_second,
+        record_mode,
+        screenshot_compare_similarity,
+        ocr_compare_similarity,
+        ocr_compare_similarity_in_table,
+        convert_screenshots_to_vid_while_only_when_idle_or_plugged_in,
+        foreground_window_video_background_color,
+        is_record_system_sound,
         **other_field,
     ) -> None:
         # If need to process input parameters, they should assign another variable name to prevent recursive writing into the config.
@@ -157,6 +166,17 @@ class Config:
         self.record_encoder = record_encoder
         self.record_crf = record_crf
         self.index_reduce_same_content_at_different_time = index_reduce_same_content_at_different_time
+        self.screenshot_interval_second = screenshot_interval_second
+        self.record_mode = record_mode  # ffmpeg, screenshot_array
+        self.record_screenshot_method_capture_foreground_window_only = record_screenshot_method_capture_foreground_window_only
+        self.screenshot_compare_similarity = screenshot_compare_similarity
+        self.ocr_compare_similarity = ocr_compare_similarity
+        self.ocr_compare_similarity_in_table = ocr_compare_similarity_in_table
+        self.convert_screenshots_to_vid_while_only_when_idle_or_plugged_in = (
+            convert_screenshots_to_vid_while_only_when_idle_or_plugged_in
+        )
+        self.foreground_window_video_background_color = foreground_window_video_background_color
+        self.is_record_system_sound = is_record_system_sound
 
     def set_and_save_config(self, attr: str, value):
         if not hasattr(self, attr):

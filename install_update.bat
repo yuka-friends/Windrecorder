@@ -1,5 +1,6 @@
 @echo off
 title Windrecorder - installing dependence and updating
+mode con cols=150 lines=50
 
 cd /d %~dp0
 

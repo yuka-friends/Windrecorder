@@ -11,6 +11,11 @@ from PIL import Image
 import windrecorder.utils as utils
 from windrecorder import file_utils
 from windrecorder.config import config
+from windrecorder.const import (
+    DATETIME_FORMAT,
+    SCREENSHOT_CACHE_FILEPATH,
+    SCREENSHOT_CACHE_FILEPATH_TMP_DB_NAME,
+)
 from windrecorder.db_manager import db_manager
 
 
@@ -107,23 +112,31 @@ class OneDay:
         # df_C["hour"] = df_C["hour"].round(1)
         return df_C
 
-    def find_closest_video_by_filesys(self, target_datetime):
+    def find_closest_video_by_filesys(
+        self,
+        target_datetime,
+        threshold=config.record_seconds,
+        dir_path=config.record_videos_dir_ud,
+        return_as_full_filepath=False,
+    ):
         """
         当输入时间戳时，查询最近的视频文件，同时检查是否为合法的对应范围（通过config 录制视频时间长度来比对）
         以寻找视频文件的方式
         """
-        # 获取视频文件名列表
-        # video_files = os.listdir(config.record_videos_dir)
-
         # 提取视频文件名中的时间信息
         file_times = []
-        for root, dirs, files in os.walk(config.record_videos_dir_ud):
+        for root, dirs, files in os.walk(dir_path):
             for file in files:
+                if "_cropped" in file:
+                    continue
                 match = re.match(r"(\d{4}-\d{2}-\d{2}_\d{2}-\d{2}-\d{2})", file)
                 if match:
                     file_dt = datetime.datetime.strptime(match.group(1), "%Y-%m-%d_%H-%M-%S")
                     if file_dt < target_datetime:
-                        file_times.append((file, file_dt))
+                        if return_as_full_filepath:
+                            file_times.append((os.path.join(root, file), file_dt))
+                        else:
+                            file_times.append((file, file_dt))
         # 寻找时间距离target_datetime最近的先前时间的视频文件
         if len(file_times) == 0:
             return False, None
@@ -132,7 +145,7 @@ class OneDay:
         # 判断时间差是否在阈值内
         time_diff = abs(closest_file[1] - target_datetime).total_seconds()
 
-        if time_diff > config.record_seconds:
+        if time_diff > threshold:
             return False, None
         else:
             return True, closest_file[0]
@@ -150,6 +163,63 @@ class OneDay:
             return True, row
         else:
             return False, None
+
+    def find_earliest_latest_screenshots_folders_via_date(
+        self, target_date: datetime.date, directory=SCREENSHOT_CACHE_FILEPATH
+    ):
+        """
+        在截图缓存目录下找出与给定日期匹配的最早和最晚的文件夹路径。
+
+        :param directory: 要搜索的目录路径
+        :param target_date: datetime.date对象，指定的日期
+        :return: 一个元组，包含最早和最晚的文件夹路径。如果没有找到匹配的文件夹，则为(None, None)
+        """
+        earliest_folder = None
+        latest_folder = None
+        earliest_time = None
+        latest_time = None
+
+        for folder in os.listdir(directory):
+            try:
+                # 从文件夹名称中提取日期和时间部分
+                date_time_part = folder[:19]  # "%Y-%m-%d_%H-%M-%S" 占据19个字符 FIXME:hardcode here
+                folder_date_time = datetime.datetime.strptime(date_time_part, DATETIME_FORMAT)
+                # 检查文件夹日期是否与目标日期匹配
+                if folder_date_time.date() == target_date:
+                    if earliest_time is None or folder_date_time < earliest_time:
+                        earliest_time = folder_date_time
+                        earliest_folder = folder
+                    if latest_time is None or folder_date_time > latest_time:
+                        latest_time = folder_date_time
+                        latest_folder = folder
+            except ValueError:
+                # 如果文件夹名称不符合预期格式，则忽略该文件夹
+                continue
+
+        # 返回最早和最晚的文件夹路径
+        if earliest_folder is not None:
+            earliest_folder = os.path.join(directory, earliest_folder)
+        if latest_folder is not None:
+            latest_folder = os.path.join(directory, latest_folder)
+
+        return (earliest_folder, latest_folder)
+
+    def find_earliest_latest_screenshots_cache_datetime_via_date(self, target_date: datetime.date):
+        """根据日期寻找截图缓存文件夹 tmp_db 中最近的截图"""
+        folder_filepath = self.find_earliest_latest_screenshots_folders_via_date(target_date)
+        earliest_screenshot_datetime = None
+        latest_screenshot_datetime = None
+        if folder_filepath[0] is not None and folder_filepath[1] is not None:
+            earliest_all_files_json_filepath = os.path.join(folder_filepath[0], SCREENSHOT_CACHE_FILEPATH_TMP_DB_NAME)
+            tmp_db_json_all_files = file_utils.read_json_as_dict_from_path(earliest_all_files_json_filepath)
+            if len(tmp_db_json_all_files["data"]) > 3:
+                earliest_screenshot_datetime = utils.dtstr_to_datetime(tmp_db_json_all_files["data"][0]["datetime_str_record"])
+            latest_all_files_json_filepath = os.path.join(folder_filepath[1], SCREENSHOT_CACHE_FILEPATH_TMP_DB_NAME)
+            tmp_db_json_all_files = file_utils.read_json_as_dict_from_path(latest_all_files_json_filepath)
+            if len(tmp_db_json_all_files["data"]) > 3:
+                latest_screenshot_datetime = utils.dtstr_to_datetime(tmp_db_json_all_files["data"][-1]["datetime_str_record"])
+
+        return (earliest_screenshot_datetime, latest_screenshot_datetime)
 
     # 通过输入的数据库与index、找到是否有视频文件、返回其时间戳与视频文件名
     def get_result_df_video_time(self, df, index):

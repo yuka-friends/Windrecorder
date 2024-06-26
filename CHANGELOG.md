@@ -1,5 +1,10 @@
 # Changelog 更新日志
 
+## 0.1.0
+> 2024-06-26
+- 添加了「自动灵活截图」录制模式，现在能以更低的系统资源进行录制、实时回溯已录制画面了，同时可以仅录制前台窗口、精确过滤不想被录制的内容。同时也保留了原先的「直接录制视频（ffmpeg）」模式，可根据需要自行选择；
+- Added "Automatic Flexible Screenshot" recording mode, which can now record with lower system resources and replay recorded images in real time. It can also record only the foreground window and accurately filter out the content you don't want to record. At the same time, the original "Directly record video (ffmpeg)" mode is also retained, and you can choose it according to your needs.
+
 ## 0.0.15
 > 2024-06-09
 
