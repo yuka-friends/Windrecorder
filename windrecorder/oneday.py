@@ -14,7 +14,7 @@ from windrecorder.config import config
 from windrecorder.const import (
     DATETIME_FORMAT,
     SCREENSHOT_CACHE_FILEPATH,
-    SCREENSHOT_CACHE_FILEPATH_TMP_DB_ALL_FILES_NAME,
+    SCREENSHOT_CACHE_FILEPATH_TMP_DB_NAME,
 )
 from windrecorder.db_manager import db_manager
 
@@ -205,17 +205,16 @@ class OneDay:
         return (earliest_folder, latest_folder)
 
     def find_earliest_latest_screenshots_cache_datetime_via_date(self, target_date: datetime.date):
+        """根据日期寻找截图缓存文件夹 tmp_db 中最近的截图"""
         folder_filepath = self.find_earliest_latest_screenshots_folders_via_date(target_date)
         earliest_screenshot_datetime = None
         latest_screenshot_datetime = None
         if folder_filepath[0] is not None and folder_filepath[1] is not None:
-            earliest_all_files_json_filepath = os.path.join(
-                folder_filepath[0], SCREENSHOT_CACHE_FILEPATH_TMP_DB_ALL_FILES_NAME
-            )
+            earliest_all_files_json_filepath = os.path.join(folder_filepath[0], SCREENSHOT_CACHE_FILEPATH_TMP_DB_NAME)
             tmp_db_json_all_files = file_utils.read_json_as_dict_from_path(earliest_all_files_json_filepath)
             if tmp_db_json_all_files:
                 earliest_screenshot_datetime = utils.dtstr_to_datetime(tmp_db_json_all_files["data"][0]["datetime_str_record"])
-            latest_all_files_json_filepath = os.path.join(folder_filepath[1], SCREENSHOT_CACHE_FILEPATH_TMP_DB_ALL_FILES_NAME)
+            latest_all_files_json_filepath = os.path.join(folder_filepath[1], SCREENSHOT_CACHE_FILEPATH_TMP_DB_NAME)
             tmp_db_json_all_files = file_utils.read_json_as_dict_from_path(latest_all_files_json_filepath)
             if tmp_db_json_all_files:
                 latest_screenshot_datetime = utils.dtstr_to_datetime(tmp_db_json_all_files["data"][-1]["datetime_str_record"])

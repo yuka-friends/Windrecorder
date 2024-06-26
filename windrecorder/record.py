@@ -573,7 +573,7 @@ def submit_data_to_sqlite_db_process(saved_dir_filepath):
         if tmp_db_json is None:
             logger.info("tmp_db_json is None")
             return None
-        if len(tmp_db_json["data"]) < 3:
+        if len(tmp_db_json["data"]) < 5:
             logger.info("tmp_db_json records not enough")
             try:
                 if len(file_utils.get_file_path_list(saved_dir_filepath)) < 10:
@@ -610,12 +610,13 @@ def convert_screenshots_dir_into_video_process(saved_dir_filepath):
             return
         output_video_filepath = make_screenshots_into_video_via_dir_path(saved_dir_filepath)
         if output_video_filepath:
-            compress_video_resolution(
+            output_video_filepath_compress = compress_video_resolution(
                 output_video_filepath,
                 1,
                 custom_output_name=os.path.basename(output_video_filepath).replace("-NOTCOMPRESS", ""),
             )
-            send2trash(output_video_filepath)
+            if os.path.exists(output_video_filepath_compress):
+                send2trash(output_video_filepath)
             os.rename(saved_dir_filepath, saved_dir_filepath + "-VIDEO")
             return saved_dir_filepath + "-VIDEO"
         return saved_dir_filepath
@@ -630,7 +631,7 @@ def index_cache_screenshots_dir_process():
         if not os.path.exists(os.path.join(dir_path, "-SUBMIT")):
             logger.debug(f"{dir_path} not submit to db, submiting...")
             submit_data_to_sqlite_db_process(dir_path)
-        if "-VIDEO" not in dir_path:
+        if "-VIDEO" not in dir_path and os.path.exists(os.path.join(dir_path, "-SUBMIT")):
             logger.debug(f"{dir_path} not convert to video, converting...")
             convert_screenshots_dir_into_video_process(dir_path)
 
