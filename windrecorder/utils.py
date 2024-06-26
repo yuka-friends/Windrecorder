@@ -586,9 +586,13 @@ def get_cmd_tool_echo(command):
 
 
 # 将list打印为列表项
-def print_numbered_list(lst):
+def print_numbered_list(lst, indent=True):
     for i, item in enumerate(lst, 1):
-        print(f"{i}. {item}")
+        print_res = ""
+        if indent:
+            print_res += "    "
+        print_res += f"{i}. {item}"
+        print(print_res)
 
 
 # 获取系统支持的ocr语言
@@ -605,7 +609,7 @@ with open(os.path.join(config.config_src_dir, "languages.json"), encoding="utf-8
 
 
 def get_text(text_key):
-    fallback_copy = "Text here not found in i18n, please feedback to contributors."
+    fallback_copy = f"({text_key}) not found in i18n, please feedback to contributors."
     if text_key in d_lang[config.lang]:
         return d_lang[config.lang].get(text_key, fallback_copy)
     else:

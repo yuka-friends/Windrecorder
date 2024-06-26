@@ -68,10 +68,17 @@ def divider():
 
 
 # 画抬头的
-def print_header(step=1, toast=""):
+def print_header(step=1, toast="", localization=True):
     subprocess.run("cls", shell=True)
-    print(f"Weclome to Windrecorder {__version__} | 欢迎使用捕风记录仪\n")
-    print("Thanks for downloading! This Quick Wizard will help you set it up. \n感谢下载使用！本向导将协助你完成基础配置项。不用担心，所有选项之后都可以再次调整。")
+    if localization:
+        print(_t("qs_header_1").format(__version__=__version__))
+        print()
+        print(_t("qs_header_2"))
+    else:
+        print(f"Weclome to Windrecorder {__version__} | 欢迎使用捕风记录仪\n")
+        print()
+        print("Thanks for downloading! This Quick Wizard will help you set it up. \n感谢下载使用！本向导将协助你完成基础配置项。不用担心，所有选项之后都可以再次调整。")
+
     divider()
     print(step, "/", ALLSTEPS, toast)
     print("\n")
@@ -91,7 +98,7 @@ def config_indicator(config_element, expect_result):
 # 设置语言
 def set_lang():
     while True:
-        print_header(step=1)
+        print_header(step=1, localization=False)
         print("First, please choose your interface language. (Enter the number option and press Enter to confirm.)")
         print("首先，请设置你的界面语言。（输入数字项后回车确认）")
         divider()
@@ -232,44 +239,74 @@ def set_ocr_engine():
         break
 
 
-def set_display():
-    # 设置显示器录制选项
+def set_record_mode():
+    # 设置显示器与录制选项
+    def _get_current_record_hint():
+        res_hint = ""
+        if config.record_mode == "ffmpeg":
+            res_hint += _t("rs_text_record_mode_option_ffmpeg")
+        elif config.record_mode == "screenshot_array":
+            res_hint += _t("rs_text_record_mode_option_screenshot_array")
+            if config.record_screenshot_method_capture_foreground_window_only:
+                res_hint += ", "
+                res_hint += _t("qs_record_foreground_window")
+
+        if not config.record_screenshot_method_capture_foreground_window_only or config.record_mode == "ffmpeg":
+            res_hint += ", "
+            if config.multi_display_record_strategy == "single":
+                res_hint += f"{_t('qs_record_single_display')} {config.record_single_display_index}"
+            elif config.multi_display_record_strategy == "all":
+                res_hint += _t("qs_record_all_display")
+        return res_hint
+
     display_count = utils.get_display_count()
     display_info = utils.get_display_info()
     display_info_formatted = utils.get_display_info_formatted()
+    goto_record_mode_setting = True
+    current_record_hint = _get_current_record_hint()
 
     if display_count > 1:
         while True:
             print_header(step=4)
-            print(_t("qs_mo_describe_all"))
+            print(f"{_t('qs_record_current_record')}{current_record_hint}")
             print(
                 f"""
-            1. {_t('qs_mo_option_all')} {config_indicator(config.multi_display_record_strategy,"all")}
-            2. {_t('qs_mo_option_single')}  {config_indicator(config.multi_display_record_strategy,"single")}
-            """
+
+    {_t('qs_record_record_range_select')}
+
+    1. {_t('qs_record_all_display')}
+    2. {_t('qs_record_single_display')}
+    3. {_t('qs_record_foreground_window')}
+"""
             )
             divider()
 
             record_strategy_num = input("> ")
             if record_strategy_num == "1":
                 config.set_and_save_config("multi_display_record_strategy", "all")
-                print(f"{_t('qs_mo_set_to')} {_t('qs_mo_option_all')}")
+                config.set_and_save_config("record_screenshot_method_capture_foreground_window_only", False)
                 break
             elif record_strategy_num == "2":
                 config.set_and_save_config("multi_display_record_strategy", "single")
+                config.set_and_save_config("record_screenshot_method_capture_foreground_window_only", False)
+                break
+            elif record_strategy_num == "3":
+                config.set_and_save_config("record_mode", "screenshot_array")
+                config.set_and_save_config("record_screenshot_method_capture_foreground_window_only", True)
+                goto_record_mode_setting = False
                 break
             elif len(record_strategy_num) == 0:  # set same as before
-                if config.multi_display_record_strategy == "single":
+                if config.multi_display_record_strategy == "single" and config.record_single_display_index > display_count:
                     record_strategy_num = "2"
-                elif config.multi_display_record_strategy == "all":
-                    print(f"{_t('qs_mo_set_to')} {_t('qs_mo_option_all')}")
+                else:
+                    goto_record_mode_setting = False
                 break
 
-        while True:  # config record which single display
-            if record_strategy_num == "2":
+        if record_strategy_num == "2":
+            while True:  # config record which single display
                 print_header(step=4)
-                print(f"{_t('qs_mo_set_to')} {_t('qs_mo_option_single')}")
-                print(_t("qs_mo_choose_one_display"))
+                print(f"    {_t('qs_record_which_display')}")
+                print()
                 utils.print_numbered_list(display_info_formatted)
                 divider()
 
@@ -277,22 +314,70 @@ def set_display():
                     display_index = int(input("> "))
                     if 0 < display_index <= display_count:
                         config.set_and_save_config("record_single_display_index", display_index)
-                        print(f"{_t('qs_mo_record_single')} {display_info_formatted[display_index-1]}")
                         break
                     else:
                         print(_t("qs_olang_error"))
                         subprocess.run("pause", shell=True)
-
                 except ValueError:
                     print(_t("qs_olang_error"))
                     subprocess.run("pause", shell=True)
-            else:
-                break
 
     else:
-        print_header(step=4)
-        print(_t("qs_mo_describe_single").format(width=display_info[0]["width"], height=display_info[0]["height"]))
-        print(_t("qs_mo_cta"))
+        while True:
+            print_header(step=4)
+            print(f"{_t('qs_record_current_record')}{current_record_hint}")
+            print(
+                f"""
+
+    {_t('qs_record_record_range_select')}
+
+    1. {_t('qs_record_full_display')}
+    2. {_t('qs_record_foreground_window')}
+""".format(
+                    width=display_info[0]["width"], height=display_info[0]["height"]
+                )
+            )
+            divider()
+
+            record_strategy_num = input("> ")
+            if record_strategy_num == "1":
+                config.set_and_save_config("multi_display_record_strategy", "single")
+                config.set_and_save_config("record_single_display_index", 1)
+                break
+            elif record_strategy_num == "2":
+                config.set_and_save_config("record_screenshot_method_capture_foreground_window_only", True)
+                config.set_and_save_config("record_mode", "screenshot_array")
+                goto_record_mode_setting = False
+                break
+            elif len(record_strategy_num) == 0:  # set same as before
+                break
+
+    if goto_record_mode_setting:
+        while True:
+            print_header(step=4)
+            print(
+                f"""    {_t('qs_record_mode')}
+
+    1. {_t('rs_text_record_mode_option_screenshot_array')}
+        {_t('qs_record_screenshot_array_help')}
+
+    2. {_t('rs_text_record_mode_option_ffmpeg')}"
+        {_t('qs_record_ffmpeg_help')}
+    """
+            )
+            divider()
+
+            record_mode_num = input("> ")
+            if record_mode_num == "1":
+                config.set_and_save_config("record_mode", "screenshot_array")
+                break
+            elif record_mode_num == "2":
+                config.set_and_save_config("record_mode", "ffmpeg")
+                break
+            elif len(record_mode_num) == 0:  # set same as before
+                break
+
+    print(_t("qs_record_mode_set_to") + _get_current_record_hint() + f"\n\n{_t('qs_record_auto_set')}")
 
 
 def set_extension():
@@ -318,7 +403,15 @@ def finish_setting():
 
 
 def set_main():
-    setting_step_functions = [set_lang, set_username, set_ocr_lang, set_ocr_engine, set_display, set_extension, finish_setting]
+    setting_step_functions = [
+        set_lang,
+        set_username,
+        set_ocr_lang,
+        set_ocr_engine,
+        set_record_mode,
+        set_extension,
+        finish_setting,
+    ]
     for f in setting_step_functions:
         f()
         divider()
