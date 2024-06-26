@@ -12,16 +12,12 @@
 ![Windrecorder](https://github.com/yuka-friends/Windrecorder/blob/main/__assets__/product-preview-cn.jpg)
 
 **Windrecorder 目前可以做到：**
-- 以较小的文件体积稳定持续地录制多个或单个屏幕；
+- 以较小的文件体积、较低的系统资源，稳定持续地录制多个或单个屏幕、或者只录制前台活动窗口，并实时回溯之前的画面；
 - 只索引发生变化的画面，记录其 OCR 文本、页面标题等信息到数据库；自定义跳过条件（通过窗口标题、包含文本、画面静止时间）；在无人使用电脑时，自动维护数据库、清理、压缩视频；
 - 完善的 webui 界面，可以回溯画面、进行 OCR /图像语义等查询；
 - 提供活动统计、词云、时间轴、光箱、散点图等数据摘要；
 - 支持多语言。目前内建有：简体中文、English、日本語。Welcome to contribute multilingual translations and help us improve copywriting quality.
 - _coming soon... 请关注我们的 PR_
-
-**Windrecorder 目前局限：**
-- FFmpeg 在部分情况下可能会有较大内存占用；
-- 回放可能存在最长 15 分钟的延迟；
 
 ---
 
@@ -34,7 +30,6 @@
 # 🦝 安装
 
 - 下载 [ffmpeg](https://github.com/BtbN/FFmpeg-Builds/releases)（下载文件名为：`ffmpeg-master-latest-win64-gpl-shared.zip`） ，将 bin 目录下的所有文件复制至 `C:\Windows\System32` 下（或其他位于 PATH 的目录下）（不包括 bin 目录本身）
-    - ffmpeg 可能有“在录制屏幕时光标会闪烁”的 bug，可以先根据底下 Q&A 进行修复后、再拷贝至系统目录；
 
 - 安装 [Git](https://git-scm.com/download/win)，一路下一步即可；
 
@@ -64,7 +59,21 @@
 # 🦝 运作原理
 ![Windrecorder](https://github.com/yuka-friends/Windrecorder/blob/main/__assets__/how-it-work-sc.jpg)
 
-当启动记录后，捕风记录仪将逐段录制 15 分钟的视频，在录制完毕后对视频片段进行索引（因此，数据的查询可能会有 15 分钟的延迟时间）。当屏幕没有变化、窗口标题在跳过列表、或电脑进入锁屏时，将会自动暂停录制，并进行闲时维护（压缩与清理视频、进行图像嵌入识别等），直到用户回来、继续操作电脑。
+捕风记录仪有两种记录模式，你可以根据需要自行选择：
+
+1. **自动灵活截图**：
+
+    当启动记录后，捕风记录仪将每间隔 3 秒（默认）进行截图识别，在其中内容或文本变化时进行索引，你可以实时地进行倒带回溯。同时，每隔 15 分钟会将过去的截图自动转换为视频。
+
+    此选项占用较低系统资源，适合大多数存储、回溯、搜索记忆线索的用户。
+
+2. **通过 FFmpeg 直接录制视频**：
+
+    当启动记录后，捕风记录仪将逐段录制 15 分钟的视频，在录制完毕后对视频片段进行索引（因此，数据的查询可能会有 15 分钟的延迟时间）。
+
+    此选项占用中等系统资源，可以较流畅完整地录制电脑活动。
+
+当屏幕没有变化、窗口标题或屏幕内容在过滤列表、或电脑进入锁屏时，将会自动暂停录制，并进行闲时维护（压缩与清理视频、进行图像嵌入识别等），直到用户回来、继续操作电脑。
 
 - _图像嵌入索引以扩展形式提供，可以在目录 `extension/install_img_embedding_module` 下进行安装_
 
@@ -73,12 +82,9 @@
 | 每小时：2-100 Mb (取决于画面变化\显示器数量)                                            |                              |
 | 每个月：10-20 Gb (取决于屏幕时间) 不同的视频压缩预设，可将这些数据压缩至 0.1-0.7 倍大小    | 每个月：约 160 Mb             |
 
-> 未来可能会改进录制方法，降低 ffmpeg 资源占用、让回溯不必等待。目前 ffmpeg 在录制时可能有较高的内存占用。
-
-
 # 🦝 Q&A | 常见问题
 
-Q: 录制过程中鼠标闪烁
+Q: 录制过程中鼠标闪烁（通过 ffmpeg 直接录制模式）
 
 - A：FFmpeg 历史遗留问题，可尝试[该帖](https://stackoverflow.com/questions/34023630/how-to-avoid-mouse-pointer-flicker-when-capture-a-window-by-ffmpeg)方法解决：
     - 使用任意十六进制编辑器（如 [HxD](https://mh-nexus.de/en/downloads.php?product=HxD20)）打开之前下载的 `FFmpeg/bin` 中的 `avdevice-XX.dll` 文件；
@@ -101,6 +107,8 @@ Q: Windows.Media.Ocr.Cli OCR 不可用/识别率过低
 - A1: 检查系统中是否添加了目标语言的语言包/输入法：https://learn.microsoft.com/en-us/uwp/api/windows.media.ocr
 
 - A2: Windows.Media.Ocr.Cli 对较小的文本识别率可能不良，通过在设置中打开「相近字形搜索」选项可以提高搜索时的召回命中率。未来将会添加对更多本地 OCR 工具的支持。
+
+> 未来将会添加更多第三方的 OCR 支持；
 
 # 🧡
 引入了这些项目的帮助：
