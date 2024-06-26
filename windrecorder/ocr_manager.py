@@ -747,11 +747,6 @@ def ocr_process_videos(video_path, iframe_path):
                 pass
 
 
-def ocr_process_all_screenshots_dir():
-    # as fallback rollback?
-    pass
-
-
 # 检查视频文件夹中所有文件的日期，对超出储存时限的文件进行删除操作
 def remove_outdated_videofiles(video_queue_batch=60):
     if config.vid_store_day == 0:
