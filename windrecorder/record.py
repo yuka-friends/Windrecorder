@@ -668,7 +668,7 @@ def get_screenshot_foreground_window():
 
 
 def get_screenshot_single_display(display_index: int):
-    if display_index > len(utils.get_display_count()):
+    if display_index > utils.get_display_count():
         logger.info("config display index larger than existed displays number")
         display_index = 1
 
