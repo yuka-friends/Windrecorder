@@ -629,7 +629,7 @@ def index_cache_screenshots_dir_process():
     """流程：索引所有未转换为视频、未提交到数据库的文件夹截图"""
     dir_lst = file_utils.get_screenshots_cache_dir_lst()
     for dir_path in dir_lst:
-        if not os.path.exists(os.path.join(dir_path, "-SUBMIT")):
+        if not os.path.exists(os.path.join(dir_path, "-SUBMIT")) and "-DISCARD" not in dir_path:
             logger.debug(f"{dir_path} not submit to db, submiting...")
             submit_data_to_sqlite_db_process(dir_path)
         if "-VIDEO" not in dir_path and os.path.exists(os.path.join(dir_path, "-SUBMIT")):
@@ -701,7 +701,11 @@ def convert_screenshots_dir_into_same_size_to_cache(
             bool: 如果所有图片尺寸相同返回True，否则返回False。
             tuple: 返回第一张图片的尺寸(width, height)。如果目录为空或无图片文件，则返回(None, None)。
         """
-        image_files = [f for f in os.listdir(directory) if f.endswith((".png", ".jpg", ".jpeg"))]
+        image_files = [
+            f
+            for f in os.listdir(directory)
+            if f.endswith((".png", ".jpg", ".jpeg")) and "_cropped" not in f and "_error" not in f
+        ]
 
         if not image_files:
             logger.debug(f"No image files were found in {directory}.")
@@ -731,7 +735,7 @@ def convert_screenshots_dir_into_same_size_to_cache(
     # 查找最大的图片尺寸
     max_width, max_height = 0, 0
     for img_name in os.listdir(src_folder):
-        if not img_name.lower().endswith((".png", ".jpg", ".jpeg")) or "_cropped" in img_name:
+        if not img_name.lower().endswith((".png", ".jpg", ".jpeg")) or "_cropped" in img_name or "_error" in img_name:
             continue
         img_path = os.path.join(src_folder, img_name)
         with Image.open(img_path) as img:
@@ -740,17 +744,21 @@ def convert_screenshots_dir_into_same_size_to_cache(
 
     # 调整图片大小并保存
     for img_name in os.listdir(src_folder):
-        if not img_name.lower().endswith((".png", ".jpg", ".jpeg")) or "_cropped" in img_name:
+        if not img_name.lower().endswith((".png", ".jpg", ".jpeg")) or "_cropped" in img_name or "_error" in img_name:
             continue
         img_path = os.path.join(src_folder, img_name)
         logger.debug(f"process screenshots size: {img_path}")
-        with Image.open(img_path) as img:
-            width, height = img.size
-            new_img = Image.new("RGB", (max_width, max_height), color=canvas_color)
-            x = (max_width - width) // 2
-            y = (max_height - height) // 2
-            new_img.paste(img, (x, y))
-            new_img.save(img_path)
+        try:
+            with Image.open(img_path) as img:
+                width, height = img.size
+                new_img = Image.new("RGB", (max_width, max_height), color=canvas_color)
+                x = (max_width - width) // 2
+                y = (max_height - height) // 2
+                new_img.paste(img, (x, y))
+                new_img.save(img_path)
+        except Exception as e:
+            logger.error(f"resize fail {img_path}: {e}")
+            os.rename(img_path, img_path + "_error")
 
 
 def make_screenshots_into_video_via_dir_path(saved_dir_filepath):
@@ -764,6 +772,8 @@ def make_screenshots_into_video_via_dir_path(saved_dir_filepath):
         sec_base_unix_timestamp = calc_screenshot_filepath_to_unix_timestamp(tmp_db_json_datalist[0]["img_file_name"])
 
         for i, v in enumerate(tmp_db_json_datalist):
+            if not os.path.exists(v["img_file_name"]):
+                continue
             res = {
                 "timestamp": calc_screenshot_filepath_to_unix_timestamp(v["img_file_name"]) - sec_base_unix_timestamp,
                 "screenshot_saved_filepath": v["img_file_name"],
