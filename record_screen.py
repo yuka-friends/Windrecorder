@@ -276,9 +276,8 @@ def main():
             thread_continuously_record_screen.start()
 
             # 记录前台窗体标题的进程：
-            if config.record_mode == "ffmpeg":
-                thread_record_active_window_title = threading.Thread(target=record_active_window_title, daemon=True)
-                thread_record_active_window_title.start()
+            thread_record_active_window_title = threading.Thread(target=record_active_window_title, daemon=True)
+            thread_record_active_window_title.start()
 
             while True:
                 # 如果屏幕重复画面检测线程意外出错，重启它

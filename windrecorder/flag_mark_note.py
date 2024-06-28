@@ -185,7 +185,10 @@ class Flag_mark_window(customtkinter.CTk):
         wintitle_note_df = record_wintitle.get_df_by_csv_filepath(
             record_wintitle.get_csv_filepath(datetime=datetime.datetime.now())
         )
-        wintitle_note = record_wintitle.get_lastest_wintitle_from_df(wintitle_note_df, filter=True)["window_title"]
+        if wintitle_note_df is None:
+            wintitle_note = record_wintitle.get_current_wintitle()
+        else:
+            wintitle_note = record_wintitle.get_lastest_wintitle_from_df(wintitle_note_df, filter=True)["window_title"]
         self.textbox.insert("0.0", _t("flag_input_note") + wintitle_note + "\n")
 
         # 移除标记 按钮

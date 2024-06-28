@@ -1,6 +1,14 @@
 # Changelog 更新日志
 
-## 0.1.0
+## 0.0.17
+> 2024-06-29
+
+### Fixed
+- bug: 修复了「自动灵活截图」下可能无法记录当前时间戳旗标；Fixed the issue that the current timestamp flag might not be recorded under "Automatic Flexible Screenshot";
+- bug：修复了「自动灵活截图-仅捕捉单显示器时」无法使用；Fixed the issue that the "Automatic Flexible Screenshot" recording mode would not work;
+- bug：修复了当截图未完整存储时无法合成视频的情况；Fixed the situation that the video could not be synthesized when the screenshot was not completely stored;
+
+## 0.0.16
 > 2024-06-26
 - 添加了「自动灵活截图」录制模式，现在能以更低的系统资源进行录制、实时回溯已录制画面了，同时可以仅录制前台窗口、精确过滤不想被录制的内容。同时也保留了原先的「直接录制视频（ffmpeg）」模式，可根据需要自行选择；
 - Added "Automatic Flexible Screenshot" recording mode, which can now record with lower system resources and replay recorded images in real time. It can also record only the foreground window and accurately filter out the content you don't want to record. At the same time, the original "Directly record video (ffmpeg)" mode is also retained, and you can choose it according to your needs.
