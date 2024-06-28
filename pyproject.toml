@@ -1,6 +1,6 @@
 [tool.poetry]
 name = "windrecorder"
-version = "0.0.16"
+version = "0.0.17"
 description = "Windrecorder is a memory search app by records everything on your screen in small size, to let you rewind what you have seen, query through OCR text or image description, and get activity statistics. Developed as MacOS App Rewind.ai / Copilot Recall alternative tool on Windows platform."
 authors = ["yuka-friends"]
 license = "GPL-2.0"

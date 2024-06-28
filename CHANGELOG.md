@@ -4,7 +4,7 @@
 > 2024-06-29
 
 ### Fixed
-- bug: 修复了「自动灵活截图」下可能无法记录当前时间戳旗标；Fixed the issue that the current timestamp flag might not be recorded under "Automatic Flexible Screenshot";
+- bug：修复了「自动灵活截图」下可能无法记录当前时间戳旗标；Fixed the issue that the current timestamp flag might not be recorded under "Automatic Flexible Screenshot";
 - bug：修复了「自动灵活截图-仅捕捉单显示器时」无法使用；Fixed the issue that the "Automatic Flexible Screenshot" recording mode would not work;
 - bug：修复了当截图未完整存储时无法合成视频的情况；Fixed the situation that the video could not be synthesized when the screenshot was not completely stored;
 
