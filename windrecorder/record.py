@@ -829,6 +829,7 @@ def make_screenshots_into_video_via_dir_path(saved_dir_filepath):
         utils.dtstr_to_datetime(tmp_db_json_datalist[0]["vid_file_name"].replace(".mp4", "")).strftime(DATE_FORMAT),
         tmp_db_json_datalist[0]["vid_file_name"].replace(".mp4", "-SCREENSHOTS-OCRED-NOTCOMPRESS.mp4"),
     )
+    file_utils.ensure_dir(os.path.dirname(output_video_filepath))
     # uniform screenshots
     try:
         convert_screenshots_dir_into_same_size_to_cache(saved_dir_filepath)
