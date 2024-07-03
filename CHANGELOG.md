@@ -1,5 +1,11 @@
 # Changelog 更新日志
 
+## 0.0.18
+> 2024-07-3
+
+### Fixed
+- bug：修复了在新的一个月「自动灵活截图」无法自动将截图缓存转换为视频；Fixed the issue where the "Automatic Flexible Screenshot" couldn't automatically convert the screenshot cache into a video in the new month.
+
 ## 0.0.17
 > 2024-06-29
 
