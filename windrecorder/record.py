@@ -652,6 +652,8 @@ def clean_cache_screenshots_dir_process():
                 days=outdate_day
             ):
                 send2trash(dir_path)
+        elif not os.path.exists(os.path.join(dir_path, SCREENSHOT_CACHE_FILEPATH_TMP_DB_ALL_FILES_NAME)):
+            send2trash(dir_path)
         elif "-DISCARD" in dir_path:
             send2trash(dir_path)
 
