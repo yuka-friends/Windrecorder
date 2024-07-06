@@ -6,6 +6,8 @@
 ### Fixed
 - bug：修复了在新的一个月「自动灵活截图」无法自动将截图缓存转换为视频；Fixed the issue where the "Automatic Flexible Screenshot" couldn't automatically convert the screenshot cache into a video in the new month.
 - bug：优化时间轴截图生成算法，当使用「自动灵活截图-仅捕捉前台窗口」时降低预览图变形几率；Optimized the timeline screenshot generation algorithm, which reduces the chances of preview image deformation under the "Automatic Flexible Screenshot - foreground window only" recording mode;
+- 自动移除空截图缓存文件夹；Automatically remove the empty screenshot cache folder;
+- bug: 修复了当录制视频时长超出 config.record_seconds 时，无法在一天之时中被定位展示；Fixed the issue that when the duration of the recorded video exceeds config.record_seconds, it cannot be located and displayed in Oneday.
 
 ## 0.0.17
 > 2024-06-29
