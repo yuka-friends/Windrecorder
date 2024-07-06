@@ -1,10 +1,11 @@
 # Changelog 更新日志
 
 ## 0.0.18
-> 2024-07-03
+> 2024-07-06
 
 ### Fixed
 - bug：修复了在新的一个月「自动灵活截图」无法自动将截图缓存转换为视频；Fixed the issue where the "Automatic Flexible Screenshot" couldn't automatically convert the screenshot cache into a video in the new month.
+- bug：优化时间轴截图生成算法，当使用「自动灵活截图-仅捕捉前台窗口」时降低预览图变形几率；Optimized the timeline screenshot generation algorithm, which reduces the chances of preview image deformation under the "Automatic Flexible Screenshot - foreground window only" recording mode;
 
 ## 0.0.17
 > 2024-06-29
