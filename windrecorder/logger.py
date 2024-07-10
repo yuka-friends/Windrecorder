@@ -2,6 +2,8 @@ import logging
 import os
 from logging.handlers import RotatingFileHandler
 
+from windrecorder.const import DEBUGMODE_TRIGGER
+
 logger = None
 
 
@@ -31,7 +33,7 @@ def get_logger(name, log_name="wr.log"):
     rf_handler.setFormatter(formatter)
     logger.addHandler(rf_handler)
 
-    if os.path.exists("DEBUGMODE.txt"):
+    if os.path.exists(DEBUGMODE_TRIGGER):
         logger.setLevel(logging.DEBUG)
         console_handler = logging.StreamHandler()
         console_handler.setFormatter(formatter)

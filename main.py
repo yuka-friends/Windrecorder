@@ -24,6 +24,7 @@ os.chdir(PROJECT_ROOT)
 
 from windrecorder import file_utils, flag_mark_note, utils, win_ui  # NOQA: E402
 from windrecorder.config import config  # NOQA: E402
+from windrecorder.const import DEBUGMODE_TRIGGER  # NOQA: E402
 from windrecorder.exceptions import LockExistsException  # NOQA: E402
 from windrecorder.lock import FileLock  # NOQA: E402
 from windrecorder.logger import get_logger  # NOQA: E402
@@ -320,8 +321,11 @@ def main():
                     pass
 
     with tray_lock:
-        thread_hide_cli_window = threading.Thread(target=hide_cli_window)
-        thread_hide_cli_window.start()
+        if not os.path.exists(DEBUGMODE_TRIGGER):
+            thread_hide_cli_window = threading.Thread(target=hide_cli_window)
+            thread_hide_cli_window.start()
+        else:
+            print("\nRun in debug mode.\n")
 
         ff_available, ff_callback = utils.check_ffmpeg_and_ffprobe()
         if not ff_available:

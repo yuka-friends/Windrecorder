@@ -27,3 +27,5 @@ DATAFRAME_COLUMN_NAMES = [
     "thumbnail",
     "win_title",
 ]
+
+DEBUGMODE_TRIGGER = "DEBUGMODE.txt"
