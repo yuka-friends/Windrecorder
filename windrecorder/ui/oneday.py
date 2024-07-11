@@ -108,7 +108,9 @@ def render():
                     day_min_timestamp_dt = earliest_screenshot_dt
                 if day_max_timestamp_dt < latest_screenshot_dt:
                     day_max_timestamp_dt = latest_screenshot_dt
-            elif (day_min_timestamp_dt is None and day_max_timestamp_dt is None) and (earliest_screenshot_dt is not None and latest_screenshot_dt is not None):   # db not updated but have disk cache
+            elif (day_min_timestamp_dt is None and day_max_timestamp_dt is None) and (
+                earliest_screenshot_dt is not None and latest_screenshot_dt is not None
+            ):  # db not updated but have disk cache
                 if earliest_screenshot_dt > datetime.datetime(
                     earliest_screenshot_dt.year,
                     earliest_screenshot_dt.month,
