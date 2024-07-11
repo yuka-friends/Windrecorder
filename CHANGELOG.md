@@ -8,7 +8,8 @@
 - bug：优化时间轴截图生成算法，当使用「自动灵活截图-仅捕捉前台窗口」时降低预览图变形几率；Optimized the timeline screenshot generation algorithm, which reduces the chances of preview image deformation under the "Automatic Flexible Screenshot - foreground window only" recording mode;
 - 自动移除空截图缓存文件夹；Automatically remove the empty screenshot cache folder;
 - bug: 修复了当录制视频时长超出 config.record_seconds 时，无法在一天之时中被定位展示；Fixed the issue that when the duration of the recorded video exceeds config.record_seconds, it cannot be located and displayed in Oneday;
-- bug：一天之时在寻找最早最晚截图时间戳时，数据为空时会可能导致报错；When searching for the earliest and latest screenshot timestamps at Oneday, it may cause an error when the data is empty.
+- bug：一天之时在寻找最早最晚截图时间戳时，数据为空时会可能导致报错；When searching for the earliest and latest screenshot timestamps at Oneday, it may cause an error when the data is empty;
+- bug：修复错误记录的维护时间戳缓存可能会阻塞正常的录制线程；Fixing the error maintenance timestamp cache may block the recording thread;
 
 ## 0.0.17
 > 2024-06-29
