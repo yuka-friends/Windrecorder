@@ -425,13 +425,15 @@ def render():
                         is_data_found, found_row = OneDay().find_closest_video_by_database(
                             day_df, utils.datetime_to_seconds(day_full_select_datetime)
                         )
-                        df_vid_filename = file_utils.check_video_exist_in_videos_dir(found_row["videofile_name"].iloc[0])
+                        df_vid_filename = None
+                        if found_row is not None:
+                            df_vid_filename = file_utils.check_video_exist_in_videos_dir(found_row["videofile_name"].iloc[0])
                         df_vid_filepath = ""
                         if df_vid_filename:
                             df_vid_filepath = file_utils.convert_vid_filename_as_vid_filepath(
                                 file_utils.check_video_exist_in_videos_dir(found_row["videofile_name"].iloc[0])
                             )
-                        if is_data_found:
+                        if is_data_found and found_row is not None:
                             # screenshots compatible
                             if os.path.exists(found_row["picturefile_name"].iloc[0]):
                                 display_screenshot_recall(found_row["picturefile_name"].iloc[0])
