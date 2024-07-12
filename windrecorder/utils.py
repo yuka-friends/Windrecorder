@@ -18,10 +18,10 @@ import cv2
 import mss
 import psutil
 import requests
-from PIL import Image
-from pyshortcuts import make_shortcut
 import win32gui
 import win32process
+from PIL import Image
+from pyshortcuts import make_shortcut
 
 from windrecorder import __version__, file_utils
 from windrecorder.config import config
@@ -877,10 +877,10 @@ def get_current_window_process_name(optimize_name=True):
     try:
         # 获取前台窗口句柄
         hwnd = win32gui.GetForegroundWindow()
-        
+
         # 获取窗口所属的进程ID
         _, pid = win32process.GetWindowThreadProcessId(hwnd)
-        
+
         # 通过进程ID获取进程名
         process_name = psutil.Process(pid).name()
     except Exception as e:
