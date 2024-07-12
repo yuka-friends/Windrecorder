@@ -871,7 +871,7 @@ def is_power_plugged_in():
         return True
 
 
-def get_current_window_process_name(optimize_name=True):
+def get_current_window_process_name():
     """获取当前的前台窗口进程名"""
     process_name = ""
     try:
