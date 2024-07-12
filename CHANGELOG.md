@@ -1,5 +1,9 @@
 # Changelog 更新日志
 
+## 0.0.19
+> 2024-07-12
+- 增加对前台窗口进程名的记录，从而可以更精确地统计与排除应用；Added the record of the foreground window process name, so that applications can be counted and excluded more accurately;
+
 ## 0.0.18
 > 2024-07-06
 

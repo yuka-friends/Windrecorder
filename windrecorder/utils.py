@@ -18,6 +18,8 @@ import cv2
 import mss
 import psutil
 import requests
+import win32gui
+import win32process
 from PIL import Image
 from pyshortcuts import make_shortcut
 
@@ -867,3 +869,20 @@ def is_power_plugged_in():
     else:
         # 如果获取电源状态失败，则假设为台式机，返回True
         return True
+
+
+def get_current_window_process_name():
+    """获取当前的前台窗口进程名"""
+    process_name = ""
+    try:
+        # 获取前台窗口句柄
+        hwnd = win32gui.GetForegroundWindow()
+
+        # 获取窗口所属的进程ID
+        _, pid = win32process.GetWindowThreadProcessId(hwnd)
+
+        # 通过进程ID获取进程名
+        process_name = psutil.Process(pid).name()
+    except Exception as e:
+        logger.warning(f"get foreground window process name fail:{e}")
+    return process_name

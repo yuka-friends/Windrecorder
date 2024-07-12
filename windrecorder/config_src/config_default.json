@@ -85,5 +85,6 @@
   "ocr_compare_similarity": 0.7,
   "ocr_compare_similarity_in_table": 0.94,
   "convert_screenshots_to_vid_while_only_when_idle_or_plugged_in": false,
-  "is_record_system_sound": false
+  "is_record_system_sound": false,
+  "record_foreground_window_process_name": true
 }
