@@ -43,7 +43,9 @@ def get_current_wintitle(optimize_name=True, conclude_process_name=config.record
     else:
         res = str(pygetwindow.getActiveWindowTitle())
     if conclude_process_name:
-        res += " | " + utils.get_current_window_process_name()
+        process_name = utils.get_current_window_process_name()
+        if process_name:
+            res += " | " + process_name
     return res
 
 
