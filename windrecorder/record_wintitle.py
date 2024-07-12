@@ -36,12 +36,14 @@ def get_df_by_csv_filepath(csv_filepath):
         return None
 
 
-def get_current_wintitle(optimize_name=True):
+def get_current_wintitle(optimize_name=True, conclude_process_name=config.record_foreground_window_process_name):
     """获取当前的前台窗口标题"""
     if optimize_name:
         res = optimize_wintitle_name(pygetwindow.getActiveWindowTitle())
     else:
         res = str(pygetwindow.getActiveWindowTitle())
+    if conclude_process_name:
+        res += " | " + utils.get_current_window_process_name()
     return res
 
 

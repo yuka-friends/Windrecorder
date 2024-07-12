@@ -96,6 +96,7 @@ class Config:
         convert_screenshots_to_vid_while_only_when_idle_or_plugged_in,
         foreground_window_video_background_color,
         is_record_system_sound,
+        record_foreground_window_process_name,
         **other_field,
     ) -> None:
         # If need to process input parameters, they should assign another variable name to prevent recursive writing into the config.
@@ -177,6 +178,7 @@ class Config:
         )
         self.foreground_window_video_background_color = foreground_window_video_background_color
         self.is_record_system_sound = is_record_system_sound
+        self.record_foreground_window_process_name = record_foreground_window_process_name
 
     def set_and_save_config(self, attr: str, value):
         if not hasattr(self, attr):
