@@ -5,8 +5,11 @@ import os
 import re
 
 import pandas as pd
+import psutil
 import pygetwindow
 import streamlit as st
+import win32gui
+import win32process
 
 from windrecorder import file_utils, utils
 from windrecorder.config import config
@@ -36,6 +39,23 @@ def get_df_by_csv_filepath(csv_filepath):
         return None
 
 
+def get_current_window_process_name():
+    """获取当前的前台窗口进程名"""
+    process_name = ""
+    try:
+        # 获取前台窗口句柄
+        hwnd = win32gui.GetForegroundWindow()
+
+        # 获取窗口所属的进程ID
+        _, pid = win32process.GetWindowThreadProcessId(hwnd)
+
+        # 通过进程ID获取进程名
+        process_name = psutil.Process(pid).name()
+    except Exception as e:
+        logger.warning(f"get foreground window process name fail:{e}")
+    return process_name
+
+
 def get_current_wintitle(optimize_name=True, conclude_process_name=config.record_foreground_window_process_name):
     """获取当前的前台窗口标题"""
     if optimize_name:
@@ -43,7 +63,7 @@ def get_current_wintitle(optimize_name=True, conclude_process_name=config.record
     else:
         res = str(pygetwindow.getActiveWindowTitle())
     if conclude_process_name:
-        process_name = utils.get_current_window_process_name()
+        process_name = get_current_window_process_name()
         if process_name:
             res += " | " + process_name
     return res
