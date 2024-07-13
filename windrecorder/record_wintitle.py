@@ -170,16 +170,17 @@ def get_wintitle_or_deep_linking_by_timestamp(timestamp: int, query_type="window
         for i in range(len(df)):
             if i == 0 and target_time <= df.loc[i, "datetime"]:  # 如果时间戳对应的是第一条记录，直接返回该记录的window_title
                 return df.loc[i, query_type]
-            elif target_time >= df.loc[i, "datetime"] and target_time < df.loc[i + 1, "datetime"]:  # 如果时间戳对应的记录在中间
-                # 如果时间早于下一条记录1秒则返回上一条记录的window_title
-                if df.loc[i + 1, "datetime"] - target_time < datetime.timedelta(seconds=1):
-                    return df.loc[i + 1, query_type]
-                else:  # 否则返回当前记录的window_title
-                    return df.loc[i, query_type]
+            elif i + 1 <= len(df):
+                if target_time >= df.loc[i, "datetime"] and target_time < df.loc[i + 1, "datetime"]:  # 如果时间戳对应的记录在中间
+                    # 如果时间早于下一条记录1秒则返回上一条记录的window_title
+                    if df.loc[i + 1, "datetime"] - target_time < datetime.timedelta(seconds=1):
+                        return df.loc[i + 1, query_type]
+                    else:  # 否则返回当前记录的window_title
+                        return df.loc[i, query_type]
             elif i == len(df) - 1 and target_time >= df.loc[i, "datetime"]:  # 如果时间戳对应的是最后一条记录，直接返回该记录的window_title
                 return df.loc[i, query_type]
     except (ValueError, KeyError) as e:
-        logger.error(f"{e=}, {len(df)=}, {csv_filepath=}, {target_time=}")
+        logger.warning(f"{e=}, {len(df)=}, {csv_filepath=}, {target_time=}")
         pass
 
     return None
