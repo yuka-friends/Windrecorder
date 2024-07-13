@@ -35,7 +35,10 @@ from windrecorder.ocr_manager import (
     compare_strings,
     ocr_image,
 )
-from windrecorder.record_wintitle import get_current_wintitle
+from windrecorder.record_wintitle import (
+    get_current_wintitle,
+    get_foreground_deep_linking,
+)
 
 logger = get_logger(__name__)
 
@@ -460,6 +463,9 @@ def record_screen_via_screenshot_process():
             logger.debug(f"wintitle {win_title} contains exclude words {config.exclude_words}")
             continue
 
+        # get deep linking
+        deep_linking = get_foreground_deep_linking(win_title)
+
         # screenshot implement
         try:
             if config.record_screenshot_method_capture_foreground_window_only:
@@ -493,6 +499,7 @@ def record_screen_via_screenshot_process():
         if str(np.array(screenshot_current).dtype) == "uint8":
             screenshot_previous = screenshot_current
 
+        # start record init
         if not start_record:
             # init behavior
             time_counter = 0  # reset time counter for a full video recording
@@ -542,6 +549,7 @@ def record_screen_via_screenshot_process():
                 if is_ocr_res_over_threshold_similarity:
                     continue
 
+        # presistent data
         logger.info("ocr res writing")
         ocr_res_previous = ocr_res_current
         tmp_db_json["data"].append(
@@ -550,6 +558,7 @@ def record_screen_via_screenshot_process():
                 "img_file_name": screenshot_saved_filepath,
                 "ocr_text": ocr_res_current,
                 "win_title": win_title,
+                "deep_linking": deep_linking,
                 "videofile_time": datetime_unix_timestamp_record,
                 "datetime_str_record": datetime_str_record,
                 "thumbnail": utils.resize_image_as_base64_as_thumbnail_via_filepath(screenshot_saved_filepath),
@@ -587,6 +596,11 @@ def submit_data_to_sqlite_db_process(saved_dir_filepath):
         # convert tmp_db_json to dataframe
         dataframe_all = pd.DataFrame(columns=DATAFRAME_COLUMN_NAMES)
         for v in tmp_db_json["data"]:
+            # deep linking update
+            _deep_linking = ""
+            if "deep_linking" in v.keys():
+                _deep_linking = v["deep_linking"]
+
             dataframe_all.loc[len(dataframe_all.index)] = [
                 v["vid_file_name"],
                 v["img_file_name"],
@@ -596,6 +610,7 @@ def submit_data_to_sqlite_db_process(saved_dir_filepath):
                 False,
                 v["thumbnail"],
                 v["win_title"],
+                _deep_linking,
             ]
         db_manager.db_add_dataframe_to_db_process(dataframe_all)
         os.makedirs(os.path.join(saved_dir_filepath, "-SUBMIT"), exist_ok=True)

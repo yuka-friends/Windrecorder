@@ -573,8 +573,11 @@ def ocr_core_logic(file_path, vid_file_name, iframe_path):
                     int(os.path.splitext(img_file_name.replace("_cropped", ""))[0]) / int(config.record_framerate)
                 )  # 用fps折算秒数
                 calc_to_sec_data = dtstr_to_seconds(calc_to_sec_vidname) + calc_to_sec_picname
-                win_title = record_wintitle.get_wintitle_by_timestamp(calc_to_sec_data)
+                win_title = record_wintitle.get_wintitle_or_deep_linking_by_timestamp(calc_to_sec_data)
                 win_title = record_wintitle.optimize_wintitle_name(win_title)
+                deep_linking = record_wintitle.get_wintitle_or_deep_linking_by_timestamp(
+                    calc_to_sec_data, query_type="deep_linking"
+                )
                 # 检查窗口标题是否在跳过词中
                 if utils.is_str_contain_list_word(win_title, config.exclude_words):
                     logger.debug(
@@ -595,6 +598,7 @@ def ocr_core_logic(file_path, vid_file_name, iframe_path):
                     False,
                     img_thumbnail,
                     win_title,
+                    deep_linking,
                 ]
                 ocr_result_stringA = ocr_result_stringB
 

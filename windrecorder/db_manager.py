@@ -83,6 +83,7 @@ class _DBManager:
                 False,
                 default_base64,
                 None,
+                "",
             )
         else:
             logger.info("db existed and not empty")
@@ -125,6 +126,11 @@ class _DBManager:
                 db_filepath=db_filepath, column_name="win_title", column_type="TEXT", table_name="video_text"
             )
 
+            # 新增了记录前台（浏览器）deep linking，需要增加一列 deep_linking TEXT
+            self.db_ensure_row_exist(
+                db_filepath=db_filepath, column_name="deep_linking", column_type="TEXT", table_name="video_text"
+            )
+
     # 创建表
     def db_create_table(self, db_filepath):
         logger.info("Making table")
@@ -138,7 +144,8 @@ class _DBManager:
                    is_videofile_exist BOOLEAN,
                    is_picturefile_exist BOOLEAN,
                    thumbnail TEXT,
-                   win_title TEXT);"""
+                   win_title TEXT,
+                   deep_linking TEXT);"""
         )
         conn.close()
 
@@ -153,6 +160,7 @@ class _DBManager:
         is_picturefile_exist,
         thumbnail,
         win_title,
+        deep_linking="",
     ):
         logger.info("Inserting data")
         # 使用方法：db_update_data(db_filepath,'video1.mp4','iframe_0.jpg', 120, 'text from ocr', True, False, "window_title")
@@ -165,7 +173,7 @@ class _DBManager:
         c = conn.cursor()
 
         c.execute(
-            "INSERT INTO video_text (videofile_name, picturefile_name, videofile_time, ocr_text, is_videofile_exist, is_picturefile_exist, thumbnail, win_title) VALUES (?, ?, ?, ?, ?, ?, ?, ?)",
+            "INSERT INTO video_text (videofile_name, picturefile_name, videofile_time, ocr_text, is_videofile_exist, is_picturefile_exist, thumbnail, win_title, deep_linking) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)",
             (
                 videofile_name,
                 picturefile_name,
@@ -175,6 +183,7 @@ class _DBManager:
                 is_picturefile_exist,
                 thumbnail,
                 win_title,
+                deep_linking,
             ),
         )
         conn.commit()
@@ -221,6 +230,7 @@ class _DBManager:
             "is_picturefile_exist": "BOOLEAN",
             "thumbnail": "TEXT",
             "win_title": "TEXT",
+            "deep_linking": "TEXT",
         }
 
         # 将dataframe的数据写入数据库的video_text表中
@@ -420,6 +430,7 @@ class _DBManager:
                 "videofile_name",
                 "locate_time",
                 "videofile_time",
+                "deep_linking",
             ]
         ]
         return df
@@ -468,6 +479,7 @@ class _DBManager:
                 "videofile_name",
                 "locate_time",
                 "videofile_time",
+                "deep_linking",
             ]
         ]
 
