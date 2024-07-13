@@ -8,6 +8,7 @@ import pandas as pd
 import psutil
 import pygetwindow
 import streamlit as st
+import uiautomation as auto
 import win32gui
 import win32process
 
@@ -67,6 +68,40 @@ def get_current_wintitle(optimize_name=True, conclude_process_name=config.record
         if process_name:
             res += " | " + process_name
     return res
+
+
+def get_foreground_deep_linking(wintitle: str):
+    """获取当前的前台窗口的deep linking，应当使用try调用"""
+    auto.uiautomation.SetGlobalSearchTimeout(0.5)
+    # browser
+    chromium_lst = ["Chrome", "Visual Studio Code"]
+
+    if utils.is_str_contain_list_word(wintitle, chromium_lst):
+        browserWindow = auto.Control(searchDepth=1, ClassName="Chrome_WidgetWin_1").DocumentControl()
+        return browserWindow.GetValuePattern().Value
+    if "Edge" in wintitle:
+        browserWindow = (
+            auto.Control(searchDepth=1, ClassName="Chrome_WidgetWin_1")
+            .PaneControl(foundIndex=3)
+            .PaneControl(foundIndex=1)
+            .PaneControl(foundIndex=1)
+            .PaneControl(foundIndex=4)
+            .PaneControl(foundIndex=1)
+            .ToolBarControl(foundIndex=1)
+            .PaneControl(foundIndex=1)
+            .GroupControl(foundIndex=1)
+            .EditControl(foundIndex=1)
+        )
+        return browserWindow.GetValuePattern().Value
+    if "Firefox" in wintitle:
+        browserWindow = (
+            auto.Control(searchDepth=1, ClassName="MozillaWindowClass")
+            .ToolBarControl(AutomationId="nav-bar")
+            .ComboBoxControl(Depth=1, foundIndex=1)
+            .EditControl(Depth=1, foundIndex=1)
+        )
+        return browserWindow.GetValuePattern().Value
+    return ""
 
 
 def get_lastest_wintitle_from_df(df, filter=True):

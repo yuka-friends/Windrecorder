@@ -409,6 +409,22 @@ url = "https://pypi.tuna.tsinghua.edu.cn/simple"
 reference = "tsinghua"
 
 [[package]]
+name = "comtypes"
+version = "1.4.5"
+description = "Pure Python COM package"
+optional = false
+python-versions = ">=3.7"
+files = [
+    {file = "comtypes-1.4.5-py3-none-any.whl", hash = "sha256:ab278edfe957d07542607f0063b69f1de7e3f2ff72a568c12b233874831bcbc6"},
+    {file = "comtypes-1.4.5.zip", hash = "sha256:d9c9de1cdfc1cb986379dd18a44da6606b11f08577b1309fdbe4249e44fe6324"},
+]
+
+[package.source]
+type = "legacy"
+url = "https://pypi.tuna.tsinghua.edu.cn/simple"
+reference = "tsinghua"
+
+[[package]]
 name = "contourpy"
 version = "1.2.0"
 description = "Python library for calculating contours of 2D quadrilateral grids"
@@ -3429,6 +3445,24 @@ url = "https://pypi.tuna.tsinghua.edu.cn/simple"
 reference = "tsinghua"
 
 [[package]]
+name = "uiautomation"
+version = "2.0.20"
+description = "Python UIAutomation for Windows"
+optional = false
+python-versions = "*"
+files = [
+    {file = "uiautomation-2.0.20-py3-none-any.whl", hash = "sha256:4ffff98a3b334ad60132b756c45cc9cae77f3f0c0841d964e2722db39246f783"},
+]
+
+[package.dependencies]
+comtypes = ">=1.2.1"
+
+[package.source]
+type = "legacy"
+url = "https://pypi.tuna.tsinghua.edu.cn/simple"
+reference = "tsinghua"
+
+[[package]]
 name = "urllib3"
 version = "2.2.1"
 description = "HTTP library with thread-safe connection pooling, file post, and more."
@@ -3670,4 +3704,4 @@ reference = "tsinghua"
 [metadata]
 lock-version = "2.0"
 python-versions = ">=3.10,<3.12"
-content-hash = "4be4bde883c3ea44b9e5f56050798ad0f276165c8e1a7b4bf315c05149043fa7"
+content-hash = "55e4e46baeff5da3e06dc487502bdcf6c044ab6d6894211b374988b2aa316ae5"
