@@ -113,3 +113,5 @@ def render_deep_linking(url):
     if isinstance(url, str):
         if "http" in url.lower():
             st.markdown(f"[{url}]({url})")
+        else:
+            st.markdown(f"{url}")
