@@ -96,19 +96,19 @@ def get_vidfilepath_info(vid_filepath) -> dict:
 
 
 # 将输入的文件（ %Y-%m-%d_%H-%M-%S str）时间转为时间戳秒数
-def dtstr_to_seconds(date_str):
+def dtstr_to_seconds(datetime_str):
     # 这里我们先定义了时间格式,然后设置一个epoch基准时间为1970年1月1日。使用strptime()将输入的字符串解析为datetime对象,然后计算这个时间和epoch时间的时间差,转换为秒数返回。
     format = DATETIME_FORMAT
     # epoch = datetime.datetime(2000, 1, 1)
     epoch = datetime.datetime(1970, 1, 1)
-    target_date = datetime.datetime.strptime(date_str, format)
+    target_date = datetime.datetime.strptime(datetime_str, format)
     time_delta = target_date - epoch
     return int(time_delta.total_seconds())
 
 
 # 将输入的文件（ %Y-%m-%d_%H-%M-%S str）时间转为datetime
-def dtstr_to_datetime(date_str):
-    datetime_obj = datetime.datetime.strptime(date_str, DATETIME_FORMAT)
+def dtstr_to_datetime(datetime_str):
+    datetime_obj = datetime.datetime.strptime(datetime_str, DATETIME_FORMAT)
     return datetime_obj
 
 

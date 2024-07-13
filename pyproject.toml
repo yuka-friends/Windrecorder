@@ -31,6 +31,7 @@ tqdm = "^4.65.0"
 streamlit-tags = "^1.2.8"
 mss = "^9.0.1"
 pygetwindow = "^0.0.9"
+uiautomation = "^2.0.20"
 
 [tool.poetry.group.dev.dependencies]
 pre-commit = "^3.5.0"

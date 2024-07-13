@@ -8,6 +8,7 @@ import pandas as pd
 import psutil
 import pygetwindow
 import streamlit as st
+import uiautomation as auto
 import win32gui
 import win32process
 
@@ -20,7 +21,7 @@ from windrecorder.utils import get_text as _t
 
 logger = get_logger(__name__)
 
-CSV_TEMPLATE_DF = pd.DataFrame(columns=["datetime", "window_title"])
+CSV_TEMPLATE_DF = pd.DataFrame(columns=["datetime", "window_title", "deep_linking"])
 window_title_last_record = ""
 
 
@@ -69,6 +70,44 @@ def get_current_wintitle(optimize_name=True, conclude_process_name=config.record
     return res
 
 
+def get_foreground_deep_linking(wintitle: str):
+    """获取当前的前台窗口的deep linking"""
+    try:
+        auto.uiautomation.SetGlobalSearchTimeout(0.5)
+        # web browser
+        chromium_lst = ["Chrome", "Visual Studio Code"]
+
+        if utils.is_str_contain_list_word(wintitle, chromium_lst):
+            browserWindow = auto.Control(searchDepth=1, ClassName="Chrome_WidgetWin_1").DocumentControl()
+            return browserWindow.GetValuePattern().Value
+        elif "Edge" in wintitle:
+            browserWindow = (
+                auto.Control(searchDepth=1, ClassName="Chrome_WidgetWin_1")
+                .PaneControl(foundIndex=3)
+                .PaneControl(foundIndex=1)
+                .PaneControl(foundIndex=1)
+                .PaneControl(foundIndex=4)
+                .PaneControl(foundIndex=1)
+                .ToolBarControl(foundIndex=1)
+                .PaneControl(foundIndex=1)
+                .GroupControl(foundIndex=1)
+                .EditControl(foundIndex=1)
+            )
+            return browserWindow.GetValuePattern().Value
+        elif "Firefox" in wintitle:
+            browserWindow = (
+                auto.Control(searchDepth=1, ClassName="MozillaWindowClass")
+                .ToolBarControl(AutomationId="nav-bar")
+                .ComboBoxControl(Depth=1, foundIndex=1)
+                .EditControl(Depth=1, foundIndex=1)
+            )
+            return browserWindow.GetValuePattern().Value
+        return ""
+    except Exception as e:
+        logger.warning(f"get deep_linking fail: {e}")
+    return ""
+
+
 def get_lastest_wintitle_from_df(df, filter=True):
     """获取dataframe中不在跳过项中的最后一行"""
     if filter:
@@ -91,6 +130,9 @@ def record_wintitle_now():
     # 如果与上次检测结果一致，则跳过
     if windowTitle == window_title_last_record:
         return
+    deep_linking = ""
+    if config.record_deep_linking:
+        deep_linking = get_foreground_deep_linking(windowTitle)
 
     csv_filepath = get_csv_filepath(datetime.datetime.now())
     if not os.path.exists(csv_filepath):
@@ -102,14 +144,18 @@ def record_wintitle_now():
     new_data = {
         "datetime": datetime.datetime.strftime(datetime.datetime.now(), "%Y-%m-%d %H:%M:%S"),
         "window_title": windowTitle,
+        "deep_linking": deep_linking,
     }
     df.loc[len(df)] = new_data
     file_utils.save_dataframe_to_path(df, file_path=csv_filepath)
     window_title_last_record = windowTitle  # 更新本轮检测结果
 
 
-def get_wintitle_by_timestamp(timestamp: int):
-    """根据输入时间戳，搜寻对应窗口名。"""
+def get_wintitle_or_deep_linking_by_timestamp(timestamp: int, query_type="window_title"):
+    """
+    根据输入时间戳，搜寻对应窗口名。
+    :param query_type "window_title"/"deep_linking"
+    """
     # 规则：如果离后边记录的时间超过1s，则取上一个的记录
     target_time = utils.seconds_to_datetime(timestamp)
     csv_filepath = get_csv_filepath(target_time)
@@ -119,21 +165,22 @@ def get_wintitle_by_timestamp(timestamp: int):
     df = file_utils.read_dataframe_from_path(file_path=csv_filepath)
     df["datetime"] = pd.to_datetime(df["datetime"])
 
-    # 从dataframe中查找时间戳对应的window_title
+    # 从dataframe中查找时间戳对应的window_title / deep_linking
     try:
         for i in range(len(df)):
             if i == 0 and target_time <= df.loc[i, "datetime"]:  # 如果时间戳对应的是第一条记录，直接返回该记录的window_title
-                return df.loc[i, "window_title"]
-            elif target_time >= df.loc[i, "datetime"] and target_time < df.loc[i + 1, "datetime"]:  # 如果时间戳对应的记录在中间
-                # 如果时间早于下一条记录1秒则返回上一条记录的window_title
-                if df.loc[i + 1, "datetime"] - target_time < datetime.timedelta(seconds=1):
-                    return df.loc[i + 1, "window_title"]
-                else:  # 否则返回当前记录的window_title
-                    return df.loc[i, "window_title"]
+                return df.loc[i, query_type]
+            elif i + 1 <= len(df):
+                if target_time >= df.loc[i, "datetime"] and target_time < df.loc[i + 1, "datetime"]:  # 如果时间戳对应的记录在中间
+                    # 如果时间早于下一条记录1秒则返回上一条记录的window_title
+                    if df.loc[i + 1, "datetime"] - target_time < datetime.timedelta(seconds=1):
+                        return df.loc[i + 1, query_type]
+                    else:  # 否则返回当前记录的window_title
+                        return df.loc[i, query_type]
             elif i == len(df) - 1 and target_time >= df.loc[i, "datetime"]:  # 如果时间戳对应的是最后一条记录，直接返回该记录的window_title
-                return df.loc[i, "window_title"]
+                return df.loc[i, query_type]
     except (ValueError, KeyError) as e:
-        logger.error(f"{e=}, {len(df)=}, {csv_filepath=}, {target_time=}")
+        logger.warning(f"{e=}, {len(df)=}, {csv_filepath=}, {target_time=}")
         pass
 
     return None
