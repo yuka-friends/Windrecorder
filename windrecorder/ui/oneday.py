@@ -543,9 +543,9 @@ def try_get_and_render_deep_linking(method="serach_df", data=""):
                 sec = utils.dtstr_to_seconds(os.path.basename(data)[:19])
                 threshold_sec = 10
                 for v in tmp_db_json["data"]:
-                    print(v["videofile_time"])
                     if -2 <= sec - v["videofile_time"] <= threshold_sec:
                         deep_linking = v["deep_linking"]
+                        break
         if deep_linking:
             components.render_deep_linking(deep_linking)
     except Exception as e:
