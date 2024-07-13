@@ -485,6 +485,8 @@ def show_and_locate_video_timestamp_by_df(df, num):
         with st.empty():
             st.video(video_bytes, start_time=st.session_state.vid_vid_timestamp)
         st.markdown(f"`{video_filepath}`")
+        if df.iloc[num]["deep_linking"]:
+            components.render_deep_linking(df.iloc[num]["deep_linking"])
     else:
         st.warning(_t("gs_text_video_file_not_on_disk").format(df_videofile_name=df_videofile_name), icon="🦫")
 

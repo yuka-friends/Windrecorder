@@ -26,6 +26,7 @@ DATAFRAME_COLUMN_NAMES = [
     "is_picturefile_exist",
     "thumbnail",
     "win_title",
+    "deep_linking",
 ]
 
 DEBUGMODE_TRIGGER = "DEBUGMODE.txt"

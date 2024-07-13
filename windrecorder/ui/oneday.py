@@ -6,7 +6,10 @@ import streamlit as st
 
 from windrecorder import file_utils, flag_mark_note, utils
 from windrecorder.config import config
-from windrecorder.const import SCREENSHOT_CACHE_FILEPATH
+from windrecorder.const import (
+    SCREENSHOT_CACHE_FILEPATH,
+    SCREENSHOT_CACHE_FILEPATH_TMP_DB_NAME,
+)
 from windrecorder.db_manager import db_manager
 from windrecorder.logger import get_logger
 from windrecorder.oneday import OneDay
@@ -372,6 +375,7 @@ def render():
                 if day_is_video_ondisk:
                     show_and_locate_video_timestamp_by_filename_and_time(day_video_file_name, shown_timestamp)
                     st.markdown(_t("oneday_md_rewinding_video_name").format(day_video_file_name=day_video_file_name))
+                    try_get_and_render_deep_linking(method="serach_df")
                 else:
                     st.info(_t("oneday_text_not_found_vid_but_has_data"), icon="🎐")
                     found_row = (
@@ -387,10 +391,6 @@ def render():
                 # 【时间线速查功能】
                 # 获取选择的时间，查询对应时间下有无视频，有则换算与定位
                 day_full_select_datetime = st.session_state.day_time_select_24h
-                # day_full_select_datetime = utils.merge_date_day_datetime_together(
-                #     st.session_state.day_date_input,
-                #     st.session_state.day_time_select_24h,
-                # )  # 合并时间为datetime
                 (
                     day_is_result_exist,
                     day_video_file_name,
@@ -404,8 +404,10 @@ def render():
                     vidfile_timestamp = utils.calc_vid_name_to_timestamp(day_video_file_name)
                     select_timestamp = utils.datetime_to_seconds(day_full_select_datetime)
                     shown_timestamp = select_timestamp - vidfile_timestamp
+                    st.text(day_full_select_datetime)
                     show_and_locate_video_timestamp_by_filename_and_time(day_video_file_name, shown_timestamp)
                     st.markdown(_t("oneday_md_rewinding_video_name").format(day_video_file_name=day_video_file_name))
+                    try_get_and_render_deep_linking(method="timeline_locate", data=day_full_select_datetime)
                 else:
                     # 是否有缓存的截图
                     (
@@ -510,5 +512,42 @@ def display_screenshot_recall(day_screenshot_filepath):
         st.empty()
     with screenshot_col2:
         st.image(day_screenshot_filepath, caption=day_screenshot_filepath)
+        try_get_and_render_deep_linking(method="screenshot_json", data=day_screenshot_filepath)
     with screenshot_col3:
         st.empty()
+
+
+def try_get_and_render_deep_linking(method="serach_df", data=""):
+    """
+    :param method: "serach_df", "timeline_locate", "screenshot_json"
+    """
+    if not config.record_deep_linking:
+        return
+
+    try:
+        deep_linking = ""
+        if method == "serach_df":
+            deep_linking = st.session_state.df_day_search_result.loc[
+                st.session_state.day_search_result_index_num,
+                "deep_linking",
+            ]
+        elif method == "timeline_locate":
+            # data: locate datetime
+            df_row = db_manager.db_get_closest_row_around_by_datetime(dt=data, time_threshold=30)
+            deep_linking = df_row.loc[df_row.first_valid_index(), "deep_linking"]
+        elif method == "screenshot_json":
+            # data: screenshot filepath
+            json_path = os.path.join(os.path.dirname(data), SCREENSHOT_CACHE_FILEPATH_TMP_DB_NAME)
+            if os.path.exists(json_path):
+                tmp_db_json = file_utils.read_json_as_dict_from_path(json_path)
+                sec = utils.dtstr_to_seconds(os.path.basename(data)[:19])
+                threshold_sec = 10
+                for v in tmp_db_json["data"]:
+                    print(v["videofile_time"])
+                    if -2 <= sec - v["videofile_time"] <= threshold_sec:
+                        deep_linking = v["deep_linking"]
+        if deep_linking:
+            components.render_deep_linking(deep_linking)
+    except Exception as e:
+        logger.debug(e)
+        pass

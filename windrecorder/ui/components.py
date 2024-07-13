@@ -106,3 +106,10 @@ def load_emb_model_cache():
                 config.set_and_save_config("img_embed_module_install", False)
         except ModuleNotFoundError:
             config.set_and_save_config("img_embed_module_install", False)
+
+
+# 显示 deep linking
+def render_deep_linking(url):
+    if isinstance(url, str):
+        if len(url) > 2:
+            st.markdown(f"[{url}]({url})")
