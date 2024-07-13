@@ -464,7 +464,9 @@ def record_screen_via_screenshot_process():
             continue
 
         # get deep linking
-        deep_linking = get_foreground_deep_linking(win_title)
+        deep_linking = ""
+        if config.record_deep_linking:
+            deep_linking = get_foreground_deep_linking(win_title)
 
         # screenshot implement
         try:
