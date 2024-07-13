@@ -111,5 +111,5 @@ def load_emb_model_cache():
 # 显示 deep linking
 def render_deep_linking(url):
     if isinstance(url, str):
-        if len(url) > 2:
+        if "http" in url.lower():
             st.markdown(f"[{url}]({url})")

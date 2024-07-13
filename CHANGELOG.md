@@ -1,5 +1,9 @@
 # Changelog 更新日志
 
+## 0.0.20
+> 2024-07-13
+- 添加对 Chrome、Microsoft Edge、Firefox 当前浏览的 url 记录；Add the recording of the currently browsed URL in Chrome, Microsoft Edge, and Firefox;
+
 ## 0.0.19
 > 2024-07-12
 - 增加对前台窗口进程名的记录，从而可以更精确地统计与排除应用；Added the record of the foreground window process name, so that applications can be counted and excluded more accurately;

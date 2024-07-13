@@ -404,7 +404,6 @@ def render():
                     vidfile_timestamp = utils.calc_vid_name_to_timestamp(day_video_file_name)
                     select_timestamp = utils.datetime_to_seconds(day_full_select_datetime)
                     shown_timestamp = select_timestamp - vidfile_timestamp
-                    st.text(day_full_select_datetime)
                     show_and_locate_video_timestamp_by_filename_and_time(day_video_file_name, shown_timestamp)
                     st.markdown(_t("oneday_md_rewinding_video_name").format(day_video_file_name=day_video_file_name))
                     try_get_and_render_deep_linking(method="timeline_locate", data=day_full_select_datetime)
@@ -445,6 +444,7 @@ def render():
                                 select_timestamp = utils.datetime_to_seconds(day_full_select_datetime)
                                 shown_timestamp = select_timestamp - vidfile_timestamp
                                 show_and_locate_video_timestamp_by_filename_and_time(df_vid_filename, shown_timestamp)
+                                st.markdown(_t("oneday_md_rewinding_video_name").format(day_video_file_name=df_vid_filename))
                             else:
                                 st.info(_t("oneday_text_not_found_vid_but_has_data"), icon="🎐")
                                 found_row = db_manager.db_refine_search_data_day(
