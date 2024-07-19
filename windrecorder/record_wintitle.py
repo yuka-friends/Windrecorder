@@ -270,7 +270,7 @@ def turn_dict_into_display_dataframe(stat: dict, optimize_for_display=True):
     return df_show
 
 
-def get_wintitle_stat_in_day(dt_in: datetime.datetime, optimize_for_display = True):
+def get_wintitle_stat_in_day(dt_in: datetime.datetime, optimize_for_display=True):
     """流程：获取当天前台窗口标题时间统计 dataframe、屏幕时间总和"""
     df = OneDay().search_day_data(dt_in, search_content="")
     stat = count_all_page_times_by_raw_dataframe(df)
