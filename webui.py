@@ -8,6 +8,7 @@ import windrecorder.ui.recording
 import windrecorder.ui.search
 import windrecorder.ui.setting
 import windrecorder.ui.state
+import windrecorder.ui.lab
 from windrecorder import state
 from windrecorder.config import config
 from windrecorder.utils import get_text as _t
@@ -56,11 +57,12 @@ def web_footer_state():
 def main_webui():
     st.markdown(_t("main_title"))
 
-    oneday_tab, search_tab, state_tab, recording_tab, setting_tab = st.tabs(
+    oneday_tab, search_tab, state_tab, lab_tab, recording_tab, setting_tab = st.tabs(
         [
             _t("tab_name_oneday"),
             _t("tab_name_search"),
             _t("tab_name_stat"),
+            "实验室",
             _t("tab_name_recording"),
             _t("tab_name_setting") + st.session_state.update_badge_emoji,
         ]
@@ -74,6 +76,9 @@ def main_webui():
 
     with state_tab:
         windrecorder.ui.state.render()
+
+    with lab_tab:
+        windrecorder.ui.lab.render()
 
     with recording_tab:
         windrecorder.ui.recording.render()
