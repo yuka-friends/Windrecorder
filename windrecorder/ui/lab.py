@@ -3,9 +3,10 @@ import streamlit as st
 from windrecorder.config import config
 from windrecorder.utils import get_text as _t
 
+
 def render():
     settings_col, spacing_col, pic_col = st.columns([1, 0.5, 1.5])
-    
+
     with settings_col:
         st.markdown("### ⚗️ Lab Features")
 
@@ -19,9 +20,9 @@ def render():
         else:
             st.info("Image semantic index is not installed. You can install it under XXX")
             st.session_state.option_enable_img_embed_search = False
-        
+
         st.divider()
-        
+
         st.markdown("#### LLM API")
         st.selectbox("API endpoint", options=["OpenAI compatible"])
         st.text_input("open_ai_base_url")
@@ -44,11 +45,9 @@ def render():
             key="SaveBtnLab",
         ):
             config.set_and_save_config("enable_img_embed_search", st.session_state.option_enable_img_embed_search)
-    
+
     with spacing_col:
         st.empty()
-    
+
     with pic_col:
         st.empty()
-
-

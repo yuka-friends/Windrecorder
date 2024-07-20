@@ -3,12 +3,12 @@ import hashlib
 import streamlit as st
 
 import windrecorder.ui.components
+import windrecorder.ui.lab
 import windrecorder.ui.oneday
 import windrecorder.ui.recording
 import windrecorder.ui.search
 import windrecorder.ui.setting
 import windrecorder.ui.state
-import windrecorder.ui.lab
 from windrecorder import state
 from windrecorder.config import config
 from windrecorder.utils import get_text as _t
