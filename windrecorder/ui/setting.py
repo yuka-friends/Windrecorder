@@ -120,15 +120,6 @@ def render():
                 is_shutdown_pasocon_after_updatedDB = False
                 st.empty()
 
-        if config.img_embed_module_install:
-            option_enable_img_embed_search = st.checkbox(
-                _t("set_checkbox_enable_img_emb"),
-                help=_t("set_text_enable_img_emb_help"),
-                value=config.enable_img_embed_search,
-            )
-        else:
-            option_enable_img_embed_search = False
-
         index_reduce_same_content_at_different_time = st.checkbox(
             label=_t("set_checkbox_reduce_same_content_at_different_time"),
             value=config.index_reduce_same_content_at_different_time,
@@ -298,7 +289,7 @@ def render():
             )
 
             # imgemb 选项
-            if config.img_embed_module_install and option_enable_img_embed_search:
+            if config.img_embed_module_install and st.session_state.option_enable_img_embed_search:
                 config_img_embed_search_recall_result_per_db = st.number_input(
                     _t("set_input_img_emb_max_recall_count"),
                     min_value=5,
