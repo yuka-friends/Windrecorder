@@ -139,6 +139,7 @@ Feel free to supplement, and hope you find the tool that suits you:
      - (commercial) https://timesnapper.com/
      - (commercial) https://www.manictime.com/
      - (commercial) https://apse.io/
+     - (commercial) https://www.screen-record.com/screen_anytime.htm
 - Linux:
      - (open source) https://github.com/apirrone/Memento
 - MacOS:

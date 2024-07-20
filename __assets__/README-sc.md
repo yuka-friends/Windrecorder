@@ -141,6 +141,7 @@ Q: Windows.Media.Ocr.Cli OCR 不可用/识别率过低
     - （商业付费）https://timesnapper.com/
     - （商业付费）https://www.manictime.com/
     - （商业付费）https://apse.io/
+    - （商业付费）https://www.screen-record.com/screen_anytime.htm
 - Linux: 
     - （开源）https://github.com/apirrone/Memento
 - MacOS: 
