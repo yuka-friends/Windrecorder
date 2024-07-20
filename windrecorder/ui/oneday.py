@@ -511,8 +511,11 @@ def display_screenshot_recall(day_screenshot_filepath):
     with screenshot_col1:
         st.empty()
     with screenshot_col2:
-        st.image(day_screenshot_filepath, caption=day_screenshot_filepath)
-        try_get_and_render_deep_linking(method="screenshot_json", data=day_screenshot_filepath)
+        try:
+            st.image(day_screenshot_filepath, caption=day_screenshot_filepath)
+            try_get_and_render_deep_linking(method="screenshot_json", data=day_screenshot_filepath)
+        except OSError:
+            st.warning(_t("oneday_text_file_damaged").format(day_screenshot_filepath=day_screenshot_filepath), icon="🖼️")
     with screenshot_col3:
         st.empty()
 
