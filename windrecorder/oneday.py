@@ -178,6 +178,8 @@ class OneDay:
         latest_folder = None
         earliest_time = None
         latest_time = None
+        if not os.path.exists(directory):
+            return (None, None)
 
         for folder in os.listdir(directory):
             try:
