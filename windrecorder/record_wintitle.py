@@ -250,7 +250,7 @@ def count_all_page_times_by_raw_dataframe(df: pd.DataFrame):
     return stat
 
 
-def turn_dict_into_display_dataframe(stat: dict):
+def turn_dict_into_display_dataframe(stat: dict, optimize_for_display=True):
     """
     将 dict 转为 streamlit 可以直接呈现的 dataframe
 
@@ -265,15 +265,16 @@ def turn_dict_into_display_dataframe(stat: dict):
     df_show = df_show[~mask]
     df_show.sort_values(by="Screen Time", ascending=False, inplace=True)
     df_show = df_show.reset_index(drop=True)
-    df_show["Screen Time"] = df_show["Screen Time"].apply(utils.convert_seconds_to_hhmmss, args=(False,))
+    if optimize_for_display:
+        df_show["Screen Time"] = df_show["Screen Time"].apply(utils.convert_seconds_to_hhmmss, args=(False,))
     return df_show
 
 
-def get_wintitle_stat_in_day(dt_in: datetime.datetime):
+def get_wintitle_stat_in_day(dt_in: datetime.datetime, optimize_for_display=True):
     """流程：获取当天前台窗口标题时间统计 dataframe、屏幕时间总和"""
     df = OneDay().search_day_data(dt_in, search_content="")
     stat = count_all_page_times_by_raw_dataframe(df)
-    df_show = turn_dict_into_display_dataframe(stat)
+    df_show = turn_dict_into_display_dataframe(stat, optimize_for_display=optimize_for_display)
     time_sum = sum(int(value) for value in stat.values())
 
     return df_show, time_sum
