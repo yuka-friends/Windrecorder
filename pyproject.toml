@@ -41,7 +41,7 @@ ipykernel = "^6.29.2"
 [[tool.poetry.source]]
 name = "tsinghua"
 url = "https://pypi.tuna.tsinghua.edu.cn/simple"
-priority = "default"
+priority = "supplemental"
 
 [build-system]
 requires = ["poetry-core"]
