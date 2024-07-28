@@ -146,7 +146,7 @@ def get_video_res(video_path):
 
 # 压缩视频 CLI
 def compress_video_CLI(video_path, target_width, target_height, encoder, crf_flag, crf, output_path):
-    cmd = f"ffmpeg -i {video_path} -vf scale={target_width}:{target_height} -c:v {encoder} {crf_flag} {crf} -pix_fmt yuv420p {output_path}"
+    cmd = f"ffmpeg -hwaccel auto -i {video_path} -vf scale={target_width}:{target_height} -c:v {encoder} {crf_flag} {crf} -pix_fmt yuv420p {output_path}"
 
     logger.info(f"[compress_video_CLI] {cmd=}")
     subprocess.call(cmd, shell=True)
