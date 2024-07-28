@@ -47,7 +47,6 @@
   "release_ver":false,
   "video_compress_rate":"0.5",
   "oneday_timeline_pic_num":50,
-  "enable_ocr_chineseocr_lite_onnx":false,
   "compress_encoder": "x264",
   "compress_accelerator": "cpu",
   "compress_quality": 39,
@@ -87,5 +86,9 @@
   "convert_screenshots_to_vid_while_only_when_idle_or_plugged_in": false,
   "is_record_system_sound": false,
   "record_foreground_window_process_name": true,
-  "record_deep_linking": true
+  "record_deep_linking": true,
+  "support_ocr_lst": [
+    "Windows.Media.Ocr.Cli",
+    "ChineseOCR_lite_onnx"
+  ]
 }

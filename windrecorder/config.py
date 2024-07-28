@@ -53,7 +53,6 @@ class Config:
         release_ver,
         video_compress_rate,
         oneday_timeline_pic_num,
-        enable_ocr_chineseocr_lite_onnx,
         compress_encoder,
         compress_accelerator,
         compress_quality,
@@ -99,6 +98,7 @@ class Config:
         is_record_system_sound,
         record_foreground_window_process_name,
         record_deep_linking,
+        support_ocr_lst,
         **other_field,
     ) -> None:
         # If need to process input parameters, they should assign another variable name to prevent recursive writing into the config.
@@ -134,7 +134,6 @@ class Config:
         self.release_ver = release_ver
         self.video_compress_rate = video_compress_rate
         self.oneday_timeline_pic_num = oneday_timeline_pic_num
-        self.enable_ocr_chineseocr_lite_onnx = enable_ocr_chineseocr_lite_onnx
         self.maintain_lock_path = os.path.join(lock_file_dir, maintain_lock_subdir)
         self.record_lock_path = os.path.join(lock_file_dir, record_lock_name)
         self.tray_lock_path = os.path.join(lock_file_dir, tray_lock_name)
@@ -183,6 +182,7 @@ class Config:
         self.is_record_system_sound = is_record_system_sound
         self.record_foreground_window_process_name = record_foreground_window_process_name
         self.record_deep_linking = record_deep_linking
+        self.support_ocr_lst = support_ocr_lst
 
     def set_and_save_config(self, attr: str, value):
         if not hasattr(self, attr):

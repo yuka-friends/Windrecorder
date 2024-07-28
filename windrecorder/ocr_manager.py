@@ -5,7 +5,6 @@ import subprocess
 import time
 
 import cv2
-import paddle
 import pandas as pd
 import win32file
 from PIL import Image, ImageDraw
@@ -327,18 +326,15 @@ def ocr_img_preprocessor(img_input):
 def ocr_image(img_input):
     ocr_engine = config.ocr_engine
     logger.debug(f"ocr_engine:{ocr_engine}")
-    if ocr_engine == "Windows.Media.Ocr.Cli":
-        return ocr_image_ms(img_input)
-    elif ocr_engine == "ChineseOCR_lite_onnx":
-        if config.enable_ocr_chineseocr_lite_onnx:
-            return ocr_image_col(img_input)
-        else:
-            logger.warning("enable_ocr_chineseocr_lite_onnx is disabled. Fallback to Windows.Media.Ocr.Cli.")
+    try:
+        if ocr_engine == "Windows.Media.Ocr.Cli":
             return ocr_image_ms(img_input)
-    elif ocr_engine == "PaddleOCR":
-        return ocr_image_paddleocr(img_input)
-    else:
-        logger.warning("enable_ocr_chineseocr_lite_onnx is disabled. Fallback to Windows.Media.Ocr.Cli.")
+        elif ocr_engine == "ChineseOCR_lite_onnx":
+            return ocr_image_ms(img_input)
+        elif ocr_engine == "PaddleOCR":
+            return ocr_image_paddleocr(img_input)
+    except Exception as e:
+        logger.warning(f"calling {ocr_engine} fail: {e}, Fallback to Windows.Media.Ocr.Cli.")
         return ocr_image_ms(img_input)
 
 
@@ -347,11 +343,10 @@ def ocr_image_paddleocr(img_input):
     logger.debug("OCR text by PaddleOCR")
     # 输入图片路径，like 'test.jpg'
     # 实例化OcrHandle对象
-    result = paddle_ocr_engine.ocr(img_input, cls=False)
-    # ocr_sentence_result = ""
-    result = result[0]
-    # logger.debug(f"{result=}")
-    txts = [line[1][0] for line in result]
+    result, elapse = paddle_ocr_engine(img_input)
+    # result = paddle_ocr_engine.ocr(img_input, cls=False)
+
+    txts = [line[1] for line in result]
     ocr_sentence_result = "\n".join(txts)
 
     # logger.debug("ocr_sentence_result:")
@@ -734,22 +729,30 @@ def convert_temp_optimize_vidfile_for_ocr(vid_filepath):
         return None
 
 
+def reset_ocr_engine_config_to_windows():
+    config.set_and_save_config("ocr_engine", "Windows.Media.Ocr.Cli")
+
+
 # 处理文件夹内所有视频的主要流程
 def ocr_process_videos(video_path, iframe_path):
     logger.info("Processing all video files.")
 
-    if config.ocr_engine == 'PaddleOCR':
-        logger.debug("PaddleOCR is enabled.")
-        from paddleocr import PaddleOCR
-        global paddle_ocr_engine
-        paddle_ocr_engine = PaddleOCR(
-            use_angle_cls=False,
-            lang="ch",
-            det_limit_side_len=int(config.ocr_short_size),
-            enable_mkldnn=True,
-            show_log=False,
-        )
+    if config.ocr_engine == "PaddleOCR":
+        try:
+            from rapidocr_onnxruntime import RapidOCR
 
+            global paddle_ocr_engine
+            paddle_ocr_engine = RapidOCR()
+            # paddle_ocr_engine = PaddleOCR(
+            #     use_angle_cls=False,
+            #     lang="ch",
+            #     det_limit_side_len=int(config.ocr_short_size),
+            #     enable_mkldnn=True,
+            #     show_log=False,
+            # )
+        except Exception as e:
+            logger.error(f"Failed to initialize PaddleOCR engine: {e}, reset to default.")
+            reset_ocr_engine_config_to_windows()
 
     # 备份最新的数据库
     db_filepath_latest = file_utils.get_db_filepath_by_datetime(datetime.datetime.now())  # 直接获取对应时间的数据库路径
