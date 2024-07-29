@@ -27,6 +27,7 @@ from windrecorder.utils import dtstr_to_seconds
 
 logger = get_logger(__name__)
 
+
 def initialize_third_part_ocr_engine(ocr_engine_name=config.ocr_engine):
     if ocr_engine_name == "PaddleOCR":
         try:
@@ -44,18 +45,19 @@ def initialize_third_part_ocr_engine(ocr_engine_name=config.ocr_engine):
         except Exception as e:
             logger.error(f"Failed to initialize PaddleOCR engine: {e}, reset to default.")
             reset_ocr_engine_config_to_windows()
-    
+
     if ocr_engine_name == "ChineseOCR_lite_onnx":
         try:
             from ocr_lib.chineseocr_lite_onnx.model import OcrHandle
+
             global col_ocr_handle
             col_ocr_handle = OcrHandle()
         except Exception as e:
             logger.error(f"Failed to initialize ChineseOCR_lite_onnx engine: {e}, reset to default.")
             reset_ocr_engine_config_to_windows()
 
-initialize_third_part_ocr_engine()
 
+initialize_third_part_ocr_engine()
 
 
 # 使用 win32file 的判断实现，检查文件是否被占用
@@ -426,13 +428,13 @@ def ocr_image_ms(img_input):
 
 # 测试所有可用的 OCR 方法
 def ocr_benchmark(lang=config.ocr_lang, reset_ocr_engine_if_unavailable=False, print_process=False):
-
     from windrecorder.const import OCR_BENCHMARK_TEST_SET
+
     if lang in OCR_BENCHMARK_TEST_SET.keys():
         test_set_config = OCR_BENCHMARK_TEST_SET[lang]
     else:
         test_set_config = OCR_BENCHMARK_TEST_SET["fallback"]
-    
+
     benchmark_res = {}
 
     for ocr_engine_name in config.support_ocr_lst:
@@ -454,7 +456,7 @@ def ocr_benchmark(lang=config.ocr_lang, reset_ocr_engine_if_unavailable=False, p
         except Exception as e:
             logger.error(f"calling {ocr_engine_name} fail: {e}")
             print(f"calling {ocr_engine_name} fail: {e}")
-        
+
             available_check = False
             time_cost = 0
             accuracy = 0
@@ -468,11 +470,11 @@ def ocr_benchmark(lang=config.ocr_lang, reset_ocr_engine_if_unavailable=False, p
             "accuracy": accuracy,
             "ocr_res": ocr_res,
         }
-        
+
         logger.info(f"{benchmark_res[ocr_engine_name]=}")
         if print_process:
             print(f"{ocr_engine_name}:{benchmark_res[ocr_engine_name]}")
-    
+
     return benchmark_res
 
 
