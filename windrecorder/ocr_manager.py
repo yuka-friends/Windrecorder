@@ -27,10 +27,35 @@ from windrecorder.utils import dtstr_to_seconds
 
 logger = get_logger(__name__)
 
-if config.enable_ocr_chineseocr_lite_onnx:
-    from ocr_lib.chineseocr_lite_onnx.model import OcrHandle
+def initialize_third_part_ocr_engine(ocr_engine_name=config.ocr_engine):
+    if ocr_engine_name == "PaddleOCR":
+        try:
+            from rapidocr_onnxruntime import RapidOCR
 
-# ocr_short_side = int(config.ocr_short_size)
+            global paddle_ocr_engine
+            paddle_ocr_engine = RapidOCR()
+            # paddle_ocr_engine = PaddleOCR(
+            #     use_angle_cls=False,
+            #     lang="ch",
+            #     det_limit_side_len=int(config.ocr_short_size),
+            #     enable_mkldnn=True,
+            #     show_log=False,
+            # )
+        except Exception as e:
+            logger.error(f"Failed to initialize PaddleOCR engine: {e}, reset to default.")
+            reset_ocr_engine_config_to_windows()
+    
+    if ocr_engine_name == "ChineseOCR_lite_onnx":
+        try:
+            from ocr_lib.chineseocr_lite_onnx.model import OcrHandle
+            global col_ocr_handle
+            col_ocr_handle = OcrHandle()
+        except Exception as e:
+            logger.error(f"Failed to initialize ChineseOCR_lite_onnx engine: {e}, reset to default.")
+            reset_ocr_engine_config_to_windows()
+
+initialize_third_part_ocr_engine()
+
 
 
 # 使用 win32file 的判断实现，检查文件是否被占用
@@ -323,26 +348,27 @@ def ocr_img_preprocessor(img_input):
 
 
 # OCR 分流器
-def ocr_image(img_input):
-    ocr_engine = config.ocr_engine
+def ocr_image(img_input, ocr_engine=config.ocr_engine, return_none_if_ocr_error=False):
     logger.debug(f"ocr_engine:{ocr_engine}")
     try:
         if ocr_engine == "Windows.Media.Ocr.Cli":
             return ocr_image_ms(img_input)
         elif ocr_engine == "ChineseOCR_lite_onnx":
-            return ocr_image_ms(img_input)
+            return ocr_image_col(img_input)
         elif ocr_engine == "PaddleOCR":
             return ocr_image_paddleocr(img_input)
     except Exception as e:
-        logger.warning(f"calling {ocr_engine} fail: {e}, Fallback to Windows.Media.Ocr.Cli.")
-        return ocr_image_ms(img_input)
+        logger.warning(f"calling {ocr_engine} fail: {e}")
+        if return_none_if_ocr_error:
+            return None
+        else:
+            logger.info("OCR engine fallback to Windows.Media.Ocr.Cli.")
+            return ocr_image_ms(img_input)
 
 
 # OCR文本-PaddleOCR
 def ocr_image_paddleocr(img_input):
     logger.debug("OCR text by PaddleOCR")
-    # 输入图片路径，like 'test.jpg'
-    # 实例化OcrHandle对象
     result, elapse = paddle_ocr_engine(img_input)
     # result = paddle_ocr_engine.ocr(img_input, cls=False)
 
@@ -358,11 +384,9 @@ def ocr_image_paddleocr(img_input):
 def ocr_image_col(img_input):
     logger.debug("OCR text by chineseOCRlite")
     # 输入图片路径，like 'test.jpg'
-    # 实例化OcrHandle对象
-    ocr_handle = OcrHandle()
     # 读取图片,并调用text_predict()方法进行OCR识别
     img = cv2.imread(img_input)
-    results = ocr_handle.text_predict(img, short_size=768)
+    results = col_ocr_handle.text_predict(img, short_size=768)
     # results = ocr_handle.text_predict(img,short_size=ocr_short_side)
     # text_predict()方法需要传入图像和短边大小,它会处理图像,执行DBNET文本检测和CRNN文本识别,并返回结果列表。
     ocr_sentence_result = ""
@@ -398,6 +422,58 @@ def ocr_image_ms(img_input):
     text = str(text.encode("utf-8").decode("utf-8"))
 
     return text
+
+
+# 测试所有可用的 OCR 方法
+def ocr_benchmark(lang=config.ocr_lang, reset_ocr_engine_if_unavailable=False, print_process=False):
+
+    from windrecorder.const import OCR_BENCHMARK_TEST_SET
+    if lang in OCR_BENCHMARK_TEST_SET.keys():
+        test_set_config = OCR_BENCHMARK_TEST_SET[lang]
+    else:
+        test_set_config = OCR_BENCHMARK_TEST_SET["fallback"]
+    
+    benchmark_res = {}
+
+    for ocr_engine_name in config.support_ocr_lst:
+        logger.info(f"testing {ocr_engine_name}")
+        if print_process:
+            print(f"testing {ocr_engine_name}")
+
+        initialize_third_part_ocr_engine(ocr_engine_name)
+        try:
+            time_cost = time.time()
+            ocr_res = ocr_image(test_set_config["image_path"], ocr_engine=ocr_engine_name, return_none_if_ocr_error=True)
+            if ocr_res is None:
+                raise Exception(f"ocr_res is None, OCR engine {ocr_engine_name} might be unavailable.")
+            time_cost = time.time() - time_cost
+            with open(test_set_config["verify_text_path"], encoding="utf-8") as f:  # read validation text
+                verify_text = f.read()
+            _, accuracy = compare_strings(ocr_res, verify_text)
+            available_check = True
+        except Exception as e:
+            logger.error(f"calling {ocr_engine_name} fail: {e}")
+            print(f"calling {ocr_engine_name} fail: {e}")
+        
+            available_check = False
+            time_cost = 0
+            accuracy = 0
+            ocr_res = ""
+            if reset_ocr_engine_if_unavailable:
+                reset_ocr_engine_config_to_windows()
+
+        benchmark_res[ocr_engine_name] = {
+            "available_check": available_check,
+            "time_cost": time_cost,
+            "accuracy": accuracy,
+            "ocr_res": ocr_res,
+        }
+        
+        logger.info(f"{benchmark_res[ocr_engine_name]=}")
+        if print_process:
+            print(f"{ocr_engine_name}:{benchmark_res[ocr_engine_name]}")
+    
+    return benchmark_res
 
 
 # 计算两次结果的重合率
@@ -736,23 +812,6 @@ def reset_ocr_engine_config_to_windows():
 # 处理文件夹内所有视频的主要流程
 def ocr_process_videos(video_path, iframe_path):
     logger.info("Processing all video files.")
-
-    if config.ocr_engine == "PaddleOCR":
-        try:
-            from rapidocr_onnxruntime import RapidOCR
-
-            global paddle_ocr_engine
-            paddle_ocr_engine = RapidOCR()
-            # paddle_ocr_engine = PaddleOCR(
-            #     use_angle_cls=False,
-            #     lang="ch",
-            #     det_limit_side_len=int(config.ocr_short_size),
-            #     enable_mkldnn=True,
-            #     show_log=False,
-            # )
-        except Exception as e:
-            logger.error(f"Failed to initialize PaddleOCR engine: {e}, reset to default.")
-            reset_ocr_engine_config_to_windows()
 
     # 备份最新的数据库
     db_filepath_latest = file_utils.get_db_filepath_by_datetime(datetime.datetime.now())  # 直接获取对应时间的数据库路径

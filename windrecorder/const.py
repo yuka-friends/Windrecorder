@@ -30,3 +30,23 @@ DATAFRAME_COLUMN_NAMES = [
 ]
 
 DEBUGMODE_TRIGGER = "DEBUGMODE.txt"
+
+# add ocr test set config here
+OCR_BENCHMARK_TEST_SET = {
+    "zh-Hans-CN": {
+        "image_path": "__assets__\\OCR_test_1080_zh-Hans-CN.png",
+        "verify_text_path": "__assets__\\OCR_test_1080_words_zh-Hans-CN.txt"
+    },
+    "en-US": {
+        "image_path": "__assets__\\OCR_test_1080_en-US.png",
+        "verify_text_path": "__assets__\\OCR_test_1080_words_en-US.txt"
+    },
+    "ja-jp": {
+        "image_path": "__assets__\\OCR_test_1080_ja-jp.png",
+        "verify_text_path": "__assets__\\OCR_test_1080_words_ja-jp.txt"
+    },
+    "fallback": {
+        "image_path": "__assets__\\OCR_test_1080_en-US.png",
+        "verify_text_path": "__assets__\\OCR_test_1080_words_en-US.txt"
+    },
+}
