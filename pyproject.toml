@@ -37,10 +37,19 @@ uiautomation = "^2.0.20"
 pre-commit = "^3.5.0"
 ipykernel = "^6.29.2"
 
+[[tool.poetry.source]]
+name = "pypi-default"
+url = "https://pypi.org/simple"
+priority = "primary"
 
 [[tool.poetry.source]]
 name = "tsinghua"
 url = "https://pypi.tuna.tsinghua.edu.cn/simple"
+priority = "supplemental"
+
+[[tool.poetry.source]]
+name = "aliyun"
+url = "https://mirrors.aliyun.com/pypi/simple"
 priority = "supplemental"
 
 [build-system]
