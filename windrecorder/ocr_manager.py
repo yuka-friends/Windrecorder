@@ -485,18 +485,16 @@ def ocr_benchmark(lang=config.ocr_lang, reset_ocr_engine_if_unavailable=False, p
 
 
 def format_print_benchmark(benchmark_res):
-    print("测试语言：{lang}，测试用例：{test_set}".format(
-        lang = benchmark_res[1],
-        test_set = benchmark_res[2]["image_path"]
-    ))
+    print("测试语言：{lang}，测试用例：{test_set}".format(lang=benchmark_res[1], test_set=benchmark_res[2]["image_path"]))
     print()
 
     for key, value in benchmark_res[0].items():
         print(f"OCR 引擎：{key}:")
-        print("- 单图识别用时：{time_cost} sec，准确率：{accuracy} %".format(
-            time_cost = round(value["time_cost"], 3),
-            accuracy = round(value["accuracy"], 3)
-        ))
+        print(
+            "- 单图识别用时：{time_cost} sec，准确率：{accuracy} %".format(
+                time_cost=round(value["time_cost"], 3), accuracy=round(value["accuracy"], 3)
+            )
+        )
         print()
 
 

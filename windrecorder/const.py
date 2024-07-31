@@ -52,13 +52,7 @@ OCR_BENCHMARK_TEST_SET = {
 }
 
 OCR_SUPPORT_CONFIG = {
-    "Windows.Media.Ocr.Cli": {
-        "support_lang_option": []
-    },
-    "ChineseOCR_lite_onnx": {
-        "support_lang_option": ["en-US, zh-Hans, zh-Hant"]
-    },
-    "PaddleOCR": {
-        "support_lang_option": ["en-US, zh-Hans, zh-Hant"]
-    }
+    "Windows.Media.Ocr.Cli": {"support_lang_option": []},
+    "ChineseOCR_lite_onnx": {"support_lang_option": ["en-US, zh-Hans, zh-Hant"]},
+    "PaddleOCR": {"support_lang_option": ["en-US, zh-Hans, zh-Hant"]},
 }

@@ -10,9 +10,9 @@ import windrecorder.record as record
 import windrecorder.utils as utils
 from windrecorder import __version__, file_utils, ocr_manager
 from windrecorder.config import config
+from windrecorder.const import OCR_SUPPORT_CONFIG
 from windrecorder.logger import get_logger
 from windrecorder.utils import get_text as _t
-from windrecorder.const import OCR_SUPPORT_CONFIG
 
 logger = get_logger(__name__)
 
@@ -47,7 +47,12 @@ def render():
         col1, col2 = st.columns([1, 1])
         with col1:
             # 设置ocr引擎
-            ocr_engine = st.selectbox(_t("set_selectbox_local_ocr_engine"), config.support_ocr_lst, index=[index for index, value in enumerate(config.support_ocr_lst) if value == config.ocr_engine][0], help=_t("set_selectbox_local_ocr_engine_help"))
+            ocr_engine = st.selectbox(
+                _t("set_selectbox_local_ocr_engine"),
+                config.support_ocr_lst,
+                index=[index for index, value in enumerate(config.support_ocr_lst) if value == config.ocr_engine][0],
+                help=_t("set_selectbox_local_ocr_engine_help"),
+            )
 
         with col2:
             # 设定ocr引擎语言
@@ -60,23 +65,26 @@ def render():
                     _t("set_selectbox_ocr_lang"),
                     st.session_state.os_support_lang,
                     index=ocr_lang_index,
-                    help=_t("set_help_ocr_lang_windows_ocr_engine")
+                    help=_t("set_help_ocr_lang_windows_ocr_engine"),
                 )
                 third_party_engine_ocr_lang = config.third_party_engine_ocr_lang
             else:
                 config_ocr_lang = config.ocr_lang
                 try:
-                    third_party_engine_ocr_lang_index = [index for index, value in enumerate(OCR_SUPPORT_CONFIG[ocr_engine]) if value == config.third_party_engine_ocr_lang][0]
+                    third_party_engine_ocr_lang_index = [
+                        index
+                        for index, value in enumerate(OCR_SUPPORT_CONFIG[ocr_engine])
+                        if value == config.third_party_engine_ocr_lang
+                    ][0]
                 except (KeyError, IndexError):
                     third_party_engine_ocr_lang_index = 0
                 third_party_engine_ocr_lang = st.selectbox(
                     _t("set_selectbox_ocr_lang"),
                     OCR_SUPPORT_CONFIG[ocr_engine]["support_lang_option"],
                     index=third_party_engine_ocr_lang_index,
-                    disabled=True if len(OCR_SUPPORT_CONFIG[ocr_engine]["support_lang_option"])<2 else False,
-                    help=_t("set_help_ocr_lang_third_party_engine")
+                    disabled=True if len(OCR_SUPPORT_CONFIG[ocr_engine]["support_lang_option"]) < 2 else False,
+                    help=_t("set_help_ocr_lang_third_party_engine"),
                 )
-
 
             if config.OCR_index_strategy == 0:
                 update_db_btn = st.button(
