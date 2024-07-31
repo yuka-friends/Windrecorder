@@ -12,6 +12,7 @@ from windrecorder import __version__, file_utils, ocr_manager
 from windrecorder.config import config
 from windrecorder.logger import get_logger
 from windrecorder.utils import get_text as _t
+from windrecorder.const import OCR_SUPPORT_CONFIG
 
 logger = get_logger(__name__)
 
@@ -46,27 +47,37 @@ def render():
         col1, col2 = st.columns([1, 1])
         with col1:
             # 设置ocr引擎
-            # if config.enable_ocr_chineseocr_lite_onnx:
-            #     check_ocr_engine()
-            #     config_ocr_engine = st.selectbox(
-            #         _t("set_selectbox_local_ocr_engine"),
-            #         ("Windows.Media.Ocr.Cli", "ChineseOCR_lite_onnx"),
-            #         index=config_ocr_engine_choice_index,
-            #         help=_t("set_selectbox_local_ocr_engine_help"),
-            #     )
+            ocr_engine = st.selectbox(_t("set_selectbox_local_ocr_engine"), config.support_ocr_lst, index=[index for index, value in enumerate(config.support_ocr_lst) if value == config.ocr_engine][0], help=_t("set_selectbox_local_ocr_engine_help"))
 
+        with col2:
             # 设定ocr引擎语言
             if "os_support_lang" not in st.session_state:  # 获取系统支持的OCR语言
                 st.session_state.os_support_lang = utils.get_os_support_lang()
 
             ocr_lang_index = legal_ocr_lang_index()
-            config_ocr_lang = st.selectbox(
-                _t("set_selectbox_ocr_lang"),
-                st.session_state.os_support_lang,
-                index=ocr_lang_index,
-            )
+            if ocr_engine == "Windows.Media.Ocr.Cli":
+                config_ocr_lang = st.selectbox(
+                    _t("set_selectbox_ocr_lang"),
+                    st.session_state.os_support_lang,
+                    index=ocr_lang_index,
+                    help=_t("set_help_ocr_lang_windows_ocr_engine")
+                )
+                third_party_engine_ocr_lang = config.third_party_engine_ocr_lang
+            else:
+                config_ocr_lang = config.ocr_lang
+                try:
+                    third_party_engine_ocr_lang_index = [index for index, value in enumerate(OCR_SUPPORT_CONFIG[ocr_engine]) if value == config.third_party_engine_ocr_lang][0]
+                except (KeyError, IndexError):
+                    third_party_engine_ocr_lang_index = 0
+                third_party_engine_ocr_lang = st.selectbox(
+                    _t("set_selectbox_ocr_lang"),
+                    OCR_SUPPORT_CONFIG[ocr_engine]["support_lang_option"],
+                    index=third_party_engine_ocr_lang_index,
+                    disabled=True if len(OCR_SUPPORT_CONFIG[ocr_engine]["support_lang_option"])<2 else False,
+                    help=_t("set_help_ocr_lang_third_party_engine")
+                )
 
-        with col2:
+
             if config.OCR_index_strategy == 0:
                 update_db_btn = st.button(
                     _t("set_btn_update_db_manual"),
@@ -300,8 +311,9 @@ def render():
             set_config_lang(language_option)
             config.set_and_save_config("enable_3_columns_in_oneday", config_enable_3_columns_in_oneday)
             config.set_and_save_config("max_page_result", config_max_search_result_num)
-            # config.set_and_save_config("ocr_engine", config_ocr_engine)
+            config.set_and_save_config("ocr_engine", ocr_engine)
             config.set_and_save_config("ocr_lang", config_ocr_lang)
+            config.set_and_save_config("third_party_engine_ocr_lang", third_party_engine_ocr_lang)
             config.set_and_save_config("enable_img_embed_search", option_enable_img_embed_search)
             config.set_and_save_config(
                 "index_reduce_same_content_at_different_time", index_reduce_same_content_at_different_time
@@ -416,15 +428,6 @@ def draw_db_status():
                 _t("set_text_no_video_need_index").format(nocred_count=nocred_count, count=count),
                 icon="✅",
             )
-
-
-# 检查配置使用的ocr引擎
-def check_ocr_engine():
-    global config_ocr_engine_choice_index
-    if config.ocr_engine == "Windows.Media.Ocr.Cli":
-        config_ocr_engine_choice_index = 0
-    elif config.ocr_engine == "ChineseOCR_lite_onnx":
-        config_ocr_engine_choice_index = 1
 
 
 # 检查配置使用的ocr语言，如果不在则设为可用的第一个

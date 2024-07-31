@@ -33,6 +33,7 @@ class Config:
         record_bitrate,
         lang,
         ocr_lang,
+        third_party_engine_ocr_lang,
         ocr_engine,
         ocr_short_size,
         max_page_result,
@@ -113,7 +114,8 @@ class Config:
         self.ffmpeg_path = ".venv\\ffmpeg.exe" if release_ver else "ffmpeg"
         self.ffprobe_path = ".venv\\ffprobe.exe" if release_ver else "ffprobe"
         self.lang = lang
-        self.ocr_lang = ocr_lang
+        self.ocr_lang = ocr_lang  # this param only affect Windows.Media.Ocr.Cli
+        self.third_party_engine_ocr_lang = third_party_engine_ocr_lang  # this param only affect third-party ocr engine
         self.ocr_engine = ocr_engine
         self.ocr_short_size = ocr_short_size
         self.max_page_result = max_page_result

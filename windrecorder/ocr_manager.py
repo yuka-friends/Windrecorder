@@ -436,46 +436,68 @@ def ocr_benchmark(lang=config.ocr_lang, reset_ocr_engine_if_unavailable=False, p
         test_set_config = OCR_BENCHMARK_TEST_SET["fallback"]
 
     benchmark_res = {}
+    test_round = 2
 
-    for ocr_engine_name in config.support_ocr_lst:
-        logger.info(f"testing {ocr_engine_name}")
-        if print_process:
-            print(f"testing {ocr_engine_name}")
+    for i in range(test_round):
+        for ocr_engine_name in config.support_ocr_lst:
+            logger.info(f"testing {ocr_engine_name}")
+            if print_process:
+                print(f"testing {ocr_engine_name}")
 
-        initialize_third_part_ocr_engine(ocr_engine_name)
-        try:
-            time_cost = time.time()
-            ocr_res = ocr_image(test_set_config["image_path"], ocr_engine=ocr_engine_name, return_none_if_ocr_error=True)
-            if ocr_res is None:
-                raise Exception(f"ocr_res is None, OCR engine {ocr_engine_name} might be unavailable.")
-            time_cost = time.time() - time_cost
-            with open(test_set_config["verify_text_path"], encoding="utf-8") as f:  # read validation text
-                verify_text = f.read()
-            _, accuracy = compare_strings(ocr_res, verify_text)
-            available_check = True
-        except Exception as e:
-            logger.error(f"calling {ocr_engine_name} fail: {e}")
-            print(f"calling {ocr_engine_name} fail: {e}")
+            initialize_third_part_ocr_engine(ocr_engine_name)
+            if print_process:
+                print(f"{ocr_engine_name} loaded.")
+            try:
+                time_cost = time.time()
+                ocr_res = ocr_image(test_set_config["image_path"], ocr_engine=ocr_engine_name, return_none_if_ocr_error=True)
+                if ocr_res is None:
+                    raise Exception(f"ocr_res is None, OCR engine {ocr_engine_name} might be unavailable.")
+                time_cost = time.time() - time_cost
+                with open(test_set_config["verify_text_path"], encoding="utf-8") as f:  # read validation text
+                    verify_text = f.read()
+                    verify_text = utils.wrap_text_by_remove_break(verify_text)
+                ocr_res = utils.wrap_text_by_remove_break(ocr_res)
+                _, accuracy = compare_strings(ocr_res, verify_text)
+                available_check = True
+            except Exception as e:
+                logger.error(f"calling {ocr_engine_name} fail: {e}")
+                print(f"calling {ocr_engine_name} fail: {e}")
 
-            available_check = False
-            time_cost = 0
-            accuracy = 0
-            ocr_res = ""
-            if reset_ocr_engine_if_unavailable:
-                reset_ocr_engine_config_to_windows()
+                available_check = False
+                time_cost = 0
+                accuracy = 0
+                ocr_res = ""
+                if reset_ocr_engine_if_unavailable:
+                    reset_ocr_engine_config_to_windows()
 
-        benchmark_res[ocr_engine_name] = {
-            "available_check": available_check,
-            "time_cost": time_cost,
-            "accuracy": accuracy,
-            "ocr_res": ocr_res,
-        }
+            benchmark_res[ocr_engine_name] = {
+                "available_check": available_check,
+                "time_cost": time_cost,
+                "accuracy": accuracy,
+                "ocr_res": ocr_res,
+            }
 
-        logger.info(f"{benchmark_res[ocr_engine_name]=}")
-        if print_process:
-            print(f"{ocr_engine_name}:{benchmark_res[ocr_engine_name]}")
+            logger.info(f"{benchmark_res[ocr_engine_name]=}")
+            if print_process:
+                print(f"{ocr_engine_name}:{benchmark_res[ocr_engine_name]}")
 
-    return benchmark_res
+    return (benchmark_res, lang, test_set_config)
+
+
+def format_print_benchmark(benchmark_res):
+    print("测试语言：{lang}，测试用例：{test_set}".format(
+        lang = benchmark_res[1],
+        test_set = benchmark_res[2]["image_path"]
+    ))
+    print()
+
+    for key, value in benchmark_res[0].items():
+        print(f"OCR 引擎：{key}:")
+        print("- 单图识别用时：{time_cost} sec，准确率：{accuracy} %".format(
+            time_cost = round(value["time_cost"], 3),
+            accuracy = round(value["accuracy"], 3)
+        ))
+        print()
 
 
 # 计算两次结果的重合率
@@ -809,6 +831,8 @@ def convert_temp_optimize_vidfile_for_ocr(vid_filepath):
 
 def reset_ocr_engine_config_to_windows():
     config.set_and_save_config("ocr_engine", "Windows.Media.Ocr.Cli")
+    if config.ocr_lang not in utils.get_os_support_lang():
+        config.set_and_save_config("ocr_lang", utils.get_os_support_lang()[0])
 
 
 # 处理文件夹内所有视频的主要流程

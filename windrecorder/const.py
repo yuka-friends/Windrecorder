@@ -50,3 +50,15 @@ OCR_BENCHMARK_TEST_SET = {
         "verify_text_path": "__assets__\\OCR_test_1080_words_en-US.txt",
     },
 }
+
+OCR_SUPPORT_CONFIG = {
+    "Windows.Media.Ocr.Cli": {
+        "support_lang_option": []
+    },
+    "ChineseOCR_lite_onnx": {
+        "support_lang_option": ["en-US, zh-Hans, zh-Hant"]
+    },
+    "PaddleOCR": {
+        "support_lang_option": ["en-US, zh-Hans, zh-Hant"]
+    }
+}

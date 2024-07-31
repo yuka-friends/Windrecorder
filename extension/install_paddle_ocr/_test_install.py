@@ -15,10 +15,9 @@ def set_config_module_install(state: bool):
     support_ocr_lst = config.support_ocr_lst
     if "PaddleOCR" not in support_ocr_lst:
         support_ocr_lst.append("PaddleOCR")
-    config.set_and_save_config("support_ocr_lst", support_ocr_lst)
+        config.set_and_save_config("support_ocr_lst", support_ocr_lst)
 
 
-# 检查是否能启用 cuda
 try:
     from rapidocr_onnxruntime import RapidOCR
 
@@ -28,6 +27,8 @@ try:
     result, elapse = engine(img_path)
     print(result)
     print(elapse)
+    print("Install succeed! 安装成功！")
+    set_config_module_install(True)
     # FIXME 优化识别结果显示，改为加入统一的benchmark函数
 
     # import paddle
@@ -55,5 +56,5 @@ try:
 
 
 except Exception as e:
-    print(e)
+    print(f"Install failed. 安装失败: {e}")
     set_config_module_install(False)

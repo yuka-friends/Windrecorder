@@ -17,6 +17,7 @@
   "search_max_num": "50",
   "lang": "en",
   "ocr_lang": "zh-Hans-CN",
+  "third_party_engine_ocr_lang": "en-US",
   "ocr_short_size": "768",
   "max_page_result": 20,
   "ocr_engine": "Windows.Media.Ocr.Cli",
