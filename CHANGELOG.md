@@ -1,13 +1,17 @@
 # Changelog 更新日志
 
+## 0.0.21
+- 添加以下第三方 OCR 扩展，可以在 Extension 目录下进行安装；Add the following third-party OCR extensions, which can be installed in the Extension directory;
+    - RapidOCR (Paddle OCR based on ONNXRuntime) (Collaborators: ASC8384)
+    - WeChat OCR (Collaborators: B1lli)
+- 为压缩视频添加自动硬件加速参数；Added automatic hardware acceleration parameters for compressed video;
+
+### Fixed
+- bug：当截图文件不完整或损坏时，webui未能捕捉阻塞报错；When the screenshot file is incomplete or damaged, the webui not capture the blocking error;
+
 ## 0.0.20
 > 2024-07-13
 - 添加对 Chrome、Microsoft Edge、Firefox 当前浏览的 url 记录；Add the recording of the currently browsed URL in Chrome, Microsoft Edge, and Firefox;
-
---roll out to new user--
-- 为压缩视频添加自动硬件加速参数；Added automatic hardware acceleration parameters for compressed video;
-### Fixed
-- bug：当截图文件不完整或损坏时，webui未能捕捉阻塞报错；When the screenshot file is incomplete or damaged, the webui not capture the blocking error;
 
 ## 0.0.19
 > 2024-07-12

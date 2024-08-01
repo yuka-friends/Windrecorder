@@ -25,11 +25,16 @@ try:
 
     img_path = parent_parent_dir + "/__assets__/OCR_test_1080_zh-Hans-CN.png"
     result, elapse = engine(img_path)
-    print(result)
-    print(elapse)
+
     print("Install succeed! 安装成功！")
     set_config_module_install(True)
-    # FIXME 优化识别结果显示，改为加入统一的benchmark函数
+
+    from windrecorder import ocr_manager
+
+    res = ocr_manager.ocr_benchmark(print_process=True)
+    print()
+    ocr_manager.format_print_benchmark(res)
+    print()
 
     # import paddle
     # from paddleocr import PaddleOCR

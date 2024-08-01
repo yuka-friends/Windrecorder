@@ -225,6 +225,9 @@
         "qs_record_screenshot_array_help": "Low resource usage, can be played back instantly. Suitable for most users who store, recall, and search for memory clues.",
         "qs_record_mode_set_to": "Recording mode is set to:",
         "qs_record_auto_set": "The resolution of the display will be automatically recognized each time the screen is recorded, without additional settings.",
+        "qs_ocr_benchmark_testcase": "Test language: {lang}\n{indentation}Test case: {test_set}",
+        "qs_ocr_benchmark_tabletitle": ["OCR engine", "Single image recognition time (sec)", "Accuracy"],
+        "qs_ocr_benchmark_warning": "* Please note that the time taken for each image recognition by {ocr_engines} may exceed the current screenshot interval {screenshot_interval_second}s, which may cause delays in recording. It is recommended to set the screenshot interval to more than twice the single image recognition time. (When using Flexible screenshot mode)",
 
         "qs_et_describe": "Windrecorder also provides some extension functions, which you can later install/use in the extension directory.",
         "qs_end_describe": "Congratulations! You have completed all initial settings. Don't worry, you can adjust the settings anytime in the app! \n\nNow, you can open [start_app.bat] in the directory to start using it. \n",
@@ -482,6 +485,10 @@
         "qs_record_screenshot_array_help": "占用资源低，可以即时回放。适合大多数存储、回忆、搜索记忆线索的用户。",
         "qs_record_mode_set_to": "录制模式设置为：",
         "qs_record_auto_set": "显示器的分辨率将在每次录屏时自动识别，无需额外设定。",
+        "qs_ocr_benchmark_testcase": "测试语言：{lang}\n{indentation}测试用例：{test_set}",
+        "qs_ocr_benchmark_tabletitle": ["OCR 引擎", "单图识别用时（秒）", "准确率"],
+        "qs_ocr_benchmark_warning": "* 请注意，{ocr_engines} 的每单图识别用时可能会超过当前屏幕截图间隔时间 {screenshot_interval_second}s，这可能会导致记录出现延迟，建议将截图间隔时长设定为单图识别时间的两倍以上。（在使用 灵活截图模式 时）",
+
 
         "qs_et_describe": "捕风记录仪 还提供了一些扩展功能，你可以稍后在 extension 目录下安装/使用。",
         "qs_end_describe": "恭喜！你已完成所有初始设定。别担心，你可以随时在应用内调整设置！\n\n现在，你可以打开目录下的 【start_app.bat】 来开始使用啦。\n",
@@ -743,6 +750,9 @@
         "qs_record_screenshot_array_help": "リソース使用量が少なく、即時再生が可能です。記憶の手がかりを保存、呼び出し、検索するほとんどのユーザーに適しています。",
         "qs_record_mode_set_to": "記録モードは次のように設定されています:",
         "qs_record_auto_set": "モニターの解像度は画面が録画されるたびに自動的に認識されるため、追加の設定は必要ありません。",
+        "qs_ocr_benchmark_testcase": "テスト言語: {lang}\n{indentation}テスト ケース: {test_set}",
+        "qs_ocr_benchmark_tabletitle": ["OCR エンジン", "単一画像認識時間 (秒)", "精度率"],
+        "qs_ocr_benchmark_warning": "* {ocr_engines} の各単一画像認識時間が現在のスクリーンショット間隔 {screenshot_interval_second}s を超える可能性があり、記録に遅延が生じる可能性があることに注意してください。スクリーンショット間隔の長さを単一画像認識に設定することをお勧めします。 2 倍以上の時間 (フレキシブル スクリーンショット モード使用時)",
 
         "tray_add_flag_mark_note_for_now": "🚩 とりあえずマークを追加",
         "tray_webui_start": "🦝 検索/設定インターフェイスを開始します",

@@ -2,6 +2,6 @@
     "extension_name": "Install PaddleOCR Module for Windrecorder",
     "developer_name": ["ASC8384", "antonoko"],
     "developer_url": ["https://github.com/ASC8384", "https://github.com/Antonoko"],
-    "version": "0.0.1",
+    "version": "0.0.2",
     "description_markdown": "add Paddle OCR as optional OCR engine for Windrecorder"
 }
