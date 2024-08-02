@@ -100,6 +100,7 @@ class Config:
         record_foreground_window_process_name,
         record_deep_linking,
         support_ocr_lst,
+        TesseractOCR_filepath,
         **other_field,
     ) -> None:
         # If need to process input parameters, they should assign another variable name to prevent recursive writing into the config.
@@ -185,6 +186,7 @@ class Config:
         self.record_foreground_window_process_name = record_foreground_window_process_name
         self.record_deep_linking = record_deep_linking
         self.support_ocr_lst = support_ocr_lst
+        self.TesseractOCR_filepath = TesseractOCR_filepath
 
     def set_and_save_config(self, attr: str, value):
         if not hasattr(self, attr):

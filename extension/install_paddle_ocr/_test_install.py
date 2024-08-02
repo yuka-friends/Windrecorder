@@ -22,7 +22,6 @@ try:
     from rapidocr_onnxruntime import RapidOCR
 
     engine = RapidOCR()
-
     img_path = parent_parent_dir + "/__assets__/OCR_test_1080_zh-Hans-CN.png"
     result, elapse = engine(img_path)
 
@@ -31,10 +30,11 @@ try:
 
     from windrecorder import ocr_manager
 
+    img_path = parent_parent_dir + "/__assets__/OCR_test_1080_zh-Hans-CN.png"
+    ocr_manager.ocr_image_paddleocr(img_path, force_initialize=True)
+
     res = ocr_manager.ocr_benchmark(print_process=True)
-    print()
     ocr_manager.format_print_benchmark(res)
-    print()
 
     # import paddle
     # from paddleocr import PaddleOCR

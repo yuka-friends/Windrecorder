@@ -10,7 +10,11 @@ chcp 65001
 cls
 echo.
 echo   This guide will add Paddle OCR as the optical text recognition engine for Windrecorder.
+echo   Third-party OCR engines may consume more system resources when recognizing.
+echo.
 echo   本向导将为捕风记录仪添加 Paddle OCR 作为光学文本识别引擎。
+
+echo   第三方 OCR 引擎运行时可能会占用更高系统资源。
 echo.
 echo   Support languages: en-US, zh-Hans, zh-Hant
 echo   支持语言：英文, 简体中文, 繁体中文

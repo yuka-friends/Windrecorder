@@ -227,7 +227,7 @@
         "qs_record_auto_set": "The resolution of the display will be automatically recognized each time the screen is recorded, without additional settings.",
         "qs_ocr_benchmark_testcase": "Test language: {lang}\n{indentation}Test case: {test_set}",
         "qs_ocr_benchmark_tabletitle": ["OCR engine", "Single image recognition time (sec)", "Accuracy"],
-        "qs_ocr_benchmark_warning": "* Please note that the time taken for each image recognition by {ocr_engines} may exceed the current screenshot interval {screenshot_interval_second}s, which may cause delays in recording. It is recommended to set the screenshot interval to more than twice the single image recognition time. (When using Flexible screenshot mode)",
+        "qs_ocr_benchmark_warning": "* Please note that the time taken for each image recognition by {ocr_engines} may exceed the current screenshot interval {screenshot_interval_second}s, which may cause delays in recording. It is recommended to set the screenshot interval to more than twice the single image recognition time. (When using Flexible Screenshot mode)",
 
         "qs_et_describe": "Windrecorder also provides some extension functions, which you can later install/use in the extension directory.",
         "qs_end_describe": "Congratulations! You have completed all initial settings. Don't worry, you can adjust the settings anytime in the app! \n\nNow, you can open [start_app.bat] in the directory to start using it. \n",

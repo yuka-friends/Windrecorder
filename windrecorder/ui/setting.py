@@ -73,18 +73,22 @@ def render():
                 try:
                     third_party_engine_ocr_lang_index = [
                         index
-                        for index, value in enumerate(OCR_SUPPORT_CONFIG[ocr_engine])
-                        if value == config.third_party_engine_ocr_lang
+                        for index, value in enumerate(OCR_SUPPORT_CONFIG[ocr_engine]["support_lang_option"])
+                        if value == config.third_party_engine_ocr_lang[0]
                     ][0]
                 except (KeyError, IndexError):
                     third_party_engine_ocr_lang_index = 0
                 third_party_engine_ocr_lang = st.selectbox(
                     _t("set_selectbox_ocr_lang"),
-                    OCR_SUPPORT_CONFIG[ocr_engine]["support_lang_option"],
+                    [value for value in OCR_SUPPORT_CONFIG[ocr_engine]["support_lang_option"].values()],
                     index=third_party_engine_ocr_lang_index,
                     disabled=True if len(OCR_SUPPORT_CONFIG[ocr_engine]["support_lang_option"]) < 2 else False,
                     help=_t("set_help_ocr_lang_third_party_engine"),
                 )
+                if ocr_engine == "TesseractOCR":
+                    st.info(
+                        "Before applying, please ensure the language pack has been installed. (https://github.com/tesseract-ocr/tessdata/)"
+                    )
 
             if config.OCR_index_strategy == 0:
                 update_db_btn = st.button(
@@ -321,7 +325,14 @@ def render():
             config.set_and_save_config("max_page_result", config_max_search_result_num)
             config.set_and_save_config("ocr_engine", ocr_engine)
             config.set_and_save_config("ocr_lang", config_ocr_lang)
-            config.set_and_save_config("third_party_engine_ocr_lang", third_party_engine_ocr_lang)
+            config.set_and_save_config(
+                "third_party_engine_ocr_lang",
+                [
+                    k
+                    for k, v in OCR_SUPPORT_CONFIG[ocr_engine]["support_lang_option"].items()
+                    if v == third_party_engine_ocr_lang
+                ],
+            )
             config.set_and_save_config("enable_img_embed_search", option_enable_img_embed_search)
             config.set_and_save_config(
                 "index_reduce_same_content_at_different_time", index_reduce_same_content_at_different_time

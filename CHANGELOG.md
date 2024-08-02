@@ -4,6 +4,7 @@
 - 添加以下第三方 OCR 扩展，可以在 Extension 目录下进行安装；Add the following third-party OCR extensions, which can be installed in the Extension directory;
     - RapidOCR (Paddle OCR based on ONNXRuntime) (Collaborators: ASC8384)
     - WeChat OCR (Collaborators: B1lli)
+    - Tesseract OCR
 - 为压缩视频添加自动硬件加速参数；Added automatic hardware acceleration parameters for compressed video;
 
 ### Fixed
