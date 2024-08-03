@@ -26,3 +26,9 @@ Supported languages: https://github.com/tesseract-ocr/tessdoc/blob/main/Data-Fil
 After the installation is completed, you can switch to use this OCR engine in the settings of Windrecorder.
 
 安装完成后，你可以在 Windrecorder 的设置中切换该 OCR 引擎使用。
+
+# How to uninstall 如何卸载
+
+Uninstall Tesseract OCR normally through the Windows program management panel.
+
+通过 Windows 程序管理面板正常卸载 Tesseract OCR 即可。

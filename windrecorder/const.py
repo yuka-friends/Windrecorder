@@ -52,10 +52,22 @@ OCR_BENCHMARK_TEST_SET = {
 }
 
 OCR_SUPPORT_CONFIG = {
-    "Windows.Media.Ocr.Cli": {"support_lang_option": {}},
-    "ChineseOCR_lite_onnx": {"support_lang_option": {"en-US, zh-Hans, zh-Hant": "en-US, zh-Hans, zh-Hant"}},
-    "PaddleOCR": {"support_lang_option": {"en-US, zh-Hans, zh-Hant": "en-US, zh-Hans, zh-Hant"}},
-    "WeChatOCR": {"support_lang_option": {"en-US, zh-Hans, zh-Hant": "en-US, zh-Hans, zh-Hant"}},
+    "Windows.Media.Ocr.Cli": {
+        "support_lang_option": {},
+        "support_multiple_languages": False,
+    },
+    "ChineseOCR_lite_onnx": {
+        "support_lang_option": {"en-US, zh-Hans, zh-Hant": "en-US, zh-Hans, zh-Hant"},
+        "support_multiple_languages": False,
+    },
+    "PaddleOCR": {
+        "support_lang_option": {"en-US, zh-Hans, zh-Hant": "en-US, zh-Hans, zh-Hant"},
+        "support_multiple_languages": False,
+    },
+    "WeChatOCR": {
+        "support_lang_option": {"en-US, zh-Hans, zh-Hant": "en-US, zh-Hans, zh-Hant"},
+        "support_multiple_languages": False,
+    },
     "TesseractOCR": {
         "support_lang_option": {
             "afr": "Afrikaans",
@@ -185,6 +197,7 @@ OCR_SUPPORT_CONFIG = {
             "vie": "Vietnamese",
             "yid": "Yiddish",
             "yor": "Yoruba",
-        }
+        },
+        "support_multiple_languages": True,
     },
 }

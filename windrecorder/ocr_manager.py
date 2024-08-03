@@ -496,7 +496,13 @@ def ocr_image_col(img_input, force_initialize=False):
 def ocr_image_TesseractOCR(img_input):
     logger.debug("OCR text by TesseractOCR")
     text = ""
-    command = [config.TesseractOCR_filepath, img_input, "-", "-l", config.third_party_engine_ocr_lang[0]]
+    command = [
+        config.TesseractOCR_filepath,
+        img_input,
+        "-",
+        "-l",
+        "+".join(config.third_party_engine_ocr_lang),
+    ]  # https://github.com/tesseract-ocr/tessdoc/blob/main/Command-Line-Usage.md
 
     if config.third_party_engine_ocr_lang[0] not in OCR_SUPPORT_CONFIG["TesseractOCR"]["support_lang_option"].keys():
         raise Exception(f"{config.third_party_engine_ocr_lang} not supported.")

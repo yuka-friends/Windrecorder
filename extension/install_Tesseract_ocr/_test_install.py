@@ -55,10 +55,17 @@ try:
     print("Install succeed! 安装成功！")
     set_config_module_install(True)
 
+    from windrecorder import ocr_manager
+
     res = ocr_manager.ocr_benchmark(print_process=True)
     print()
     ocr_manager.format_print_benchmark(res)
     print()
+
+    print(
+        "After restarting windrecorder, you can see the option of the third-party OCR engine. After configuration, restart windrecorder to using it."
+    )
+    print("重启 windrecorder 后即可看到第三方 OCR 引擎选项。配置完成后重启 windrecorder 以应用。")
 
 
 except Exception as e:
