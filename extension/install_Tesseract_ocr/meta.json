@@ -1,0 +1,7 @@
+{
+    "extension_name": "Install Tesseract OCR Module for Windrecorder",
+    "developer_name": "antonoko",
+    "developer_url": "https://github.com/Antonoko",
+    "version": "0.0.1",
+    "description_markdown": "add Tesseract OCR as optional OCR engine for Windrecorder"
+}

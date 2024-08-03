@@ -15,7 +15,12 @@ Windrecorder is a memory search app by records everything on your screen in smal
 - Only index the changed scenes and update the OCR text, page title, browser url and other information to the database; Custom skip conditions (by window title, process name, included text, or screen still time); Automatically maintain the database, clean and compress the video when no one is using the computer;
 - Complete webui interface, which can review the screen, conduct OCR/image semantics and other queries;
 - Provide data summaries such as activity statistics, word clouds, timelines, light boxes, scatter plots, etc.;
-- Supports multiple languages. Currently built-in: Simplified Chinese, English, and Japanese. Welcome to contribute multilingual translations and help us improve copywriting quality.
+- Supports multiple languages. Currently built-in: Simplified Chinese, English, and Japanese. Welcome to contribute multilingual translations and help us improve copywriting quality;
+- In addition to Windows' built-in recognition capabilities, it also supports other third-party OCR engines ([performance test reference](https://github.com/yuka-friends/Windrecorder/blob/main/__assets__/third_party_ocr_engine_benchmark_reference.md)), currently including:
+     - [Rapid OCR](https://github.com/RapidAI/RapidOCR), based onnxruntime version of Paddle OCR;
+     - [WeChat OCR](https://github.com/kanadeblisst00/wechat_ocr), with extremely high Chinese and English recognition accuracy;
+     - [Tesseract OCR](https://github.com/tesseract-ocr/tessdoc), supports more than 100 languages ​​and can recognize multiple languages ​​at the same time;
+     - [Contribute custom OCR](https://github.com/yuka-friends/Windrecorder/blob/main/extension/how_to_contribute_third_party_ocr_support.md)
 - _coming soon... pay attention to our PR :)_
 
 ---

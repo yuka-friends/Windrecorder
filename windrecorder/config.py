@@ -33,7 +33,9 @@ class Config:
         record_bitrate,
         lang,
         ocr_lang,
+        third_party_engine_ocr_lang,
         ocr_engine,
+        ocr_short_size,
         max_page_result,
         target_screen_res,
         exclude_words,
@@ -52,7 +54,6 @@ class Config:
         release_ver,
         video_compress_rate,
         oneday_timeline_pic_num,
-        enable_ocr_chineseocr_lite_onnx,
         compress_encoder,
         compress_accelerator,
         compress_quality,
@@ -98,6 +99,8 @@ class Config:
         is_record_system_sound,
         record_foreground_window_process_name,
         record_deep_linking,
+        support_ocr_lst,
+        TesseractOCR_filepath,
         **other_field,
     ) -> None:
         # If need to process input parameters, they should assign another variable name to prevent recursive writing into the config.
@@ -112,8 +115,10 @@ class Config:
         self.ffmpeg_path = ".venv\\ffmpeg.exe" if release_ver else "ffmpeg"
         self.ffprobe_path = ".venv\\ffprobe.exe" if release_ver else "ffprobe"
         self.lang = lang
-        self.ocr_lang = ocr_lang
+        self.ocr_lang = ocr_lang  # this param only affect Windows.Media.Ocr.Cli
+        self.third_party_engine_ocr_lang = third_party_engine_ocr_lang  # this param only affect third-party ocr engine
         self.ocr_engine = ocr_engine
+        self.ocr_short_size = ocr_short_size
         self.max_page_result = max_page_result
         self.target_screen_res = target_screen_res
         self.exclude_words = exclude_words
@@ -132,7 +137,6 @@ class Config:
         self.release_ver = release_ver
         self.video_compress_rate = video_compress_rate
         self.oneday_timeline_pic_num = oneday_timeline_pic_num
-        self.enable_ocr_chineseocr_lite_onnx = enable_ocr_chineseocr_lite_onnx
         self.maintain_lock_path = os.path.join(lock_file_dir, maintain_lock_subdir)
         self.record_lock_path = os.path.join(lock_file_dir, record_lock_name)
         self.tray_lock_path = os.path.join(lock_file_dir, tray_lock_name)
@@ -181,6 +185,8 @@ class Config:
         self.is_record_system_sound = is_record_system_sound
         self.record_foreground_window_process_name = record_foreground_window_process_name
         self.record_deep_linking = record_deep_linking
+        self.support_ocr_lst = support_ocr_lst
+        self.TesseractOCR_filepath = TesseractOCR_filepath
 
     def set_and_save_config(self, attr: str, value):
         if not hasattr(self, attr):
