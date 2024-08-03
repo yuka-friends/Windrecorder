@@ -17,6 +17,11 @@
 - 完善的 webui 界面，可以回溯画面、进行 OCR /图像语义等查询；
 - 提供活动统计、词云、时间轴、光箱、散点图等数据摘要；
 - 支持多语言。目前内建有：简体中文、English、日本語。Welcome to contribute multilingual translations and help us improve copywriting quality.
+- 除了 Windows 自带识别能力，还支持其他第三方 OCR 引擎（[性能测试参考](https://github.com/yuka-friends/Windrecorder/blob/main/__assets__/third_party_ocr_engine_benchmark_reference.md)），目前包括：
+    - [Rapid OCR](https://github.com/RapidAI/RapidOCR)，基于 Paddle OCR 的 onnxruntime 版本；
+    - [WeChat OCR](https://github.com/kanadeblisst00/wechat_ocr)，具有极高的中英文识别准确率；
+    - [Tesseract OCR](https://github.com/tesseract-ocr/tessdoc)，支持超过 100 种语言，可同时识别多种语言；
+    - [贡献自定义 OCR 支持](https://github.com/yuka-friends/Windrecorder/blob/main/extension/how_to_contribute_third_party_ocr_support.md)
 - _coming soon... 请关注我们的 PR_
 
 ---
