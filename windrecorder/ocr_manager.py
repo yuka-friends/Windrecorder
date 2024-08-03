@@ -36,6 +36,7 @@ third_party_ocr_actived_manager = {
     "WeChatOCR": False,
 }
 
+
 # WeChatOCR输出结果用的回调函数
 def wx_ocr_result_callback(img_path, results: dict):
     def _extract_text_from_json(json_data):
