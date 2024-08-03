@@ -443,8 +443,11 @@ def render():
                                 vidfile_timestamp = utils.calc_vid_name_to_timestamp(df_vid_filename)
                                 select_timestamp = utils.datetime_to_seconds(day_full_select_datetime)
                                 shown_timestamp = select_timestamp - vidfile_timestamp
-                                show_and_locate_video_timestamp_by_filename_and_time(df_vid_filename, shown_timestamp)
-                                st.markdown(_t("oneday_md_rewinding_video_name").format(day_video_file_name=df_vid_filename))
+                                if shown_timestamp >= 0:
+                                    show_and_locate_video_timestamp_by_filename_and_time(df_vid_filename, shown_timestamp)
+                                    st.markdown(_t("oneday_md_rewinding_video_name").format(day_video_file_name=df_vid_filename))
+                                else:
+                                    st.info(_t("oneday_text_no_found_record_and_vid_on_disk"), icon="🎐")
                             else:
                                 st.info(_t("oneday_text_not_found_vid_but_has_data"), icon="🎐")
                                 found_row = db_manager.db_refine_search_data_day(
