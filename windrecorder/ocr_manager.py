@@ -18,19 +18,111 @@ from windrecorder.const import (
     CACHE_DIR_OCR_IMG_PREPROCESSOR,
     DATAFRAME_COLUMN_NAMES,
     ERROR_VIDEO_RETRY_TIMES,
+    OCR_SUPPORT_CONFIG,
 )
 from windrecorder.db_manager import db_manager
 from windrecorder.exceptions import LockExistsException
 from windrecorder.lock import FileLock
 from windrecorder.logger import get_logger
 from windrecorder.utils import dtstr_to_seconds
+from windrecorder.utils import get_text as _t
 
 logger = get_logger(__name__)
 
-if config.enable_ocr_chineseocr_lite_onnx:
-    from ocr_lib.chineseocr_lite_onnx.model import OcrHandle
+# if ocr engine need to be initialized
+third_party_ocr_actived_manager = {
+    "PaddleOCR": False,
+    "ChineseOCR_lite_onnx": False,
+    "WeChatOCR": False,
+}
 
-# ocr_short_side = int(config.ocr_short_size)
+
+# WeChatOCR输出结果用的回调函数
+def wx_ocr_result_callback(img_path, results: dict):
+    def _extract_text_from_json(json_data):
+        # Extract the list of ocrResults from the JSON data
+        ocr_results = json_data.get("ocrResult", [])
+        # Initialize an empty list to hold the extracted text
+        texts = []
+        # Iterate through the ocrResults and extract the 'text' value from each one
+        for result in ocr_results:
+            text = result.get("text", "")
+            texts.append(text)
+        # Join all the extracted text into a single string and return it
+        return "".join(texts)
+
+    global wx_ocr_result
+    # 设置OCR结果
+    wx_ocr_result = _extract_text_from_json(results)
+    # 设置事件，通知get_ocr_res_me函数结果已准备好
+    wx_ocr_complete_event.set()
+    # 重置事件，为下次调用准备
+    wx_ocr_complete_event.clear()
+
+
+def initialize_third_part_ocr_engine(ocr_engine_name=config.ocr_engine):
+    if ocr_engine_name == "PaddleOCR" and not third_party_ocr_actived_manager["PaddleOCR"]:
+        try:
+            from rapidocr_onnxruntime import RapidOCR
+
+            global paddle_ocr_engine
+            paddle_ocr_engine = RapidOCR()
+            third_party_ocr_actived_manager["PaddleOCR"] = True
+            # paddle_ocr_engine = PaddleOCR(
+            #     use_angle_cls=False,
+            #     lang="ch",
+            #     det_limit_side_len=int(config.ocr_short_size),
+            #     enable_mkldnn=True,
+            #     show_log=False,
+            # )
+        except Exception as e:
+            logger.error(f"Failed to initialize PaddleOCR engine: {e}, reset to default.")
+            reset_ocr_engine_config_to_windows()
+
+    if ocr_engine_name == "ChineseOCR_lite_onnx" and not third_party_ocr_actived_manager["ChineseOCR_lite_onnx"]:
+        try:
+            from ocr_lib.chineseocr_lite_onnx.model import OcrHandle
+
+            global col_ocr_handle
+            col_ocr_handle = OcrHandle()
+            third_party_ocr_actived_manager["ChineseOCR_lite_onnx"] = True
+        except Exception as e:
+            logger.error(f"Failed to initialize ChineseOCR_lite_onnx engine: {e}, reset to default.")
+            reset_ocr_engine_config_to_windows()
+
+    if ocr_engine_name == "WeChatOCR" and not third_party_ocr_actived_manager["WeChatOCR"]:
+        try:
+            import threading
+
+            global wx_ocr_complete_event, wx_ocr_result, wx_ocr_manager
+            # 创建一个事件对象
+            wx_ocr_complete_event = threading.Event()
+            # 微信OCR结果全局变量
+            wx_ocr_result = None
+            # 微信OCR_manager全局变量
+            wx_ocr_manager = None
+
+            from wechat_ocr.ocr_manager import OcrManager
+
+            wechat_ocr_dir = "ocr_lib\\wxocr-binary\\WeChatOCR.exe "
+            wechat_dir = "ocr_lib\\wxocr-binary"
+            wx_ocr_manager = OcrManager(wechat_dir)
+            # 设置WeChatOcr目录
+            wx_ocr_manager.SetExePath(wechat_ocr_dir)
+            # 设置微信所在路径
+            wx_ocr_manager.SetUsrLibDir(wechat_dir)
+            # 设置ocr识别结果的回调函数
+            wx_ocr_manager.SetOcrResultCallback(wx_ocr_result_callback)
+            # 启动ocr服务
+            wx_ocr_manager.StartWeChatOCR()
+
+            third_party_ocr_actived_manager["WeChatOCR"] = True
+        except Exception as e:
+            logger.error(f"Failed to initialize WeChatOCR engine: {e}, reset to default.")
+            reset_ocr_engine_config_to_windows()
+
+
+initialize_third_part_ocr_engine()
 
 
 # 使用 win32file 的判断实现，检查文件是否被占用
@@ -323,28 +415,69 @@ def ocr_img_preprocessor(img_input):
 
 
 # OCR 分流器
-def ocr_image(img_input):
-    ocr_engine = config.ocr_engine
+def ocr_image(img_input, ocr_engine=config.ocr_engine, return_none_if_ocr_error=False):
     logger.debug(f"ocr_engine:{ocr_engine}")
-    if ocr_engine == "Windows.Media.Ocr.Cli":
-        return ocr_image_ms(img_input)
-    elif ocr_engine == "ChineseOCR_lite_onnx":
-        if config.enable_ocr_chineseocr_lite_onnx:
+    try:
+        if ocr_engine == "Windows.Media.Ocr.Cli":
+            return ocr_image_ms(img_input)
+        elif ocr_engine == "ChineseOCR_lite_onnx":
             return ocr_image_col(img_input)
+        elif ocr_engine == "PaddleOCR":
+            return ocr_image_paddleocr(img_input)
+        elif ocr_engine == "WeChatOCR":
+            return ocr_image_wechatocr(img_input)
+        elif ocr_engine == "TesseractOCR":
+            return ocr_image_TesseractOCR(img_input)
+    except Exception as e:
+        logger.warning(f"calling {ocr_engine} fail: {e}")
+        if return_none_if_ocr_error:
+            return None
         else:
-            logger.warning("enable_ocr_chineseocr_lite_onnx is disabled. Fallback to Windows.Media.Ocr.Cli.")
+            logger.info("OCR engine fallback to Windows.Media.Ocr.Cli.")
             return ocr_image_ms(img_input)
 
 
+# OCR文本-PaddleOCR
+def ocr_image_paddleocr(img_input, force_initialize=False):
+    if force_initialize and not third_party_ocr_actived_manager["PaddleOCR"]:
+        initialize_third_part_ocr_engine(ocr_engine_name="PaddleOCR")
+
+    logger.debug("OCR text by PaddleOCR")
+    result, elapse = paddle_ocr_engine(img_input)
+    # result = paddle_ocr_engine.ocr(img_input, cls=False)
+
+    txts = [line[1] for line in result]
+    ocr_sentence_result = "\n".join(txts)
+
+    # logger.debug("ocr_sentence_result:")
+    # logger.debug(ocr_sentence_result)
+    return ocr_sentence_result
+
+
+# OCR文本-WeChat
+def ocr_image_wechatocr(img_input, force_initialize=False):
+    if force_initialize and not third_party_ocr_actived_manager["WeChatOCR"]:
+        initialize_third_part_ocr_engine(ocr_engine_name="WeChatOCR")
+
+    # 从识别结果的json中提取字符串，拼接到一起
+    logger.debug("OCR text by WeChatOCR")
+    # 发送任务给OCR后端
+    wx_ocr_manager.DoOCRTask(img_input)
+    # 等待ocr_result_callback设置事件
+    wx_ocr_complete_event.wait(timeout=5)
+    return wx_ocr_result
+
+
 # OCR文本-chineseOCRlite
-def ocr_image_col(img_input):
+def ocr_image_col(img_input, force_initialize=False):
+    if force_initialize and not third_party_ocr_actived_manager["ChineseOCR_lite_onnx"]:
+        initialize_third_part_ocr_engine(ocr_engine_name="ChineseOCR_lite_onnx")
+
     logger.debug("OCR text by chineseOCRlite")
     # 输入图片路径，like 'test.jpg'
-    # 实例化OcrHandle对象
-    ocr_handle = OcrHandle()
     # 读取图片,并调用text_predict()方法进行OCR识别
     img = cv2.imread(img_input)
-    results = ocr_handle.text_predict(img, short_size=768)
+    results = col_ocr_handle.text_predict(img, short_size=768)
     # results = ocr_handle.text_predict(img,short_size=ocr_short_side)
     # text_predict()方法需要传入图像和短边大小,它会处理图像,执行DBNET文本检测和CRNN文本识别,并返回结果列表。
     ocr_sentence_result = ""
@@ -357,6 +490,39 @@ def ocr_image_col(img_input):
     logger.debug("ocr_sentence_result:")
     logger.debug(ocr_sentence_result)
     return ocr_sentence_result
+
+
+# OCR文本-TesseractOCR
+def ocr_image_TesseractOCR(img_input):
+    logger.debug("OCR text by TesseractOCR")
+    text = ""
+    command = [
+        config.TesseractOCR_filepath,
+        img_input,
+        "-",
+        "-l",
+        "+".join(config.third_party_engine_ocr_lang),
+    ]  # https://github.com/tesseract-ocr/tessdoc/blob/main/Command-Line-Usage.md
+
+    if config.third_party_engine_ocr_lang[0] not in OCR_SUPPORT_CONFIG["TesseractOCR"]["support_lang_option"].keys():
+        raise Exception(f"{config.third_party_engine_ocr_lang} not supported.")
+
+    proc = subprocess.run(command, capture_output=True)
+    encodings_try = ["gbk", "utf-8"]  # 强制兼容
+    for enc in encodings_try:
+        try:
+            text = proc.stdout.decode(enc)
+            if text is None or text == "":
+                pass
+            break
+        except UnicodeDecodeError:
+            pass
+
+    text = str(text.encode("utf-8").decode("utf-8"))
+    if "Failed loading language" in text and "Tesseract" in text:
+        raise Exception(text)
+
+    return text
 
 
 # OCR文本-MS自带方式
@@ -380,6 +546,102 @@ def ocr_image_ms(img_input):
     text = str(text.encode("utf-8").decode("utf-8"))
 
     return text
+
+
+# 测试所有可用的 OCR 方法
+def ocr_benchmark(lang=config.ocr_lang, reset_ocr_engine_if_unavailable=False, print_process=False):
+    from windrecorder.const import OCR_BENCHMARK_TEST_SET
+
+    if lang in OCR_BENCHMARK_TEST_SET.keys():
+        test_set_config = OCR_BENCHMARK_TEST_SET[lang]
+    else:
+        test_set_config = OCR_BENCHMARK_TEST_SET["fallback"]
+
+    benchmark_res = {}
+    test_round = 2
+
+    for i in range(test_round):
+        for ocr_engine_name in config.support_ocr_lst:
+            if print_process:
+                print(f"testing {ocr_engine_name}")
+
+            initialize_third_part_ocr_engine(ocr_engine_name)
+            if print_process:
+                print(f"{ocr_engine_name} loaded.")
+            try:
+                time_cost = time.time()
+                ocr_res = ocr_image(test_set_config["image_path"], ocr_engine=ocr_engine_name, return_none_if_ocr_error=True)
+                if ocr_res is None:
+                    raise Exception(f"ocr_res is None, OCR engine {ocr_engine_name} might be unavailable.")
+                time_cost = time.time() - time_cost
+                with open(test_set_config["verify_text_path"], encoding="utf-8") as f:  # read validation text
+                    verify_text = f.read()
+                    verify_text = utils.wrap_text_by_remove_break(verify_text)
+                ocr_res = utils.wrap_text_by_remove_break(ocr_res)
+                _, accuracy = compare_strings(ocr_res, verify_text)
+                available_check = True
+            except Exception as e:
+                print(f"calling {ocr_engine_name} fail: {e}")
+
+                available_check = False
+                time_cost = 0
+                accuracy = 0
+                ocr_res = ""
+                if reset_ocr_engine_if_unavailable:
+                    reset_ocr_engine_config_to_windows()
+
+            benchmark_res[ocr_engine_name] = {
+                "available_check": available_check,
+                "time_cost": time_cost,
+                "accuracy": accuracy,
+                "ocr_res": ocr_res,
+            }
+
+            if print_process:
+                print(f"{ocr_engine_name}:{benchmark_res[ocr_engine_name]}")
+
+    return (benchmark_res, lang, test_set_config)
+
+
+def format_print_benchmark(benchmark_res, indentation_cnt=4):
+    print(" " * indentation_cnt + "\n--------------------------------------------------------------------\n")
+
+    print(
+        " " * indentation_cnt
+        + _t("qs_ocr_benchmark_testcase").format(
+            lang=benchmark_res[1], test_set=benchmark_res[2]["image_path"], indentation=" " * indentation_cnt
+        )
+    )
+    print()
+
+    data_format = [_t("qs_ocr_benchmark_tabletitle"), ["---", "---", "---"]]
+    overtime_ocr_engine = []
+
+    for key, value in benchmark_res[0].items():
+        data_format.append([key, str(round(value["time_cost"], 3)), str(round(value["accuracy"], 3)) + "%"])
+
+        if value["time_cost"] > config.screenshot_interval_second / 2:
+            overtime_ocr_engine.append(key)
+
+    utils.print_table(data_format, indentation_cnt=indentation_cnt)
+
+    if len(overtime_ocr_engine) > 0:
+        print()
+        print(
+            " " * indentation_cnt
+            + _t("qs_ocr_benchmark_warning").format(
+                ocr_engines=", ".join(overtime_ocr_engine), screenshot_interval_second=config.screenshot_interval_second
+            )
+        )
+    if "TesseractOCR" in benchmark_res[0].keys():
+        if benchmark_res[0]["TesseractOCR"]["accuracy"] < 70:
+            print()
+            print(
+                " " * indentation_cnt
+                + "* Since TesseractOCR uses another language code representation method, the accuracy test here may not match the actual results. You can run the test after Windrecorder setting is configured correctly."
+            )
+
+    print(" " * indentation_cnt + "\n--------------------------------------------------------------------\n")
 
 
 # 计算两次结果的重合率
@@ -709,6 +971,12 @@ def convert_temp_optimize_vidfile_for_ocr(vid_filepath):
     except subprocess.CalledProcessError as ex:
         logger.error(f"convert_temp_optimize_vidfile_for_ocr: {ex.cmd} failed with return code {ex.returncode}")
         return None
+
+
+def reset_ocr_engine_config_to_windows():
+    config.set_and_save_config("ocr_engine", "Windows.Media.Ocr.Cli")
+    if config.ocr_lang not in utils.get_os_support_lang():
+        config.set_and_save_config("ocr_lang", utils.get_os_support_lang()[0])
 
 
 # 处理文件夹内所有视频的主要流程

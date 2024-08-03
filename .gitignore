@@ -30,3 +30,4 @@ cache_screenshot
 @AutomationLog.txt
 webui.bat
 test.bat
+wxocr-binary

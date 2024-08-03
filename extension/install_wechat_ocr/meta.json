@@ -1,0 +1,7 @@
+{
+    "extension_name": "Install WeChat OCR Module for Windrecorder",
+    "developer_name": ["B1lli", "antonoko"],
+    "developer_url": ["https://github.com/B1lli", "https://github.com/Antonoko"],
+    "version": "0.0.1",
+    "description_markdown": "add WeChat OCR as optional OCR engine for Windrecorder"
+}
