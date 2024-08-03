@@ -120,6 +120,8 @@ Q: Windows.Media.Ocr.Cli OCR 不可用/识别率过低
 
 - https://github.com/DayBreak-u/chineseocr_lite
 - https://github.com/zh-h/Windows.Media.Ocr.Cli
+- https://github.com/kanadeblisst00/wechat_ocr
+- https://github.com/tesseract-ocr/tessdoc
 - https://github.com/unum-cloud/uform
 - https://github.com/streamlit/streamlit
 
