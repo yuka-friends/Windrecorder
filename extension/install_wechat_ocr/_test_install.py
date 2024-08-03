@@ -19,6 +19,12 @@ def set_config_module_install():
 
 
 try:
+    if not os.path.exists("ocr_lib\\wxocr-binary"):
+        print("""
+   没有找到 ocr_lib\\wxocr-binary 路径，请检查网络连接并重试。或者在 ocr_lib 文件夹下执行指令（git clone https://github.com/Antonoko/wxocr-binary）手动下载。
+   The ocr_lib\\wxocr-binary path is not found. Please check the network connection and try again. Or execute the command (git clone https://github.com/Antonoko/wxocr-binary) in the ocr_lib folder to download manually.
+""")
+        raise Exception("ocr_lib\\wxocr-binary not found.")
     from windrecorder import ocr_manager
 
     img_path = parent_parent_dir + "/__assets__/OCR_test_1080_zh-Hans-CN.png"

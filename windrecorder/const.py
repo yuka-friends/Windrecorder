@@ -55,18 +55,22 @@ OCR_SUPPORT_CONFIG = {
     "Windows.Media.Ocr.Cli": {
         "support_lang_option": {},
         "support_multiple_languages": False,
+        "cost_process_second_per_minute_video": 5,
     },
     "ChineseOCR_lite_onnx": {
         "support_lang_option": {"en-US, zh-Hans, zh-Hant": "en-US, zh-Hans, zh-Hant"},
         "support_multiple_languages": False,
+        "cost_process_second_per_minute_video": 25,
     },
     "PaddleOCR": {
         "support_lang_option": {"en-US, zh-Hans, zh-Hant": "en-US, zh-Hans, zh-Hant"},
         "support_multiple_languages": False,
+        "cost_process_second_per_minute_video": 25,
     },
     "WeChatOCR": {
         "support_lang_option": {"en-US, zh-Hans, zh-Hant": "en-US, zh-Hans, zh-Hant"},
         "support_multiple_languages": False,
+        "cost_process_second_per_minute_video": 5,
     },
     "TesseractOCR": {
         "support_lang_option": {
@@ -199,5 +203,6 @@ OCR_SUPPORT_CONFIG = {
             "yor": "Yoruba",
         },
         "support_multiple_languages": True,
+        "cost_process_second_per_minute_video": 10,
     },
 }

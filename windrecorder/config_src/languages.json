@@ -227,7 +227,7 @@
         "qs_record_auto_set": "The resolution of the display will be automatically recognized each time the screen is recorded, without additional settings.",
         "qs_ocr_benchmark_testcase": "Test language: {lang}\n{indentation}Test case: {test_set}",
         "qs_ocr_benchmark_tabletitle": ["OCR engine", "Single image recognition time (sec)", "Accuracy"],
-        "qs_ocr_benchmark_warning": "* Please note that the time taken for each image recognition by {ocr_engines} may exceed the current screenshot interval {screenshot_interval_second}s, which may cause delays in recording. It is recommended to set the screenshot interval to more than twice the single image recognition time. (When using Flexible Screenshot mode)",
+        "qs_ocr_benchmark_warning": "* Please note that the time taken for each image recognition by {ocr_engines} may exceed the current screenshot interval {screenshot_interval_second}s, which may cause delays in recording. It is recommended to set the screenshot interval to more than twice the single image recognition time if these OCR engines are used. (When using Flexible Screenshot mode)",
 
         "qs_et_describe": "Windrecorder also provides some extension functions, which you can later install/use in the extension directory.",
         "qs_end_describe": "Congratulations! You have completed all initial settings. Don't worry, you can adjust the settings anytime in the app! \n\nNow, you can open [start_app.bat] in the directory to start using it. \n",
@@ -487,7 +487,7 @@
         "qs_record_auto_set": "显示器的分辨率将在每次录屏时自动识别，无需额外设定。",
         "qs_ocr_benchmark_testcase": "测试语言：{lang}\n{indentation}测试用例：{test_set}",
         "qs_ocr_benchmark_tabletitle": ["OCR 引擎", "单图识别用时（秒）", "准确率"],
-        "qs_ocr_benchmark_warning": "* 请注意，{ocr_engines} 的每单图识别用时可能会超过当前屏幕截图间隔时间 {screenshot_interval_second}s，这可能会导致记录出现延迟，建议将截图间隔时长设定为单图识别时间的两倍以上。（在使用 灵活截图模式 时）",
+        "qs_ocr_benchmark_warning": "* 请注意，{ocr_engines} 的每单图识别用时可能会超过当前屏幕截图间隔时间 {screenshot_interval_second}s，这可能会导致记录出现延迟。如果使用这些识别引擎，建议将截图间隔时长设定为单图识别时间的两倍以上。（在使用 灵活截图模式 时）",
 
 
         "qs_et_describe": "捕风记录仪 还提供了一些扩展功能，你可以稍后在 extension 目录下安装/使用。",

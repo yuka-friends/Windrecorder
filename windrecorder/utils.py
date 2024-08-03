@@ -24,7 +24,7 @@ from pyshortcuts import make_shortcut
 
 from windrecorder import __version__, file_utils
 from windrecorder.config import config
-from windrecorder.const import DATETIME_FORMAT
+from windrecorder.const import DATETIME_FORMAT, OCR_SUPPORT_CONFIG
 from windrecorder.logger import get_logger
 
 logger = get_logger(__name__)
@@ -362,7 +362,9 @@ def calc_vid_inside_time(df, num):
 def estimate_indexing_time():
     count, nocred_count = file_utils.get_videos_and_ocred_videos_count(config.record_videos_dir_ud)
     record_minutes = int(config.record_seconds) / 60
-    ocr_cost_time_table = {"Windows.Media.Ocr.Cli": 5, "ChineseOCR_lite_onnx": 25, "PaddleOCR": 25}
+    ocr_cost_time_table = {}
+    for k, v in OCR_SUPPORT_CONFIG.items():
+        ocr_cost_time_table[k] = v["cost_process_second_per_minute_video"]
     ocr_cost_time = ocr_cost_time_table[config.ocr_engine]
     estimate_time = int(nocred_count) * int(round(record_minutes)) * int(ocr_cost_time)
     estimate_time_str = convert_seconds_to_hhmmss(estimate_time)

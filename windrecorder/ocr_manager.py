@@ -633,6 +633,14 @@ def format_print_benchmark(benchmark_res, indentation_cnt=4):
                 ocr_engines=", ".join(overtime_ocr_engine), screenshot_interval_second=config.screenshot_interval_second
             )
         )
+    if "TesseractOCR" in benchmark_res[0].keys():
+        if benchmark_res[0]["TesseractOCR"]["accuracy"] < 70:
+            print()
+            print(
+                " " * indentation_cnt
+                + "* Since TesseractOCR uses another language code representation method, the accuracy test here may not match the actual results. You can run the test after Windrecorder setting is configured correctly."
+            )
+
     print(" " * indentation_cnt + "\n--------------------------------------------------------------------\n")
 
 
