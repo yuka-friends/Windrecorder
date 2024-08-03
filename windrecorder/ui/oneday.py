@@ -445,7 +445,9 @@ def render():
                                 shown_timestamp = select_timestamp - vidfile_timestamp
                                 if shown_timestamp >= 0:
                                     show_and_locate_video_timestamp_by_filename_and_time(df_vid_filename, shown_timestamp)
-                                    st.markdown(_t("oneday_md_rewinding_video_name").format(day_video_file_name=df_vid_filename))
+                                    st.markdown(
+                                        _t("oneday_md_rewinding_video_name").format(day_video_file_name=df_vid_filename)
+                                    )
                                 else:
                                     st.info(_t("oneday_text_no_found_record_and_vid_on_disk"), icon="🎐")
                             else:
