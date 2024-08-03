@@ -36,6 +36,28 @@ third_party_ocr_actived_manager = {
     "WeChatOCR": False,
 }
 
+# WeChatOCR输出结果用的回调函数
+def wx_ocr_result_callback(img_path, results: dict):
+    def _extract_text_from_json(json_data):
+        # Extract the list of ocrResults from the JSON data
+        ocr_results = json_data.get("ocrResult", [])
+        # Initialize an empty list to hold the extracted text
+        texts = []
+        # Iterate through the ocrResults and extract the 'text' value from each one
+        for result in ocr_results:
+            text = result.get("text", "")
+            texts.append(text)
+        # Join all the extracted text into a single string and return it
+        return "".join(texts)
+
+    global wx_ocr_result
+    # 设置OCR结果
+    wx_ocr_result = _extract_text_from_json(results)
+    # 设置事件，通知get_ocr_res_me函数结果已准备好
+    wx_ocr_complete_event.set()
+    # 重置事件，为下次调用准备
+    wx_ocr_complete_event.clear()
+
 
 def initialize_third_part_ocr_engine(ocr_engine_name=config.ocr_engine):
     if ocr_engine_name == "PaddleOCR" and not third_party_ocr_actived_manager["PaddleOCR"]:
@@ -432,29 +454,6 @@ def ocr_image_paddleocr(img_input, force_initialize=False):
 
 
 # OCR文本-WeChat
-# WeChatOCR输出结果用的回调函数
-def wx_ocr_result_callback(img_path, results: dict):
-    def _extract_text_from_json(json_data):
-        # Extract the list of ocrResults from the JSON data
-        ocr_results = json_data.get("ocrResult", [])
-        # Initialize an empty list to hold the extracted text
-        texts = []
-        # Iterate through the ocrResults and extract the 'text' value from each one
-        for result in ocr_results:
-            text = result.get("text", "")
-            texts.append(text)
-        # Join all the extracted text into a single string and return it
-        return "".join(texts)
-
-    global wx_ocr_result
-    # 设置OCR结果
-    wx_ocr_result = _extract_text_from_json(results)
-    # 设置事件，通知get_ocr_res_me函数结果已准备好
-    wx_ocr_complete_event.set()
-    # 重置事件，为下次调用准备
-    wx_ocr_complete_event.clear()
-
-
 def ocr_image_wechatocr(img_input, force_initialize=False):
     if force_initialize and not third_party_ocr_actived_manager["WeChatOCR"]:
         initialize_third_part_ocr_engine(ocr_engine_name="WeChatOCR")
