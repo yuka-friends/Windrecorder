@@ -94,6 +94,21 @@ def record_screen_via_ffmpeg(
             CONFIG_RECORD_PRESET[encoder_preset_name]["ffmpeg_cmd"], int(config.record_bitrate) * (len(display_info) - 1)
         )
 
+    # Using ffmpeg to specify the recording audio device is not robust enough and is prone to errors due to IO permissions
+
+    # record_audio_args = []
+    # if config.is_record_system_sound and config.record_audio_device_name in utils.get_audio_input_devices():
+    #     record_audio_args = [
+    #         "-f",
+    #         "dshow",
+    #         "-i",
+    #         f'audio="{config.record_audio_device_name}"',
+    #         "-tune",
+    #         "zerolatency",
+    #         "-acodec",
+    #         "aac"
+    #     ]
+
     ffmpeg_cmd = [
         config.ffmpeg_path,
         "-hwaccel",

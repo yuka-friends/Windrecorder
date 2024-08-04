@@ -18,6 +18,7 @@ from io import BytesIO
 import cv2
 import mss
 import psutil
+import pyaudio
 import requests
 from PIL import Image
 from pyshortcuts import make_shortcut
@@ -903,3 +904,17 @@ def print_table(data: list, indentation_cnt=0):
     for row in data:
         formatted_row = [format_string(str(x), col_width[i]) for i, x in enumerate(row)]
         print(" " * indentation_cnt + "    ".join(formatted_row))
+
+
+def get_audio_input_devices():
+    """
+    获取音频输入设备列表
+    """
+    p = pyaudio.PyAudio()
+    input_devices = []
+    for i in range(p.get_device_count()):
+        device_info = p.get_device_info_by_index(i)
+        if device_info["maxInputChannels"] > 0:
+            input_devices.append(device_info["name"])
+    p.terminate()
+    return input_devices

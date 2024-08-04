@@ -135,6 +135,9 @@
         "rs_text_ffmpeg_help": "- Designed for high-performance users needing comprehensive computer activity recordings;\n- Skip custom content/window during indexing, but related screens may still be captured without retrieval;\n- Memory-intensive recording process, indexing may consume additional system resources;\n- Up to a 15-minute delay in backtracking available;",
         "rs_text_screenshot_array_help": "- Ideal for most users who store, recall, and search for memory clues;\n- Efficient, real-time, and updates only changed images;\n- Instant screen replay; auto-converts screenshots to video;\n- Skip specific content/window; record only foreground window;",
         "rs_checkbox_is_record_system_sound": "Record system sound",
+        "rs_text_record_system_sound_help": "Currently only supports recording audio, and does not yet support audio-to-text retrieval.",
+        "rs_selectbox_audio_device": "Record audio input source",
+        "rs_text_audio_device_help": "When you want to record system content sound, please select the one containing Stereo Mix.",
         "rs_checkbox_convert_screenshots_to_vid_while_only_when_idle_or_plugged_in": "(Energy saving) Convert screenshots to videos only when idle or plugged in",
 
         "set_md_title": "### ⚙️ Settings",
@@ -395,6 +398,9 @@
         "rs_text_ffmpeg_help": "- 适用于想完整记录电脑活动视频、性能较高的用户；\n- 索引时可以跳过自定义窗口与内容，但相关画面仍可能被录制、只是无法被检索到；\n- 录制时将占用较高的内存，在录制完成索引时可能占用较多系统资源；\n- 回溯存在最多15分钟的延迟；",
         "rs_text_screenshot_array_help": "- 适用于存储、回忆、搜索记忆线索的大多数用户；\n- 占用低系统资源，实时分析、只索引存在变化的画面；\n- 可以马上回溯已记录画面；截图完毕会自动转换为视频；\n- 可以精确跳过自定义窗口与内容，同时可以仅录制前台窗口；",
         "rs_checkbox_is_record_system_sound": "同时录制系统声音",
+        "rs_text_record_system_sound_help": "目前仅支持录制音频，尚不支持音频转文本进行检索。",
+        "rs_selectbox_audio_device": "录制音频输入来源",
+        "rs_text_audio_device_help": "当想要录制系统内容声音时，请选择含有 Stereo Mix 的一项。",
         "rs_checkbox_convert_screenshots_to_vid_while_only_when_idle_or_plugged_in": "（节能）仅在电脑空闲时或接入电源时将截图转换为视频",
         
         "set_md_title": "### ⚙️ 设置",
@@ -656,6 +662,9 @@
         "rs_text_ffmpeg_help": "- コンピュータアクティビティのビデオを完全に録画し、高いパフォーマンスを実現したいユーザーに適しています。\n- インデックス作成中にカスタム ウィンドウとコンテンツをスキップできますが、関連する画像は記録される可能性がありますが、取得することはできません。\n n- 記録はより多くのメモリを占有し、記録が完了してインデックスが作成されると、より多くのシステム リソースを占有する可能性があります。\n- トレースバックには最大 15 分の遅延が発生します。",
         "rs_text_screenshot_array_help": "- メモリの手がかりを保存、呼び出し、検索するほとんどのユーザーに適しています。\n- 占有するシステム リソースが少なく、リアルタイムで分析し、変更された画像のみにインデックスを作成します。\n- 記録された画像はすぐに呼び出すことができ、完了後に自動的にビデオに変換されます。\n - カスタマイズされたウィンドウとコンテンツは正確にスキップでき、前景ウィンドウのみを記録できます。",
         "rs_checkbox_is_record_system_sound": "システムサウンドを同時に録音します",
+        "rs_text_record_system_sound_help": "現在サポートされているのは音声録音のみであり、取得のための音声のテキストへの変換はまだサポートされていません。",
+        "rs_selectbox_audio_device": "オーディオ入力ソースを録音",
+        "rs_text_audio_device_help": "システム コンテンツの音声を録音する場合は、ステレオ ミックスが含まれているものを選択してください。",
         "rs_checkbox_convert_screenshots_to_vid_while_only_when_idle_or_plugged_in": "(省電力) コンピューターがアイドル状態または電源に接続されている場合にのみ、スクリーンショットをビデオに変換します",
 
         "set_md_title": "### ⚙️ 設定",
