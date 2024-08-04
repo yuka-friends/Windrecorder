@@ -1,9 +1,9 @@
 import datetime
 import os
+import random
 import shutil
 import subprocess
 import time
-import random
 
 import cv2
 import mss
