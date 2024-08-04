@@ -1,5 +1,6 @@
 import datetime
 import os
+import random
 import shutil
 import subprocess
 import time
@@ -863,3 +864,12 @@ def make_screenshots_into_video_via_dir_path(saved_dir_filepath):
         return None
     logger.info(f"converted screenshots to video: {output_video_filepath}")
     return output_video_filepath
+
+
+def try_empty_cache_dir_in_idle_routine():
+    """在空闲时清理缓存文件夹"""
+    try:
+        if random.randint(1, 30) == 1:
+            file_utils.empty_directory("cache")
+    except Exception as e:
+        logger.warning(f"empty cache dir fail: {e}")

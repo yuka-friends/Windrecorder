@@ -88,6 +88,8 @@ def idle_maintain_process_main():
         ocr_manager.remove_outdated_videofiles(video_queue_batch=config.batch_size_remove_video_in_idle)
         # 压缩过期视频
         record.compress_outdated_videofiles(video_queue_batch=config.batch_size_compress_video_in_idle)
+        # 清理缓存文件夹
+        record.try_empty_cache_dir_in_idle_routine()
         # 统计webui footer info
         state.make_webui_footer_state_data_cache(ask_from="idle")
         # 生成随机词表
