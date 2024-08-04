@@ -7,6 +7,10 @@
     - Tesseract OCR, supports more than 100 languages ​​and can recognize multiple languages ​​at the same time;
 - 为压缩视频添加自动硬件加速参数；Added automatic hardware acceleration parameters for compressed video;
 
+--roll out to new user--
+- 添加空闲时清理缓存文件夹机制；Add the mechanism of cleaning the cache folder in idle time;
+- 将统计中的年月散点图缓存移动至用户文件夹；Move the scatter plot cache of year and month in statistics to the user folder.
+
 ### Fixed
 - bug：当截图文件不完整或损坏时，webui未能捕捉阻塞报错；When the screenshot file is incomplete or damaged, the webui not capture the blocking error;
 
