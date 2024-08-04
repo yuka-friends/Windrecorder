@@ -45,6 +45,7 @@
   "timeline_result_dir": "result_timeline",
   "lightbox_result_dir": "result_lightbox",
   "wintitle_result_dir": "result_wintitle",
+  "date_state_dir": "result_date_state",
   "screentime_not_change_to_pause_record": 5,
   "user_name": "default",
   "use_similar_ch_char_to_search": true,

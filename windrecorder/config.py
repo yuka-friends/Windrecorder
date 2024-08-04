@@ -51,6 +51,7 @@ class Config:
         ocr_image_crop_URBL,
         lightbox_result_dir,
         wintitle_result_dir,
+        date_state_dir,
         release_ver,
         video_compress_rate,
         oneday_timeline_pic_num,
@@ -130,6 +131,7 @@ class Config:
         self.timeline_result_dir_ud = os.path.join(userdata_dir, timeline_result_dir)
         self.lightbox_result_dir_ud = os.path.join(userdata_dir, lightbox_result_dir)
         self.wintitle_result_dir_ud = os.path.join(userdata_dir, wintitle_result_dir)
+        self.date_state_dir_ud = os.path.join(userdata_dir, date_state_dir)
         self.screentime_not_change_to_pause_record = screentime_not_change_to_pause_record
         self.user_name = user_name
         self.use_similar_ch_char_to_search = use_similar_ch_char_to_search

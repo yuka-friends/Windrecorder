@@ -129,7 +129,7 @@ def get_show_month_data_state(stat_select_month_datetime: datetime.datetime):
         st.session_state.df_month_stat_dt_last_time = stat_select_month_datetime
 
     df_file_name = stat_select_month_datetime.strftime("%Y-%m") + "_month_data_state.csv"
-    df_cache_dir = "cache"
+    df_cache_dir = config.date_state_dir_ud
     df_filepath = os.path.join(df_cache_dir, df_file_name)
 
     update_condition = False
@@ -173,7 +173,7 @@ def get_show_year_data_state(stat_select_year_datetime: datetime.datetime):
         st.session_state.df_year_stat_dt_last_time = stat_select_year_datetime
 
     df_file_name = stat_select_year_datetime.strftime("%Y") + "_year_data_state.csv"
-    df_cache_dir = "cache"
+    df_cache_dir = config.date_state_dir_ud
     df_filepath = os.path.join(df_cache_dir, df_file_name)
 
     update_condition = False
