@@ -111,9 +111,10 @@ Q: Windows.Media.Ocr.Cli OCR 不可用/识别率过低
 
 - A1: 检查系统中是否添加了目标语言的语言包/输入法：https://learn.microsoft.com/en-us/uwp/api/windows.media.ocr
 
-- A2: Windows.Media.Ocr.Cli 对较小的文本识别率可能不良，通过在设置中打开「相近字形搜索」选项可以提高搜索时的召回命中率。未来将会添加对更多本地 OCR 工具的支持。
+- A2: 在 `extension` 目录下安装第三方 OCR 引擎，它们通常会有更高的识别精度、支持同时识别多种语言，不过可能占用稍多的性能；
 
-> 未来将会添加更多第三方的 OCR 支持；
+- A2: Windows.Media.Ocr.Cli 对较小的文本识别率可能不良，对于中文用户，通过在设置中打开「相近字形搜索」选项可以提高搜索时的召回命中率。
+
 
 # 🧡
 引入了这些项目的帮助：

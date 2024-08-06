@@ -107,9 +107,7 @@ Q: Windows.Media.Ocr.Cli OCR is not available/the recognition rate is too low
 
 - A1: Check whether the language pack/input method of the target language has been added to the system: https://learn.microsoft.com/en-us/uwp/api/windows.media.ocr
 
-- A2: Windows.Media.Ocr.Cli may have poor recognition rate for text. We will add more OCR extension support in the future.
-
-> More third-party OCR support will be added in the future;
+- A2: Install a third-party OCR engine in the `extension` directory. They usually have higher recognition accuracy and support simultaneous recognition of multiple languages, but may take up slightly more performance;
 
 # 🧡
 Thanks to the following projects
