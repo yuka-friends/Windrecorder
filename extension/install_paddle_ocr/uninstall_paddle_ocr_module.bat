@@ -31,7 +31,7 @@ goto :finish
 
 @REM -------------------------------------------------
 :finish
-for /F "tokens=* USEBACKQ" %%A in (`python -m poetry env info --path`) do call %%A\Scripts\activate.bat
+for /F "tokens=* USEBACKQ" %%A in (`python -m poetry env info --path`) do call "%%A\Scripts\activate.bat"
 python _uninstall.py
 echo.
 echo   The uninstallation script has been completed. 已执行完卸载脚本。
