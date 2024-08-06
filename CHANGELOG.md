@@ -13,6 +13,8 @@
 
 ### Fixed
 - bug：当截图文件不完整或损坏时，webui未能捕捉阻塞报错；When the screenshot file is incomplete or damaged, the webui not capture the blocking error;
+--roll out to new user--
+- bug: 当程序目录存在空格时，第三方 OCR 扩展无法进入虚拟环境完成安装；When the program directory has a space, the third-party OCR extension cannot enter the virtual environment to complete the installation;
 
 ## 0.0.20
 > 2024-07-13
