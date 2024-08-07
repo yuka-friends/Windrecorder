@@ -30,6 +30,7 @@ def render():
     convert_screenshots_to_vid_while_only_when_idle_or_plugged_in = (
         config.convert_screenshots_to_vid_while_only_when_idle_or_plugged_in
     )
+    record_audio_device_name = config.record_audio_device_name
 
     st.markdown(_t("rs_md_title"))
 
@@ -79,12 +80,32 @@ def render():
                 st.image("__assets__\\record_method_ffmpeg.png")
             with record_mode_col_tip2:
                 st.markdown(_t("rs_text_ffmpeg_help"))
+
             is_record_system_sound = st.checkbox(
                 _t("rs_checkbox_is_record_system_sound"),
                 config.is_record_system_sound,
-                disabled=True,
-                help="Features still work in progress, please stay tuned.",
+                help=_t("rs_text_record_system_sound_help"),
             )
+            if is_record_system_sound:
+                try:
+                    if "system_audio_input_devices" not in st.session_state:
+                        st.session_state["system_audio_input_devices"] = utils.get_audio_input_devices()
+                    if config.record_audio_device_name in st.session_state.system_audio_input_devices:
+                        record_audio_device_name_index = [
+                            i
+                            for i, v in enumerate(st.session_state.system_audio_input_devices)
+                            if i == config.record_audio_device_name
+                        ][0]
+                    else:
+                        record_audio_device_name_index = 0
+                    record_audio_device_name = st.selectbox(
+                        _t("rs_selectbox_audio_device"),
+                        options=st.session_state.system_audio_input_devices,
+                        index=record_audio_device_name_index,
+                        help=_t("rs_text_audio_device_help"),
+                    )
+                except Exception as e:
+                    st.error(f"Fail to get audio device info: {e}")
 
         elif record_mode == record_mode_option[1][1]:  # screenshot_array
             record_screenshot_method_capture_foreground_window_only = st.checkbox(
@@ -315,6 +336,7 @@ def render():
                 convert_screenshots_to_vid_while_only_when_idle_or_plugged_in,
             )
             config.set_and_save_config("is_record_system_sound", is_record_system_sound)
+            config.set_and_save_config("record_audio_device_name", record_audio_device_name)
 
             config.set_and_save_config("screentime_not_change_to_pause_record", screentime_not_change_to_pause_record)
             config.set_and_save_config("start_recording_on_startup", is_start_recording_on_start_app)

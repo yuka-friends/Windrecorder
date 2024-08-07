@@ -98,6 +98,7 @@ class Config:
         convert_screenshots_to_vid_while_only_when_idle_or_plugged_in,
         foreground_window_video_background_color,
         is_record_system_sound,
+        record_audio_device_name,
         record_foreground_window_process_name,
         record_deep_linking,
         support_ocr_lst,
@@ -185,6 +186,7 @@ class Config:
         )
         self.foreground_window_video_background_color = foreground_window_video_background_color
         self.is_record_system_sound = is_record_system_sound
+        self.record_audio_device_name = record_audio_device_name
         self.record_foreground_window_process_name = record_foreground_window_process_name
         self.record_deep_linking = record_deep_linking
         self.support_ocr_lst = support_ocr_lst
