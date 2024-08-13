@@ -1,6 +1,7 @@
 import datetime
 import math
 import os
+import re
 import shutil
 import sqlite3
 from itertools import product
@@ -320,6 +321,8 @@ class _DBManager:
                     # 不使用相近字形搜索：直接遍历所有空格区分开的关键词
                     conditions = []
                     for keyword in keywords:
+                        # Convert the "-" hyphen to spaces
+                        keyword = re.sub(r"(?<=\w)-(?=\w)", " ", keyword)
                         conditions.append(f"ocr_text LIKE '%{keyword}%'")
                     query += " AND ".join(conditions)
 
@@ -332,6 +335,8 @@ class _DBManager:
                 keywords_exclude = keyword_input_exclude.split()
                 conditions = []
                 for keyword_exclude in keywords_exclude:
+                    # Convert the "-" hyphen to spaces
+                    keyword_exclude = re.sub(r"(?<=\w)-(?=\w)", " ", keyword_exclude)
                     conditions.append(f"ocr_text NOT LIKE '%{keyword_exclude}%'")
                 query += " AND ".join(conditions)
 

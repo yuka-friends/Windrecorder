@@ -52,7 +52,7 @@
 
         "gs_md_search_title": "### 🔎 Search",
         "gs_input_exclude": "Exclude",
-        "gs_input_search_help": "Separate multiple keywords with spaces. The window title can also be used as keyword.",
+        "gs_input_search_help": "Use spaces to separate multiple keywords and search together to filter out the screens where these keywords appear at the same time. Window titles can also be used as keywords. If you want to search for a continuous sentence, use '-' instead of a space to connect words, such as searching for 'i-love-you' instead of 'i love you'.",
         "gs_input_exclude_help": "Leave blank for no exclusion. Multiple keywords can be separated by space.",
         "gs_text_pls_choose_full_date_range": "Please select a complete time range",
         "gs_input_result_page": "Result pages",
@@ -312,7 +312,7 @@
 
         "gs_md_search_title": "### 🔎 搜索",
         "gs_input_exclude": "排除",
-        "gs_input_search_help": "可使用空格分隔多个关键词；窗口标题名也可以作为关键词。",
+        "gs_input_search_help": "可使用空格分隔多个关键词一起搜索，以筛选出同时出现这些关键词的画面。窗口标题名也可以作为关键词。当想搜索连续的整句内容时，可以使用'-'代替空格连接单词，比如搜索 'i-love-you' 而不是 'i love you'。",
         "gs_input_exclude_help": "排除哪些关键词的内容，留空为不排除。可使用空格分隔多个关键词。",
         "gs_text_pls_choose_full_date_range": "请选择完整的时间范围",
         "gs_input_result_page": "结果页数",
@@ -573,7 +573,7 @@
 
         "gs_md_search_title": "### 🔎 検索",
         "gs_input_exclude": "除外",
-        "gs_input_search_help": "スペースを使用して複数のキーワードを分離できます。ウィンドウタイトル名もキーワードとして使用できます。",
+        "gs_input_search_help": "スペースを使用して複数のキーワードを区切り、まとめて検索して、これらのキーワードが同時に表示される画面を除外できます。ウィンドウタイトル名もキーワードとして使用できます。連続した文を検索する場合は、スペースの代わりに「-」を使用して単語を接続できます。たとえば、「i love you」の代わりに「i-love-you」を検索します。",
         "gs_input_exclude_help": "どのキーワードのコンテンツを除外するか。空白のままにすると除外されません。複数のキーワードをスペースで区切って指定できます。",
         "gs_text_pls_choose_full_date_range": "完全な日付範囲を選択してください",
         "gs_input_result_page": "結果ページ数",

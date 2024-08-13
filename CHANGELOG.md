@@ -10,6 +10,10 @@
 --roll out to new user--
 - 添加空闲时清理缓存文件夹机制；Add the mechanism of cleaning the cache folder in idle time;
 - 将统计中的年月散点图缓存移动至用户文件夹；Move the scatter plot cache of year and month in statistics to the user folder.
+- 支持使用"-"连接单词进行连续整句话的搜索匹配。比如通过搜索 'i-love-you' 而不是 'i love you'凉匹配连续整句。Support using "-" to connect words for continuous whole sentence search matching. For example, by searching for 'i-love-you' instead of 'i love you' to match continuous whole sentences.
+
+![instruction-search-split-dash](https://github.com/yuka-friends/Windrecorder/blob/main/__assets__/instruction-search-split-dash.jpg)
+
 
 ### Fixed
 - bug：当截图文件不完整或损坏时，webui未能捕捉阻塞报错；When the screenshot file is incomplete or damaged, the webui not capture the blocking error;
