@@ -1,6 +1,7 @@
 # Changelog 更新日志
 
 ## 0.0.21
+> 2024-08-06
 - 添加以下第三方 OCR 扩展，可以在 Extension 目录下进行安装；Add the following third-party OCR extensions, which can be installed in the Extension directory;
     - RapidOCR (Paddle OCR based on ONNXRuntime) (Collaborators: ASC8384)
     - WeChat OCR (Collaborators: B1lli), with extremely high Chinese and English recognition accuracy;
