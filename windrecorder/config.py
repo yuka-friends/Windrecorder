@@ -109,6 +109,8 @@ class Config:
         enable_ai_extract_tag,
         ai_api_endpoint_type,
         ai_api_endpoint_selected,
+        ai_extract_tag_wintitle_limit,
+        enable_ai_extract_tag_in_idle,
         **other_field,
     ) -> None:
         # If need to process input parameters, they should assign another variable name to prevent recursive writing into the config.
@@ -203,6 +205,8 @@ class Config:
         self.enable_ai_extract_tag = enable_ai_extract_tag
         self.ai_api_endpoint_type = ai_api_endpoint_type
         self.ai_api_endpoint_selected = ai_api_endpoint_selected
+        self.ai_extract_tag_wintitle_limit = ai_extract_tag_wintitle_limit
+        self.enable_ai_extract_tag_in_idle = enable_ai_extract_tag_in_idle
 
     def set_and_save_config(self, attr: str, value):
         if not hasattr(self, attr):

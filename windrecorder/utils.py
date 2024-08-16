@@ -2,6 +2,7 @@ import base64
 import calendar
 import ctypes
 import datetime
+import io
 import json
 import os
 import random
@@ -17,6 +18,7 @@ from io import BytesIO
 
 import cv2
 import mss
+import pandas as pd
 import psutil
 import requests
 from PIL import Image
@@ -903,3 +905,10 @@ def print_table(data: list, indentation_cnt=0):
     for row in data:
         formatted_row = [format_string(str(x), col_width[i]) for i, x in enumerate(row)]
         print(" " * indentation_cnt + "    ".join(formatted_row))
+
+
+def convert_df_to_csv_str(df: pd.DataFrame):
+    csv_buffer = io.StringIO()
+    df.to_csv(csv_buffer, index=False)
+    csv_string = csv_buffer.getvalue()
+    return csv_string

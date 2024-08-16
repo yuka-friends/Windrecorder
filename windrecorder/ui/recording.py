@@ -81,7 +81,7 @@ def render():
             with record_mode_col_tip1:
                 st.image("__assets__\\record_method_ffmpeg.png")
             with record_mode_col_tip2:
-                st.markdown(_t("rs_text_ffmpeg_help"))
+                st.caption(_t("rs_text_ffmpeg_help"))
             is_record_system_sound = st.checkbox(
                 _t("rs_checkbox_is_record_system_sound"),
                 config.is_record_system_sound,
@@ -104,7 +104,7 @@ def render():
                 else:
                     st.image("__assets__\\record_method_screenshots.png")
             with record_mode_col_tip2:
-                st.markdown(_t("rs_text_screenshot_array_help"))
+                st.caption(_t("rs_text_screenshot_array_help"))
 
         # 检测到多显示器时，提供设置选项
         record_strategy_config = {

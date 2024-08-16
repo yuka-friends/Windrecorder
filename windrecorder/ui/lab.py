@@ -1,6 +1,7 @@
 import streamlit as st
 
 from windrecorder.config import config
+from windrecorder.llm import request_llm_one_shot
 from windrecorder.utils import get_text as _t
 
 
@@ -34,12 +35,27 @@ def render():
                     if value == config.ai_api_endpoint_selected
                 ][0],
             )
-            open_ai_base_url = st.text_input("open_ai_base_url", value=config.open_ai_base_url)
-            open_ai_api_key = st.text_input("open_ai_api_key", type="password", value=config.open_ai_api_key)
-            open_ai_modelname = st.text_input("open_ai_modelname", value=config.open_ai_modelname)
-            st.button("Test API connection")
+            open_ai_base_url = st.text_input("open ai base_url", value=config.open_ai_base_url)
+            open_ai_api_key = st.text_input("open ai api_key", type="password", value=config.open_ai_api_key)
+            open_ai_modelname = st.text_input("open ai modelname", value=config.open_ai_modelname)
+            if st.button("Test API connection"):
+                with st.spinner("communicating..."):
+                    success, resopond = request_llm_one_shot(
+                        user_content="hello! i am a little raccoon.",
+                        api_key=open_ai_api_key,
+                        base_url=open_ai_base_url,
+                        model=open_ai_modelname,
+                    )
+                    if success:
+                        st.success("测试成功：" + resopond, icon="✅")
+                    else:
+                        st.success("测试失败：" + resopond, icon="❌")
 
-        enable_ai_extract_tag = st.checkbox("生成每日活动标签", value=config.enable_ai_extract_tag)
+        enable_ai_extract_tag = st.checkbox(
+            "生成每日活动标签",
+            value=config.enable_ai_extract_tag,
+            help=f"使用AI总结每日活动的标签，只有屏幕时间内的标题内容会被发送到LLM。通过删除 {config.ai_extract_tag_result_dir_ud} 中的json内数据，可以重新生成。",
+        )
 
         st.divider()
 
@@ -56,6 +72,7 @@ def render():
             config.set_and_save_config("open_ai_api_key", open_ai_api_key)
             config.set_and_save_config("open_ai_modelname", open_ai_modelname)
             config.set_and_save_config("enable_ai_extract_tag", enable_ai_extract_tag)
+            st.toast(_t("utils_toast_setting_saved"), icon="🦝")
 
     with spacing_col:
         st.empty()

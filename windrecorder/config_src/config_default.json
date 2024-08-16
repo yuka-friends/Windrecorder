@@ -105,5 +105,7 @@
   "open_ai_base_url": "https://api.openai.com/v1",
   "open_ai_api_key": "your_api_key_here",
   "open_ai_modelname": "gpt-4o",
-  "enable_ai_extract_tag": false
+  "enable_ai_extract_tag": false,
+  "enable_ai_extract_tag_in_idle": true,
+  "ai_extract_tag_wintitle_limit": 30
 }
