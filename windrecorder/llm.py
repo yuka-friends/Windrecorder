@@ -81,7 +81,7 @@ def generate_day_tags_lst(date_in: datetime.date):
         tags_list = tags_plain_text.split(",")
         return True, tags_list, tags_plain_text
     else:
-        return False, [], ""
+        return False, [], tags_plain_text
 
 
 def get_cache_data_by_date(date_in: datetime.date):
@@ -95,9 +95,11 @@ def get_cache_data_by_date(date_in: datetime.date):
 
 def get_day_tags(date_in: datetime.date):
     dt_str = utils.datetime_to_dateDayStr(date_in)
-    cache_data = get_cache_data_by_date(date_in)
-    if dt_str in cache_data.keys():
-        return True, cache_data[dt_str]
+    if "day_tags_data" not in st.session_state:
+        st.session_state["day_tags_data"] = get_cache_data_by_date(date_in)
+
+    if dt_str in st.session_state["day_tags_data"].keys():
+        return True, st.session_state["day_tags_data"][dt_str]
     return False, []
 
 
@@ -149,7 +151,6 @@ font-size: 14px;
             + html_tags
             + """
 </div>
-
     """
         )
         st.markdown(html_full, unsafe_allow_html=True)
@@ -162,9 +163,10 @@ font-size: 14px;
             with st.spinner("Generating tags... \nDepending on the LLM service, it may take 5~20 seconds."):
                 success, day_tags_lst, plain_text = generate_and_save_day_tags(date_in)
                 if success:
+                    del st.session_state["day_tags_data"]
                     st.rerun()
                 else:
-                    st.warning(f"Failed to generate tags: {plain_text}")
+                    st.warning(f"Failed to generate tags: {plain_text}", icon="😥")
 
 
 def cache_day_tags_in_idle_routine():
