@@ -35,7 +35,7 @@ LLM_FAIL_COPY = "System: Fail to get AI reply, please try again."
 LLM_SYSTEM_PROMPT_DEFAULT = "You are a helpful assistant."
 LLM_SYSTEM_PROMPT_EXTRACT_DAY_TAGS = """
 You are a screen content analysis assistant. Please extract the specific activity content tags under the "content_page_name" column based on the provided user's screen time list csv table for the day.
-Please focus on the activity content itself, such as what content was browsed, rather than the program process name. The content of the label should be meaningful, otherwise it is unnecessary. Don't have tags with similar content, just keep one or merge them. Tags don't have to be short; slightly longer phrases can be used if necessary. Generated tags should not be too general and should closely match or quote or shorten the content.
+Please focus on the activity content itself, such as what content was browsed, rather than the program process name. The content of the label should be meaningful, otherwise it is unnecessary. Don't have tags with similar content, just keep one or merge them. Avoid repeating content platforms multiple times. Tags don't have to be short; slightly longer phrases can be used if necessary. Generated tags should not be too general and should closely match or quote or shorten the content.
 The extracted weight could be related to the screen time in the "screen_time" column as much as possible: the longer the usage time, the higher the content weight.
 The number of returned tags is controlled to around 15. It is better to have less than more, depends on the content.
 Only output the extracted results, and the tags are separated by English commas. Do not attach any other instructions. Please generate the return in the language of the provided content.

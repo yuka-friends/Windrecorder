@@ -58,7 +58,10 @@ def generate_day_tags_lst(date_in: datetime.date):
     dt = datetime.datetime.combine(
         date_in, datetime.time(hour=round(config.day_begin_minutes / 60), minute=config.day_begin_minutes % 60)
     )
-    df_day_activity_optimize_display, _ = get_wintitle_stat_in_day(dt, optimize_for_display=True)
+    try:
+        df_day_activity_optimize_display, _ = get_wintitle_stat_in_day(dt, optimize_for_display=True)
+    except KeyError:
+        return False, [], "no_wintitle_data"
 
     # restrict range
     day_activit_df = pd.DataFrame(columns=["content_page_name", "screen_time"])
@@ -81,38 +84,46 @@ def generate_day_tags_lst(date_in: datetime.date):
         return False, [], ""
 
 
-def get_day_tags(date_in: datetime.date):
-    dt_str = utils.datetime_to_dateDayStr(date_in)
+def get_cache_data_by_date(date_in: datetime.date):
     cache_path = os.path.join(config.ai_extract_tag_result_dir_ud, str(date_in.year) + ".json")
     if os.path.exists(cache_path):
         cache_data = file_utils.read_json_as_dict_from_path(cache_path)
-        if dt_str in cache_data.keys():
-            return True, cache_data[dt_str]
+    else:
+        cache_data = {}
+    return cache_data
+
+
+def get_day_tags(date_in: datetime.date):
+    dt_str = utils.datetime_to_dateDayStr(date_in)
+    cache_data = get_cache_data_by_date(date_in)
+    if dt_str in cache_data.keys():
+        return True, cache_data[dt_str]
     return False, []
 
 
 def generate_and_save_day_tags(date_in: datetime.date):
     dt_str = utils.datetime_to_dateDayStr(date_in)
     cache_path = os.path.join(config.ai_extract_tag_result_dir_ud, str(date_in.year) + ".json")
-    if os.path.exists(cache_path):
-        cache_data = file_utils.read_json_as_dict_from_path(cache_path)
-    else:
-        cache_data = {}
+    cache_data = get_cache_data_by_date(date_in)
     success, day_tags_lst, plain_text = generate_day_tags_lst(date_in)
     if success:
-        cache_data[dt_str] = day_tags_lst
+        cache_data[dt_str] = day_tags_lst[: config.ai_extract_max_tag_num]
         file_utils.save_dict_as_json_to_path(cache_data, cache_path)
         return True, day_tags_lst, plain_text
     else:
+        if "no_wintitle_data" in plain_text:
+            cache_data[dt_str] = []
+            file_utils.save_dict_as_json_to_path(cache_data, cache_path)
         return False, [], plain_text
 
 
 def component_day_tags(date_in: datetime.date):
     # 渲染每日标签
     def _render_day_tags(tags_lst):
-        html_tags = ""
+        html_tags_lst = []
         for tag in tags_lst:
-            html_tags += f"<span class='tag'>{tag}</span>"
+            html_tags_lst.append(f"<span class='tag'>{tag}</span>")
+        html_tags = "".join(html_tags_lst)
         html_full = (
             """
     <style>
@@ -154,3 +165,43 @@ font-size: 14px;
                     st.rerun()
                 else:
                     st.warning(f"Failed to generate tags: {plain_text}")
+
+
+def cache_day_tags_in_idle_routine():
+    # 缓存最近的 N 天的标签
+    from windrecorder.db_manager import db_manager
+
+    dt = datetime.date.today() - datetime.timedelta(days=1)
+    earlist_dt = utils.seconds_to_datetime(db_manager.db_first_earliest_record_time())
+
+    batch_count = config.ai_extract_tag_in_idle_batch_size
+    day_trackback = 0
+    year_process_now = 2999
+    year_process_last_time = 1970
+    cache_data = {}
+    for i in range(600):
+        date_in = dt - datetime.timedelta(days=day_trackback)
+
+        if date_in < earlist_dt.date():
+            logger.info(f"ai tags caching: reached to earlist datetime {earlist_dt}")
+            break
+
+        year_process_now = date_in.year
+        if year_process_now != year_process_last_time:
+            print(f"get year cache data {year_process_now}")
+            year_process_last_time = year_process_now
+            cache_data = get_cache_data_by_date(date_in)
+
+        if utils.datetime_to_dateDayStr(date_in) in cache_data.keys():
+            day_trackback += 1
+            continue
+
+        print(f"generate day {date_in}")
+        generate_and_save_day_tags(date_in)
+        day_trackback += 1
+        batch_count -= 1
+        if batch_count < 0:
+            break
+
+    for day_back in range(config.ai_extract_tag_in_idle_batch_size):
+        date_in = datetime.date.today() - datetime.timedelta(days=day_back)

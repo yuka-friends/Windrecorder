@@ -250,7 +250,7 @@ def save_dict_as_json_to_path(data: dict, filepath):
     """将 dict 保存到 json"""
     ensure_dir(os.path.dirname(filepath))
     with open(filepath, "w") as f:
-        json.dump(data, f)
+        json.dump(data, f, indent=2)
     logger.info(f"files: json has been saved at {filepath}")
 
 

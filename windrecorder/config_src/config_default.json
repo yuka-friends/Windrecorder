@@ -107,5 +107,7 @@
   "open_ai_modelname": "gpt-4o",
   "enable_ai_extract_tag": false,
   "enable_ai_extract_tag_in_idle": true,
-  "ai_extract_tag_wintitle_limit": 30
+  "ai_extract_tag_wintitle_limit": 30,
+  "ai_extract_tag_in_idle_batch_size": 15,
+  "ai_extract_max_tag_num": 15
 }

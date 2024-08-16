@@ -14,6 +14,7 @@ import numpy as np
 from windrecorder import file_utils, ocr_manager, record, record_wintitle, state, utils
 from windrecorder.config import config
 from windrecorder.exceptions import LockExistsException
+from windrecorder.llm import cache_day_tags_in_idle_routine
 from windrecorder.lock import FileLock
 from windrecorder.logger import get_logger
 
@@ -92,6 +93,9 @@ def idle_maintain_process_main():
         record.try_empty_cache_dir_in_idle_routine()
         # 统计webui footer info
         state.make_webui_footer_state_data_cache(ask_from="idle")
+        # 生成 AI tags
+        if config.enable_ai_extract_tag_in_idle and config.enable_ai_extract_tag_in_idle:
+            cache_day_tags_in_idle_routine()
         # 生成随机词表
         # wordcloud.generate_all_word_lexicon_by_month()
     except Exception as e:
