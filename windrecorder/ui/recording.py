@@ -24,6 +24,9 @@ def render():
         st.session_state["display_info_formatted"] = utils.get_display_info_formatted()
     record_encoder = config.record_encoder
     record_bitrate = config.record_bitrate
+    video_compress_encoder = config.compress_accelerator
+    video_compress_accelerator = config.compress_accelerator
+    video_compress_crf = config.compress_quality
     screenshot_interval_second = config.screenshot_interval_second
     record_screenshot_method_capture_foreground_window_only = config.record_screenshot_method_capture_foreground_window_only
     is_record_system_sound = config.is_record_system_sound
@@ -132,18 +135,9 @@ def render():
             display_record_strategy = None
             display_record_selection = None
 
-        screentime_not_change_to_pause_record = st.number_input(
-            _t("rs_input_stop_recording_when_screen_freeze"),
-            value=config.screentime_not_change_to_pause_record,
-            min_value=0,
-        )
-
-        exclude_words = st_tags(
-            label=_t("rs_text_skip_recording_by_wintitle"), text=_t("rs_tag_input_tip"), value=config.exclude_words
-        )
-
         if record_mode == record_mode_option[0][1]:  # ffmpeg
-            if st.toggle(_t("rs_text_show_encode_option"), key="expand_encode_option_recording"):
+            with st.expander(_t("rs_text_show_encode_option")):
+                # if st.toggle(_t("rs_text_show_encode_option"), key="expand_encode_option_recording"):
                 col_record_encoder, col_record_quality = st.columns([1, 1])
                 with col_record_encoder:
                     RECORD_ENCODER_LST = list(CONFIG_RECORD_PRESET.keys())
@@ -188,6 +182,16 @@ def render():
                             },
                         )
 
+        screentime_not_change_to_pause_record = st.number_input(
+            _t("rs_input_stop_recording_when_screen_freeze"),
+            value=config.screentime_not_change_to_pause_record,
+            min_value=0,
+        )
+
+        exclude_words = st_tags(
+            label=_t("rs_text_skip_recording_by_wintitle"), text=_t("rs_tag_input_tip"), value=config.exclude_words
+        )
+
         st.divider()
 
         # 自动化维护选项
@@ -229,7 +233,8 @@ def render():
                 help=_t("rs_selectbox_compress_ratio_help"),
             )
 
-        if st.toggle(_t("rs_text_show_encode_option"), key="expand_encode_option_compress"):
+        with st.expander(_t("rs_text_show_encode_option")):
+            # if st.toggle(_t("rs_text_show_encode_option"), key="expand_encode_option_compress"):
             col1_encode, col2_encode, col3_encode = st.columns([1, 1, 1])
             with col1_encode:
                 video_compress_encoder = st.selectbox(
@@ -279,10 +284,6 @@ def render():
                         )
                     else:
                         st.error("test_video_filepath not found.")
-        else:
-            video_compress_encoder = config.compress_accelerator
-            video_compress_accelerator = config.compress_accelerator
-            video_compress_crf = config.compress_quality
 
         st.divider()
 
