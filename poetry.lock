@@ -1066,30 +1066,6 @@ url = "https://pypi.org/simple"
 reference = "pypi-default"
 
 [[package]]
-name = "importlib-metadata"
-version = "7.0.1"
-description = "Read metadata from Python packages"
-optional = false
-python-versions = ">=3.8"
-files = [
-    {file = "importlib_metadata-7.0.1-py3-none-any.whl", hash = "sha256:4805911c3a4ec7c3966410053e9ec6a1fecd629117df5adee56dfc9432a1081e"},
-    {file = "importlib_metadata-7.0.1.tar.gz", hash = "sha256:f238736bb06590ae52ac1fab06a3a9ef1d8dce2b7a35b5ab329371d6c8f5d2cc"},
-]
-
-[package.dependencies]
-zipp = ">=0.5"
-
-[package.extras]
-docs = ["furo", "jaraco.packaging (>=9.3)", "jaraco.tidelift (>=1.4)", "rst.linker (>=1.9)", "sphinx (<7.2.5)", "sphinx (>=3.5)", "sphinx-lint"]
-perf = ["ipython"]
-testing = ["flufl.flake8", "importlib-resources (>=1.3)", "packaging", "pyfakefs", "pytest (>=6)", "pytest-black (>=0.3.7)", "pytest-checkdocs (>=2.4)", "pytest-cov", "pytest-enabler (>=2.2)", "pytest-mypy (>=0.9.1)", "pytest-perf (>=0.9.2)", "pytest-ruff"]
-
-[package.source]
-type = "legacy"
-url = "https://pypi.org/simple"
-reference = "pypi-default"
-
-[[package]]
 name = "ipykernel"
 version = "6.29.2"
 description = "IPython Kernel for Jupyter"
@@ -3548,13 +3524,13 @@ reference = "pypi-default"
 
 [[package]]
 name = "streamlit"
-version = "1.31.1"
+version = "1.37.1"
 description = "A faster way to build and share data apps"
 optional = false
 python-versions = ">=3.8, !=3.9.7"
 files = [
-    {file = "streamlit-1.31.1-py2.py3-none-any.whl", hash = "sha256:a1a84249f7a9b854fe356db06c85dc03c3f9da4df06a33aa5a922647b955e8c8"},
-    {file = "streamlit-1.31.1.tar.gz", hash = "sha256:dfc43ca85b4b4c31d097c27b983b8ccc960222ad907862b2b2fb4ddf04c50fdc"},
+    {file = "streamlit-1.37.1-py2.py3-none-any.whl", hash = "sha256:0651240fccc569900cc9450390b0a67473fda55be65f317e46285f99e2bddf04"},
+    {file = "streamlit-1.37.1.tar.gz", hash = "sha256:bc7e3813d94a39dda56f15678437eb37830973c601e8e574f2225a7bf188ea5a"},
 ]
 
 [package.dependencies]
@@ -3563,24 +3539,20 @@ blinker = ">=1.0.0,<2"
 cachetools = ">=4.0,<6"
 click = ">=7.0,<9"
 gitpython = ">=3.0.7,<3.1.19 || >3.1.19,<4"
-importlib-metadata = ">=1.4,<8"
-numpy = ">=1.19.3,<2"
-packaging = ">=16.8,<24"
+numpy = ">=1.20,<3"
+packaging = ">=20,<25"
 pandas = ">=1.3.0,<3"
 pillow = ">=7.1.0,<11"
-protobuf = ">=3.20,<5"
+protobuf = ">=3.20,<6"
 pyarrow = ">=7.0"
 pydeck = ">=0.8.0b4,<1"
-python-dateutil = ">=2.7.3,<3"
 requests = ">=2.27,<3"
 rich = ">=10.14.0,<14"
 tenacity = ">=8.1.0,<9"
 toml = ">=0.10.1,<2"
 tornado = ">=6.0.3,<7"
 typing-extensions = ">=4.3.0,<5"
-tzlocal = ">=1.1,<6"
-validators = ">=0.2,<1"
-watchdog = {version = ">=2.1.5", markers = "platform_system != \"Darwin\""}
+watchdog = {version = ">=2.1.5,<5", markers = "platform_system != \"Darwin\""}
 
 [package.extras]
 snowflake = ["snowflake-connector-python (>=2.8.0)", "snowflake-snowpark-python (>=0.9.0)"]
@@ -3804,28 +3776,6 @@ url = "https://pypi.org/simple"
 reference = "pypi-default"
 
 [[package]]
-name = "tzlocal"
-version = "5.2"
-description = "tzinfo object for the local timezone"
-optional = false
-python-versions = ">=3.8"
-files = [
-    {file = "tzlocal-5.2-py3-none-any.whl", hash = "sha256:49816ef2fe65ea8ac19d19aa7a1ae0551c834303d5014c6d5a62e4cbda8047b8"},
-    {file = "tzlocal-5.2.tar.gz", hash = "sha256:8d399205578f1a9342816409cc1e46a93ebd5755e39ea2d85334bea911bf0e6e"},
-]
-
-[package.dependencies]
-tzdata = {version = "*", markers = "platform_system == \"Windows\""}
-
-[package.extras]
-devenv = ["check-manifest", "pytest (>=4.3)", "pytest-cov", "pytest-mock (>=3.3)", "zest.releaser"]
-
-[package.source]
-type = "legacy"
-url = "https://pypi.org/simple"
-reference = "pypi-default"
-
-[[package]]
 name = "uiautomation"
 version = "2.0.20"
 description = "Python UIAutomation for Windows"
@@ -3859,33 +3809,6 @@ brotli = ["brotli (>=1.0.9)", "brotlicffi (>=0.8.0)"]
 h2 = ["h2 (>=4,<5)"]
 socks = ["pysocks (>=1.5.6,!=1.5.7,<2.0)"]
 zstd = ["zstandard (>=0.18.0)"]
-
-[package.source]
-type = "legacy"
-url = "https://pypi.org/simple"
-reference = "pypi-default"
-
-[[package]]
-name = "validators"
-version = "0.22.0"
-description = "Python Data Validation for Humans™"
-optional = false
-python-versions = ">=3.8"
-files = [
-    {file = "validators-0.22.0-py3-none-any.whl", hash = "sha256:61cf7d4a62bbae559f2e54aed3b000cea9ff3e2fdbe463f51179b92c58c9585a"},
-    {file = "validators-0.22.0.tar.gz", hash = "sha256:77b2689b172eeeb600d9605ab86194641670cdb73b60afd577142a9397873370"},
-]
-
-[package.extras]
-docs-offline = ["myst-parser (>=2.0.0)", "pypandoc-binary (>=1.11)", "sphinx (>=7.1.1)"]
-docs-online = ["mkdocs (>=1.5.2)", "mkdocs-git-revision-date-localized-plugin (>=1.2.0)", "mkdocs-material (>=9.2.6)", "mkdocstrings[python] (>=0.22.0)", "pyaml (>=23.7.0)"]
-hooks = ["pre-commit (>=3.3.3)"]
-package = ["build (>=1.0.0)", "twine (>=4.0.2)"]
-runner = ["tox (>=4.11.1)"]
-sast = ["bandit[toml] (>=1.7.5)"]
-testing = ["pytest (>=7.4.0)"]
-tooling = ["black (>=23.7.0)", "pyright (>=1.1.325)", "ruff (>=0.0.287)"]
-tooling-extras = ["pyaml (>=23.7.0)", "pypandoc-binary (>=1.11)", "pytest (>=7.4.0)"]
 
 [package.source]
 type = "legacy"
@@ -4056,26 +3979,6 @@ files = [
 matplotlib = "*"
 numpy = ">=1.6.1"
 pillow = "*"
-
-[package.source]
-type = "legacy"
-url = "https://pypi.org/simple"
-reference = "pypi-default"
-
-[[package]]
-name = "zipp"
-version = "3.17.0"
-description = "Backport of pathlib-compatible object wrapper for zip files"
-optional = false
-python-versions = ">=3.8"
-files = [
-    {file = "zipp-3.17.0-py3-none-any.whl", hash = "sha256:0e923e726174922dce09c53c59ad483ff7bbb8e572e00c7f7c46b88556409f31"},
-    {file = "zipp-3.17.0.tar.gz", hash = "sha256:84e64a1c28cf7e91ed2078bb8cc8c259cb19b76942096c8d7b84947690cabaf0"},
-]
-
-[package.extras]
-docs = ["furo", "jaraco.packaging (>=9.3)", "jaraco.tidelift (>=1.4)", "rst.linker (>=1.9)", "sphinx (<7.2.5)", "sphinx (>=3.5)", "sphinx-lint"]
-testing = ["big-O", "jaraco.functools", "jaraco.itertools", "more-itertools", "pytest (>=6)", "pytest-black (>=0.3.7)", "pytest-checkdocs (>=2.4)", "pytest-cov", "pytest-enabler (>=2.2)", "pytest-ignore-flaky", "pytest-mypy (>=0.9.1)", "pytest-ruff"]
 
 [package.source]
 type = "legacy"

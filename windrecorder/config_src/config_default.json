@@ -48,6 +48,7 @@
   "lightbox_result_dir": "result_lightbox",
   "wintitle_result_dir": "result_wintitle",
   "date_state_dir": "result_date_state",
+  "ai_extract_tag_result_dir": "result_ai_extract_tag",
   "screentime_not_change_to_pause_record": 5,
   "user_name": "default",
   "use_similar_ch_char_to_search": true,
@@ -98,5 +99,11 @@
     "Windows.Media.Ocr.Cli",
     "ChineseOCR_lite_onnx"
   ],
-  "TesseractOCR_filepath": "C:\\Program Files\\Tesseract-OCR\\tesseract.exe"
+  "TesseractOCR_filepath": "C:\\Program Files\\Tesseract-OCR\\tesseract.exe",
+  "ai_api_endpoint_type": ["OpenAI compatible"],
+  "ai_api_endpoint_selected": "OpenAI compatible",
+  "open_ai_base_url": "https://api.openai.com/v1",
+  "open_ai_api_key": "your_api_key_here",
+  "open_ai_modelname": "gpt-4o",
+  "enable_ai_extract_tag": false
 }

@@ -52,6 +52,7 @@ class Config:
         lightbox_result_dir,
         wintitle_result_dir,
         date_state_dir,
+        ai_extract_tag_result_dir,
         release_ver,
         video_compress_rate,
         oneday_timeline_pic_num,
@@ -102,6 +103,12 @@ class Config:
         record_deep_linking,
         support_ocr_lst,
         TesseractOCR_filepath,
+        open_ai_base_url,
+        open_ai_api_key,
+        open_ai_modelname,
+        enable_ai_extract_tag,
+        ai_api_endpoint_type,
+        ai_api_endpoint_selected,
         **other_field,
     ) -> None:
         # If need to process input parameters, they should assign another variable name to prevent recursive writing into the config.
@@ -132,6 +139,7 @@ class Config:
         self.lightbox_result_dir_ud = os.path.join(userdata_dir, lightbox_result_dir)
         self.wintitle_result_dir_ud = os.path.join(userdata_dir, wintitle_result_dir)
         self.date_state_dir_ud = os.path.join(userdata_dir, date_state_dir)
+        self.ai_extract_tag_result_dir_ud = os.path.join(userdata_dir, ai_extract_tag_result_dir)
         self.screentime_not_change_to_pause_record = screentime_not_change_to_pause_record
         self.user_name = user_name
         self.use_similar_ch_char_to_search = use_similar_ch_char_to_search
@@ -189,6 +197,12 @@ class Config:
         self.record_deep_linking = record_deep_linking
         self.support_ocr_lst = support_ocr_lst
         self.TesseractOCR_filepath = TesseractOCR_filepath
+        self.open_ai_base_url = open_ai_base_url
+        self.open_ai_api_key = open_ai_api_key
+        self.open_ai_modelname = open_ai_modelname
+        self.enable_ai_extract_tag = enable_ai_extract_tag
+        self.ai_api_endpoint_type = ai_api_endpoint_type
+        self.ai_api_endpoint_selected = ai_api_endpoint_selected
 
     def set_and_save_config(self, attr: str, value):
         if not hasattr(self, attr):

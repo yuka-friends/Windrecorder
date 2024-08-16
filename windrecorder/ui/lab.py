@@ -24,16 +24,22 @@ def render():
         st.divider()
 
         st.markdown("#### LLM API")
-        st.selectbox("API endpoint", options=["OpenAI compatible"])
-        st.text_input("open_ai_base_url")
-        st.text_input("open_ai_api_key", type="password")
-        st.text_input("open_ai_modelname")
+        ai_api_endpoint_selected = st.selectbox(
+            "API endpoint",
+            options=config.ai_api_endpoint_type,
+            index=[
+                index for index, value in enumerate(config.ai_api_endpoint_type) if value == config.ai_api_endpoint_selected
+            ][0],
+        )
+        open_ai_base_url = st.text_input("open_ai_base_url", value=config.open_ai_base_url)
+        open_ai_api_key = st.text_input("open_ai_api_key", type="password", value=config.open_ai_api_key)
+        open_ai_modelname = st.text_input("open_ai_modelname", value=config.open_ai_modelname)
         st.button("Test API connection")
 
         st.divider()
 
         st.markdown("#### LLM Features")
-        st.checkbox("在电脑空闲时，自动总结每天活动")
+        enable_ai_extract_tag = st.checkbox("生成每日活动标签", value=config.enable_ai_extract_tag)
 
         st.divider()
 
@@ -45,6 +51,11 @@ def render():
             key="SaveBtnLab",
         ):
             config.set_and_save_config("enable_img_embed_search", st.session_state.option_enable_img_embed_search)
+            config.set_and_save_config("ai_api_endpoint_selected", ai_api_endpoint_selected)
+            config.set_and_save_config("open_ai_base_url", open_ai_base_url)
+            config.set_and_save_config("open_ai_api_key", open_ai_api_key)
+            config.set_and_save_config("open_ai_modelname", open_ai_modelname)
+            config.set_and_save_config("enable_ai_extract_tag", enable_ai_extract_tag)
 
     with spacing_col:
         st.empty()
