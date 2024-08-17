@@ -103,7 +103,7 @@
         "lab_text_test_res_fail": "API connection failed: ",
         "lab_checkbox_extract_tag": "Generate daily activity tags",
         "lab_input_wintitle_num": "Number of activity titles submitted:",
-        "lab_help_extract_tag": "Use AI to summarize daily activity tags. Only the titles within the screen time will be sent to LLM. You can regenerate by deleting the json data in '{ai_extract_tag_result_dir_ud}'. Depending on the policies of different LLM service providers, some content containing pornography, politics, etc. may fail to generate.",
+        "lab_help_extract_tag": "Use AI to summarize daily activity tags. Only the titles within the screen time will be sent to LLM. You can regenerate by deleting the json data in '{ai_extract_tag_result_dir_ud}'. Depending on the policies of different LLM service providers, some content containing pornography, politics, etc. may fail to generate. When the computer is idle, it will automatically generate tags for the previous day.",
 
         "rs_text_need_to_restart_after_save_setting": "After saving the settings on this page, you need to restart 'Windrecorder' to take effect.",
         "rs_md_title": "### 📼 Recording & Video Storage",
@@ -381,7 +381,7 @@
         "lab_text_test_res_fail": "API 连接失败：",
         "lab_checkbox_extract_tag": "生成每日活动标签",
         "lab_input_wintitle_num": "提交的活动标题数量：",
-        "lab_help_extract_tag": "使用AI总结每日活动的标签，只有屏幕时间内的标题内容会被发送到LLM。通过删除 '{ai_extract_tag_result_dir_ud}' 中的json内数据，可以重新生成。取决于不同 LLM 服务提供方的政策，部分包含色情、政治等内容可能会生成失败。",
+        "lab_help_extract_tag": "使用AI总结每日活动的标签，只有屏幕时间内的标题内容会被发送到LLM。通过删除 '{ai_extract_tag_result_dir_ud}' 中的json内数据，可以重新生成。取决于不同 LLM 服务提供方的政策，部分包含色情、政治等内容可能会生成失败。在电脑空闲时，会自动生成之前天的标签以便回顾。",
 
         "rs_text_need_to_restart_after_save_setting": "本页的设置在保存后，需重启 「捕风记录仪」 才能生效。",
         "rs_md_title": "### 📼 录制与视频存储",
@@ -660,7 +660,7 @@
         "lab_text_test_res_fail": "API 接続に失敗しました: ",
         "lab_checkbox_extract_tag": "毎日のアクティビティ タグを生成",
         "lab_input_wintitle_num": "送信されたアクティブなタイトルの数:",
-        "lab_help_extract_tag": "AI を使用して毎日のアクティビティ タグを要約すると、利用時間内のタイトル コンテンツのみが LLM に送信されます。'{ai_extract_tag_result_dir_ud}' 内の json データを削除することで、再生成できます。LLM サービス プロバイダーによって異なります。党の方針により、ポルノ、政治などを含む一部のコンテンツは生成されない可能性があります。」",
+        "lab_help_extract_tag": "AI を使用して毎日のアクティビティ タグを要約すると、利用時間内のタイトル コンテンツのみが LLM に送信されます。'{ai_extract_tag_result_dir_ud}' 内の json データを削除することで、再生成できます。LLM サービス プロバイダーによって異なります。党の方針により、ポルノ、政治などを含む一部のコンテンツは生成されない可能性があります。」コンピューターがアイドル状態の場合、確認用に前日のラベルが自動的に生成されます。",
 
         "rs_text_need_to_restart_after_save_setting": "このページの設定を保存した後、Windrecorder を再起動する必要があります。",
         "rs_md_title": "### 📼 録画とビデオストレージ",
