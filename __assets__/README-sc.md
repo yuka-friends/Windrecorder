@@ -15,7 +15,7 @@
 - 以较小的文件体积、较低的系统资源，稳定持续地录制多个或单个屏幕、或者只录制前台活动窗口，并实时回溯之前的画面；
 - 只索引发生变化的画面，记录其 OCR 文本、页面标题、浏览器链接 等信息到数据库；自定义跳过条件（通过窗口标题、进程名、包含文本、画面静止时间）；在无人使用电脑时，自动维护数据库、清理、压缩视频；
 - 完善的 webui 界面，可以回溯画面、进行 OCR /图像语义等查询；
-- 提供活动统计、词云、时间轴、光箱、散点图等数据摘要；
+- 提供活动统计、词云、时间轴、光箱、散点图等数据摘要，支持使用 AI（语言模型）进行标签总结；
 - 支持多语言。目前内建有：简体中文、English、日本語。Welcome to contribute multilingual translations and help us improve copywriting quality.
 - 除了 Windows 自带识别能力，还支持其他第三方 OCR 引擎（[性能测试参考](https://github.com/yuka-friends/Windrecorder/blob/main/__assets__/third_party_ocr_engine_benchmark_reference.md)），目前包括：
     - [Rapid OCR](https://github.com/RapidAI/RapidOCR)，基于 Paddle OCR 的 onnxruntime 版本；

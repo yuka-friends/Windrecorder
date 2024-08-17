@@ -1,5 +1,20 @@
 # Changelog 更新日志
 
+## 0.0.22
+> 2024-08-17
+- 支持使用大语言模型对每日活动进行标签提取总结；Add the ability to extract and summarize tags for daily activities;
+- 升级 streamlit 版本，优化了部分界面布局；Upgrade the version of streamlit to optimize some interface layouts;
+- 添加空闲时清理缓存文件夹机制；Add the mechanism of cleaning the cache folder in idle time;
+- 将统计中的年月散点图缓存移动至用户文件夹；Move the scatter plot cache of year and month in statistics to the user folder.
+- 支持使用"-"连接单词进行连续整句话的搜索匹配。比如通过搜索 'i-love-you' 而不是 'i love you'凉匹配连续整句。Support using "-" to connect words for continuous whole sentence search matching. For example, by searching for 'i-love-you' instead of 'i love you' to match continuous whole sentences.
+
+![instruction-search-split-dash](https://github.com/yuka-friends/Windrecorder/blob/main/__assets__/instruction-search-split-dash.jpg)
+
+### Fixed
+- bug: 当程序目录存在空格时，第三方 OCR 扩展无法进入虚拟环境完成安装；When the program directory has a space, the third-party OCR extension cannot enter the virtual environment to complete the installation;
+
+---
+
 ## 0.0.21
 > 2024-08-06
 - 添加以下第三方 OCR 扩展，可以在 Extension 目录下进行安装；Add the following third-party OCR extensions, which can be installed in the Extension directory;
@@ -8,26 +23,22 @@
     - Tesseract OCR, supports more than 100 languages ​​and can recognize multiple languages ​​at the same time;
 - 为压缩视频添加自动硬件加速参数；Added automatic hardware acceleration parameters for compressed video;
 
---roll out to new user--
-- 添加空闲时清理缓存文件夹机制；Add the mechanism of cleaning the cache folder in idle time;
-- 将统计中的年月散点图缓存移动至用户文件夹；Move the scatter plot cache of year and month in statistics to the user folder.
-- 支持使用"-"连接单词进行连续整句话的搜索匹配。比如通过搜索 'i-love-you' 而不是 'i love you'凉匹配连续整句。Support using "-" to connect words for continuous whole sentence search matching. For example, by searching for 'i-love-you' instead of 'i love you' to match continuous whole sentences.
-
-![instruction-search-split-dash](https://github.com/yuka-friends/Windrecorder/blob/main/__assets__/instruction-search-split-dash.jpg)
-
-
 ### Fixed
 - bug：当截图文件不完整或损坏时，webui未能捕捉阻塞报错；When the screenshot file is incomplete or damaged, the webui not capture the blocking error;
---roll out to new user--
-- bug: 当程序目录存在空格时，第三方 OCR 扩展无法进入虚拟环境完成安装；When the program directory has a space, the third-party OCR extension cannot enter the virtual environment to complete the installation;
+
+---
 
 ## 0.0.20
 > 2024-07-13
 - 添加对 Chrome、Microsoft Edge、Firefox 当前浏览的 url 记录；Add the recording of the currently browsed URL in Chrome, Microsoft Edge, and Firefox;
 
+---
+
 ## 0.0.19
 > 2024-07-12
 - 增加对前台窗口进程名的记录，从而可以更精确地统计与排除应用；Added the record of the foreground window process name, so that applications can be counted and excluded more accurately;
+
+---
 
 ## 0.0.18
 > 2024-07-06
@@ -40,6 +51,8 @@
 - bug：一天之时在寻找最早最晚截图时间戳时，数据为空时会可能导致报错；When searching for the earliest and latest screenshot timestamps at Oneday, it may cause an error when the data is empty;
 - bug：修复错误记录的维护时间戳缓存可能会阻塞正常的录制线程；Fixing the error maintenance timestamp cache may block the recording thread;
 
+---
+
 ## 0.0.17
 > 2024-06-29
 
@@ -48,10 +61,14 @@
 - bug：修复了「自动灵活截图-仅捕捉单显示器时」无法使用；Fixed the issue that the "Automatic Flexible Screenshot" recording mode would not work;
 - bug：修复了当截图未完整存储时无法合成视频的情况；Fixed the situation that the video could not be synthesized when the screenshot was not completely stored;
 
+---
+
 ## 0.0.16
 > 2024-06-26
 - 添加了「自动灵活截图」录制模式，现在能以更低的系统资源进行录制、实时回溯已录制画面了，同时可以仅录制前台窗口、精确过滤不想被录制的内容。同时也保留了原先的「直接录制视频（ffmpeg）」模式，可根据需要自行选择；
 - Added "Automatic Flexible Screenshot" recording mode, which can now record with lower system resources and replay recorded images in real time. It can also record only the foreground window and accurately filter out the content you don't want to record. At the same time, the original "Directly record video (ffmpeg)" mode is also retained, and you can choose it according to your needs.
+
+---
 
 ## 0.0.15
 > 2024-06-09
@@ -59,6 +76,8 @@
 ### Fixed
 - bug: 修复了锁屏检测在 Windows 11 上不起作用；Fixed lock screen detection not working on Windows 11;
 - 优化 i18n 逻辑，当 key 不存在时会 fallback 到 English 文案；Optimizing i18n logic, when the key does not exist, it will fallback to English copy text;
+
+---
 
 ## 0.0.14
 > 2024-06-01
@@ -73,10 +92,14 @@
 ### Fixed
 - bug: 当试图列出每月第一天的所有数据时，会因为首条记录预览图为 None 而阻塞报错；When trying to list all data on the first day of each month, an error will be reported because the preview image of the first record is None;
 
+---
+
 ## 0.0.13
 > 2024-05-18
 - 为索引出错的视频文件添加自动重试机制；
 - Add automatic retry for index errored video files;
+
+---
 
 ## 0.0.12
 > 2024-04-21
@@ -87,6 +110,8 @@
 - bug: 当 OCR 支持语言找不到对应测试集时，将会阻塞 onboarding 向导；When the OCR supported language cannot find the corresponding test set, the onboarding wizard will be blocked;
 - 添加更多尝试隐藏 CLI 窗口次数重试，以应对未解锁屏幕时隐藏失败；Added more retries to try to hide the CLI window in case hiding fails when the screen is not unlocked;
 - Fix: Startup path now supports spaces;(@zetaloop)
+
+---
 
 ## 0.0.11
 > 2024-04-19
@@ -107,6 +132,8 @@
 - bug: 当锁屏时程序有几率不会进入空闲暂停状态；There is a chance that the program will not enter the idle pause state when the screen is locked;
 - bug: INDEX 标签被添加在 iframe cache 目录名中，导致不会被 img embedding 索引和清理；The INDEX tag should not been added to the iframe cache directory name, which resulting in it not being indexed and cleaned by img embedding;
 
+---
+
 ## 0.0.10
 > 2024-03-03
 
@@ -116,11 +143,15 @@
 - bug: 升级时没有保留原用户 config. The original user config is not retained during the upgrade.
 - bug: bug: during CLI loading, if force on other window it be hidden instead of CLI https://github.com/yuka-friends/Windrecorder/issues/133
 
+---
+
 ## 0.0.9
 > 2024-03-02
 
 ### Fixed
 - https://github.com/yuka-friends/Windrecorder/pull/137 bug: 在索引视频时因为 column name typo 导致索引失败。 Indexing failed due to column name typo when indexing videos.
+
+---
 
 ## 0.0.8
 > 2024-02-24
