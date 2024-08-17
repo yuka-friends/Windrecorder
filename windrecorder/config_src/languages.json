@@ -5,6 +5,7 @@
         "tab_name_oneday": "Daily",
         "tab_name_search": "Search",
         "tab_name_stat": "Summary",
+        "tab_name_lab": "Lab",
         "tab_name_recording": "Recording & Video Storage",
         "tab_name_setting": "Settings",
 
@@ -282,6 +283,7 @@
         "tab_name_oneday": "一天之时",
         "tab_name_search": "全局搜索",
         "tab_name_stat": "记忆摘要",
+        "tab_name_lab": "实验室",
         "tab_name_recording": "录制与视频存储",
         "tab_name_setting": "设置",
 
@@ -560,6 +562,7 @@
         "tab_name_oneday": "一日",
         "tab_name_search": "グローバルキーワード検索",
         "tab_name_stat": "メモリサマリー",
+        "tab_name_lab": "ラボ",
         "tab_name_recording": "録画とビデオストレージ",
         "tab_name_setting": "設定",
 

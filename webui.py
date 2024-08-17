@@ -62,7 +62,7 @@ def main_webui():
             _t("tab_name_oneday"),
             _t("tab_name_search"),
             _t("tab_name_stat"),
-            "实验室",
+            _t("tab_name_lab"),
             _t("tab_name_recording"),
             _t("tab_name_setting") + st.session_state.update_badge_emoji,
         ]
