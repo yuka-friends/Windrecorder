@@ -78,6 +78,9 @@ def generate_day_tags_lst(date_in: datetime.date):
         temperature=LLM_TEMPERATURE_EXTRACT_DAY_TAGS,
     )
     if success:
+        # praser
+        tags_plain_text = tags_plain_text.replace("\n", "")
+        tags_plain_text = tags_plain_text.replace("\r", "")
         tags_list = tags_plain_text.split(",")
         return True, tags_list, tags_plain_text
     else:

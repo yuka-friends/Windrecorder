@@ -7,11 +7,13 @@ from windrecorder.utils import get_text as _t
 
 def render():
     settings_col, spacing_col, pic_col = st.columns([1, 0.5, 1.5])
+    # ensures variables exist
+    ai_extract_tag_wintitle_limit = config.ai_extract_tag_wintitle_limit
 
     with settings_col:
-        st.markdown("### ⚗️ Lab Features")
+        st.markdown(_t("lab_title"))
 
-        st.markdown("### Image semantic index")
+        st.markdown(_t("lab_title_image_semantic_index"))
         if config.img_embed_module_install:
             st.session_state.option_enable_img_embed_search = st.checkbox(
                 _t("set_checkbox_enable_img_emb"),
@@ -19,43 +21,54 @@ def render():
                 value=config.enable_img_embed_search,
             )
         else:
-            st.info("Image semantic index is not installed. You can install it under XXX")
+            st.info(_t("lab_tip_image_semantic_index_not_install"))
             st.session_state.option_enable_img_embed_search = False
 
         st.divider()
 
-        st.markdown("#### LLM features")
-        with st.expander("Config LLM API"):
+        st.markdown(_t("lab_title_llm_features"))
+        st.info(_t("lab_tip_llm_api_endpoint"))
+        with st.expander("🦜 " + _t("lab_text_config_llm_api")):
             ai_api_endpoint_selected = st.selectbox(
-                "API endpoint",
+                _t("lab_selectbox_api_endpoint"),
                 options=config.ai_api_endpoint_type,
                 index=[
                     index
                     for index, value in enumerate(config.ai_api_endpoint_type)
                     if value == config.ai_api_endpoint_selected
                 ][0],
+                help=_t("lab_help_api_endpoint"),
+                disabled=True,
             )
             open_ai_base_url = st.text_input("open ai base_url", value=config.open_ai_base_url)
             open_ai_api_key = st.text_input("open ai api_key", type="password", value=config.open_ai_api_key)
             open_ai_modelname = st.text_input("open ai modelname", value=config.open_ai_modelname)
-            if st.button("Test API connection"):
-                with st.spinner("communicating..."):
+            if st.button(_t("lab_btn_test")):
+                with st.spinner(_t("lab_text_testing")):
                     success, resopond = request_llm_one_shot(
-                        user_content="hello! i am a little raccoon.",
+                        user_content=_t("lab_prompt_test"),
                         api_key=open_ai_api_key,
                         base_url=open_ai_base_url,
                         model=open_ai_modelname,
                     )
                     if success:
-                        st.success("测试成功：" + resopond, icon="✅")
+                        st.success(_t("lab_text_test_res_success") + resopond, icon="✅")
                     else:
-                        st.success("测试失败：" + resopond, icon="❌")
+                        st.success(_t("lab_text_test_res_fail") + resopond, icon="❌")
 
-        enable_ai_extract_tag = st.checkbox(
-            "生成每日活动标签",
-            value=config.enable_ai_extract_tag,
-            help=f"使用AI总结每日活动的标签，只有屏幕时间内的标题内容会被发送到LLM。通过删除 {config.ai_extract_tag_result_dir_ud} 中的json内数据，可以重新生成。",
-        )
+        col1_llm_feature, col2_llm_feature = st.columns([1, 1.5])
+        with col1_llm_feature:
+            enable_ai_extract_tag = st.checkbox(
+                _t("lab_checkbox_extract_tag"),
+                value=config.enable_ai_extract_tag,
+                help=_t("lab_help_extract_tag").format(ai_extract_tag_result_dir_ud=config.ai_extract_tag_result_dir_ud),
+            )
+        with col2_llm_feature:
+            st.empty()
+            if enable_ai_extract_tag:
+                ai_extract_tag_wintitle_limit = st.number_input(
+                    label=_t("lab_input_wintitle_num"), value=config.ai_extract_tag_wintitle_limit
+                )
 
         st.divider()
 
@@ -72,6 +85,7 @@ def render():
             config.set_and_save_config("open_ai_api_key", open_ai_api_key)
             config.set_and_save_config("open_ai_modelname", open_ai_modelname)
             config.set_and_save_config("enable_ai_extract_tag", enable_ai_extract_tag)
+            config.set_and_save_config("ai_extract_tag_wintitle_limit", ai_extract_tag_wintitle_limit)
             st.toast(_t("utils_toast_setting_saved"), icon="🦝")
 
     with spacing_col:
