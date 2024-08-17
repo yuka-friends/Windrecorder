@@ -1,4 +1,5 @@
 import streamlit as st
+from PIL import Image
 
 from windrecorder.config import config
 from windrecorder.llm import request_llm_one_shot
@@ -14,6 +15,7 @@ def render():
         st.markdown(_t("lab_title"))
 
         st.markdown(_t("lab_title_image_semantic_index"))
+        st.image(Image.open("__assets__\\header_image_embedding_index.png"))
         if config.img_embed_module_install:
             st.session_state.option_enable_img_embed_search = st.checkbox(
                 _t("set_checkbox_enable_img_emb"),
@@ -27,7 +29,8 @@ def render():
         st.divider()
 
         st.markdown(_t("lab_title_llm_features"))
-        st.info(_t("lab_tip_llm_api_endpoint"))
+        st.image(Image.open("__assets__\\header_llm.png"))
+        st.caption(_t("lab_tip_llm_api_endpoint"))
         with st.expander("🦜 " + _t("lab_text_config_llm_api")):
             ai_api_endpoint_selected = st.selectbox(
                 _t("lab_selectbox_api_endpoint"),
@@ -41,7 +44,7 @@ def render():
                 disabled=True,
             )
             open_ai_base_url = st.text_input("open ai base_url", value=config.open_ai_base_url)
-            open_ai_api_key = st.text_input("open ai api_key", type="password", value=config.open_ai_api_key)
+            open_ai_api_key = st.text_input("open ai api key", type="password", value=config.open_ai_api_key)
             open_ai_modelname = st.text_input("open ai modelname", value=config.open_ai_modelname)
             if st.button(_t("lab_btn_test")):
                 with st.spinner(_t("lab_text_testing")):

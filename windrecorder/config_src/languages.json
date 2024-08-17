@@ -93,7 +93,7 @@
         "lab_tip_image_semantic_index_not_install": "This feature allows you to search for images by text description.\nTo use image semantic search, you need to install the extension module located at extension/install_img_embedding_module.",
         "lab_title_llm_features": "#### Language Model",
         "lab_text_config_llm_api": "Configure Language Model Service API",
-        "lab_tip_llm_api_endpoint": "To use features that rely on language models, you need to configure API information first. If you don't know how to do this, please refer to [this Getting Started Guide](https://github.com/yuka-friends/Windrecorder/blob/main/__assets__/how_to_set_LLM_api_endpoint_en.md).",
+        "lab_tip_llm_api_endpoint": "To use features rely on language models, you need to configure API information first. If you don't know how to do this, please refer to [this Getting Started Guide](https://github.com/yuka-friends/Windrecorder/blob/main/__assets__/how_to_set_LLM_api_endpoint_en.md).",
         "lab_selectbox_api_endpoint": "API endpoint type",
         "lab_help_api_endpoint": "API endpoint is a type of request format, which does not mean that you can only use the service provider with the literal format. For example, many cloud model providers and local model services support OpenAI format API endpoints.",
         "lab_btn_test": "Test API connectivity",
