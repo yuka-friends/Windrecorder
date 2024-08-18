@@ -3,17 +3,21 @@
 ## 0.0.22
 > 2024-08-17
 - 支持使用大语言模型对每日活动进行标签提取总结；Add the ability to extract and summarize tags for daily activities;
+
+![header_llm](https://github.com/yuka-friends/Windrecorder/blob/main/__assets__/header_llm.png)
+
 - 升级 streamlit 版本，优化了部分界面布局；Upgrade the version of streamlit to optimize some interface layouts;
 - 优化截图文件夹清理机制：清理之前可能遗漏的数据不足文件夹；Optimize the screenshot folder cleaning mechanism: clean up the folders with insufficient data that may have been missed before;
 - 添加空闲时清理缓存文件夹机制；Add the mechanism of cleaning the cache folder in idle time;
 - 将统计中的年月散点图缓存移动至用户文件夹；Move the scatter plot cache of year and month in statistics to the user folder.
-- 支持使用"-"连接单词进行连续整句话的搜索匹配。比如通过搜索 'i-love-you' 而不是 'i love you'凉匹配连续整句。Support using "-" to connect words for continuous whole sentence search matching. For example, by searching for 'i-love-you' instead of 'i love you' to match continuous whole sentences.
+- 支持使用"-"连接单词进行连续整句话的搜索匹配。比如通过搜索 'i-love-you' 而不是 'i love you'来匹配连续整句；Support using "-" to connect words for continuous whole sentence search matching. For example, by searching for 'i-love-you' instead of 'i love you' to match continuous whole sentences;
 
 ![instruction-search-split-dash](https://github.com/yuka-friends/Windrecorder/blob/main/__assets__/instruction-search-split-dash.jpg)
 
 ### Fixed
 - bug: 当程序目录存在空格时，第三方 OCR 扩展无法进入虚拟环境完成安装；When the program directory has a space, the third-party OCR extension cannot enter the virtual environment to complete the installation;
 - bug: 当时间戳位于12月，换算后结果可能大于12月从而异常；When the timestamp is in December, the result after conversion may be greater than December, which is abnormal; (utils.py(278))
+- bug: 由于 wechat ocr 重复初始化导致 webui 假死；Due to repeated initialization of WeChat OCR, WebUI freezes;
 
 ---
 

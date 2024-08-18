@@ -30,6 +30,7 @@
         - base url: `https://api.groq.com/openai/v1`
         - modelname: `llama-3.1-70b-versatile`
     4. 其他任何兼容 OpenAI 接口的模型服务提供商。欢迎补充。
+
 - 基于本地：
     1. [LM studio](https://lmstudio.ai/)：可以便利地从 hugging face 下载模型在本地运行，通过 `Local Server` 模式提供 api 给本地或局域网内用户调用，从而最大程度保护隐私不被泄露。不过，**本地开源模型通常在智能程度和指令遵循水平较低、生成结果不一定可用**，具体可能需要进行选择与测试；
         - base url: `http://localhost:1234/v1`

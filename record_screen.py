@@ -94,7 +94,7 @@ def idle_maintain_process_main():
         # 统计webui footer info
         state.make_webui_footer_state_data_cache(ask_from="idle")
         # 生成 AI tags
-        if config.enable_ai_extract_tag_in_idle and config.enable_ai_extract_tag_in_idle:
+        if config.enable_ai_extract_tag and config.enable_ai_extract_tag_in_idle:
             cache_day_tags_in_idle_routine()
         # 生成随机词表
         # wordcloud.generate_all_word_lexicon_by_month()

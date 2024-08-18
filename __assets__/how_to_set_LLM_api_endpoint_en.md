@@ -32,6 +32,7 @@ This information can usually be found in the service provider's documentation. H
         - base url: `https://api.groq.com/openai/v1`
         - modelname: `llama-3.1-70b-versatile`
     4. Any other OpenAI compatible Model service provider with interface. Feel free to supplement.
+
 - Local:
     1. [LM studio](https://lmstudio.ai/): You can conveniently download the model from hugging face and run it locally, and provide API to local or LAN users through the `Local Server` mode, so as to protect privacy from being leaked to the greatest extent. However, **local open source models are usually low in intelligence and instruction compliance, and the generated results may not be available.** You may need to select and test them;
         - base url: `http://localhost:1234/v1`
