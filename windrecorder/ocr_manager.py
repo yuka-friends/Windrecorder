@@ -464,6 +464,8 @@ def ocr_image_wechatocr(img_input, force_initialize=False):
     wx_ocr_manager.DoOCRTask(img_input)
     # 等待ocr_result_callback设置事件
     wx_ocr_complete_event.wait(timeout=5)
+    if wx_ocr_result is None:
+        raise Exception("wechat ocr not run correctly.")
     return wx_ocr_result
 
 

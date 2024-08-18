@@ -429,6 +429,7 @@ def record_screen_via_screenshot_process():
     tmp_db_json_all_files = {"data": []}
     last_execute_time = time.time()
 
+    logger.info(f"start new screenshot record: {config.record_seconds=}, {config.screenshot_interval_second}")
     logger.debug(f"{config.record_seconds=}")
     while time_counter < config.record_seconds:
         sleep_time_second = config.screenshot_interval_second - (time.time() - last_execute_time)
@@ -462,7 +463,7 @@ def record_screen_via_screenshot_process():
 
         # skip custom rule
         if utils.is_str_contain_list_word(win_title, config.exclude_words):
-            logger.debug(f"wintitle {win_title} contains exclude words {config.exclude_words}")
+            logger.info(f"wintitle {win_title} contains exclude words {config.exclude_words}")
             continue
 
         # get deep linking
@@ -534,6 +535,9 @@ def record_screen_via_screenshot_process():
 
         # compare OCR result similarity
         ocr_res_current = ocr_image(screenshot_cropped_saved_filepath)
+        logger.debug(f"{ocr_res_current=}")
+        if ocr_res_current is None:
+            continue
         if len(ocr_res_current) < 5:
             continue
         is_ocr_res_over_threshold_similarity, _ = compare_strings(

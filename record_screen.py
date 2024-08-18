@@ -269,9 +269,7 @@ def main():
             threading.Thread(target=record.clean_cache_screenshots_dir_process, daemon=True).start()
 
             # 屏幕内容多长时间不变则暂停录制
-            logger.info(
-                f"Windrecorder: config.screentime_not_change_to_pause_record: {config.screentime_not_change_to_pause_record}"
-            )
+            logger.info(f"{config.screentime_not_change_to_pause_record=}")
             thread_monitor_compare_screenshot: threading.Thread | None = None
             if config.screentime_not_change_to_pause_record > 0:  # 是否使用屏幕不变检测
                 thread_monitor_compare_screenshot = threading.Thread(target=monitor_compare_screenshot, daemon=True)
