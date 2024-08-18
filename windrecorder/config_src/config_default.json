@@ -89,6 +89,7 @@
   "foreground_window_video_background_color": "#EEE3DA",
   "screenshot_interval_second": 3,
   "screenshot_compare_similarity": 0.7,
+  "screenshot_interrupt_recording_count": 40,
   "ocr_compare_similarity": 0.7,
   "ocr_compare_similarity_in_table": 0.94,
   "convert_screenshots_to_vid_while_only_when_idle_or_plugged_in": false,

@@ -14,6 +14,9 @@
 
 ![instruction-search-split-dash](https://github.com/yuka-friends/Windrecorder/blob/main/__assets__/instruction-search-split-dash.jpg)
 
+--roll out to new user--
+- 优化灵活截图模式，当一段时间（默认2mins）在跳过规则时终止记录当前视频片段；Optimize the flexible screenshot mode, and stop recording the current video clip when the rule is skipped for a period of time (default 2 minutes); (config.screenshot_interrupt_recording_count)
+
 ### Fixed
 - bug: 当程序目录存在空格时，第三方 OCR 扩展无法进入虚拟环境完成安装；When the program directory has a space, the third-party OCR extension cannot enter the virtual environment to complete the installation;
 - bug: 当时间戳位于12月，换算后结果可能大于12月从而异常；When the timestamp is in December, the result after conversion may be greater than December, which is abnormal; (utils.py(278))

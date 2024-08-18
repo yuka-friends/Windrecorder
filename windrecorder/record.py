@@ -428,6 +428,7 @@ def record_screen_via_screenshot_process():
     tmp_db_json = {"data": []}
     tmp_db_json_all_files = {"data": []}
     last_execute_time = time.time()
+    screenshot_interrupt_recording_counter = 0
 
     logger.info(f"start new screenshot record: {config.record_seconds=}, {config.screenshot_interval_second}")
     logger.debug(f"{config.record_seconds=}")
@@ -437,7 +438,10 @@ def record_screen_via_screenshot_process():
             sleep_time_second = 1
         time.sleep(sleep_time_second)
         time_counter += config.screenshot_interval_second
-        logger.debug(f"{time_counter=}, {sleep_time_second=}")
+        logger.debug(f"{time_counter=}, {sleep_time_second=}, {screenshot_interrupt_recording_counter=}")
+
+        if screenshot_interrupt_recording_counter > config.screenshot_interrupt_recording_count and start_record:
+            break
 
         last_execute_time = time.time()
         win_title = get_current_wintitle()
@@ -464,6 +468,7 @@ def record_screen_via_screenshot_process():
         # skip custom rule
         if utils.is_str_contain_list_word(win_title, config.exclude_words):
             logger.info(f"wintitle {win_title} contains exclude words {config.exclude_words}")
+            screenshot_interrupt_recording_counter += 1
             continue
 
         # get deep linking
@@ -493,6 +498,7 @@ def record_screen_via_screenshot_process():
                 img_similarity = compare_image_similarity_np(np.array(screenshot_previous), np.array(screenshot_current))
                 if img_similarity > config.screenshot_compare_similarity:
                     logger.debug(f"img_similarity {img_similarity} higher than config, continue")
+                    screenshot_interrupt_recording_counter += 1
                     continue
             except Exception as e:
                 logger.error(
@@ -545,6 +551,7 @@ def record_screen_via_screenshot_process():
         )
         if is_ocr_res_over_threshold_similarity:
             logger.debug("ocr res overlaps with the previous, skip")
+            screenshot_interrupt_recording_counter += 1
             continue
 
         # OCR index cache store
@@ -555,6 +562,7 @@ def record_screen_via_screenshot_process():
                     v["ocr_text"], ocr_res_current, threshold=config.ocr_compare_similarity_in_table * 100
                 )
                 if is_ocr_res_over_threshold_similarity:
+                    screenshot_interrupt_recording_counter += 1
                     continue
 
         # presistent data
@@ -573,6 +581,7 @@ def record_screen_via_screenshot_process():
             }
         )  # Used to index to sqlite db
         file_utils.save_dict_as_json_to_path(tmp_db_json, tmp_json_db_filepath)
+        screenshot_interrupt_recording_counter = 0
 
     # persistent submit to db
     submit_data_to_sqlite_db_process(saved_dir_filepath)
