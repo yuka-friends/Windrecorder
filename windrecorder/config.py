@@ -92,6 +92,7 @@ class Config:
         index_reduce_same_content_at_different_time,
         record_screenshot_method_capture_foreground_window_only,
         screenshot_interval_second,
+        screenshot_interrupt_recording_count,
         record_mode,
         screenshot_compare_similarity,
         ocr_compare_similarity,
@@ -187,6 +188,7 @@ class Config:
         self.record_crf = record_crf
         self.index_reduce_same_content_at_different_time = index_reduce_same_content_at_different_time
         self.screenshot_interval_second = screenshot_interval_second
+        self.screenshot_interrupt_recording_count = screenshot_interrupt_recording_count
         self.record_mode = record_mode  # ffmpeg, screenshot_array
         self.record_screenshot_method_capture_foreground_window_only = record_screenshot_method_capture_foreground_window_only
         self.screenshot_compare_similarity = screenshot_compare_similarity
