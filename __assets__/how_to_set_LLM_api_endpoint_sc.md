@@ -16,9 +16,9 @@
 
 这些信息通常可以在服务方的文档中找到。以下是一些常见的模型提供商：
 
-- 基于云服务：
 > [!WARNING]
 > 当使用云服务时，你的部分数据可能会经由网络被传出。
+- 基于云服务：
 
     1. [OpenAI Platform](https://platform.openai.com/docs/introduction)
         - base url: `https://api.openai.com/v1`
