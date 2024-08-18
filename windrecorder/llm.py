@@ -8,6 +8,7 @@ from openai import OpenAI
 from windrecorder import file_utils, utils
 from windrecorder.config import config
 from windrecorder.const import (
+    EXTRACT_DAY_TAGS_RETRY_TIMES,
     LLM_FAIL_COPY,
     LLM_SYSTEM_PROMPT_DEFAULT,
     LLM_SYSTEM_PROMPT_EXTRACT_DAY_TAGS,
@@ -118,7 +119,20 @@ def generate_and_save_day_tags(date_in: datetime.date):
     else:
         if "no_wintitle_data" in plain_text:
             cache_data[dt_str] = []
-            file_utils.save_dict_as_json_to_path(cache_data, cache_path)
+        else:
+            # add retry mark
+            try:
+                if dt_str in cache_data.keys():
+                    if len(cache_data[dt_str]) > 0:
+                        if "retry_times" in cache_data[dt_str][0]:
+                            time_count = int(cache_data[dt_str][0].split(":")[1])
+                            time_count += 1
+                            cache_data[dt_str] = [f"retry_times:{time_count}"]
+                else:
+                    cache_data[dt_str] = ["retry_times:1"]
+                file_utils.save_dict_as_json_to_path(cache_data, cache_path)
+            except Exception as e:
+                logger.warning(f"caching retry fail: {e}")
         return False, [], plain_text
 
 
@@ -128,7 +142,7 @@ def component_day_tags(date_in: datetime.date):
         html_tags_lst = []
         for tag in tags_lst:
             html_tags_lst.append(f"<span class='tag'>{tag}</span>")
-        html_tags = "".join(html_tags_lst)
+        html_tags = "".join(map(str, html_tags_lst))
         html_full = (
             """
     <style>
@@ -172,14 +186,13 @@ font-size: 14px;
                     st.warning(f"Failed to generate tags: {plain_text}", icon="😥")
 
 
-def cache_day_tags_in_idle_routine():
+def cache_day_tags_in_idle_routine(batch_count=config.ai_extract_tag_in_idle_batch_size):
     # 缓存最近的 N 天的标签
     from windrecorder.db_manager import db_manager
 
     dt = datetime.date.today() - datetime.timedelta(days=1)
     earlist_dt = utils.seconds_to_datetime(db_manager.db_first_earliest_record_time())
 
-    batch_count = config.ai_extract_tag_in_idle_batch_size
     day_trackback = 0
     year_process_now = 2999
     year_process_last_time = 1970
@@ -193,13 +206,20 @@ def cache_day_tags_in_idle_routine():
 
         year_process_now = date_in.year
         if year_process_now != year_process_last_time:
-            print(f"get year cache data {year_process_now}")
+            logger.info(f"get year cache data {year_process_now}")
             year_process_last_time = year_process_now
             cache_data = get_cache_data_by_date(date_in)
 
-        if utils.datetime_to_dateDayStr(date_in) in cache_data.keys():
-            day_trackback += 1
-            continue
+        dt_str = utils.datetime_to_dateDayStr(date_in)
+        if dt_str in cache_data.keys():
+            if len(cache_data[dt_str]) > 0:
+                if "retry_times" in cache_data[dt_str][0]:
+                    time_count = int(cache_data[dt_str][0].split(":")[1])
+                    if time_count > EXTRACT_DAY_TAGS_RETRY_TIMES:
+                        continue
+                else:
+                    day_trackback += 1
+                    continue
 
         print(f"generate day {date_in}")
         generate_and_save_day_tags(date_in)
@@ -207,6 +227,3 @@ def cache_day_tags_in_idle_routine():
         batch_count -= 1
         if batch_count < 0:
             break
-
-    for day_back in range(config.ai_extract_tag_in_idle_batch_size):
-        date_in = datetime.date.today() - datetime.timedelta(days=day_back)

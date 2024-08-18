@@ -275,7 +275,7 @@ def get_datetime_in_day_range_pole_by_config_day_begin(dt: datetime.datetime, ra
         _, month_days = calendar.monthrange(dt.year, dt.month)
         if dt.day == month_days:  # month last day
             res = dt.replace(
-                month=dt.month + (1 if day_begin_minutes > 0 else 0),
+                month=dt.month + (1 if day_begin_minutes > 0 and dt.month < 12 else 0),
                 day=1 if day_begin_minutes > 0 else dt.day,
                 hour=(23 + day_begin_minutes // 60) % 24,
                 minute=(59 + day_begin_minutes % 60) % 60,

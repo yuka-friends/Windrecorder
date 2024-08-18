@@ -13,6 +13,7 @@
 
 ### Fixed
 - bug: 当程序目录存在空格时，第三方 OCR 扩展无法进入虚拟环境完成安装；When the program directory has a space, the third-party OCR extension cannot enter the virtual environment to complete the installation;
+- bug: 当时间戳位于12月，换算后结果可能大于12月从而异常；When the timestamp is in December, the result after conversion may be greater than December, which is abnormal; (utils.py(278))
 
 ---
 

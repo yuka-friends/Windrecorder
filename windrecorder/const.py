@@ -50,6 +50,7 @@ Only output the extracted results, and the tags are separated by English commas.
 Do not attach any other instructions. Please generate the return in the language of the provided content.
 """
 LLM_TEMPERATURE_EXTRACT_DAY_TAGS = 0.3
+EXTRACT_DAY_TAGS_RETRY_TIMES = 3
 
 # add ocr test set config here
 OCR_BENCHMARK_TEST_SET = {
