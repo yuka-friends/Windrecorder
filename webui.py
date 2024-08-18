@@ -3,6 +3,7 @@ import hashlib
 import streamlit as st
 
 import windrecorder.ui.components
+import windrecorder.ui.lab
 import windrecorder.ui.oneday
 import windrecorder.ui.recording
 import windrecorder.ui.search
@@ -56,11 +57,12 @@ def web_footer_state():
 def main_webui():
     st.markdown(_t("main_title"))
 
-    oneday_tab, search_tab, state_tab, recording_tab, setting_tab = st.tabs(
+    oneday_tab, search_tab, state_tab, lab_tab, recording_tab, setting_tab = st.tabs(
         [
             _t("tab_name_oneday"),
             _t("tab_name_search"),
             _t("tab_name_stat"),
+            _t("tab_name_lab"),
             _t("tab_name_recording"),
             _t("tab_name_setting") + st.session_state.update_badge_emoji,
         ]
@@ -74,6 +76,9 @@ def main_webui():
 
     with state_tab:
         windrecorder.ui.state.render()
+
+    with lab_tab:
+        windrecorder.ui.lab.render()
 
     with recording_tab:
         windrecorder.ui.recording.render()

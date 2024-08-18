@@ -19,6 +19,9 @@ echo.
 echo   Support languages: en-US, zh-Hans, zh-Hant
 echo   支持语言：英文, 简体中文, 繁体中文
 echo.
+echo   Make sure to exit windrecorder before installation.
+echo   安装前请确保退出了 捕风记录仪。
+echo.
 echo   Enter Y and press Enter to install RapidOCR (Paddle OCR based on ONNXRuntime) module.
 echo   输入 Y 后回车以安装 RapidOCR（Paddle OCR 的 ONNXRuntime 版本）。
 echo.

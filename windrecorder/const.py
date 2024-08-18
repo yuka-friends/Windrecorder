@@ -12,6 +12,7 @@ SCREENSHOT_CACHE_FILEPATH_TMP_DB_ALL_FILES_NAME = "tmp_db_json_all_files.json"
 OUTDATE_DAY_TO_DELETE_SCREENSHOTS_CACHE_CONVERTED_TO_VID = 2
 OUTDATE_DAY_TO_DELETE_SCREENSHOTS_CACHE_CONVERTED_TO_VID_WITHOUT_IMGEMB = 2
 ERROR_VIDEO_RETRY_TIMES = 3
+MINIMUM_NUMBER_OF_IMAGES_REQUIRED_FOR_A_VIDEO = 4
 
 DATETIME_FORMAT = "%Y-%m-%d_%H-%M-%S"
 DATE_FORMAT = "%Y-%m"
@@ -30,6 +31,26 @@ DATAFRAME_COLUMN_NAMES = [
 ]
 
 DEBUGMODE_TRIGGER = "DEBUGMODE.txt"
+
+LLM_FAIL_COPY = "System: Fail to get AI reply, please try again."
+LLM_SYSTEM_PROMPT_DEFAULT = "You are a helpful assistant."
+LLM_SYSTEM_PROMPT_EXTRACT_DAY_TAGS = """
+You are a screen content analysis assistant. Please extract the specific activity content tags under the "content_page_name" column based on the provided user's screen time list csv table for the day.
+### rules:
+1. Please focus on the activity content itself, such as what content was browsed/read/watch/interact, rather than the program process name.
+2. The content of the label should be meaningful, otherwise it is unnecessary.
+3. Don't similar content tags, just keep one or merge them.
+4. Avoid repeating content platforms multiple times, more **focus on actual and meaningful content** itself. (not like youtube, bilibili, acfun, quora, reddit, zhihu, weibo etc.)
+5. Tags might not to be short; slightly longer phrases can be used if necessary.
+6. Generated tags should not be too general and should closely match or quote or shorten the content.
+7. The extracted weight could be related to the screen time in the "screen_time" column as much as possible: the longer the usage time, the higher the content weight.
+8. The number of returned tags is controlled to under 15. It is better to have less than more, depends on the content.
+
+Only output the extracted results, and the tags are separated by English commas.
+Do not attach any other instructions. Please generate the return in the language of the provided content.
+"""
+LLM_TEMPERATURE_EXTRACT_DAY_TAGS = 0.3
+EXTRACT_DAY_TAGS_RETRY_TIMES = 3
 
 # add ocr test set config here
 OCR_BENCHMARK_TEST_SET = {

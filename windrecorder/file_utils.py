@@ -3,6 +3,7 @@ import os
 import re
 import shutil
 import time
+from json import JSONDecodeError
 
 import pandas as pd
 
@@ -250,7 +251,7 @@ def save_dict_as_json_to_path(data: dict, filepath):
     """将 dict 保存到 json"""
     ensure_dir(os.path.dirname(filepath))
     with open(filepath, "w") as f:
-        json.dump(data, f)
+        json.dump(data, f, indent=2)
     logger.info(f"files: json has been saved at {filepath}")
 
 
@@ -259,9 +260,12 @@ def read_json_as_dict_from_path(filepath):
     if not os.path.exists(filepath):
         return None
 
-    with open(filepath, "r") as f:
-        data = json.load(f)
-    return data
+    try:
+        with open(filepath, "r") as f:
+            data = json.load(f)
+        return data
+    except JSONDecodeError:
+        return None
 
 
 # 读取 extension 文件夹下所有插件名与对应 meta info

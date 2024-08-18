@@ -8,7 +8,7 @@ from PIL import Image
 
 import windrecorder.record as record
 import windrecorder.utils as utils
-from windrecorder import __version__, file_utils, ocr_manager
+from windrecorder import __version__, file_utils
 from windrecorder.config import config
 from windrecorder.const import OCR_SUPPORT_CONFIG
 from windrecorder.logger import get_logger
@@ -120,15 +120,6 @@ def render():
                 is_shutdown_pasocon_after_updatedDB = False
                 st.empty()
 
-        if config.img_embed_module_install:
-            option_enable_img_embed_search = st.checkbox(
-                _t("set_checkbox_enable_img_emb"),
-                help=_t("set_text_enable_img_emb_help"),
-                value=config.enable_img_embed_search,
-            )
-        else:
-            option_enable_img_embed_search = False
-
         index_reduce_same_content_at_different_time = st.checkbox(
             label=_t("set_checkbox_reduce_same_content_at_different_time"),
             value=config.index_reduce_same_content_at_different_time,
@@ -141,6 +132,8 @@ def render():
                 estimate_time_str = utils.estimate_indexing_time()  # 预估剩余时间
                 with st.spinner(_t("set_text_updating_db").format(estimate_time_str=estimate_time_str)):
                     timeCost = time.time()  # 预埋计算实际时长
+                    from windrecorder import ocr_manager
+
                     ocr_manager.ocr_manager_main()  # 更新数据库
 
                     timeCost = time.time() - timeCost
@@ -298,7 +291,7 @@ def render():
             )
 
             # imgemb 选项
-            if config.img_embed_module_install and option_enable_img_embed_search:
+            if config.img_embed_module_install and st.session_state.option_enable_img_embed_search:
                 config_img_embed_search_recall_result_per_db = st.number_input(
                     _t("set_input_img_emb_max_recall_count"),
                     min_value=5,
@@ -345,7 +338,6 @@ def render():
                     if v in third_party_engine_ocr_lang
                 ],
             )
-            config.set_and_save_config("enable_img_embed_search", option_enable_img_embed_search)
             config.set_and_save_config(
                 "index_reduce_same_content_at_different_time", index_reduce_same_content_at_different_time
             )

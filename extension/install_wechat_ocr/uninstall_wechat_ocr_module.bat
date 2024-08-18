@@ -8,6 +8,9 @@ chcp 65001
 :start_install
 cls
 echo.
+echo   Make sure to exit windrecorder before uninstallation.
+echo   卸载前请确保退出了 捕风记录仪。
+echo.
 echo   Enter Y and press Enter to uninstall WeChat OCR module.
 echo   输入 Y 后回车卸载 WeChat OCR 模块。
 echo.

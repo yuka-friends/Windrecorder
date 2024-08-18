@@ -2,6 +2,7 @@ import base64
 import calendar
 import ctypes
 import datetime
+import io
 import json
 import os
 import random
@@ -17,6 +18,7 @@ from io import BytesIO
 
 import cv2
 import mss
+import pandas as pd
 import psutil
 import requests
 from PIL import Image
@@ -273,7 +275,7 @@ def get_datetime_in_day_range_pole_by_config_day_begin(dt: datetime.datetime, ra
         _, month_days = calendar.monthrange(dt.year, dt.month)
         if dt.day == month_days:  # month last day
             res = dt.replace(
-                month=dt.month + (1 if day_begin_minutes > 0 else 0),
+                month=dt.month + (1 if day_begin_minutes > 0 and dt.month < 12 else 0),
                 day=1 if day_begin_minutes > 0 else dt.day,
                 hour=(23 + day_begin_minutes // 60) % 24,
                 minute=(59 + day_begin_minutes % 60) % 60,
@@ -903,3 +905,10 @@ def print_table(data: list, indentation_cnt=0):
     for row in data:
         formatted_row = [format_string(str(x), col_width[i]) for i, x in enumerate(row)]
         print(" " * indentation_cnt + "    ".join(formatted_row))
+
+
+def convert_df_to_csv_str(df: pd.DataFrame):
+    csv_buffer = io.StringIO()
+    df.to_csv(csv_buffer, index=False)
+    csv_string = csv_buffer.getvalue()
+    return csv_string

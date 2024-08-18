@@ -61,6 +61,7 @@ def wx_ocr_result_callback(img_path, results: dict):
 
 
 def initialize_third_part_ocr_engine(ocr_engine_name=config.ocr_engine):
+    # run only once
     if ocr_engine_name == "PaddleOCR" and not third_party_ocr_actived_manager["PaddleOCR"]:
         try:
             from rapidocr_onnxruntime import RapidOCR
@@ -120,9 +121,6 @@ def initialize_third_part_ocr_engine(ocr_engine_name=config.ocr_engine):
         except Exception as e:
             logger.error(f"Failed to initialize WeChatOCR engine: {e}, reset to default.")
             reset_ocr_engine_config_to_windows()
-
-
-initialize_third_part_ocr_engine()
 
 
 # 使用 win32file 的判断实现，检查文件是否被占用
@@ -416,6 +414,7 @@ def ocr_img_preprocessor(img_input):
 
 # OCR 分流器
 def ocr_image(img_input, ocr_engine=config.ocr_engine, return_none_if_ocr_error=False):
+    initialize_third_part_ocr_engine()
     logger.debug(f"ocr_engine:{ocr_engine}")
     try:
         if ocr_engine == "Windows.Media.Ocr.Cli":

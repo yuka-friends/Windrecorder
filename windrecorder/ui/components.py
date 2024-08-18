@@ -8,6 +8,7 @@ import streamlit as st
 from windrecorder import file_utils, flag_mark_note, record_wintitle
 from windrecorder.config import config
 from windrecorder.db_manager import db_manager
+from windrecorder.llm import component_day_tags
 from windrecorder.logger import get_logger
 from windrecorder.utils import get_text as _t
 
@@ -82,6 +83,8 @@ def record_search_history(search_content, search_type, search_datetime=None):
 def oneday_side_toolbar():
     lefttab_wintitle, lefttab_flagnote = st.tabs([_t("oneday_ls_title_wintitle"), _t("oneday_ls_title_flag_note")])
     with lefttab_wintitle:
+        if config.enable_ai_extract_tag and datetime.date.today() != st.session_state.day_date_input:
+            component_day_tags(st.session_state.day_date_input)
         record_wintitle.component_wintitle_stat(st.session_state.day_date_input)
     with lefttab_flagnote:
         flag_mark_note.component_flag_mark()
