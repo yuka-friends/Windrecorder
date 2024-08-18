@@ -23,6 +23,7 @@ from windrecorder.const import (
     DATAFRAME_COLUMN_NAMES,
     DATE_FORMAT,
     DATETIME_FORMAT,
+    MINIMUM_NUMBER_OF_IMAGES_REQUIRED_FOR_A_VIDEO,
     OUTDATE_DAY_TO_DELETE_SCREENSHOTS_CACHE_CONVERTED_TO_VID,
     OUTDATE_DAY_TO_DELETE_SCREENSHOTS_CACHE_CONVERTED_TO_VID_WITHOUT_IMGEMB,
     SCREENSHOT_CACHE_FILEPATH,
@@ -627,7 +628,7 @@ def convert_screenshots_dir_into_video_process(saved_dir_filepath):
         if saved_dir_filepath is None:
             logger.error("saved_dir_filepath is None")
             return
-        output_video_filepath = make_screenshots_into_video_via_dir_path(saved_dir_filepath)
+        output_video_filepath, is_garbage_data_should_be_clean = make_screenshots_into_video_via_dir_path(saved_dir_filepath)
         if output_video_filepath:
             output_video_filepath_compress = compress_video_resolution(
                 output_video_filepath,
@@ -638,6 +639,9 @@ def convert_screenshots_dir_into_video_process(saved_dir_filepath):
                 send2trash(output_video_filepath)
             os.rename(saved_dir_filepath, saved_dir_filepath + "-VIDEO")
             return saved_dir_filepath + "-VIDEO"
+        if is_garbage_data_should_be_clean:
+            os.rename(saved_dir_filepath, saved_dir_filepath + "-DISCARD")
+            return saved_dir_filepath + "-DISCARD"
         return saved_dir_filepath
     except Exception as e:
         logger.error(e)
@@ -645,14 +649,31 @@ def convert_screenshots_dir_into_video_process(saved_dir_filepath):
 
 def index_cache_screenshots_dir_process():
     """流程：索引所有未转换为视频、未提交到数据库的文件夹截图"""
+
+    def _len_db_all_json_data(dir_path):
+        tmp_db_json_filepath = os.path.join(dir_path, SCREENSHOT_CACHE_FILEPATH_TMP_DB_ALL_FILES_NAME)
+        tmp_db_json_datalist = file_utils.read_json_as_dict_from_path(tmp_db_json_filepath)
+        if tmp_db_json_datalist is None:
+            return 0
+        if "data" not in tmp_db_json_datalist.keys():
+            return 0
+        tmp_db_json_datalist = tmp_db_json_datalist["data"]
+        return len(tmp_db_json_datalist)
+
     dir_lst = file_utils.get_screenshots_cache_dir_lst()
     for dir_path in dir_lst:
         if not os.path.exists(os.path.join(dir_path, "-SUBMIT")) and "-DISCARD" not in dir_path:
-            logger.debug(f"{dir_path} not submit to db, submiting...")
+            logger.info(f"{dir_path} not submit to db, submiting...")
             submit_data_to_sqlite_db_process(dir_path)
         if "-VIDEO" not in dir_path and os.path.exists(os.path.join(dir_path, "-SUBMIT")):
-            logger.debug(f"{dir_path} not convert to video, converting...")
+            logger.info(f"{dir_path} not convert to video, converting...")
             convert_screenshots_dir_into_video_process(dir_path)
+        elif (
+            _len_db_all_json_data(dir_path) < MINIMUM_NUMBER_OF_IMAGES_REQUIRED_FOR_A_VIDEO
+            or len(file_utils.get_file_path_list_first_level(dir_path)) < MINIMUM_NUMBER_OF_IMAGES_REQUIRED_FOR_A_VIDEO + 2
+        ):
+            logger.info(f"{dir_path} not enough data, marked as DISCARD.")
+            os.rename(dir_path, dir_path + "-DISCARD")
 
 
 def clean_cache_screenshots_dir_process():
@@ -782,7 +803,10 @@ def convert_screenshots_dir_into_same_size_to_cache(
 
 
 def make_screenshots_into_video_via_dir_path(saved_dir_filepath):
-    """将文件夹中的截图合并为视频，根据文件夹中的临时数据库"""
+    """
+    将文件夹中的截图合并为视频，根据文件夹中的临时数据库
+    return filepath(str), is_garbage_data_should_be_clean(bool)
+    """
 
     def calc_screenshot_filepath_to_unix_timestamp(screenshot_filepath):
         return utils.dtstr_to_seconds(os.path.basename(screenshot_filepath).split(".")[0])
@@ -839,12 +863,18 @@ def make_screenshots_into_video_via_dir_path(saved_dir_filepath):
     tmp_db_json_filepath = os.path.join(saved_dir_filepath, SCREENSHOT_CACHE_FILEPATH_TMP_DB_ALL_FILES_NAME)
     if not os.path.exists(tmp_db_json_filepath):
         logger.error(f"{tmp_db_json_filepath} not existed")
-        return None
+        return None, False
     tmp_db_json_datalist = file_utils.read_json_as_dict_from_path(tmp_db_json_filepath)
+    if tmp_db_json_datalist is None:
+        logger.info(f"{tmp_db_json_filepath} not have data")
+        return None, True
+    if "data" not in tmp_db_json_datalist.keys():
+        logger.info(f"{tmp_db_json_filepath} not have data")
+        return None, True
     tmp_db_json_datalist = tmp_db_json_datalist["data"]
-    if len(tmp_db_json_datalist) < 3:
+    if len(tmp_db_json_datalist) < MINIMUM_NUMBER_OF_IMAGES_REQUIRED_FOR_A_VIDEO:
         logger.info(f"{tmp_db_json_filepath} not have enough data")
-        return None
+        return None, True
     output_video_filepath = os.path.join(
         config.record_videos_dir_ud,
         utils.dtstr_to_datetime(tmp_db_json_datalist[0]["vid_file_name"].replace(".mp4", "")).strftime(DATE_FORMAT),
@@ -856,15 +886,15 @@ def make_screenshots_into_video_via_dir_path(saved_dir_filepath):
         convert_screenshots_dir_into_same_size_to_cache(saved_dir_filepath)
     except Exception as e:
         logger.error(f"convert screenshots to uniform size fail {saved_dir_filepath}: {e}")
-        return None
+        return None, False
     # make video
     try:
         create_video_from_images(tmp_db_json_datalist, output_video_filepath)
     except Exception as e:
         logger.error(f"convert screenshots to video fail {output_video_filepath}: {e}")
-        return None
+        return None, False
     logger.info(f"converted screenshots to video: {output_video_filepath}")
-    return output_video_filepath
+    return output_video_filepath, False
 
 
 def try_empty_cache_dir_in_idle_routine():
