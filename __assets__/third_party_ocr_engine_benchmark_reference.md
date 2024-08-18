@@ -5,6 +5,12 @@ RAM: 64GB
 GPU: NVIDIA RTX A4000
 OS: Windows 11 Pro 23H2
 
+run benchmark:
+```
+from windrecorder.ocr_manager import format_print_benchmark, ocr_benchmark
+format_print_benchmark(ocr_benchmark())
+```
+
 --------------------------------------------------------------------
 
     Test language: en-US

@@ -32,6 +32,7 @@ while True:
     input_path = input("> ")
     input_path_full = os.path.join(input_path, "tesseract.exe")
     if os.path.exists(input_path_full):
+        print("tesseract.exe found.")
         config.set_and_save_config("TesseractOCR_filepath", input_path_full)
         break
     else:
@@ -49,8 +50,8 @@ def set_config_module_install(state: bool):
 try:
     from windrecorder import ocr_manager
 
-    img_path = parent_parent_dir + "/__assets__/OCR_test_1080_zh-Hans-CN.png"
-    ocr_manager.ocr_image_TesseractOCR(img_path)
+    img_path = parent_parent_dir + "/__assets__/OCR_test_1080_en-US.png"
+    ocr_manager.ocr_image_TesseractOCR(img_path, lang=["eng"])
 
     print("Install succeed! 安装成功！")
     set_config_module_install(True)

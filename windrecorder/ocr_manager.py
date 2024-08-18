@@ -494,7 +494,7 @@ def ocr_image_col(img_input, force_initialize=False):
 
 
 # OCR文本-TesseractOCR
-def ocr_image_TesseractOCR(img_input):
+def ocr_image_TesseractOCR(img_input, lang=config.third_party_engine_ocr_lang):
     logger.debug("OCR text by TesseractOCR")
     text = ""
     command = [
@@ -502,11 +502,11 @@ def ocr_image_TesseractOCR(img_input):
         img_input,
         "-",
         "-l",
-        "+".join(config.third_party_engine_ocr_lang),
+        "+".join(lang),
     ]  # https://github.com/tesseract-ocr/tessdoc/blob/main/Command-Line-Usage.md
 
-    if config.third_party_engine_ocr_lang[0] not in OCR_SUPPORT_CONFIG["TesseractOCR"]["support_lang_option"].keys():
-        raise Exception(f"{config.third_party_engine_ocr_lang} not supported.")
+    if lang[0] not in OCR_SUPPORT_CONFIG["TesseractOCR"]["support_lang_option"].keys():
+        raise Exception(f"{lang} not supported.")
 
     proc = subprocess.run(command, capture_output=True)
     encodings_try = ["gbk", "utf-8"]  # 强制兼容
