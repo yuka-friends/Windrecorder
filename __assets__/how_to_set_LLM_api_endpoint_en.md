@@ -18,14 +18,14 @@ For the OpenAI endpoint format supported by Windrecorder, three pieces of inform
 
 This information can usually be found in the service provider's documentation. Here are some common model providers:
 
-- Based on cloud services:
 > [!WARNING]
 > When using cloud services, some of your data may be transferred over the network.
 
+- Based on cloud services:
     1. [OpenAI Platform](https://platform.openai.com/docs/introduction)
         - base url: `https://api.openai.com/v1`
         - modelname: `gpt-4o`
-    2. [DeepSeek](https://platform.deepseek.com/): has a low price, relatively high-quality models, and may be more stringent in censoring pornographic and political content;
+    2. [DeepSeek](https://platform.deepseek.com/): has a low price, relatively high-quality models, but may be more stringent in censoring pornographic and political content;
         - base url: `https://api.deepseek.com/v1`
         - modelname: `deepseek-chat`
     3. [Groq](https://console.groq.com/docs/openai): provides open source models with low prices and extremely fast inference generation speed;
