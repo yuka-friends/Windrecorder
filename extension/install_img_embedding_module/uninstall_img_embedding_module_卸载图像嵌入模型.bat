@@ -9,6 +9,9 @@ chcp 65001
 :start_uninstall
 cls
 echo.
+echo   Make sure to exit windrecorder before uninstallation.
+echo   卸载前请确保退出了 捕风记录仪。
+echo.
 echo   Enter Y and press Enter to uninstall the image semantic recognition module.
 echo   输入 Y 后回车卸载图像语义识别模块。
 echo.

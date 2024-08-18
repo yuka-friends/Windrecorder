@@ -19,6 +19,9 @@ For the OpenAI endpoint format supported by Windrecorder, three pieces of inform
 This information can usually be found in the service provider's documentation. Here are some common model providers:
 
 - Based on cloud services:
+> [!WARNING]
+> When using cloud services, some of your data may be transferred over the network.
+
     1. [OpenAI Platform](https://platform.openai.com/docs/introduction)
         - base url: `https://api.openai.com/v1`
         - modelname: `gpt-4o`
@@ -30,7 +33,7 @@ This information can usually be found in the service provider's documentation. H
         - modelname: `llama-3.1-70b-versatile`
     4. Any other OpenAI compatible Model service provider with interface. Feel free to supplement.
 - Local:
-    1. [LM studio](https://lmstudio.ai/): You can conveniently download the model from hugging face and run it locally, and provide API to local or LAN users through the `Local Server` mode, so as to protect privacy from being leaked to the greatest extent. However, local open source models are usually low in intelligence and instruction compliance, and the generated results may not be available. You may need to select and test them;
+    1. [LM studio](https://lmstudio.ai/): You can conveniently download the model from hugging face and run it locally, and provide API to local or LAN users through the `Local Server` mode, so as to protect privacy from being leaked to the greatest extent. However, **local open source models are usually low in intelligence and instruction compliance, and the generated results may not be available.** You may need to select and test them;
         - base url: `http://localhost:1234/v1`
         - modelname: `cognitivecomputations/dolphin-2.9-llama3-8b-gguf`
         - api key: `lm-studio`

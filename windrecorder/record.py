@@ -843,6 +843,7 @@ def make_screenshots_into_video_via_dir_path(saved_dir_filepath):
     tmp_db_json_datalist = file_utils.read_json_as_dict_from_path(tmp_db_json_filepath)
     tmp_db_json_datalist = tmp_db_json_datalist["data"]
     if len(tmp_db_json_datalist) < 3:
+        logger.info(f"{tmp_db_json_filepath} not have enough data")
         return None
     output_video_filepath = os.path.join(
         config.record_videos_dir_ud,

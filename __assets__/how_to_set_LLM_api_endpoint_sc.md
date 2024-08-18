@@ -17,6 +17,9 @@
 这些信息通常可以在服务方的文档中找到。以下是一些常见的模型提供商：
 
 - 基于云服务：
+> [!WARNING]
+> 当使用云服务时，你的部分数据可能会经由网络被传出。
+
     1. [OpenAI Platform](https://platform.openai.com/docs/introduction)
         - base url: `https://api.openai.com/v1`
         - modelname: `gpt-4o`
@@ -28,7 +31,7 @@
         - modelname: `llama-3.1-70b-versatile`
     4. 其他任何兼容 OpenAI 接口的模型服务提供商。欢迎补充。
 - 基于本地：
-    1. [LM studio](https://lmstudio.ai/)：可以便利地从 hugging face 下载模型在本地运行，通过 `Local Server` 模式提供 api 给本地或局域网内用户调用，从而最大程度保护隐私不被泄露。不过，本地开源模型通常在智能程度和指令遵循水平较低、生成结果不一定可用，具体可能需要进行选择与测试；
+    1. [LM studio](https://lmstudio.ai/)：可以便利地从 hugging face 下载模型在本地运行，通过 `Local Server` 模式提供 api 给本地或局域网内用户调用，从而最大程度保护隐私不被泄露。不过，**本地开源模型通常在智能程度和指令遵循水平较低、生成结果不一定可用**，具体可能需要进行选择与测试；
         - base url: `http://localhost:1234/v1`
         - modelname: `cognitivecomputations/dolphin-2.9-llama3-8b-gguf`
         - api key: `lm-studio`
