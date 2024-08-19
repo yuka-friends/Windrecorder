@@ -49,6 +49,7 @@
   "wintitle_result_dir": "result_wintitle",
   "date_state_dir": "result_date_state",
   "ai_extract_tag_result_dir": "result_ai_extract_tag",
+  "ai_day_poem_result_dir": "result_ai_day_poem",
   "screentime_not_change_to_pause_record": 5,
   "user_name": "default",
   "use_similar_ch_char_to_search": true,
@@ -110,5 +111,6 @@
   "enable_ai_extract_tag_in_idle": true,
   "ai_extract_tag_wintitle_limit": 30,
   "ai_extract_tag_in_idle_batch_size": 15,
-  "ai_extract_max_tag_num": 15
+  "ai_extract_max_tag_num": 15,
+  "enable_ai_day_poem": false
 }

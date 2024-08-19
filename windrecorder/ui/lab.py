@@ -10,6 +10,7 @@ def render():
     settings_col, spacing_col, pic_col = st.columns([1, 0.5, 1.5])
     # ensures variables exist
     ai_extract_tag_wintitle_limit = config.ai_extract_tag_wintitle_limit
+    enable_ai_day_poem = False
 
     with settings_col:
         st.markdown(_t("lab_title"))
@@ -66,6 +67,12 @@ def render():
                 value=config.enable_ai_extract_tag,
                 help=_t("lab_help_extract_tag").format(ai_extract_tag_result_dir_ud=config.ai_extract_tag_result_dir_ud),
             )
+            if enable_ai_extract_tag:
+                enable_ai_day_poem = st.checkbox(
+                    _t("lab_checkbox_day_poem"),
+                    value=config.enable_ai_day_poem,
+                    help=_t("lab_help_day_poem").format(ai_day_poem_result_dir_ud=config.ai_day_poem_result_dir_ud),
+                )
         with col2_llm_feature:
             st.empty()
             if enable_ai_extract_tag:
@@ -88,6 +95,7 @@ def render():
             config.set_and_save_config("open_ai_api_key", open_ai_api_key)
             config.set_and_save_config("open_ai_modelname", open_ai_modelname)
             config.set_and_save_config("enable_ai_extract_tag", enable_ai_extract_tag)
+            config.set_and_save_config("enable_ai_day_poem", enable_ai_day_poem)
             config.set_and_save_config("ai_extract_tag_wintitle_limit", ai_extract_tag_wintitle_limit)
             st.toast(_t("utils_toast_setting_saved"), icon="🦝")
 

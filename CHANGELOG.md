@@ -1,5 +1,12 @@
 # Changelog 更新日志
 
+## 0.0.23
+> 2024-08-19
+- 支持使用大语言模型为每日活动写一句诗歌；Add the ability to write a poem for each activity;
+- 优化灵活截图模式，当一段时间（默认2mins）在跳过规则时终止记录当前视频片段；Optimize the flexible screenshot mode, and stop recording the current video clip when the rule is skipped for a period of time (default 2 minutes); (config.screenshot_interrupt_recording_count)
+
+---
+
 ## 0.0.22
 > 2024-08-17
 - 支持使用大语言模型对每日活动进行标签提取总结；Add the ability to extract and summarize tags for daily activities;
@@ -13,9 +20,6 @@
 - 支持使用"-"连接单词进行连续整句话的搜索匹配。比如通过搜索 'i-love-you' 而不是 'i love you'来匹配连续整句；Support using "-" to connect words for continuous whole sentence search matching. For example, by searching for 'i-love-you' instead of 'i love you' to match continuous whole sentences;
 
 ![instruction-search-split-dash](https://github.com/yuka-friends/Windrecorder/blob/main/__assets__/instruction-search-split-dash.jpg)
-
---roll out to new user--
-- 优化灵活截图模式，当一段时间（默认2mins）在跳过规则时终止记录当前视频片段；Optimize the flexible screenshot mode, and stop recording the current video clip when the rule is skipped for a period of time (default 2 minutes); (config.screenshot_interrupt_recording_count)
 
 ### Fixed
 - bug: 当程序目录存在空格时，第三方 OCR 扩展无法进入虚拟环境完成安装；When the program directory has a space, the third-party OCR extension cannot enter the virtual environment to complete the installation;
