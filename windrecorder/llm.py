@@ -10,8 +10,10 @@ from windrecorder.config import config
 from windrecorder.const import (
     EXTRACT_DAY_TAGS_RETRY_TIMES,
     LLM_FAIL_COPY,
+    LLM_SYSTEM_PROMPT_DAY_POEM,
     LLM_SYSTEM_PROMPT_DEFAULT,
     LLM_SYSTEM_PROMPT_EXTRACT_DAY_TAGS,
+    LLM_TEMPERATURE_DAY_POEM,
     LLM_TEMPERATURE_EXTRACT_DAY_TAGS,
 )
 from windrecorder.logger import get_logger
@@ -88,10 +90,12 @@ def generate_day_tags_lst(date_in: datetime.date):
         return False, [], tags_plain_text
 
 
-def get_cache_data_by_date(date_in: datetime.date):
-    cache_path = os.path.join(config.ai_extract_tag_result_dir_ud, str(date_in.year) + ".json")
+def get_cache_data_by_date(date_in: datetime.date, cache_dir=config.ai_extract_tag_result_dir_ud):
+    cache_path = os.path.join(cache_dir, str(date_in.year) + ".json")
     if os.path.exists(cache_path):
         cache_data = file_utils.read_json_as_dict_from_path(cache_path)
+        if cache_data is None:
+            cache_data = {}
     else:
         cache_data = {}
     return cache_data
@@ -100,7 +104,7 @@ def get_cache_data_by_date(date_in: datetime.date):
 def get_day_tags(date_in: datetime.date):
     dt_str = utils.datetime_to_dateDayStr(date_in)
     if "day_tags_data" not in st.session_state:
-        st.session_state["day_tags_data"] = get_cache_data_by_date(date_in)
+        st.session_state["day_tags_data"] = get_cache_data_by_date(date_in, cache_dir=config.ai_extract_tag_result_dir_ud)
 
     if dt_str in st.session_state["day_tags_data"].keys():
         return True, st.session_state["day_tags_data"][dt_str]
@@ -110,11 +114,13 @@ def get_day_tags(date_in: datetime.date):
 def generate_and_save_day_tags(date_in: datetime.date):
     dt_str = utils.datetime_to_dateDayStr(date_in)
     cache_path = os.path.join(config.ai_extract_tag_result_dir_ud, str(date_in.year) + ".json")
-    cache_data = get_cache_data_by_date(date_in)
+    cache_data = get_cache_data_by_date(date_in, cache_dir=config.ai_extract_tag_result_dir_ud)
     success, day_tags_lst, plain_text = generate_day_tags_lst(date_in)
     if success:
         cache_data[dt_str] = day_tags_lst[: config.ai_extract_max_tag_num]
         file_utils.save_dict_as_json_to_path(cache_data, cache_path)
+        if config.enable_ai_day_poem:
+            success, poem, plain_text = generate_and_save_day_poem(date_in)
         return True, day_tags_lst, plain_text
     else:
         if "no_wintitle_data" in plain_text:
@@ -174,6 +180,7 @@ font-size: 14px;
 
     day_tags_cache_exist, day_tags_lst = get_day_tags(date_in)
     if day_tags_cache_exist:
+        component_day_poem(date_in)
         _render_day_tags(day_tags_lst)
     else:
         if st.button(label="✨ Summary Tags"):
@@ -196,9 +203,12 @@ def cache_day_tags_in_idle_routine(batch_count=config.ai_extract_tag_in_idle_bat
     day_trackback = 0
     year_process_now = 2999
     year_process_last_time = 1970
-    cache_data = {}
+    cache_data_tags = {}
+    cache_data_poem = {}
     for i in range(600):
         date_in = dt - datetime.timedelta(days=day_trackback)
+        condition_generate_tags = False
+        condition_generate_poem = False
 
         if date_in < earlist_dt.date():
             logger.info(f"ai tags caching: reached to earlist datetime {earlist_dt}")
@@ -208,22 +218,103 @@ def cache_day_tags_in_idle_routine(batch_count=config.ai_extract_tag_in_idle_bat
         if year_process_now != year_process_last_time:
             logger.info(f"get year cache data {year_process_now}")
             year_process_last_time = year_process_now
-            cache_data = get_cache_data_by_date(date_in)
+            cache_data_tags = get_cache_data_by_date(date_in, cache_dir=config.ai_extract_tag_result_dir_ud)
+            cache_data_poem = get_cache_data_by_date(date_in, cache_dir=config.ai_day_poem_result_dir_ud)
 
         dt_str = utils.datetime_to_dateDayStr(date_in)
-        if dt_str in cache_data.keys():
-            if len(cache_data[dt_str]) > 0:
-                if "retry_times" in cache_data[dt_str][0]:
-                    time_count = int(cache_data[dt_str][0].split(":")[1])
+        if dt_str in cache_data_tags.keys():
+            if len(cache_data_tags[dt_str]) > 0:
+                if "retry_times" in cache_data_tags[dt_str][0]:
+                    time_count = int(cache_data_tags[dt_str][0].split(":")[1])
                     if time_count > EXTRACT_DAY_TAGS_RETRY_TIMES:
+                        day_trackback += 1
                         continue
+                    else:
+                        condition_generate_tags = True
+                        condition_generate_poem = True
                 else:
-                    day_trackback += 1
-                    continue
+                    if dt_str in cache_data_poem.keys() or not config.enable_ai_day_poem:
+                        day_trackback += 1
+                        continue
+                    else:
+                        condition_generate_poem = True
+        else:
+            condition_generate_tags = True
+            condition_generate_poem = True
 
         print(f"generate day {date_in}")
-        generate_and_save_day_tags(date_in)
+        if condition_generate_tags:
+            print("   tag...")
+            generate_and_save_day_tags(date_in)
+        if condition_generate_poem:
+            print("   poem...")
+            generate_and_save_day_poem(date_in)
         day_trackback += 1
         batch_count -= 1
         if batch_count < 0:
             break
+
+
+def generate_day_poem_by_tag_lst(date_in: datetime.date, tags_lst: list):
+    # generate tags
+    success, poem_plain_text = request_llm_one_shot(
+        user_content=",".join(tags_lst),
+        system_prompt=LLM_SYSTEM_PROMPT_DAY_POEM.format(date_in=str(date_in)),
+        temperature=LLM_TEMPERATURE_DAY_POEM,
+    )
+    if success:
+        # praser
+        poem_plain_text = poem_plain_text.replace("\n", "")
+        poem_plain_text = poem_plain_text.replace("\r", "")
+        if "." in poem_plain_text:
+            poem = poem_plain_text.split(".")[0] + "."
+        if "。" in poem_plain_text:
+            poem = poem_plain_text.split("。")[0] + "。"
+        return True, poem, poem_plain_text
+    else:
+        return False, "", poem_plain_text
+
+
+def get_day_poem(date_in: datetime.date):
+    dt_str = utils.datetime_to_dateDayStr(date_in)
+    if "day_poem_data" not in st.session_state:
+        st.session_state["day_poem_data"] = get_cache_data_by_date(date_in, cache_dir=config.ai_day_poem_result_dir_ud)
+
+    if dt_str in st.session_state["day_poem_data"].keys():
+        return True, st.session_state["day_poem_data"][dt_str]
+    return False, ""
+
+
+def generate_and_save_day_poem(date_in: datetime.date):
+    dt_str = utils.datetime_to_dateDayStr(date_in)
+    cache_path_poem = os.path.join(config.ai_day_poem_result_dir_ud, str(date_in.year) + ".json")
+    cache_data_tags = get_cache_data_by_date(date_in, cache_dir=config.ai_extract_tag_result_dir_ud)
+    cache_data_poem = get_cache_data_by_date(date_in, cache_dir=config.ai_day_poem_result_dir_ud)
+
+    if dt_str in cache_data_tags.keys():
+        success, day_poem, plain_text = generate_day_poem_by_tag_lst(date_in, cache_data_tags[dt_str])
+
+    if success:
+        cache_data_poem[dt_str] = day_poem
+        file_utils.save_dict_as_json_to_path(cache_data_poem, cache_path_poem)
+        return True, day_poem, plain_text
+    else:
+        try:
+            if dt_str in cache_data_poem.keys():
+                if len(cache_data_poem[dt_str]) > 0:
+                    if "retry_times" in cache_data_poem[dt_str]:
+                        time_count = int(cache_data_poem[dt_str].split(":")[1])
+                        time_count += 1
+                        cache_data_poem[dt_str] = f"retry_times:{time_count}"
+            else:
+                cache_data_poem[dt_str] = "retry_times:1"
+            file_utils.save_dict_as_json_to_path(cache_data_poem, cache_path_poem)
+        except Exception as e:
+            logger.warning(f"caching retry fail: {e}")
+        return False, "", plain_text
+
+
+def component_day_poem(date_in: datetime.date):
+    day_poem_cache_exist, day_poem = get_day_poem(date_in)
+    if day_poem_cache_exist:
+        st.caption(day_poem)

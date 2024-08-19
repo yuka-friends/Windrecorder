@@ -53,6 +53,7 @@ class Config:
         wintitle_result_dir,
         date_state_dir,
         ai_extract_tag_result_dir,
+        ai_day_poem_result_dir,
         release_ver,
         video_compress_rate,
         oneday_timeline_pic_num,
@@ -114,6 +115,7 @@ class Config:
         enable_ai_extract_tag_in_idle,
         ai_extract_tag_in_idle_batch_size,
         ai_extract_max_tag_num,
+        enable_ai_day_poem,
         **other_field,
     ) -> None:
         # If need to process input parameters, they should assign another variable name to prevent recursive writing into the config.
@@ -145,6 +147,7 @@ class Config:
         self.wintitle_result_dir_ud = os.path.join(userdata_dir, wintitle_result_dir)
         self.date_state_dir_ud = os.path.join(userdata_dir, date_state_dir)
         self.ai_extract_tag_result_dir_ud = os.path.join(userdata_dir, ai_extract_tag_result_dir)
+        self.ai_day_poem_result_dir_ud = os.path.join(userdata_dir, ai_day_poem_result_dir)
         self.screentime_not_change_to_pause_record = screentime_not_change_to_pause_record
         self.user_name = user_name
         self.use_similar_ch_char_to_search = use_similar_ch_char_to_search
@@ -213,6 +216,7 @@ class Config:
         self.enable_ai_extract_tag_in_idle = enable_ai_extract_tag_in_idle
         self.ai_extract_tag_in_idle_batch_size = ai_extract_tag_in_idle_batch_size
         self.ai_extract_max_tag_num = ai_extract_max_tag_num
+        self.enable_ai_day_poem = enable_ai_day_poem
 
     def set_and_save_config(self, attr: str, value):
         if not hasattr(self, attr):
