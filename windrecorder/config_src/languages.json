@@ -399,6 +399,9 @@
         "lab_help_day_poem": "根据总结的标签写一句诗歌。通过删除 '{ai_day_poem_result_dir_ud}' 中的json内数据，可以重新生成。在电脑空闲时，会自动生成之前天的诗歌。",
         "lab_text_tag_filter_words": "在提交给语言模型前，去除以下敏感词语：",
         "lab_help_tag_filter_words": "对于有些 LLM 服务与模型，部分包含色情、政治等敏感审计内容可能会导致生成失败。通过设置一个过滤列表，可以在提交到模型前自动移除相关词语。",
+        "lab_btn_generate_tags": "生成标签",
+        "lab_text_generating_tags": "生成中... \n取决于语言模型，这可能需要 5~20 秒。",
+        "lab_text_generating_tags_fail": "生成标签失败: {plain_text}",
 
         "rs_text_need_to_restart_after_save_setting": "本页的设置在保存后，需重启 「捕风记录仪」 才能生效。",
         "rs_md_title": "### 📼 录制与视频存储",
@@ -685,6 +688,9 @@
         "lab_help_day_poem": "要約されたタグに基づいて詩を書きます。「{ai_day_poem_result_dir_ud}」内の json データを削除すると、再生成できます。コンピューターがアイドル状態の場合、前日の詩が自動的に生成されます。",
         "lab_text_tag_filter_words": "言語モデルに送信する前に、次の機密用語を削除してください:",
         "lab_help_tag_filter_words": "一部の LLM サービスとモデルでは、ポルノや政治などの機密監査コンテンツが含まれていると、生成エラーが発生する可能性があります。フィルター リストを設定することで、モデルに送信する前に関連する単語を自動的に削除できます。",
+        "lab_btn_generate_tags": "概要タグ",
+        "lab_text_generating_tags": "タグを生成しています... \nLLM サービスによっては、5～20 秒かかる場合があります。",
+        "lab_text_generating_tags_fail": "タグを生成できませんでした: {plain_text}",
 
         "rs_text_need_to_restart_after_save_setting": "このページの設定を保存した後、Windrecorder を再起動する必要があります。",
         "rs_md_title": "### 📼 録画とビデオストレージ",
