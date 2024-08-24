@@ -88,6 +88,8 @@
         "stat_text_counting": "Counting...",
         "stat_text_wintitle_keyword_filter": "Keyword filter",
         "stat_text_wintitle_filter_help": "Separate multiple keywords by spaces to search. Case will be ignored when searching for keywords. Leave blank to list all data for the current month.",
+        "stat_btn_generate_update_ai_poem": "Generate Monthly Poem",
+        "stat_text_generating_ai_poem": "Generating, the daily generation time takes about 5~15s (depending on the speed of the language model)...",
 
         "lab_title": "### ⚗️ Lab Features",
         "lab_title_image_semantic_index": "#### Image Embedding Index",
@@ -371,6 +373,8 @@
         "stat_text_counting": "统计中……",
         "stat_text_wintitle_keyword_filter": "关键词过滤",
         "stat_text_wintitle_filter_help": "通过空格分开多个关键词进行检索，关键词搜索时会忽略大小写。留空列出当月所有数据。",
+        "stat_btn_generate_update_ai_poem": "生成本月诗歌",
+        "stat_text_generating_ai_poem": "生成中，每日生成时间大概需要 5~15s（视语言模型速度而定）……",
 
         "lab_title": "### ⚗️ 实验室特性",
         "lab_title_image_semantic_index": "#### 图像嵌入索引",
@@ -655,6 +659,8 @@
         "stat_text_counting": "統計...",
         "stat_text_wintitle_keyword_filter": "キーワード フィルター",
         "stat_text_wintitle_filter_help": "キーワードを検索する場合、複数のキーワードをスペースで区切って検索します。 当月のすべてのデータをリストするには、空白のままにします。",
+        "stat_btn_generate_update_ai_poem": "今月の詩を生成",
+        "stat_text_generated_ai_poem": "生成中、毎日の生成時間は約 5 ～ 15 秒かかります (言語モデルの速度に応じて)...",
 
         "lab_title": "### ⚗️ 研究室の機能",
         "lab_title_image_semantic_index": "#### 画像埋め込みインデックス",

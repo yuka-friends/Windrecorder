@@ -11,6 +11,7 @@ import windrecorder.wordcloud as wordcloud
 from windrecorder import file_utils
 from windrecorder.config import config
 from windrecorder.db_manager import db_manager
+from windrecorder.llm import component_month_poem
 from windrecorder.record_wintitle import component_month_wintitle_stat
 from windrecorder.utils import get_text as _t
 
@@ -84,6 +85,7 @@ def render():
             component_month_wintitle_stat(st.session_state.stat_select_month_datetime)  # 显示当月活动统计
 
         with col2_mem:
+            # light box
             current_month_lightbox_img_name = (
                 str(st.session_state.Stat_query_Year) + "-" + str(st.session_state.Stat_query_Month) + ".png"
             )
@@ -102,6 +104,11 @@ def render():
             else:
                 st.info(_t("stat_text_no_month_lightbox"))
 
+            # ai poem
+            if config.enable_ai_day_poem:
+                component_month_poem(st.session_state.stat_select_month_datetime)
+
+            # word cloud
             current_month_cloud_img_name = (
                 str(st.session_state.Stat_query_Year) + "-" + str(st.session_state.Stat_query_Month) + ".png"
             )

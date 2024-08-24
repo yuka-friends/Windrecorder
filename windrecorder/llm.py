@@ -1,3 +1,4 @@
+import calendar
 import datetime
 import os
 
@@ -18,6 +19,7 @@ from windrecorder.const import (
 )
 from windrecorder.logger import get_logger
 from windrecorder.record_wintitle import get_wintitle_stat_in_day
+from windrecorder.utils import get_text as _t
 
 logger = get_logger(__name__)
 
@@ -281,14 +283,49 @@ def generate_day_poem_by_tag_lst(date_in: datetime.date, tags_lst: list):
         return False, "", poem_plain_text
 
 
-def get_day_poem(date_in: datetime.date):
+def get_day_poem(date_in: datetime.date, force_read=False):
     dt_str = utils.datetime_to_dateDayStr(date_in)
-    if "day_poem_data" not in st.session_state:
+    if "day_poem_data" not in st.session_state or force_read:
         st.session_state["day_poem_data"] = get_cache_data_by_date(date_in, cache_dir=config.ai_day_poem_result_dir_ud)
 
     if dt_str in st.session_state["day_poem_data"].keys():
         return True, st.session_state["day_poem_data"][dt_str]
     return False, ""
+
+
+def get_month_poem(date_in: datetime.date, force_read=False):
+    _, num_days = calendar.monthrange(date_in.year, date_in.month)
+    data_lst = []
+
+    for day in range(1, num_days + 1):
+        current_date = datetime.date(date_in.year, date_in.month, day)
+        day_poem_cache_exist, day_poem = get_day_poem(current_date, force_read=force_read)
+        data_lst.append(
+            {
+                "date": current_date,
+                "poem": day_poem,
+            }
+        )
+    return data_lst
+
+
+def generate_month_poem(date_in: datetime.date):
+    progress_text = _t("stat_text_generating_ai_poem")
+    progress_bar = st.progress(0.0, text=progress_text)
+
+    if date_in.month == datetime.date.today().month and date_in.year == datetime.date.today().year:
+        num_days = datetime.date.today().day
+    else:
+        _, num_days = calendar.monthrange(date_in.year, date_in.month)
+        num_days += 1
+
+    for day in range(1, num_days):
+        current_date = datetime.date(date_in.year, date_in.month, day)
+        day_poem_cache_exist, day_poem = get_day_poem(current_date)
+        if not day_poem_cache_exist:
+            generate_and_save_day_poem(current_date)
+        progress_bar.progress(day / num_days, text=progress_text)
+    progress_bar.empty()
 
 
 def generate_and_save_day_poem(date_in: datetime.date):
@@ -324,3 +361,38 @@ def component_day_poem(date_in: datetime.date):
     day_poem_cache_exist, day_poem = get_day_poem(date_in)
     if day_poem_cache_exist:
         st.caption(day_poem)
+
+
+def component_month_poem(month_dt: datetime.datetime):
+    # 如果切换了时间或第一次加载，进行更新
+    update_condition = False
+
+    if "poem_month_dt_last_time" not in st.session_state:  # diff 当前显示表的日期，用于和控件用户输入对比判断是否更新
+        st.session_state.poem_month_dt_last_time = month_dt
+        update_condition = True
+
+    if utils.set_full_datetime_to_YYYY_MM(st.session_state.poem_month_dt_last_time) != utils.set_full_datetime_to_YYYY_MM(
+        month_dt
+    ):
+        update_condition = True
+        st.session_state.poem_month_dt_last_time = month_dt
+
+    if st.button(_t("stat_btn_generate_update_ai_poem")):
+        generate_month_poem(datetime.date(month_dt.year, month_dt.month, 1))
+        update_condition = True
+
+    if update_condition:
+        st.session_state.poem_month_df = pd.DataFrame(
+            get_month_poem(datetime.date(month_dt.year, month_dt.month, 1), force_read=True)
+        )
+
+    st.dataframe(
+        st.session_state.poem_month_df,
+        use_container_width=True,
+        hide_index=True,
+        column_config={
+            "date": st.column_config.DateColumn(format="YYYY-MM-DD", width="small"),
+            "poem": st.column_config.TextColumn(width="large"),
+        },
+        height=500,
+    )
