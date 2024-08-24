@@ -56,6 +56,12 @@ def request_llm_one_shot(
     return True, completion.choices[0].message.content
 
 
+def remove_sensitive_exclude_words(content: str):
+    for word in config.ai_extract_tag_filter_words:
+        content = content.replace(word, "")
+    return content
+
+
 def generate_day_tags_lst(date_in: datetime.date):
     # get day wintitle
     dt = datetime.datetime.combine(
@@ -76,7 +82,7 @@ def generate_day_tags_lst(date_in: datetime.date):
 
     # generate tags
     success, tags_plain_text = request_llm_one_shot(
-        user_content=utils.convert_df_to_csv_str(day_activit_df),
+        user_content=remove_sensitive_exclude_words(utils.convert_df_to_csv_str(day_activit_df)),
         system_prompt=LLM_SYSTEM_PROMPT_EXTRACT_DAY_TAGS,
         temperature=LLM_TEMPERATURE_EXTRACT_DAY_TAGS,
     )
