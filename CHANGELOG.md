@@ -1,5 +1,13 @@
 # Changelog 更新日志
 
+## 0.0.24
+> 2024-08-24
+- 在全局搜索页，提供更方便操作的月份滑杆选择器、精确日期选择器两种筛选模式；On the global search page, two filtering modes are provided: month slider selector and precise date selector, which are more convenient to operate;
+- 在将每日活动提交给语言模型前，可以排除特定的词语列表，从而降低因为敏感内容导致生成失败概率；Before submitting daily activities to the language model, a specific list of words can be excluded to reduce the probability of generation failure due to sensitive content;
+- 在每月活动中，支持通过语言模型生成标签、查看当月的所有诗词；In monthly activities, you can generate tags through language models and view all poems of the month;
+
+---
+
 ## 0.0.23
 > 2024-08-19
 - 支持使用大语言模型为每日活动写一句诗歌；Add the ability to write a poem for each activity;

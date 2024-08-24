@@ -1,5 +1,6 @@
 import streamlit as st
 from PIL import Image
+from streamlit_tags import st_tags
 
 from windrecorder.config import config
 from windrecorder.llm import request_llm_one_shot
@@ -11,6 +12,7 @@ def render():
     # ensures variables exist
     ai_extract_tag_wintitle_limit = config.ai_extract_tag_wintitle_limit
     enable_ai_day_poem = False
+    ai_extract_tag_filter_words = config.ai_extract_tag_filter_words
 
     with settings_col:
         st.markdown(_t("lab_title"))
@@ -79,6 +81,11 @@ def render():
                 ai_extract_tag_wintitle_limit = st.number_input(
                     label=_t("lab_input_wintitle_num"), value=config.ai_extract_tag_wintitle_limit
                 )
+        if enable_ai_extract_tag:
+            st.caption(_t("lab_help_tag_filter_words"))
+            ai_extract_tag_filter_words = st_tags(
+                label=_t("lab_text_tag_filter_words"), text=_t("rs_tag_input_tip"), value=config.ai_extract_tag_filter_words
+            )
 
         st.divider()
 
@@ -97,6 +104,7 @@ def render():
             config.set_and_save_config("enable_ai_extract_tag", enable_ai_extract_tag)
             config.set_and_save_config("enable_ai_day_poem", enable_ai_day_poem)
             config.set_and_save_config("ai_extract_tag_wintitle_limit", ai_extract_tag_wintitle_limit)
+            config.set_and_save_config("ai_extract_tag_filter_words", ai_extract_tag_filter_words)
             st.toast(_t("utils_toast_setting_saved"), icon="🦝")
 
     with spacing_col:

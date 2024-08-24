@@ -250,7 +250,7 @@ def count_all_page_times_by_raw_dataframe(df: pd.DataFrame):
     return stat
 
 
-def turn_dict_into_display_dataframe(stat: dict, optimize_for_display=True):
+def turn_wintitle_dict_into_display_dataframe(stat: dict, optimize_for_display=True):
     """
     将 dict 转为 streamlit 可以直接呈现的 dataframe
 
@@ -274,7 +274,7 @@ def get_wintitle_stat_in_day(dt_in: datetime.datetime, optimize_for_display=True
     """流程：获取当天前台窗口标题时间统计 dataframe、屏幕时间总和"""
     df = OneDay().search_day_data(dt_in, search_content="")
     stat = count_all_page_times_by_raw_dataframe(df)
-    df_show = turn_dict_into_display_dataframe(stat, optimize_for_display=optimize_for_display)
+    df_show = turn_wintitle_dict_into_display_dataframe(stat, optimize_for_display=optimize_for_display)
     time_sum = sum(int(value) for value in stat.values())
 
     return df_show, time_sum
@@ -378,7 +378,7 @@ def component_month_wintitle_stat(month_dt: datetime.datetime):
         """更新关键词过滤"""
         if st.session_state.month_wintitle_filter_lazy != st.session_state.month_wintitle_filter:
             res_dict = _filter_stat_by_keywords_match(st.session_state.month_wintitle_filter)
-            st.session_state["month_wintitle_df_fliter"] = turn_dict_into_display_dataframe(res_dict)
+            st.session_state["month_wintitle_df_fliter"] = turn_wintitle_dict_into_display_dataframe(res_dict)
             st.session_state["month_wintitle_df_fliter_screentime_sum"] = sum(int(value) for value in res_dict.values())
             st.session_state.month_wintitle_filter_lazy = st.session_state.month_wintitle_filter
 
@@ -398,7 +398,7 @@ def component_month_wintitle_stat(month_dt: datetime.datetime):
                 _generate_stat()
 
         # 处理数据
-        st.session_state[month_wintitle_df_statename] = turn_dict_into_display_dataframe(
+        st.session_state[month_wintitle_df_statename] = turn_wintitle_dict_into_display_dataframe(
             st.session_state["month_wintitle_stat_dict"]
         )
         st.session_state[month_wintitle_df_statename + "_screentime_sum"] = sum(
@@ -414,6 +414,13 @@ def component_month_wintitle_stat(month_dt: datetime.datetime):
     )
 
     if len(st.session_state[month_wintitle_df_statename]) > 0 and len(st.session_state.month_wintitle_filter) == 0:
+        if config.enable_ai_extract_tag and datetime.date(
+            datetime.date.today().year, datetime.date.today().month, 1
+        ) != datetime.date(month_dt.year, month_dt.month, 1):
+            from windrecorder.llm import component_day_or_month_tags
+
+            component_day_or_month_tags(date_in=datetime.date(month_dt.year, month_dt.month, month_dt.day), type="month")
+
         st.dataframe(
             st.session_state[month_wintitle_df_statename],
             column_config={

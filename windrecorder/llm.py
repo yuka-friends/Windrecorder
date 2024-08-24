@@ -1,3 +1,4 @@
+import calendar
 import datetime
 import os
 
@@ -17,7 +18,12 @@ from windrecorder.const import (
     LLM_TEMPERATURE_EXTRACT_DAY_TAGS,
 )
 from windrecorder.logger import get_logger
-from windrecorder.record_wintitle import get_wintitle_stat_in_day
+from windrecorder.record_wintitle import (
+    get_wintitle_stat_dict_in_month,
+    get_wintitle_stat_in_day,
+    turn_wintitle_dict_into_display_dataframe,
+)
+from windrecorder.utils import get_text as _t
 
 logger = get_logger(__name__)
 
@@ -56,27 +62,39 @@ def request_llm_one_shot(
     return True, completion.choices[0].message.content
 
 
-def generate_day_tags_lst(date_in: datetime.date):
+def remove_sensitive_exclude_words(content: str):
+    for word in config.ai_extract_tag_filter_words:
+        content = content.replace(word, "")
+    return content
+
+
+def generate_day_or_month_tags_lst(date_in: datetime.date, type="day"):
     # get day wintitle
     dt = datetime.datetime.combine(
         date_in, datetime.time(hour=round(config.day_begin_minutes / 60), minute=config.day_begin_minutes % 60)
     )
     try:
-        df_day_activity_optimize_display, _ = get_wintitle_stat_in_day(dt, optimize_for_display=True)
+        if type == "day":
+            df_day_activity_optimize_display, _ = get_wintitle_stat_in_day(dt, optimize_for_display=True)
+        elif type == "month":
+            df_day_activity_optimize_display = turn_wintitle_dict_into_display_dataframe(get_wintitle_stat_dict_in_month(dt))
+        else:
+            return False, [], "bad_args"
     except KeyError:
         return False, [], "no_wintitle_data"
 
     # restrict range
     day_activit_df = pd.DataFrame(columns=["content_page_name", "screen_time"])
+    limit_num = config.ai_extract_tag_wintitle_limit if type == "day" else config.ai_extract_tag_wintitle_limit * 2
     for index, row in df_day_activity_optimize_display.iterrows():
-        if index > config.ai_extract_tag_wintitle_limit:
+        if index > limit_num:
             break
         row_insert = {"content_page_name": row["Page"], "screen_time": row["Screen Time"]}
         day_activit_df.loc[len(day_activit_df)] = row_insert
 
     # generate tags
     success, tags_plain_text = request_llm_one_shot(
-        user_content=utils.convert_df_to_csv_str(day_activit_df),
+        user_content=remove_sensitive_exclude_words(utils.convert_df_to_csv_str(day_activit_df)),
         system_prompt=LLM_SYSTEM_PROMPT_EXTRACT_DAY_TAGS,
         temperature=LLM_TEMPERATURE_EXTRACT_DAY_TAGS,
     )
@@ -101,8 +119,14 @@ def get_cache_data_by_date(date_in: datetime.date, cache_dir=config.ai_extract_t
     return cache_data
 
 
-def get_day_tags(date_in: datetime.date):
-    dt_str = utils.datetime_to_dateDayStr(date_in)
+def get_day_or_month_tags(date_in: datetime.date, type="day"):
+    if type == "day":
+        dt_str = utils.datetime_to_dateDayStr(date_in)
+    elif type == "month":
+        dt_str = utils.datetime_to_dateDayStr(date_in)[:7]
+    else:
+        return False, ["bad_args"]
+
     if "day_tags_data" not in st.session_state:
         st.session_state["day_tags_data"] = get_cache_data_by_date(date_in, cache_dir=config.ai_extract_tag_result_dir_ud)
 
@@ -111,15 +135,25 @@ def get_day_tags(date_in: datetime.date):
     return False, []
 
 
-def generate_and_save_day_tags(date_in: datetime.date):
-    dt_str = utils.datetime_to_dateDayStr(date_in)
+def generate_and_save_day_or_month_tags(date_in: datetime.date, type="day"):
+    if type == "day":
+        dt_str = utils.datetime_to_dateDayStr(date_in)
+    elif type == "month":
+        dt_str = utils.datetime_to_dateDayStr(date_in)[:7]
+    else:
+        return False, [], ""
     cache_path = os.path.join(config.ai_extract_tag_result_dir_ud, str(date_in.year) + ".json")
     cache_data = get_cache_data_by_date(date_in, cache_dir=config.ai_extract_tag_result_dir_ud)
-    success, day_tags_lst, plain_text = generate_day_tags_lst(date_in)
+    success, day_tags_lst, plain_text = generate_day_or_month_tags_lst(date_in, type=type)
     if success:
-        cache_data[dt_str] = day_tags_lst[: config.ai_extract_max_tag_num]
+        if type == "day":
+            max_tag_num = config.ai_extract_max_tag_num
+        elif type == "month":
+            max_tag_num = int(config.ai_extract_max_tag_num * 1.5)
+
+        cache_data[dt_str] = day_tags_lst[:max_tag_num]
         file_utils.save_dict_as_json_to_path(cache_data, cache_path)
-        if config.enable_ai_day_poem:
+        if config.enable_ai_day_poem and type == "day":
             success, poem, plain_text = generate_and_save_day_poem(date_in)
         return True, day_tags_lst, plain_text
     else:
@@ -142,9 +176,9 @@ def generate_and_save_day_tags(date_in: datetime.date):
         return False, [], plain_text
 
 
-def component_day_tags(date_in: datetime.date):
-    # 渲染每日标签
-    def _render_day_tags(tags_lst):
+def component_day_or_month_tags(date_in: datetime.date, type="day"):
+    # 渲染每日或每月标签
+    def _render_tags(tags_lst):
         html_tags_lst = []
         for tag in tags_lst:
             html_tags_lst.append(f"<span class='tag'>{tag}</span>")
@@ -178,19 +212,20 @@ font-size: 14px;
         )
         st.markdown(html_full, unsafe_allow_html=True)
 
-    day_tags_cache_exist, day_tags_lst = get_day_tags(date_in)
+    day_tags_cache_exist, day_tags_lst = get_day_or_month_tags(date_in, type=type)
     if day_tags_cache_exist:
-        component_day_poem(date_in)
-        _render_day_tags(day_tags_lst)
+        if type == "day":
+            component_day_poem(date_in)
+        _render_tags(day_tags_lst)
     else:
-        if st.button(label="✨ Summary Tags"):
-            with st.spinner("Generating tags... \nDepending on the LLM service, it may take 5~20 seconds."):
-                success, day_tags_lst, plain_text = generate_and_save_day_tags(date_in)
+        if st.button(label="✨ " + _t("lab_btn_generate_tags")):
+            with st.spinner(_t("lab_text_generating_tags")):
+                success, day_tags_lst, plain_text = generate_and_save_day_or_month_tags(date_in, type=type)
                 if success:
                     del st.session_state["day_tags_data"]
                     st.rerun()
                 else:
-                    st.warning(f"Failed to generate tags: {plain_text}", icon="😥")
+                    st.warning(_t("lab_text_generating_tags_fail").format(plain_text=plain_text), icon="😥")
 
 
 def cache_day_tags_in_idle_routine(batch_count=config.ai_extract_tag_in_idle_batch_size):
@@ -245,7 +280,7 @@ def cache_day_tags_in_idle_routine(batch_count=config.ai_extract_tag_in_idle_bat
         print(f"generate day {date_in}")
         if condition_generate_tags:
             print("   tag...")
-            generate_and_save_day_tags(date_in)
+            generate_and_save_day_or_month_tags(date_in)
         if condition_generate_poem:
             print("   poem...")
             generate_and_save_day_poem(date_in)
@@ -275,14 +310,49 @@ def generate_day_poem_by_tag_lst(date_in: datetime.date, tags_lst: list):
         return False, "", poem_plain_text
 
 
-def get_day_poem(date_in: datetime.date):
+def get_day_poem(date_in: datetime.date, force_read=False):
     dt_str = utils.datetime_to_dateDayStr(date_in)
-    if "day_poem_data" not in st.session_state:
+    if "day_poem_data" not in st.session_state or force_read:
         st.session_state["day_poem_data"] = get_cache_data_by_date(date_in, cache_dir=config.ai_day_poem_result_dir_ud)
 
     if dt_str in st.session_state["day_poem_data"].keys():
         return True, st.session_state["day_poem_data"][dt_str]
     return False, ""
+
+
+def get_month_poem(date_in: datetime.date, force_read=False):
+    _, num_days = calendar.monthrange(date_in.year, date_in.month)
+    data_lst = []
+
+    for day in range(1, num_days + 1):
+        current_date = datetime.date(date_in.year, date_in.month, day)
+        day_poem_cache_exist, day_poem = get_day_poem(current_date, force_read=force_read)
+        data_lst.append(
+            {
+                "date": current_date,
+                "poem": day_poem,
+            }
+        )
+    return data_lst
+
+
+def generate_month_poem(date_in: datetime.date):
+    progress_text = _t("stat_text_generating_ai_poem")
+    progress_bar = st.progress(0.0, text=progress_text)
+
+    if date_in.month == datetime.date.today().month and date_in.year == datetime.date.today().year:
+        num_days = datetime.date.today().day
+    else:
+        _, num_days = calendar.monthrange(date_in.year, date_in.month)
+        num_days += 1
+
+    for day in range(1, num_days):
+        current_date = datetime.date(date_in.year, date_in.month, day)
+        day_poem_cache_exist, day_poem = get_day_poem(current_date)
+        if not day_poem_cache_exist:
+            generate_and_save_day_poem(current_date)
+        progress_bar.progress(day / num_days, text=progress_text)
+    progress_bar.empty()
 
 
 def generate_and_save_day_poem(date_in: datetime.date):
@@ -318,3 +388,38 @@ def component_day_poem(date_in: datetime.date):
     day_poem_cache_exist, day_poem = get_day_poem(date_in)
     if day_poem_cache_exist:
         st.caption(day_poem)
+
+
+def component_month_poem(month_dt: datetime.datetime):
+    # 如果切换了时间或第一次加载，进行更新
+    update_condition = False
+
+    if "poem_month_dt_last_time" not in st.session_state:  # diff 当前显示表的日期，用于和控件用户输入对比判断是否更新
+        st.session_state.poem_month_dt_last_time = month_dt
+        update_condition = True
+
+    if utils.set_full_datetime_to_YYYY_MM(st.session_state.poem_month_dt_last_time) != utils.set_full_datetime_to_YYYY_MM(
+        month_dt
+    ):
+        update_condition = True
+        st.session_state.poem_month_dt_last_time = month_dt
+
+    if st.button(_t("stat_btn_generate_update_ai_poem")):
+        generate_month_poem(datetime.date(month_dt.year, month_dt.month, 1))
+        update_condition = True
+
+    if update_condition:
+        st.session_state.poem_month_df = pd.DataFrame(
+            get_month_poem(datetime.date(month_dt.year, month_dt.month, 1), force_read=True)
+        )
+
+    st.dataframe(
+        st.session_state.poem_month_df,
+        use_container_width=True,
+        hide_index=True,
+        column_config={
+            "date": st.column_config.DateColumn(format="YYYY-MM-DD", width="small"),
+            "poem": st.column_config.TextColumn(width="large"),
+        },
+        height=500,
+    )

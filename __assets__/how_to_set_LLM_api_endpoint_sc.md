@@ -12,7 +12,7 @@
 
 1. base url：服务方提供的 API 地址，例如 `https://api.openai.com/v1`
 2. api key：服务方提供的 API key，可能需要开通申请获得，例如 `sk-AbCdEfGxXXXXXXXXXXXXXXXXX`
-3. modelname：服务方提供的模型名称，例如 `gpt-4o`
+3. modelname：服务方提供的模型名称，例如 `gpt-4o`。推荐使用有更大上下文窗口的模型，比如 128k 或以上。
 
 这些信息通常可以在服务方的文档中找到。以下是一些常见的模型提供商：
 
