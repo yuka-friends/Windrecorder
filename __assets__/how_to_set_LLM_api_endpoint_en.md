@@ -14,7 +14,7 @@ For the OpenAI endpoint format supported by Windrecorder, three pieces of inform
 
 2. api key: API key provided by the service provider, which may require an application, such as `sk-AbCdEfGxXXXXXXXXXXXXXXXXX`
 
-3. modelname: Model name provided by the service provider, such as `gpt-4o`
+3. modelname: Model name provided by the service provider, such as `gpt-4o`. It is recommended to use a model with a larger context window, such as 128k or more.
 
 This information can usually be found in the service provider's documentation. Here are some common model providers:
 
