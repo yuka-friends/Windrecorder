@@ -111,6 +111,9 @@
         "lab_help_day_poem": "Write a poem based on the summary tag. You can regenerate by deleting the json data in '{ai_day_poem_result_dir_ud}'. When the computer is idle, the poem of the previous day will be automatically generated.",
         "lab_text_tag_filter_words": "Remove the following sensitive words before submitting to LLM:",
         "lab_help_tag_filter_words": "For some LLM services and models, some sensitive audit content or politics may cause generation failure. By setting a filter list, relevant words can be automatically removed before submitting to the model.",
+        "lab_btn_generate_tags": "Summary Tags",
+        "lab_text_generating_tags": "Generating tags... \nDepending on the LLM service, it may take 5~20 seconds.",
+        "lab_text_generating_tags_fail": "Failed to generate tags: {plain_text}",
 
         "rs_text_need_to_restart_after_save_setting": "After saving the settings on this page, you need to restart 'Windrecorder' to take effect.",
         "rs_md_title": "### 📼 Recording & Video Storage",

@@ -414,6 +414,13 @@ def component_month_wintitle_stat(month_dt: datetime.datetime):
     )
 
     if len(st.session_state[month_wintitle_df_statename]) > 0 and len(st.session_state.month_wintitle_filter) == 0:
+        if config.enable_ai_extract_tag and datetime.date(
+            datetime.date.today().year, datetime.date.today().month, 1
+        ) != datetime.date(month_dt.year, month_dt.month, 1):
+            from windrecorder.llm import component_day_or_month_tags
+
+            component_day_or_month_tags(date_in=datetime.date(month_dt.year, month_dt.month, month_dt.day), type="month")
+
         st.dataframe(
             st.session_state[month_wintitle_df_statename],
             column_config={

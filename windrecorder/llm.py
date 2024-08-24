@@ -18,7 +18,11 @@ from windrecorder.const import (
     LLM_TEMPERATURE_EXTRACT_DAY_TAGS,
 )
 from windrecorder.logger import get_logger
-from windrecorder.record_wintitle import get_wintitle_stat_in_day
+from windrecorder.record_wintitle import (
+    get_wintitle_stat_dict_in_month,
+    get_wintitle_stat_in_day,
+    turn_wintitle_dict_into_display_dataframe,
+)
 from windrecorder.utils import get_text as _t
 
 logger = get_logger(__name__)
@@ -64,20 +68,26 @@ def remove_sensitive_exclude_words(content: str):
     return content
 
 
-def generate_day_tags_lst(date_in: datetime.date):
+def generate_day_or_month_tags_lst(date_in: datetime.date, type="day"):
     # get day wintitle
     dt = datetime.datetime.combine(
         date_in, datetime.time(hour=round(config.day_begin_minutes / 60), minute=config.day_begin_minutes % 60)
     )
     try:
-        df_day_activity_optimize_display, _ = get_wintitle_stat_in_day(dt, optimize_for_display=True)
+        if type == "day":
+            df_day_activity_optimize_display, _ = get_wintitle_stat_in_day(dt, optimize_for_display=True)
+        elif type == "month":
+            df_day_activity_optimize_display = turn_wintitle_dict_into_display_dataframe(get_wintitle_stat_dict_in_month(dt))
+        else:
+            return False, [], "bad_args"
     except KeyError:
         return False, [], "no_wintitle_data"
 
     # restrict range
     day_activit_df = pd.DataFrame(columns=["content_page_name", "screen_time"])
+    limit_num = config.ai_extract_tag_wintitle_limit if type == "day" else config.ai_extract_tag_wintitle_limit * 2
     for index, row in df_day_activity_optimize_display.iterrows():
-        if index > config.ai_extract_tag_wintitle_limit:
+        if index > limit_num:
             break
         row_insert = {"content_page_name": row["Page"], "screen_time": row["Screen Time"]}
         day_activit_df.loc[len(day_activit_df)] = row_insert
@@ -109,8 +119,14 @@ def get_cache_data_by_date(date_in: datetime.date, cache_dir=config.ai_extract_t
     return cache_data
 
 
-def get_day_tags(date_in: datetime.date):
-    dt_str = utils.datetime_to_dateDayStr(date_in)
+def get_day_or_month_tags(date_in: datetime.date, type="day"):
+    if type == "day":
+        dt_str = utils.datetime_to_dateDayStr(date_in)
+    elif type == "month":
+        dt_str = utils.datetime_to_dateDayStr(date_in)[:7]
+    else:
+        return False, ["bad_args"]
+
     if "day_tags_data" not in st.session_state:
         st.session_state["day_tags_data"] = get_cache_data_by_date(date_in, cache_dir=config.ai_extract_tag_result_dir_ud)
 
@@ -119,15 +135,25 @@ def get_day_tags(date_in: datetime.date):
     return False, []
 
 
-def generate_and_save_day_tags(date_in: datetime.date):
-    dt_str = utils.datetime_to_dateDayStr(date_in)
+def generate_and_save_day_or_month_tags(date_in: datetime.date, type="day"):
+    if type == "day":
+        dt_str = utils.datetime_to_dateDayStr(date_in)
+    elif type == "month":
+        dt_str = utils.datetime_to_dateDayStr(date_in)[:7]
+    else:
+        return False, [], ""
     cache_path = os.path.join(config.ai_extract_tag_result_dir_ud, str(date_in.year) + ".json")
     cache_data = get_cache_data_by_date(date_in, cache_dir=config.ai_extract_tag_result_dir_ud)
-    success, day_tags_lst, plain_text = generate_day_tags_lst(date_in)
+    success, day_tags_lst, plain_text = generate_day_or_month_tags_lst(date_in, type=type)
     if success:
-        cache_data[dt_str] = day_tags_lst[: config.ai_extract_max_tag_num]
+        if type == "day":
+            max_tag_num = config.ai_extract_max_tag_num
+        elif type == "month":
+            max_tag_num = int(config.ai_extract_max_tag_num * 1.5)
+
+        cache_data[dt_str] = day_tags_lst[:max_tag_num]
         file_utils.save_dict_as_json_to_path(cache_data, cache_path)
-        if config.enable_ai_day_poem:
+        if config.enable_ai_day_poem and type == "day":
             success, poem, plain_text = generate_and_save_day_poem(date_in)
         return True, day_tags_lst, plain_text
     else:
@@ -150,9 +176,9 @@ def generate_and_save_day_tags(date_in: datetime.date):
         return False, [], plain_text
 
 
-def component_day_tags(date_in: datetime.date):
-    # 渲染每日标签
-    def _render_day_tags(tags_lst):
+def component_day_or_month_tags(date_in: datetime.date, type="day"):
+    # 渲染每日或每月标签
+    def _render_tags(tags_lst):
         html_tags_lst = []
         for tag in tags_lst:
             html_tags_lst.append(f"<span class='tag'>{tag}</span>")
@@ -186,19 +212,20 @@ font-size: 14px;
         )
         st.markdown(html_full, unsafe_allow_html=True)
 
-    day_tags_cache_exist, day_tags_lst = get_day_tags(date_in)
+    day_tags_cache_exist, day_tags_lst = get_day_or_month_tags(date_in, type=type)
     if day_tags_cache_exist:
-        component_day_poem(date_in)
-        _render_day_tags(day_tags_lst)
+        if type == "day":
+            component_day_poem(date_in)
+        _render_tags(day_tags_lst)
     else:
-        if st.button(label="✨ Summary Tags"):
-            with st.spinner("Generating tags... \nDepending on the LLM service, it may take 5~20 seconds."):
-                success, day_tags_lst, plain_text = generate_and_save_day_tags(date_in)
+        if st.button(label="✨ " + _t("lab_btn_generate_tags")):
+            with st.spinner(_t("lab_text_generating_tags")):
+                success, day_tags_lst, plain_text = generate_and_save_day_or_month_tags(date_in, type=type)
                 if success:
                     del st.session_state["day_tags_data"]
                     st.rerun()
                 else:
-                    st.warning(f"Failed to generate tags: {plain_text}", icon="😥")
+                    st.warning(_t("lab_text_generating_tags_fail").format(plain_text=plain_text), icon="😥")
 
 
 def cache_day_tags_in_idle_routine(batch_count=config.ai_extract_tag_in_idle_batch_size):
@@ -253,7 +280,7 @@ def cache_day_tags_in_idle_routine(batch_count=config.ai_extract_tag_in_idle_bat
         print(f"generate day {date_in}")
         if condition_generate_tags:
             print("   tag...")
-            generate_and_save_day_tags(date_in)
+            generate_and_save_day_or_month_tags(date_in)
         if condition_generate_poem:
             print("   poem...")
             generate_and_save_day_poem(date_in)
