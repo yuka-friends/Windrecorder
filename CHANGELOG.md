@@ -1,5 +1,10 @@
 # Changelog 更新日志
 
+## 0.0.24
+> 2024-08-24
+- 在全局搜索页，提供更方便操作的月份滑杆选择器、精确日期选择器两种筛选模式；On the global search page, two filtering modes are provided: month slider selector and precise date selector, which are more convenient to operate;
+
+
 ## 0.0.23
 > 2024-08-19
 - 支持使用大语言模型为每日活动写一句诗歌；Add the ability to write a poem for each activity;

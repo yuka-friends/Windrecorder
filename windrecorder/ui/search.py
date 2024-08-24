@@ -94,7 +94,8 @@ def render():
         components.web_onboarding()
 
         search_method_list = [
-            _t("gs_option_ocr_text_search"),
+            _t("gs_option_ocr_text_search_month_range"),
+            _t("gs_option_ocr_text_search_exact_date"),
             _t("gs_option_img_emb_search"),
             _t("gs_option_similar_img_search"),
         ]
@@ -124,13 +125,15 @@ def render():
 
         match search_method_list.index(st.session_state.search_method_selected):
             case 0:
-                ui_ocr_text_search()
+                ui_ocr_text_search(data_type="month_range")
             case 1:
+                ui_ocr_text_search(data_type="exact_date")
+            case 2:
                 if config.enable_img_embed_search and config.img_embed_module_install:
                     ui_vector_img_search()
                 else:
                     st.warning(_t("gs_text_not_install_img_emb"))
-            case 2:
+            case 3:
                 if config.enable_img_embed_search and config.img_embed_module_install:
                     ui_similar_img_search()
                 else:
@@ -190,29 +193,60 @@ def render():
 
 
 # 搜索页的 UI 通用输入组件
-def ui_component_date_range_selector():
+def ui_component_date_range_selector(data_type="month_range"):
     """
     组件-日期选择器
     """
-    try:
+    if data_type == "month_range":
+        min_dt_value = (
+            datetime.datetime(1970, 1, 2)
+            + datetime.timedelta(seconds=st.session_state.search_latest_record_time_int)
+            - (
+                datetime.timedelta(seconds=st.session_state.search_latest_record_time_int)
+                - datetime.timedelta(seconds=st.session_state.search_earlist_record_time_int)
+            )
+            / 3
+        )
+
         (
             st.session_state.search_date_range_in,
             st.session_state.search_date_range_out,
-        ) = st.date_input(
+        ) = st.slider(
             _t("text_search_daterange"),
-            (
-                datetime.datetime(1970, 1, 2)
-                + datetime.timedelta(seconds=st.session_state.search_earlist_record_time_int)
-                - datetime.timedelta(seconds=86400),
-                datetime.datetime(1970, 1, 2)
-                + datetime.timedelta(seconds=st.session_state.search_latest_record_time_int)
-                - datetime.timedelta(seconds=86400),
+            min_value=datetime.datetime(1970, 1, 2)
+            + datetime.timedelta(seconds=st.session_state.search_earlist_record_time_int)
+            - datetime.timedelta(seconds=86400),
+            max_value=datetime.datetime(1970, 1, 2)
+            + datetime.timedelta(seconds=st.session_state.search_latest_record_time_int),
+            value=(
+                min_dt_value,
+                datetime.datetime(1970, 1, 2) + datetime.timedelta(seconds=st.session_state.search_latest_record_time_int),
             ),
-            format="YYYY-MM-DD",
+            format="YY/MM",
+            step=datetime.timedelta(days=30),
+            key=_t("text_search_daterange") + "month_range",
         )
-    except Exception:
-        # 处理没选择完整选择时间段
-        st.warning(_t("gs_text_pls_choose_full_date_range"))
+    elif data_type == "exact_date":
+        try:
+            (
+                st.session_state.search_date_range_in,
+                st.session_state.search_date_range_out,
+            ) = st.date_input(
+                _t("text_search_daterange"),
+                (
+                    datetime.datetime(1970, 1, 2)
+                    + datetime.timedelta(seconds=st.session_state.search_earlist_record_time_int)
+                    - datetime.timedelta(seconds=86400),
+                    datetime.datetime(1970, 1, 2)
+                    + datetime.timedelta(seconds=st.session_state.search_latest_record_time_int)
+                    - datetime.timedelta(seconds=86400),
+                ),
+                format="YYYY-MM-DD",
+                key=_t("text_search_daterange") + "exact_date",
+            )
+        except Exception:
+            # 处理没选择完整选择时间段
+            st.warning(_t("gs_text_pls_choose_full_date_range"))
 
 
 def ui_component_pagination():
@@ -228,9 +262,11 @@ def ui_component_pagination():
 
 
 # UI 布局
-def ui_ocr_text_search():
+def ui_ocr_text_search(data_type="month_range"):
     """
     使用文本进行全局 OCR 搜索
+
+    data_type: 搜索模式，可选 month_range 或 exact_date
     """
 
     # 获得全局搜索结果
@@ -285,7 +321,7 @@ def ui_ocr_text_search():
     with col_exclude:  # 排除关键词
         st.session_state.search_content_exclude = st.text_input(_t("gs_input_exclude"), "", help=_t("gs_input_exclude_help"))
     with col_date_range:  # 选择时间范围
-        ui_component_date_range_selector()
+        ui_component_date_range_selector(data_type=data_type)
     with col_page:  # 搜索结果翻页
         ui_component_pagination()
 
