@@ -1,5 +1,6 @@
 __pycache__
 venv
+.venv
 i_frames
 videos
 db
