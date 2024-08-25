@@ -1,5 +1,10 @@
 # Changelog 更新日志
 
+> [!TIP]
+> 如果无法升级，请尝试在目录下执行命令 `git fetch origin | git reset --hard origin/main` 后运行 `install_update.bat`
+>
+> If app cannot upgrade correctly, try executing the command `git fetch origin | git reset --hard origin/main` in the directory and then running `install_update.bat`
+
 ## 0.0.24
 > 2024-08-24
 - 在全局搜索页，提供更方便操作的月份滑杆选择器、精确日期选择器两种筛选模式；On the global search page, two filtering modes are provided: month slider selector and precise date selector, which are more convenient to operate;
