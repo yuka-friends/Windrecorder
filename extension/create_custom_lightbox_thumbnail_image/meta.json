@@ -1,0 +1,7 @@
+{
+    "extension_name": "Create custom lightbox thumbnail image",
+    "developer_name": "antonoko",
+    "developer_url": "https://github.com/Antonoko",
+    "version": "0.0.1",
+    "description_markdown": "本扩展可以创建自定义的光箱缩略图，包含预览图数量、时间段范围等自定义参数。\nThis extension can create custom lightbox thumbnails, including custom parameters such as the number of preview images, time period range, etc."
+}
