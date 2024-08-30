@@ -98,6 +98,8 @@ def generate_month_lightbox(
     dt: datetime.datetime,
     img_saved_name="default.png",
     img_saved_folder=config.lightbox_result_dir_ud,
+    pic_width_num=25,
+    pic_height_num=35,
 ):
     file_utils.ensure_dir(img_saved_folder)
 
@@ -106,8 +108,6 @@ def generate_month_lightbox(
     dt_month_end = datetime.datetime(dt.year, dt.month, month_days, 23, 59, 59)
 
     # 光箱容纳图片容量
-    pic_width_num = 25
-    pic_height_num = 35
     all_pic_num = pic_height_num * pic_width_num
 
     # 获取时间段所需图片列表（b64）
