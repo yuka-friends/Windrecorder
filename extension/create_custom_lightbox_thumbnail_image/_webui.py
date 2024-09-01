@@ -5,10 +5,11 @@ import os
 import streamlit as st
 
 from windrecorder.const import CACHE_DIR
-from windrecorder.db_manager import db_manager  # NOQA: E402
-from windrecorder.state import generate_lightbox_from_datetime_range  # NOQA: E402
+from windrecorder.db_manager import db_manager
+from windrecorder.state import generate_lightbox_from_datetime_range
 from windrecorder.ui.components import html_picture
-from windrecorder.ui.search import ui_component_date_range_selector  # NOQA: E402
+from windrecorder.ui.search import ui_component_date_range_selector
+from windrecorder.utils import get_text as _t
 
 st.set_page_config(page_title="Create custom lightbox - Windrecord - webui", page_icon="🦝", layout="wide")
 
@@ -30,7 +31,7 @@ def init_st_state():
 def generate_lightbox_data_range(
     img_saved_path, width_thumbnail_num, height_thumbnail_num, lightbox_width, image_lst_mode, is_add_watermark=True
 ):
-    with st.spinner("正在生成图片，请稍等..."):
+    with st.spinner(_t("lb_text_generating")):
         if generate_lightbox_from_datetime_range(
             dt_month_start=st.session_state.search_date_range_in,
             dt_month_end=st.session_state.search_date_range_out,
@@ -50,8 +51,8 @@ def generate_lightbox_data_range(
 def ui_custom_data_range():
     st.markdown("---\n### 📆")
 
-    data_range_type_lst = ["大致月份范围", "精确日期范围"]
-    data_range_type = st.radio("日期选择器", data_range_type_lst, label_visibility="collapsed")
+    data_range_type_lst = [_t("lb_text_month_range"), _t("lb_text_exact_date")]
+    data_range_type = st.radio(_t("lb_text_data_selector"), data_range_type_lst, label_visibility="collapsed")
     if data_range_type == data_range_type_lst[0]:
         ui_component_date_range_selector(data_type="month_range")
     elif data_range_type == data_range_type_lst[1]:
@@ -59,8 +60,8 @@ def ui_custom_data_range():
 
     st.markdown("---\n### 🎞️")
 
-    thumbnail_mode_lst = ["从已有数据中平均分布", "按绝对时间范围分布"]
-    thumbnail_mode_select = st.radio("缩略图分布模式", thumbnail_mode_lst)
+    thumbnail_mode_lst = [_t("lb_text_distributeavg"), _t("lb_text_timeavg")]
+    thumbnail_mode_select = st.radio(_t("lb_text_thumbnail_mode_select"), thumbnail_mode_lst)
     thumbnail_mode = "distributeavg"
     if thumbnail_mode_select == thumbnail_mode_lst[0]:
         thumbnail_mode = "distributeavg"
@@ -71,14 +72,33 @@ def ui_custom_data_range():
 
     col_L_params, col_R_params = st.columns([1, 1])
     with col_L_params:
-        width_thumbnail_num = int(st.number_input("横向缩略图数量", min_value=5, max_value=1000, value=25, step=1))
+        width_thumbnail_num = int(
+            st.number_input(_t("lb_text_width_thumbnail_num"), min_value=5, max_value=1000, value=25, step=1)
+        )
     with col_R_params:
-        height_thumbnail_num = int(st.number_input("纵向缩略图数量", min_value=5, max_value=1000, value=35, step=1))
-    st.info(f"包含缩略图总数：{width_thumbnail_num*height_thumbnail_num}。" + "如果数据库内缩略图数量不足，可能会生成失败。")
-    custom_lightbox_width = int(st.number_input("生成图像宽度（像素）", min_value=1775, max_value=10000, value=1800, step=1))
-    is_add_watermark = st.checkbox("添加底部水印信息", value=True)
+        height_thumbnail_num = int(
+            st.number_input(_t("lb_text_height_thumbnail_num"), min_value=5, max_value=1000, value=35, step=1)
+        )
 
-    if st.button("创建图片", use_container_width=True, type="primary"):
+    if thumbnail_mode_select == thumbnail_mode_lst[0]:
+        st.info(
+            _t("lb_tip_distributeavg").format(
+                num=width_thumbnail_num * height_thumbnail_num,
+            )
+        )
+    elif thumbnail_mode_select == thumbnail_mode_lst[1]:
+        st.info(
+            _t("lb_tip_timeavg").format(
+                num=width_thumbnail_num * height_thumbnail_num,
+            )
+        )
+
+    custom_lightbox_width = int(
+        st.number_input(_t("lb_text_custom_lightbox_width"), min_value=1775, max_value=10000, value=1800, step=1)
+    )
+    is_add_watermark = st.checkbox(_t("lb_checkbox_add_watermark"), value=True)
+
+    if st.button(_t("lb_btn_create_img"), use_container_width=True, type="primary"):
         global last_img_saved_path
         last_img_saved_path = os.path.join(
             CACHE_DIR,
@@ -97,11 +117,15 @@ def ui_custom_data_range():
             lightbox_width=custom_lightbox_width,
             is_add_watermark=is_add_watermark,
         )
-    st.caption(f"生成结果可以在文件夹 {CACHE_DIR} 下找到。")
+    st.caption(
+        _t("lb_text_create_img_instruction").format(
+            cache_dir=CACHE_DIR,
+        )
+    )
 
 
 def main_webui():
-    st.markdown("#### 📔 自定义光箱生成器")
+    st.markdown(_t("lb_text_title"))
     col_1, col_2, col_3, col_4 = st.columns([1.5, 0.5, 3, 0.5])
     with col_1:
         st.empty()

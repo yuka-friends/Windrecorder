@@ -284,7 +284,24 @@
         "flag_text_mark_added": "Time mark added.",
         "flag_input_note": "Note:",
         "flag_btn_remove_mark": "Remove mark",
-        "flag_btn_add_note": "Add note"
+        "flag_btn_add_note": "Add note",
+
+        "lb_text_generating": "Generating image, please wait...",
+        "lb_text_month_range": "Approximate month range",
+        "lb_text_exact_date": "Exact date range",
+        "lb_text_data_selector": "Date selector",
+        "lb_text_distributeavg": "Evenly distribute from existing data",
+        "lb_text_timeavg": "Distribute by absolute time range",
+        "lb_text_thumbnail_mode_select": "Thumbnail distribution mode",
+        "lb_text_width_thumbnail_num": "Number of horizontal thumbnails",
+        "lb_text_height_thumbnail_num": "Number of vertical thumbnails",
+        "lb_tip_distributeavg": "Contains the total number of thumbnails: {num}. If there are not enough thumbnails in the database, the generation may fail.",
+        "lb_tip_timeavg": "Contains total number of thumbnails: {num}.",
+        "lb_text_custom_lightbox_width": "Generate image width (pixels)",
+        "lb_checkbox_add_watermark": "Add bottom watermark information",
+        "lb_btn_create_img": "Create image",
+        "lb_text_create_img_instruction": "Generated results can be found in the folder {cache_dir}.",
+        "lb_text_title": "#### 📔 Custom Lightbox Generator"
     },
   
     "sc": {  
@@ -573,7 +590,24 @@
         "flag_text_mark_added": "已添加此时的标记。",
         "flag_input_note": "备注：",
         "flag_btn_remove_mark": "移除标记",
-        "flag_btn_add_note": "添加备注"
+        "flag_btn_add_note": "添加备注",
+
+        "lb_text_generating": "正在生成图片，请稍等",
+        "lb_text_month_range": "大致月份范围",
+        "lb_text_exact_date": "精确日期范围",
+        "lb_text_data_selector": "日期选择器",
+        "lb_text_distributeavg": "从已有数据中平均分布",
+        "lb_text_timeavg": "按绝对时间范围分布",
+        "lb_text_thumbnail_mode_select": "缩略图分布模式",
+        "lb_text_width_thumbnail_num": "横向缩略图数量",
+        "lb_text_height_thumbnail_num": "纵向缩略图数量",
+        "lb_tip_distributeavg": "包含缩略图总数：{num}。如果数据库内缩略图数量不足，可能会生成失败。",
+        "lb_tip_timeavg": "包含缩略图总数：{num}。",
+        "lb_text_custom_lightbox_width": "生成图像宽度（像素）",
+        "lb_checkbox_add_watermark": "添加底部水印信息",
+        "lb_btn_create_img": "创建图片",
+        "lb_text_create_img_instruction": "生成结果可以在文件夹 {cache_dir} 下找到。",
+        "lb_text_title": "#### 📔 自定义光箱生成器"
     },
 
     "ja": {  
@@ -859,7 +893,24 @@
         "flag_text_mark_added": "今回のマークが追加されました。",
         "flag_input_note": "メモ:",
         "flag_btn_remove_mark": "マークを削除",
-        "flag_btn_add_note": "メモを追加"
+        "flag_btn_add_note": "メモを追加",
+
+        "lb_text_generated": "画像を生成中です。お待​​ちください",
+        "lb_text_month_range": "おおよその月の範囲",
+        "lb_text_exact_date": "正確な日付範囲",
+        "lb_text_data_selector": "日付セレクター",
+        "lb_text_distributeavg": "既存のデータから均等に分散します",
+        "lb_text_timeavg": "絶対時間範囲で分散",
+        "lb_text_thumbnail_mode_select": "サムネイル配信モード",
+        "lb_text_width_thumbnail_num": "水平方向のサムネイルの数",
+        "lb_text_height_thumbnail_num": "縦方向のサムネイルの数",
+        "lb_tip_distributeavg": "サムネイルの合計数が含まれます: {num}。データベースに十分なサムネイルがない場合、生成は失敗する可能性があります。",
+        "lb_tip_timeavg": "サムネイルの合計数が含まれます: {num}。",
+        "lb_text_custom_lightbox_width": "画像の幅 (ピクセル) を生成",
+        "lb_checkbox_add_watermark": "下側のウォーターマーク情報を追加します",
+        "lb_btn_create_img": "イメージを作成",
+        "lb_text_create_img_instruction": "生成された結果はフォルダー {cache_dir} にあります。",
+        "lb_text_title": "#### 📔 カスタム ライト ボックス ジェネレーター"
     },
 
     "lang_map": {
