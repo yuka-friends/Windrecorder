@@ -13,10 +13,11 @@ from windrecorder.utils import get_text as _t
 
 st.set_page_config(page_title="Create custom lightbox - Windrecord - webui", page_icon="🦝", layout="wide")
 
-last_img_saved_path = "extension\\create_custom_lightbox_thumbnail_image\\_lightbox_placeholder.jpg"
-
 
 def init_st_state():
+    global last_img_saved_path
+    last_img_saved_path = "extension\\create_custom_lightbox_thumbnail_image\\_lightbox_placeholder.jpg"
+
     if "search_latest_record_time_int" not in st.session_state:
         st.session_state["search_latest_record_time_int"] = db_manager.db_latest_record_time()
     if "search_earlist_record_time_int" not in st.session_state:
@@ -72,11 +73,11 @@ def ui_custom_data_range():
     col_L_params, col_R_params = st.columns([1, 1])
     with col_L_params:
         width_thumbnail_num = int(
-            st.number_input(_t("lb_text_width_thumbnail_num"), min_value=5, max_value=1000, value=25, step=1)
+            st.number_input(_t("lb_text_width_thumbnail_num"), min_value=5, max_value=1000, value=40, step=1)
         )
     with col_R_params:
         height_thumbnail_num = int(
-            st.number_input(_t("lb_text_height_thumbnail_num"), min_value=5, max_value=1000, value=35, step=1)
+            st.number_input(_t("lb_text_height_thumbnail_num"), min_value=5, max_value=1000, value=30, step=1)
         )
 
     if thumbnail_mode_select == thumbnail_mode_lst[0]:

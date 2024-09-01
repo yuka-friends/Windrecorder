@@ -143,11 +143,17 @@ def generate_lightbox_from_datetime_range(
     blank_canvas = Image.new("RGBA", (thumbnail_resize_width, thumbnail_resize_height), background_color)
 
     for image_data in image_list:
-        if image_data is None and image_lst_mode == "timeavg":
-            image_thumbnail = blank_canvas
+        if image_data is None:
+            if image_lst_mode == "timeavg":
+                image_thumbnail = blank_canvas
+            else:
+                continue
         else:
-            image_thumbnail = Image.open(BytesIO(base64.b64decode(image_data)))
-            image_thumbnail = image_thumbnail.resize((thumbnail_resize_width, thumbnail_resize_height))
+            try:
+                image_thumbnail = Image.open(BytesIO(base64.b64decode(image_data)))
+                image_thumbnail = image_thumbnail.resize((thumbnail_resize_width, thumbnail_resize_height))
+            except Exception:  # binascii.Error: Incorrect padding
+                image_thumbnail = blank_canvas
         # 创建一个与图像大小相同的纯白色图像作为透明度掩码
         mask_cover = Image.new("L", image_thumbnail.size, 255)  # 'L' 表示灰度图像，255 表示完全不透明
 
