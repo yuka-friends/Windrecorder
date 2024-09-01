@@ -13,7 +13,7 @@ from windrecorder.utils import get_text as _t
 
 st.set_page_config(page_title="Create custom lightbox - Windrecord - webui", page_icon="🦝", layout="wide")
 
-last_img_saved_path = "cache\\nothing.png"
+last_img_saved_path = "extension\\create_custom_lightbox_thumbnail_image\\_lightbox_placeholder.jpg"
 
 
 def init_st_state():
