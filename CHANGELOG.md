@@ -7,10 +7,13 @@
 
 ## 0.0.25
 > 2024-09-01
-- 添加了自定义光箱缩略图生成器，可以从任意日期范围创建光箱图片，支持自定义缩略图数量、分布模式、图像大小等。你可以在 `extension\create_custom_lightbox_thumbnail_image` 进行使用。
-- Added custom lightbox thumbnail generator, which can create lightbox images from any date range, supports custom thumbnail count, distribution pattern, image size, etc. You can use it in `extension\create_custom_lightbox_thumbnail_image`.
+- 生成光箱图片时，可以选择在底部添加时间戳水印；When generating a lightbox image, you can choose to add a timestamp watermark at the bottom;
+- 添加了自定义光箱缩略图生成器，可以从任意日期范围创建光箱图片，支持自定义缩略图数量、分布模式、图像大小等。你可以在 `extension\create_custom_lightbox_thumbnail_image` 进行使用。Added custom lightbox thumbnail generator, which can create lightbox images from any date range, supports custom thumbnail count, distribution pattern, image size, etc. You can use it in `extension\create_custom_lightbox_thumbnail_image`.
 
 ![create_custom_lightbox_thumbnail_image](https://github.com/yuka-friends/Windrecorder/blob/main/extension/create_custom_lightbox_thumbnail_image/_preview.jpg)
+
+### Fixed
+- 修复了 json 可能因为未指定 utf-8 编码而导致读取出错的潜在问题；Fixed a potential issue where json might be read incorrectly because utf-8 encoding was not specified;
 
 ---
 

@@ -250,7 +250,7 @@ def read_dataframe_from_path(file_path="cache/temp.csv"):
 def save_dict_as_json_to_path(data: dict, filepath):
     """将 dict 保存到 json"""
     ensure_dir(os.path.dirname(filepath))
-    with open(filepath, "w") as f:
+    with open(filepath, "w", encoding="utf-8") as f:
         json.dump(data, f, indent=2)
     logger.info(f"files: json has been saved at {filepath}")
 
@@ -261,7 +261,7 @@ def read_json_as_dict_from_path(filepath):
         return None
 
     try:
-        with open(filepath, "r") as f:
+        with open(filepath, "r", encoding="utf-8") as f:
             data = json.load(f)
         return data
     except JSONDecodeError:

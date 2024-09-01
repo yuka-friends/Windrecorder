@@ -298,7 +298,7 @@
         "lb_tip_distributeavg": "Contains the total number of thumbnails: {num}. If there are not enough thumbnails in the database, the generation may fail.",
         "lb_tip_timeavg": "Contains total number of thumbnails: {num}.",
         "lb_text_custom_lightbox_width": "Generate image width (pixels)",
-        "lb_checkbox_add_watermark": "Add bottom watermark information",
+        "lb_checkbox_add_watermark": "Add bottom watermark to lightbox images",
         "lb_btn_create_img": "Create image",
         "lb_text_create_img_instruction": "Generated results can be found in the folder {cache_dir}.",
         "lb_text_title": "#### 📔 Custom Lightbox Generator"
@@ -604,7 +604,7 @@
         "lb_tip_distributeavg": "包含缩略图总数：{num}。如果数据库内缩略图数量不足，可能会生成失败。",
         "lb_tip_timeavg": "包含缩略图总数：{num}。",
         "lb_text_custom_lightbox_width": "生成图像宽度（像素）",
-        "lb_checkbox_add_watermark": "添加底部水印信息",
+        "lb_checkbox_add_watermark": "为光箱图片添加底部水印",
         "lb_btn_create_img": "创建图片",
         "lb_text_create_img_instruction": "生成结果可以在文件夹 {cache_dir} 下找到。",
         "lb_text_title": "#### 📔 自定义光箱生成器"
@@ -907,7 +907,7 @@
         "lb_tip_distributeavg": "サムネイルの合計数が含まれます: {num}。データベースに十分なサムネイルがない場合、生成は失敗する可能性があります。",
         "lb_tip_timeavg": "サムネイルの合計数が含まれます: {num}。",
         "lb_text_custom_lightbox_width": "画像の幅 (ピクセル) を生成",
-        "lb_checkbox_add_watermark": "下側のウォーターマーク情報を追加します",
+        "lb_checkbox_add_watermark": "ライトボックス画像に下透かしを追加する",
         "lb_btn_create_img": "イメージを作成",
         "lb_text_create_img_instruction": "生成された結果はフォルダー {cache_dir} にあります。",
         "lb_text_title": "#### 📔 カスタム ライト ボックス ジェネレーター"
