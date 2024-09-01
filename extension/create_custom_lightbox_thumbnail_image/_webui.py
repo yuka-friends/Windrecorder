@@ -17,7 +17,6 @@ last_img_saved_path = "extension\\create_custom_lightbox_thumbnail_image\\_light
 
 
 def init_st_state():
-    # 初始化时间搜索范围组件（懒加载）
     if "search_latest_record_time_int" not in st.session_state:
         st.session_state["search_latest_record_time_int"] = db_manager.db_latest_record_time()
     if "search_earlist_record_time_int" not in st.session_state:
