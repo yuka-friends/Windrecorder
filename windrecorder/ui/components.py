@@ -5,12 +5,14 @@ from pathlib import Path
 import pandas as pd
 import streamlit as st
 
-from windrecorder import file_utils, flag_mark_note, record_wintitle
+from windrecorder import file_utils, flag_mark_note, record_wintitle, utils
 from windrecorder.config import config
 from windrecorder.db_manager import db_manager
 from windrecorder.llm import component_day_or_month_tags
 from windrecorder.logger import get_logger
 from windrecorder.utils import get_text as _t
+
+# do not import from windrecorder.ui
 
 logger = get_logger(__name__)
 
@@ -118,3 +120,14 @@ def render_deep_linking(url):
             st.markdown(f"[{url}]({url})")
         else:
             st.markdown(f"{url}")
+
+
+# 以 html 方式显示图片
+def html_picture(imagepath, caption=None):
+    pic_b64 = utils.image_to_base64(imagepath)
+    st.markdown(
+        f"<img style='max-width: 100%;max-height: 100%;margin: 0 0px 0px 0px' src='data:image/png;base64, {pic_b64}'/>",
+        unsafe_allow_html=True,
+    )
+    if caption:
+        st.caption("<p align='center'>" + caption + "</p>", unsafe_allow_html=True)

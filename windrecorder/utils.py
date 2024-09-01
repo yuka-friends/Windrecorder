@@ -912,3 +912,21 @@ def convert_df_to_csv_str(df: pd.DataFrame):
     df.to_csv(csv_buffer, index=False)
     csv_string = csv_buffer.getvalue()
     return csv_string
+
+
+def calc_max_thumbnail_size(image_list, sample_time=5):
+    try:  # 尝试获取缩略图大小，失败则fallback
+        original_width = 20
+        original_height = 20
+        for i in range(sample_time):  # 截图录制模式下可能有不同大小截图，需要取几个样本，寻找其中最大的大小（性能考虑）
+            width, height = get_image_dimensions(image_list[2 + ((len(image_list) - 2) / (sample_time - 1)) * i])
+            if width > original_width:
+                original_width = width
+            if height > original_height:
+                original_height = height
+        # original_width, original_height = utils.get_image_dimensions(image_list[2])
+    except Exception:
+        original_width = 70
+        original_height = 39
+
+    return original_width, original_height

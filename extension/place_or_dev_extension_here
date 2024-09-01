@@ -13,22 +13,6 @@ An extension may contains at least the following files:
 ```
 
 
-# your_extension.py
-```python
-# Set workspace to Windrecorder dir
-import sys
-import os
-current_dir = os.path.dirname(os.path.abspath(__file__))
-parent_parent_dir = os.path.dirname(os.path.dirname(current_dir))
-sys.path.append(parent_parent_dir)
-os.chdir("..")
-os.chdir("..")
-# ------------------------------------------------------------
-
-# extension code below
-```
-
-
 # bash_for_user.bat
 ```
 @echo off
@@ -39,6 +23,9 @@ cd /d %~dp0
 for /F "tokens=* USEBACKQ" %%A in (`python -m poetry env info --path`) do call "%%A\Scripts\activate.bat"
 chcp 65001
 cls
+cd ..
+cd ..
 
 :: extension code below
+python "extension/extension_dir/your_extension.py"
 ```
