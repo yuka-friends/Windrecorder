@@ -1,3 +1,4 @@
+import calendar
 import datetime
 import os
 
@@ -13,6 +14,7 @@ from windrecorder.config import config
 from windrecorder.db_manager import db_manager
 from windrecorder.llm import component_month_poem
 from windrecorder.record_wintitle import component_month_wintitle_stat
+from windrecorder.ui.components import html_picture
 from windrecorder.utils import get_text as _t
 
 
@@ -93,14 +95,20 @@ def render():
 
             if st.button(_t("stat_btn_generate_lightbox")):
                 with st.spinner(_t("stat_text_generating_lightbox")):
-                    state.generate_month_lightbox(
-                        st.session_state.stat_select_month_datetime,
+                    _dt_lightbox = st.session_state.stat_select_month_datetime
+                    _month_days = calendar.monthrange(_dt_lightbox.year, _dt_lightbox.month)[1]
+                    state.generate_lightbox_from_datetime_range(
+                        dt_month_start=datetime.datetime(_dt_lightbox.year, _dt_lightbox.month, 1, 0, 0, 1),
+                        dt_month_end=datetime.datetime(_dt_lightbox.year, _dt_lightbox.month, _month_days, 23, 59, 59),
                         img_saved_name=current_month_lightbox_img_name,
                     )
+                    del st.session_state[f"html_pic_b64_cache_{current_month_lightbox_img_name}"]
 
             if os.path.exists(current_month_lightbox_img_path):
-                image = Image.open(current_month_lightbox_img_path)
-                st.image(image, caption=current_month_lightbox_img_path)
+                st.caption(_t("stat_text_custom_lightbox"))
+                html_picture(current_month_lightbox_img_path, caption=current_month_lightbox_img_path)
+                # image = Image.open(current_month_lightbox_img_path)
+                # st.image(image, caption=current_month_lightbox_img_path)
             else:
                 st.info(_t("stat_text_no_month_lightbox"))
 

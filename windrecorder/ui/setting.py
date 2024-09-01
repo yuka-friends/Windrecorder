@@ -246,6 +246,10 @@ def render():
             else:
                 config_enable_synonyms_recommend = False
 
+            enable_month_lightbox_watermark = st.checkbox(
+                _t("lb_checkbox_add_watermark"), value=config.enable_month_lightbox_watermark
+            )
+
         with col2_ui:
             config_wordcloud_user_stop_words = st.text_area(
                 _t("set_input_wordcloud_filter"),
@@ -344,6 +348,7 @@ def render():
             config.set_and_save_config("use_similar_ch_char_to_search", config_use_similar_ch_char_to_search)
             config.set_and_save_config("enable_synonyms_recommend", config_enable_synonyms_recommend)
             config.set_and_save_config("img_embed_search_recall_result_per_db", config_img_embed_search_recall_result_per_db)
+            config.set_and_save_config("enable_month_lightbox_watermark", enable_month_lightbox_watermark)
 
             # 更改了一天之时缩略图相关选项时，清空缓存时间轴缩略图
             day_begin_minutes = find_value_in_tuple_timelist_by_str(

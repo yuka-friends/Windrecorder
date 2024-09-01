@@ -117,6 +117,7 @@ class Config:
         ai_extract_max_tag_num,
         enable_ai_day_poem,
         ai_extract_tag_filter_words,
+        enable_month_lightbox_watermark,
         **other_field,
     ) -> None:
         # If need to process input parameters, they should assign another variable name to prevent recursive writing into the config.
@@ -219,6 +220,7 @@ class Config:
         self.ai_extract_max_tag_num = ai_extract_max_tag_num
         self.enable_ai_day_poem = enable_ai_day_poem
         self.ai_extract_tag_filter_words = ai_extract_tag_filter_words
+        self.enable_month_lightbox_watermark = enable_month_lightbox_watermark
 
     def set_and_save_config(self, attr: str, value):
         if not hasattr(self, attr):

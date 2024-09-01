@@ -5,12 +5,12 @@ import os
 from io import BytesIO
 
 import pandas as pd
-from PIL import Image
+from PIL import Image, ImageDraw, ImageFont
 
 import windrecorder.utils as utils
 from windrecorder import file_utils
 from windrecorder.config import config
-from windrecorder.const import FOOTER_STATE_CAHCE_FILEPATH
+from windrecorder.const import ASSET_DIR, FOOTER_STATE_CAHCE_FILEPATH
 from windrecorder.db_manager import db_manager
 from windrecorder.logger import get_logger
 
@@ -94,30 +94,38 @@ def get_year_data_overview_scatter(dt: datetime.datetime):
 
 
 # 生成当月光箱（规格：1000x1000，每边30张图）
-def generate_month_lightbox(
-    dt: datetime.datetime,
+def generate_lightbox_from_datetime_range(
+    dt_month_start: datetime.datetime,
+    dt_month_end: datetime.datetime,
+    image_lst_mode="distributeavg",
     img_saved_name="default.png",
     img_saved_folder=config.lightbox_result_dir_ud,
+    pic_width_num=25,
+    pic_height_num=35,
+    lightbox_width=1774,
+    enable_month_lightbox_watermark=config.enable_month_lightbox_watermark,
 ):
+    """
+    :param image_lst_mode: 图片列表生成模式, distributeavg 在已有数据中平均分配，timeavg 按时间平均分配
+    """
     file_utils.ensure_dir(img_saved_folder)
 
-    month_days = calendar.monthrange(dt.year, dt.month)[1]
-    dt_month_start = datetime.datetime(dt.year, dt.month, 1, 0, 0, 1)
-    dt_month_end = datetime.datetime(dt.year, dt.month, month_days, 23, 59, 59)
-
     # 光箱容纳图片容量
-    pic_width_num = 25
-    pic_height_num = 35
     all_pic_num = pic_height_num * pic_width_num
 
     # 获取时间段所需图片列表（b64）
-    image_list = db_manager.db_get_day_thumbnail_by_distributeavg(dt_month_start, dt_month_end, all_pic_num)
+    if image_lst_mode == "distributeavg":
+        image_list = db_manager.db_get_day_thumbnail_by_distributeavg(dt_month_start, dt_month_end, all_pic_num)
+    elif image_lst_mode == "timeavg":
+        image_list = db_manager.db_get_day_thumbnail_by_timeavg(dt_month_start, dt_month_end, all_pic_num)
+
     if image_list is None:
         return False
+    if len(image_list) < all_pic_num:
+        logger.error("Not enough images")
+        return False
 
-    thumbnail_width, thumbnail_height = utils.get_image_dimensions(image_list[3])
-
-    lightbox_width = 1750 + pic_width_num - 1
+    thumbnail_width, thumbnail_height = utils.calc_max_thumbnail_size(image_list)
 
     # 计算每张图的resize
     thumbnail_resize_width = int(lightbox_width / pic_width_num)
@@ -125,18 +133,27 @@ def generate_month_lightbox(
 
     lightbox_height = thumbnail_resize_height * pic_height_num + pic_height_num - 1
     # 创建光箱画布
-    lightbox_img = Image.new("RGBA", (lightbox_width, lightbox_height), (0, 0, 0, 0))
+    background_color = (255, 250, 246, 0)
+    lightbox_img = Image.new("RGBA", (lightbox_width, lightbox_height), background_color)
 
     x_offset = 0
     y_offset = 0
     x_num = 0
 
+    blank_canvas = Image.new("RGBA", (thumbnail_resize_width, thumbnail_resize_height), background_color)
+
     for image_data in image_list:
         if image_data is None:
-            continue
-
-        image_thumbnail = Image.open(BytesIO(base64.b64decode(image_data)))
-        image_thumbnail = image_thumbnail.resize((thumbnail_resize_width, thumbnail_resize_height))
+            if image_lst_mode == "timeavg":
+                image_thumbnail = blank_canvas
+            else:
+                continue
+        else:
+            try:
+                image_thumbnail = Image.open(BytesIO(base64.b64decode(image_data)))
+                image_thumbnail = image_thumbnail.resize((thumbnail_resize_width, thumbnail_resize_height))
+            except Exception:  # binascii.Error: Incorrect padding
+                image_thumbnail = blank_canvas
         # 创建一个与图像大小相同的纯白色图像作为透明度掩码
         mask_cover = Image.new("L", image_thumbnail.size, 255)  # 'L' 表示灰度图像，255 表示完全不透明
 
@@ -148,9 +165,53 @@ def generate_month_lightbox(
             x_num = 0
             y_offset += thumbnail_resize_height + 1
 
+    if enable_month_lightbox_watermark:
+        lightbox_img = add_watermark_to_lightbox_img(lightbox_img, dt_month_start, dt_month_end)
+
     img_saved_path = os.path.join(img_saved_folder, img_saved_name)
     lightbox_img.save(img_saved_path, format="PNG")
     return True
+
+
+def add_watermark_to_lightbox_img(input_image, dt_in: datetime.datetime, dt_out: datetime.datetime):
+    # 1. 获取输入图像的宽度并创建新画布
+    width, _ = input_image.size
+    height = 100
+    canvas = Image.new("RGBA", (width, height), (255, 250, 246, 0))  # 使用 RGBA 模式创建透明画布
+
+    watermark_badge = Image.open(os.path.join(ASSET_DIR, "watermark-badge.png"))
+    watermark_line = Image.open(os.path.join(ASSET_DIR, "watermark-line.png"))
+
+    # 2. 粘贴水印徽标
+    offset = (width - watermark_badge.size[0] - 20, 15)
+    canvas.paste(watermark_badge, offset, watermark_badge)
+
+    # 3. 添加日期文本
+    text_fill_color = (157, 130, 103)
+    draw = ImageDraw.Draw(canvas)
+    monospace_neon_wide_medium = ImageFont.truetype(os.path.join(ASSET_DIR, "MonaspaceNeon-WideRegular.otf"), 24)
+    draw.text((37, 22), dt_in.strftime("%Y.%m.%d"), font=monospace_neon_wide_medium, fill=text_fill_color, antialias=True)
+    draw.text((338, 49), dt_out.strftime("%Y.%m.%d"), font=monospace_neon_wide_medium, fill=text_fill_color, antialias=True)
+
+    # 4. 添加天数文本
+    monospace_neon_medium_italic = ImageFont.truetype(os.path.join(ASSET_DIR, "MonaspaceNeon-Italic.otf"), 14)
+    draw.text(
+        (253, 49), str((dt_out - dt_in).days) + " d", font=monospace_neon_medium_italic, fill=(190, 170, 152), antialias=True
+    )
+
+    # 5. 粘贴水印线条
+    canvas.paste(watermark_line, (24, 16), watermark_line)
+
+    # 6. 将画布拼合到输入图像的下方
+    output_image = Image.new("RGB", (width, input_image.size[1] + height))
+    output_image.paste(input_image, (0, 0))
+    output_image.paste(canvas, (0, input_image.size[1]))
+
+    # 7. 绘制边框
+    draw = ImageDraw.Draw(output_image)
+    draw.rectangle((0, 0, output_image.size[0], output_image.size[1]), outline=(215, 205, 197), width=3)
+
+    return output_image
 
 
 def get_footer_state_data():

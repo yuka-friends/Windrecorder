@@ -50,6 +50,7 @@
   "date_state_dir": "result_date_state",
   "ai_extract_tag_result_dir": "result_ai_extract_tag",
   "ai_day_poem_result_dir": "result_ai_day_poem",
+  "enable_month_lightbox_watermark": true,
   "screentime_not_change_to_pause_record": 5,
   "user_name": "default",
   "use_similar_ch_char_to_search": true,

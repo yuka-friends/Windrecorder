@@ -4,6 +4,8 @@ import os
 CACHE_DIR = "cache"
 CACHE_DIR_OCR_IMG_PREPROCESSOR = os.path.join(CACHE_DIR, "temp_ocr_img_preprocess")
 
+ASSET_DIR = "__assets__"
+
 FOOTER_STATE_CAHCE_FILEPATH = "cache\\footer_info_cache.json"
 SCREENSHOT_CACHE_FILEPATH = "cache_screenshot"
 SCREENSHOT_CACHE_FILEPATH_TMP_DB_NAME = "tmp_db.json"
