@@ -104,6 +104,7 @@ def render():
                     )
 
             if os.path.exists(current_month_lightbox_img_path):
+                st.caption(_t("stat_text_custom_lightbox"))
                 html_picture(current_month_lightbox_img_path, caption=current_month_lightbox_img_path)
                 # image = Image.open(current_month_lightbox_img_path)
                 # st.image(image, caption=current_month_lightbox_img_path)

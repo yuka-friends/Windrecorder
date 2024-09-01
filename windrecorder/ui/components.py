@@ -124,7 +124,10 @@ def render_deep_linking(url):
 
 # 以 html 方式显示图片
 def html_picture(imagepath, caption=None):
-    pic_b64 = utils.image_to_base64(imagepath)
+    if f"html_pic_b64_cache_{os.path.basename(imagepath)}" not in st.session_state:  # caching base 64 result
+        st.session_state[f"html_pic_b64_cache_{os.path.basename(imagepath)}"] = utils.image_to_base64(imagepath)
+
+    pic_b64 = st.session_state[f"html_pic_b64_cache_{os.path.basename(imagepath)}"]
     st.markdown(
         f"<img style='max-width: 100%;max-height: 100%;margin: 0 0px 0px 0px' src='data:image/png;base64, {pic_b64}'/>",
         unsafe_allow_html=True,
