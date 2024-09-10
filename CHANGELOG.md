@@ -5,6 +5,12 @@
 >
 > If app cannot upgrade correctly, try executing the command `git fetch origin | git reset --hard origin/main` in the directory and then running `install_update.bat`
 
+## 0.0.26
+> 2024-09-10
+- 更新了隐藏命令行窗口的方式，现在可以一打开 start_app.bat 立即自动隐藏；Updated the way to hide the command line window. Now it can be automatically hidden immediately after opening start_app.bat;
+
+---
+
 ## 0.0.25
 > 2024-09-01
 - 生成光箱图片时，可以选择在底部添加时间戳水印；When generating a lightbox image, you can choose to add a timestamp watermark at the bottom;
