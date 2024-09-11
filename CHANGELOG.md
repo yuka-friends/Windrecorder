@@ -8,6 +8,8 @@
 ## 0.0.26
 > 2024-09-10
 - 更新了隐藏命令行窗口的方式，现在可以一打开 start_app.bat 立即自动隐藏；Updated the way to hide the command line window. Now it can be automatically hidden immediately after opening start_app.bat;
+---rollout to new user--
+- 添加了是否启用记录浏览器链接的选项，如果感到浏览器卡顿，可以尝试关闭；Added the option to enable recording browser links. If you feel the browser is lagging, you can try to turn it off;
 
 ---
 
