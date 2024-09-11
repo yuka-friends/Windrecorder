@@ -165,6 +165,8 @@
         "rs_text_screenshot_array_help": "- Ideal for most users who store, recall, and search for memory clues;\n- Efficient, real-time, and updates only changed images;\n- Instant screen replay; auto-converts screenshots to video;\n- Skip specific content/window; record only foreground window;",
         "rs_checkbox_is_record_system_sound": "Record system sound",
         "rs_checkbox_convert_screenshots_to_vid_while_only_when_idle_or_plugged_in": "(Energy saving) Convert screenshots to videos only when idle or plugged in",
+        "rs_checkbox_record_deep_linking": "Record the current page link of web browser",
+        "rs_help_record_deep_linking": "Supports automatic recording of the page address currently browsed by Chrome, Microsoft Edge, and Firefox. If you feel that the browser browsing is slow/lag, please try to turn off this option.",
 
         "set_md_title": "### ⚙️ Settings",
         "set_md_index_db": "#### Database Index\n",
@@ -471,6 +473,8 @@
         "rs_text_screenshot_array_help": "- 适用于存储、回忆、搜索记忆线索的大多数用户；\n- 占用低系统资源，实时分析、只索引存在变化的画面；\n- 可以马上回溯已记录画面；截图完毕会自动转换为视频；\n- 可以精确跳过自定义窗口与内容，同时可以仅录制前台窗口；",
         "rs_checkbox_is_record_system_sound": "同时录制系统声音",
         "rs_checkbox_convert_screenshots_to_vid_while_only_when_idle_or_plugged_in": "（节能）仅在电脑空闲时或接入电源时将截图转换为视频",
+        "rs_checkbox_record_deep_linking": "记录浏览器当前页面链接",
+        "rs_help_record_deep_linking": "支持自动记录 Chrome、Microsoft Edge、Firefox 当前浏览的页面地址。如果感到浏览器浏览卡顿，请尝试关闭此选项。",
         
         "set_md_title": "### ⚙️ 设置",
         "set_md_index_db": "#### 数据库索引\n",
@@ -778,6 +782,8 @@
         "rs_text_screenshot_array_help": "- メモリの手がかりを保存、呼び出し、検索するほとんどのユーザーに適しています。\n- 占有するシステム リソースが少なく、リアルタイムで分析し、変更された画像のみにインデックスを作成します。\n- 記録された画像はすぐに呼び出すことができ、完了後に自動的にビデオに変換されます。\n - カスタマイズされたウィンドウとコンテンツは正確にスキップでき、前景ウィンドウのみを記録できます。",
         "rs_checkbox_is_record_system_sound": "システムサウンドを同時に録音します",
         "rs_checkbox_convert_screenshots_to_vid_while_only_when_idle_or_plugged_in": "(省電力) コンピューターがアイドル状態または電源に接続されている場合にのみ、スクリーンショットをビデオに変換します",
+        "rs_checkbox_record_deep_linking": "ブラウザの現在のページ リンクを記録します",
+        "rs_help_record_deep_linking": "Chrome、Microsoft Edge、Firefox が現在閲覧しているページ アドレスの自動記録をサポートします。ブラウザがスタックしていると感じる場合は、このオプションをオフにしてみてください。",
 
         "set_md_title": "### ⚙️ 設定",
         "set_md_index_db": "#### データベースインデックス\n",

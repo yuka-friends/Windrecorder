@@ -182,6 +182,10 @@ def render():
                             },
                         )
 
+        record_deep_linking = st.checkbox(
+            _t("rs_checkbox_record_deep_linking"), value=config.record_deep_linking, help=_t("rs_help_record_deep_linking")
+        )
+
         screentime_not_change_to_pause_record = st.number_input(
             _t("rs_input_stop_recording_when_screen_freeze"),
             value=config.screentime_not_change_to_pause_record,
@@ -317,6 +321,7 @@ def render():
             )
             config.set_and_save_config("is_record_system_sound", is_record_system_sound)
 
+            config.set_and_save_config("record_deep_linking", record_deep_linking)
             config.set_and_save_config("screentime_not_change_to_pause_record", screentime_not_change_to_pause_record)
             config.set_and_save_config("start_recording_on_startup", is_start_recording_on_start_app)
             config.set_and_save_config("OCR_index_strategy", ocr_strategy_option_dict[ocr_strategy_option])
