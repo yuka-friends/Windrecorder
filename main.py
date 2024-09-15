@@ -321,7 +321,7 @@ def main():
                     pass
 
     with tray_lock:
-        if not os.path.exists(DEBUGMODE_TRIGGER) or not os.path.exists(HIDE_CLI_TRIGGER):
+        if not os.path.exists(DEBUGMODE_TRIGGER) or os.path.exists(HIDE_CLI_TRIGGER):
             thread_hide_cli_window = threading.Thread(target=hide_cli_window)
             thread_hide_cli_window.start()
         else:
