@@ -32,3 +32,4 @@ cache_screenshot
 webui.bat
 test.bat
 wxocr-binary
+hide_CLI_by_python.txt

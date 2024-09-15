@@ -60,6 +60,9 @@
 > 
 > _Just set it and forget it！_
 
+> [!NOTE]
+> 如果打开`start_app.bat`后命令行窗口一闪而过、**过了一段时间 捕风记录仪 仍没有出现在系统托盘中**，请在目录下创建一个名为`hide_CLI_by_python.txt`的文件并打开`start_app.bat`重试； #232
+
 
 # 🦝 运作原理
 ![Windrecorder](https://github.com/yuka-friends/Windrecorder/blob/main/__assets__/how-it-work-sc.jpg)

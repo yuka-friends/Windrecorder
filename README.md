@@ -56,6 +56,8 @@ Windrecorder is a memory search app by records everything on your screen in smal
 >
 > _Just set it and forget it!_
 
+> [!NOTE]
+> If the command line window flashes after opening `start_app.bat` and **Windrecorder still does not appear in the system tray after a while**, please create a file named `hide_CLI_by_python.txt` in the directory and open `start_app.bat` and try again; #232
 
 # 🦝 How it works
 ![Windrecorder](https://github.com/yuka-friends/Windrecorder/blob/main/__assets__/how-it-work-en.jpg)
