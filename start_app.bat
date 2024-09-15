@@ -8,6 +8,7 @@ echo.
 echo   Please stay in this window until it disappears
 echo.
 
+cd /d %~dp0
 if exist "hide_CLI_by_python.txt" (
     goto begin
 ) else (
