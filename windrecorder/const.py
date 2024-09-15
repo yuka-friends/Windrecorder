@@ -33,6 +33,7 @@ DATAFRAME_COLUMN_NAMES = [
 ]
 
 DEBUGMODE_TRIGGER = "DEBUGMODE.txt"
+HIDE_CLI_TRIGGER = "hide_CLI_by_python.txt"
 
 LLM_FAIL_COPY = "System: Fail to get AI reply, please try again."
 LLM_SYSTEM_PROMPT_DEFAULT = "You are a helpful assistant."

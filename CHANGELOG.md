@@ -8,6 +8,9 @@
 ## 0.0.26
 > 2024-09-10
 - 更新了隐藏命令行窗口的方式，现在可以一打开 start_app.bat 立即自动隐藏；Updated the way to hide the command line window. Now it can be automatically hidden immediately after opening start_app.bat;
+    - 如果命令行窗口一闪而过、过了一段时间 捕风记录仪 仍没有出现在托盘中，这可能是由于新的隐藏方式与系统不兼容，请在目录下创建一个名为`hide_CLI_by_python.txt`的文件以回到原先兼容性更加的隐藏方式； #232
+    - If the command line window flashes by and the Windrecorder still does not appear in the tray after a while, it may be because the new hiding method is incompatible with the system. Please create a file named `hide_CLI_by_python.txt` in the directory to return to the original hiding method with more compatibility; #232
+
 ---rollout to new user--
 - 添加了是否启用记录浏览器链接的选项，如果感到浏览器卡顿，可以尝试关闭；Added the option to enable recording browser links. If you feel the browser is lagging, you can try to turn it off;
 
