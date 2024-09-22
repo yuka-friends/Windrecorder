@@ -10,6 +10,6 @@ cd ..
 cd ..
 
 :: extension code below
-title Create custom lightbox thumbnail - windrecorder
+title Custom webui background - windrecorder
 streamlit run "extension\set_custom_webui_background\_webui.py"
 pause
