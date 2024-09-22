@@ -304,7 +304,15 @@
         "lb_checkbox_add_watermark": "Add bottom watermark to lightbox images",
         "lb_btn_create_img": "Create image",
         "lb_text_create_img_instruction": "Generated results can be found in the folder {cache_dir}.",
-        "lb_text_title": "#### 📔 Custom Lightbox Generator"
+        "lb_text_title": "#### 📔 Custom Lightbox Generator",
+
+        "bg_text_no_image": "No image selected",
+        "bg_text_disable_bg": "Custom background image is disabled",
+        "bg_title": "### 🖼️ Custom webui background image",
+        "bg_text_opacity": "Opacity",
+        "bg_btn_remove_bg": "Remove background image",
+        "bg_btn_set_bg": "Set as background image",
+        "bg_btn_preview": "Preview effect"
     },
   
     "sc": {  
@@ -613,7 +621,16 @@
         "lb_checkbox_add_watermark": "为光箱图片添加底部水印",
         "lb_btn_create_img": "创建图片",
         "lb_text_create_img_instruction": "生成结果可以在文件夹 {cache_dir} 下找到。",
-        "lb_text_title": "#### 📔 自定义光箱生成器"
+        "lb_text_title": "#### 📔 自定义光箱生成器",
+
+        "bg_text_no_image": "没有选择图片",
+        "bg_text_disable_bg": "已关闭自定义背景图",
+        "bg_title": "### 🖼️ 自定义 webui 背景图片",
+        "bg_text_opacity": "不透明度",
+        "bg_btn_remove_bg": "移除背景图片",
+        "bg_btn_set_bg": "设置为背景图片",
+        "bg_btn_preview": "预览效果"
+        
     },
 
     "ja": {  
@@ -919,7 +936,15 @@
         "lb_checkbox_add_watermark": "ライトボックス画像に下透かしを追加する",
         "lb_btn_create_img": "イメージを作成",
         "lb_text_create_img_instruction": "生成された結果はフォルダー {cache_dir} にあります。",
-        "lb_text_title": "#### 📔 カスタム ライト ボックス ジェネレーター"
+        "lb_text_title": "#### 📔 カスタム ライト ボックス ジェネレーター",
+
+        "bg_text_no_image": "画像が選択されていません",
+        "bg_text_disable_bg": "カスタム背景画像がオフになりました",
+        "bg_title": "### 🖼️ カスタム Webui 背景画像",
+        "bg_text_opacity": "不透明度",
+        "bg_btn_remove_bg": "背景画像を削除",
+        "bg_btn_set_bg": "背景画像として設定",
+        "bg_btn_preview": "プレビュー効果"
     },
 
     "lang_map": {

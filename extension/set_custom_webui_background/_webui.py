@@ -49,7 +49,7 @@ def generate_preview_image(uploaded_file, opacity):
 
 def set_background(uploaded_file, opacity):
     if not uploaded_file:
-        st.toast("no image selected", icon="⚠️")
+        st.toast(_t("bg_text_no_image"), icon="⚠️")
         return
 
     save_path = os.path.join(config.userdata_dir, "custom", uploaded_file.name)
@@ -68,7 +68,7 @@ def clean_background():
     config.set_and_save_config("custom_background_opacity", 0.9)
     st.session_state["preview_img"] = None
 
-    st.toast("已关闭自定义背景图", icon="✅")
+    st.toast(_t("bg_text_disable_bg"), icon="✅")
 
 
 def main_webui():
@@ -86,19 +86,19 @@ def main_webui():
         if update_condition:
             st.session_state["preview_img"] = generate_preview_image(file, opacity)
 
-    st.markdown("### 🖼️ 自定义 webui 背景图片")
+    st.markdown(_t("bg_title"))
     col_1, col_2, col_3, col_4 = st.columns([1.5, 0.5, 3, 0.5])
     with col_1:
         file = st.file_uploader(
             _t("gs_text_upload_img"), type=["png", "jpg", "webp"], accept_multiple_files=False, on_change=update_preview
         )
-        opacity = st.slider("不透明度", min_value=0.01, max_value=0.99, value=0.9, step=0.01, on_change=update_preview)
+        opacity = st.slider(_t("bg_text_opacity"), min_value=0.01, max_value=0.99, value=0.9, step=0.01, on_change=update_preview)
 
         if config.custom_background_filepath:
-            if st.button("移除背景图片", use_container_width=True, type="secondary"):
+            if st.button(_t("bg_btn_remove_bg"), use_container_width=True, type="secondary"):
                 clean_background()
 
-        if st.button("设置为背景图片", use_container_width=True, type="primary", disabled=True if file is None else False):
+        if st.button(_t("bg_btn_set_bg"), use_container_width=True, type="primary", disabled=True if file is None else False):
             set_background(file, opacity)
 
         st.empty()
@@ -110,9 +110,9 @@ def main_webui():
     with col_3:
         update_preview()
         if st.session_state["preview_img"]:
-            st.image(st.session_state["preview_img"], caption="预览效果")
+            st.image(st.session_state["preview_img"], caption=_t("bg_btn_preview"))
         else:
-            st.image(overlay_image, caption="预览效果")
+            st.image(overlay_image, caption=_t("bg_btn_preview"))
         st.empty()
     with col_4:
         st.empty()
