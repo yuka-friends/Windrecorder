@@ -68,7 +68,7 @@ def clean_background():
     config.set_and_save_config("custom_background_opacity", 0.9)
     st.session_state["preview_img"] = None
 
-    st.toast(_t("bg_text_disable_bg"), icon="✅")
+    st.toast(_t("bg_text_disable_bg"), icon="🗑️")
 
 
 def main_webui():

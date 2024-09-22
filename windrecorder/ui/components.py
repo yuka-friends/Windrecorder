@@ -169,9 +169,14 @@ body {
     background: rgba(0,0,0,0) !important;
 }
 
-.chart-wrapper, .glideDataEditor, .st-ag, .st-cd, .st-d1, .st-bg, .st-co, .st-bp, .st-ct, .st-br, .st-bs, .st-bt, .st-bu, .st-c1, .st-cy, .st-ec, .st-ed {
+.chart-wrapper, .glideDataEditor, .st-ag, .st-cd, .st-d1, .st-bg, .st-co, .st-bp, .st-ct, .st-br, .st-bs, .st-bt, .st-bu, .st-c1, .st-cy, .st-ec, .st-ed, .rti--container {
+    mix-blend-mode: darken;
+}
+
+.step-down, .step-up {
     mix-blend-mode: multiply;
 }
+
 
 """
     )
