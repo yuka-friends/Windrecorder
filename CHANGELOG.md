@@ -8,6 +8,8 @@
 ## 0.0.27
 > 2024-09-17
 - 添加了是否启用记录浏览器链接的选项，如果感到浏览器卡顿，可以尝试关闭；Added the option to enable recording browser links. If you feel the browser is lagging, you can try to turn it off;
+---rollout to new user---
+- 添加了自定义 webui 背景图功能，可以在 extension/set_custom_webui_background 设置；Added custom webui background image, can be set in extension/set_custom_webui_background;
 
 ### Fixed
 - 修复了在启动一段时间后，当前台窗口标题包含 windrecorder 时可能会被错误隐藏的 bug；Fixed a bug where the foreground window might be hidden incorrectly when its title contains windrecorder after a while of startup;
