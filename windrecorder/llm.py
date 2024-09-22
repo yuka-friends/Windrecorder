@@ -197,9 +197,10 @@ margin-bottom: 16px;
 display: inline-block;
 padding: 6px 12px;
 margin: 4px 2px;
-background-color: #F5E9E1;
+background-color: #F6F2EF;
 border-radius: 30px;
 font-size: 14px;
+mix-blend-mode: multiply;
 }
     </style>
 

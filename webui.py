@@ -16,7 +16,9 @@ from windrecorder.utils import get_text as _t
 update_button_key = "update_button"
 
 st.set_page_config(page_title="Windrecord - webui", page_icon="🦝", layout="wide")
-if config.custom_background_filepath:
+if "css_injected" not in st.session_state:
+    st.session_state["css_injected"] = False
+if config.custom_background_filepath and not st.session_state["css_injected"]:
     windrecorder.ui.components.inject_custom_css()
 
 

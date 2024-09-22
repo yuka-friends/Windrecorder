@@ -139,6 +139,11 @@ def html_picture(imagepath, caption=None):
 
 # custom css
 def inject_custom_css():
+    if not os.path.exists(config.custom_background_filepath):
+        st.toast(f"自定义背景图不存在 {config.custom_background_filepath}，已停用背景图。")
+        config.set_and_save_config("custom_background_filepath", "")
+        return
+
     b64 = "data:image/png;base64, " + utils.image_to_base64(config.custom_background_filepath)
 
     custom_img_bg = f"background-image: url('{b64}') !important;"
@@ -172,3 +177,5 @@ body {
     )
 
     st.markdown(f"<style>{custom_css_text}</style>", unsafe_allow_html=True)
+    if "css_injected" not in st.session_state:
+        st.session_state["css_injected"] = True
