@@ -92,7 +92,9 @@ def main_webui():
         file = st.file_uploader(
             _t("gs_text_upload_img"), type=["png", "jpg", "webp"], accept_multiple_files=False, on_change=update_preview
         )
-        opacity = st.slider(_t("bg_text_opacity"), min_value=0.01, max_value=0.99, value=0.9, step=0.01, on_change=update_preview)
+        opacity = st.slider(
+            _t("bg_text_opacity"), min_value=0.01, max_value=0.99, value=0.9, step=0.01, on_change=update_preview
+        )
 
         if config.custom_background_filepath:
             if st.button(_t("bg_btn_remove_bg"), use_container_width=True, type="secondary"):
