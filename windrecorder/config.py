@@ -118,6 +118,8 @@ class Config:
         enable_ai_day_poem,
         ai_extract_tag_filter_words,
         enable_month_lightbox_watermark,
+        custom_background_filepath,
+        custom_background_opacity,
         **other_field,
     ) -> None:
         # If need to process input parameters, they should assign another variable name to prevent recursive writing into the config.
@@ -221,6 +223,8 @@ class Config:
         self.enable_ai_day_poem = enable_ai_day_poem
         self.ai_extract_tag_filter_words = ai_extract_tag_filter_words
         self.enable_month_lightbox_watermark = enable_month_lightbox_watermark
+        self.custom_background_filepath = custom_background_filepath
+        self.custom_background_opacity = custom_background_opacity
 
     def set_and_save_config(self, attr: str, value):
         if not hasattr(self, attr):

@@ -114,5 +114,7 @@
   "ai_extract_tag_in_idle_batch_size": 15,
   "ai_extract_max_tag_num": 15,
   "enable_ai_day_poem": false,
-  "ai_extract_tag_filter_words": ["Kim Jong-un"]
+  "ai_extract_tag_filter_words": ["Kim Jong-un"],
+  "custom_background_filepath": "",
+  "custom_background_opacity": 0.9
 }

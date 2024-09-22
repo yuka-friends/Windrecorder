@@ -16,6 +16,9 @@ from windrecorder.utils import get_text as _t
 update_button_key = "update_button"
 
 st.set_page_config(page_title="Windrecord - webui", page_icon="🦝", layout="wide")
+if config.custom_background_filepath:
+    windrecorder.ui.components.inject_custom_css()
+
 
 # 从GitHub检查更新、添加提醒 - 初始化状态
 if "update_info" not in st.session_state:
