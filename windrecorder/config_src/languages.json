@@ -312,7 +312,8 @@
         "bg_text_opacity": "Opacity",
         "bg_btn_remove_bg": "Remove background image",
         "bg_btn_set_bg": "Set as background image",
-        "bg_btn_preview": "Preview effect"
+        "bg_btn_preview": "Preview effect",
+        "bg_text_not_existed": "Custom background image does not exist {custom_background_filepath}, the background image has been disabled."
     },
   
     "sc": {  
@@ -629,7 +630,8 @@
         "bg_text_opacity": "不透明度",
         "bg_btn_remove_bg": "移除背景图片",
         "bg_btn_set_bg": "设置为背景图片",
-        "bg_btn_preview": "预览效果"
+        "bg_btn_preview": "预览效果",
+        "bg_text_not_existed": "自定义背景图不存在 {custom_background_filepath}，已停用背景图。"
         
     },
 
@@ -944,7 +946,8 @@
         "bg_text_opacity": "不透明度",
         "bg_btn_remove_bg": "背景画像を削除",
         "bg_btn_set_bg": "背景画像として設定",
-        "bg_btn_preview": "プレビュー効果"
+        "bg_btn_preview": "プレビュー効果",
+        "bg_text_not_existed": "カスタム背景画像 {custom_background_filepath} が存在しません。背景画像は無効になっています。"
     },
 
     "lang_map": {

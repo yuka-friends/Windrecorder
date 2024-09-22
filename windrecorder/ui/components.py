@@ -140,7 +140,7 @@ def html_picture(imagepath, caption=None):
 # custom css
 def inject_custom_css():
     if not os.path.exists(config.custom_background_filepath):
-        st.toast(f"自定义背景图不存在 {config.custom_background_filepath}，已停用背景图。")
+        st.toast(_t("bg_text_not_existed").format(custom_background_filepath=config.custom_background_filepath), icon="⚠️")
         config.set_and_save_config("custom_background_filepath", "")
         return
 
