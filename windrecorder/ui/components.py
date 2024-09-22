@@ -7,6 +7,7 @@ import streamlit as st
 
 from windrecorder import file_utils, flag_mark_note, record_wintitle, utils
 from windrecorder.config import config
+from windrecorder.const import ST_BACKGROUNDCOLOR
 from windrecorder.db_manager import db_manager
 from windrecorder.llm import component_day_or_month_tags
 from windrecorder.logger import get_logger
@@ -134,3 +135,52 @@ def html_picture(imagepath, caption=None):
     )
     if caption:
         st.caption("<p align='center'>" + caption + "</p>", unsafe_allow_html=True)
+
+
+# custom css
+def inject_custom_css():
+    if not os.path.exists(config.custom_background_filepath):
+        st.toast(_t("bg_text_not_existed").format(custom_background_filepath=config.custom_background_filepath), icon="⚠️")
+        config.set_and_save_config("custom_background_filepath", "")
+        return
+
+    b64 = "data:image/png;base64, " + utils.image_to_base64(config.custom_background_filepath)
+
+    custom_img_bg = f"background-image: url('{b64}') !important;"
+    custom_img_bg_opacity = f"background-color: rgba({ST_BACKGROUNDCOLOR[0]}, {ST_BACKGROUNDCOLOR[1]}, {ST_BACKGROUNDCOLOR[2]}, {config.custom_background_opacity}) !important;"
+
+    custom_css_text = (
+        """
+body {
+"""
+        + custom_img_bg
+        + """
+        background-color: rgb(0,0,0,0) !important;
+        background-position: top;
+        background-repeat: no-repeat;
+        background-size: cover;
+    }
+.stApp {
+"""
+        + custom_img_bg_opacity
+        + """
+}
+[class^="st-emotion-cache-"] {
+    background: rgba(0,0,0,0) !important;
+}
+
+.chart-wrapper, .glideDataEditor, .st-ag, .st-cd, .st-d1, .st-bg, .st-co, .st-bp, .st-ct, .st-br, .st-bs, .st-bt, .st-bu, .st-c1, .st-cy, .st-ec, .st-ed, .rti--container {
+    mix-blend-mode: darken;
+}
+
+.step-down, .step-up {
+    mix-blend-mode: multiply;
+}
+
+
+"""
+    )
+
+    st.markdown(f"<style>{custom_css_text}</style>", unsafe_allow_html=True)
+    if "css_injected" not in st.session_state:
+        st.session_state["css_injected"] = True
