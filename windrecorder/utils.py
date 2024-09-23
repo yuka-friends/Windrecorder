@@ -874,20 +874,6 @@ def is_power_plugged_in():
         return True
 
 
-def is_laptop():
-    # 获取系统电源状态和类型
-    try:
-        batt = ctypes.windll.kernel32.GetSystemMetrics(0x8000)
-    except Exception:
-        return False
-
-    # 笔记本电脑的值范围为 1-4
-    if batt in range(1, 5):
-        return True
-    else:
-        return False
-
-
 def print_table(data: list, indentation_cnt=0):
     # data = [
     #     ["姓名", "年龄", "城市"],

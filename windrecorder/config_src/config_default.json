@@ -94,7 +94,6 @@
   "screenshot_interrupt_recording_count": 40,
   "ocr_compare_similarity": 0.7,
   "ocr_compare_similarity_in_table": 0.94,
-  "convert_screenshots_to_vid_while_only_when_idle_or_plugged_in": false,
   "is_record_system_sound": false,
   "record_foreground_window_process_name": true,
   "record_deep_linking": true,
@@ -116,5 +115,6 @@
   "enable_ai_day_poem": false,
   "ai_extract_tag_filter_words": ["Kim Jong-un"],
   "custom_background_filepath": "",
-  "custom_background_opacity": 0.9
+  "custom_background_opacity": 0.9,
+  "convert_screenshots_to_vid_energy_saving_mode": 0
 }
