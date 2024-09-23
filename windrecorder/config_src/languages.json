@@ -166,6 +166,11 @@
         "rs_checkbox_is_record_system_sound": "Record system sound",
         "rs_checkbox_record_deep_linking": "Record the current page link of web browser",
         "rs_help_record_deep_linking": "Supports automatic recording of the page address currently browsed by Chrome, Microsoft Edge, and Firefox. If you feel that the browser browsing is slow/lag, please try to turn off this option.",
+        "rs_text_energy_saving": "When to combine screenshots into video",
+        "rs_text_energy_saving_help": "In order to ensure the storage and playback experience, it is recommended to adjust the setting to `Only when the computer is idle and plugged in` when the computer performance is insufficient and the high usage of programs causes computer lagging.",
+        "rs_option_energy_saving_instantly": "Immediately when the clip finished",
+        "rs_option_energy_saving_plug": "Immediately, but only when plugged in (for laptop only)",
+        "rs_option_energy_saving_idle": "Only when the computer is idle and plugged in",
 
         "set_md_title": "### ⚙️ Settings",
         "set_md_index_db": "#### Database Index\n",
@@ -482,7 +487,12 @@
         "rs_checkbox_is_record_system_sound": "同时录制系统声音",
         "rs_checkbox_record_deep_linking": "记录浏览器当前页面链接",
         "rs_help_record_deep_linking": "支持自动记录 Chrome、Microsoft Edge、Firefox 当前浏览的页面地址。如果感到浏览器浏览卡顿，请尝试关闭此选项。",
-        
+        "rs_text_energy_saving": "什么时候将截图合成为视频",
+        "rs_text_energy_saving_help": "为了保证储存与回放体验，建议仅当电脑性能不足、感到程序高占用导致电脑卡顿时，调整至仅在空闲时合成视频。",
+        "rs_option_energy_saving_instantly": "在片段录制完时立即合成",
+        "rs_option_energy_saving_plug": "立即合成，但仅在插入电源时（仅笔记本电脑适用）",
+        "rs_option_energy_saving_idle": "仅在电脑空闲、且接入电源时",
+
         "set_md_title": "### ⚙️ 设置",
         "set_md_index_db": "#### 数据库索引\n",
         "set_checkbox_shutdown_after_updated": "更新完毕后关闭计算机",
@@ -800,7 +810,12 @@
         "rs_checkbox_is_record_system_sound": "システムサウンドを同時に録音します",
         "rs_checkbox_record_deep_linking": "ブラウザの現在のページ リンクを記録します",
         "rs_help_record_deep_linking": "Chrome、Microsoft Edge、Firefox が現在閲覧しているページ アドレスの自動記録をサポートします。ブラウザがスタックしていると感じる場合は、このオプションをオフにしてみてください。",
-
+        "rs_text_energy_ Saving": "スクリーンショットをビデオに結合する場合",
+        "rs_text_energy_ Saving_help": "ストレージと再生のエクスペリエンスを確保するために、コンピューターのパフォーマンスが不十分で、プログラムの使用率が高いためにコンピューターが停止している場合、アイドル時にのみビデオを合成するように調整することをお勧めします。",
+        "rs_option_energy_ Saving_instantly": "クリップが記録されたらすぐに合成します",
+        "rs_option_energy_ Saving_plug": "接続されている場合のみ (ラップトップのみ)",
+        "rs_option_energy_ Saving_idle": "コンピューターがアイドル状態で電源に接続されている場合のみ",
+        
         "set_md_title": "### ⚙️ 設定",
         "set_md_index_db": "#### データベースインデックス\n",
         "set_checkbox_shutdown_after_updated": "更新が完了したらコンピューターをシャットダウン",

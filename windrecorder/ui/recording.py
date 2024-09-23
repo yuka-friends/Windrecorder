@@ -30,7 +30,11 @@ def render():
     screenshot_interval_second = config.screenshot_interval_second
     record_screenshot_method_capture_foreground_window_only = config.record_screenshot_method_capture_foreground_window_only
     is_record_system_sound = config.is_record_system_sound
-    energy_saving_mode_option = [(0, "实时将截图合成为视频"), (1, "仅在插入电源时实时合成视频（仅笔记本电脑适用）"), (2, "仅在电脑空闲、且接入电源时自动合成视频")]
+    energy_saving_mode_option = [
+        (0, _t("rs_option_energy_saving_instantly")),
+        (1, _t("rs_option_energy_saving_plug")),
+        (2, _t("rs_option_energy_saving_idle")),
+    ]
     convert_screenshots_to_vid_energy_saving_mode = [
         value
         for index, value in enumerate(energy_saving_mode_option)
@@ -99,14 +103,14 @@ def render():
             )
 
             convert_screenshots_to_vid_energy_saving_mode = st.radio(
-                "🍃 " + "节能选项",
+                "🍃 " + _t("rs_text_energy_saving"),
                 [i[1] for i in energy_saving_mode_option],
                 index=[
                     index
                     for index, value in enumerate(energy_saving_mode_option)
                     if value[0] == config.convert_screenshots_to_vid_energy_saving_mode
                 ][0],
-                help="为了保证储存与回放体验，建议仅当电脑性能不足、感到程序高占用导致电脑卡顿时，调整至仅在空闲时合成视频。",
+                help=_t("rs_text_energy_saving_help"),
             )
             with record_mode_col_tip1:
                 if record_screenshot_method_capture_foreground_window_only:
