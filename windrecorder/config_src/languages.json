@@ -129,7 +129,7 @@
         "rs_text_ocr_auto_update": "Automatically index when the video clip is recorded (Recommended)",
         "rs_selectbox_ocr_strategy": "OCR Indexing Strategy",
         "rs_input_vid_store_time_help": "0 for never delete. Even if video file has been cleaned, the indexed data will still be retained and can be retrieved, it will just be missing the footage.",
-        "rs_input_vid_compress_time": "Compress original video after days",
+        "rs_input_vid_compress_time": "Compress video after days",
         "rs_input_vid_compress_time_help": "0 for never compress.",
         "rs_selectbox_compress_ratio": "Picture compression ratio",
         "rs_selectbox_compress_ratio_help": "0.75 times scaling can compress the original video size to 1/4, 0.5 times to 1/8, 0.25 times to 1/16. Compression ratio may vary depending on the video's specific content.",
