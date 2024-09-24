@@ -81,7 +81,11 @@ def idle_maintain_process_main():
                     except FileNotFoundError:
                         pass
         # 将缓存截图转换为视频
-        if not config.convert_screenshots_to_vid_while_only_when_idle_or_plugged_in or utils.is_power_plugged_in():
+        condition_convert_screenshots_to_vid = True
+        if config.convert_screenshots_to_vid_energy_saving_mode != 0 and not utils.is_power_plugged_in():
+            condition_convert_screenshots_to_vid = False
+
+        if condition_convert_screenshots_to_vid:
             record.index_cache_screenshots_dir_process()
         # 清理过期与已转换为视频的截图缓存文件夹
         record.clean_cache_screenshots_dir_process()
@@ -165,8 +169,15 @@ def continuously_record_screen():
             elif config.record_mode == "screenshot_array":
                 saved_dir_filepath = record.record_screen_via_screenshot_process()  # 使用连续截图录制屏幕
 
-                # convert to video startegy
-                if not config.convert_screenshots_to_vid_while_only_when_idle_or_plugged_in or utils.is_power_plugged_in():
+                # convert to video startegy instantly
+                condition_convert_screenshots_to_vid = False
+                if config.convert_screenshots_to_vid_energy_saving_mode == 0:
+                    condition_convert_screenshots_to_vid = True
+                elif config.convert_screenshots_to_vid_energy_saving_mode == 1:
+                    if utils.is_power_plugged_in():
+                        condition_convert_screenshots_to_vid = True
+
+                if condition_convert_screenshots_to_vid:
                     thread_convert_screenshots_into_video = threading.Thread(
                         target=record.convert_screenshots_dir_into_video_process,
                         args=(saved_dir_filepath,),
@@ -262,7 +273,14 @@ def main():
                 threading.Thread(target=ocr_manager.ocr_manager_main, daemon=True).start()
 
             # 将未转换为视频的截图缓存进行转换
-            if not config.convert_screenshots_to_vid_while_only_when_idle_or_plugged_in or utils.is_power_plugged_in():
+            condition_convert_screenshots_to_vid = False
+            if config.convert_screenshots_to_vid_energy_saving_mode == 0:
+                condition_convert_screenshots_to_vid = True
+            elif config.convert_screenshots_to_vid_energy_saving_mode == 1:
+                if utils.is_power_plugged_in():
+                    condition_convert_screenshots_to_vid = True
+
+            if condition_convert_screenshots_to_vid:
                 threading.Thread(target=record.index_cache_screenshots_dir_process, daemon=True).start()
 
             # 清理已转换为视频的截图缓存

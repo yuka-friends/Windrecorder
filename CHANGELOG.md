@@ -9,7 +9,8 @@
 > 2024-09-17
 - 添加了是否启用记录浏览器链接的选项，如果感到浏览器卡顿，可以尝试关闭；Added the option to enable recording browser links. If you feel the browser is lagging, you can try to turn it off;
 ---rollout to new user---
-- 添加了自定义 webui 背景图功能，可以在 extension/set_custom_webui_background 设置；Added custom webui background image, can be set in extension/set_custom_webui_background;
+- 添加了自定义 webui 背景图功能，可以在 `extension/set_custom_webui_background` 设置；Added custom webui background image, can be set in `extension/set_custom_webui_background`;
+- 🍃 细化 灵活截图模式 的节能策略选项，可以选择立即合成、仅在插电时合成（限笔记本电脑）、仅在电脑空闲时合成视频；修复了 PC 由于一直插电、导致无法设定为仅闲时合成视频的问题；Refine the energy-saving strategy options of Flexible Screenshot Mode, you can choose to synthesize immediately, synthesize only when plugged in (limited to laptops), and synthesize video only when the computer is idle; fix the problem that the PC cannot be set to synthesize video only when idle because it is always plugged in; https://github.com/yuka-friends/Windrecorder/issues/237
 
 ### Fixed
 - 修复了在启动一段时间后，当前台窗口标题包含 windrecorder 时可能会被错误隐藏的 bug；Fixed a bug where the foreground window might be hidden incorrectly when its title contains windrecorder after a while of startup;
@@ -27,7 +28,7 @@
 ## 0.0.25
 > 2024-09-01
 - 生成光箱图片时，可以选择在底部添加时间戳水印；When generating a lightbox image, you can choose to add a timestamp watermark at the bottom;
-- 添加了自定义光箱缩略图生成器，可以从任意日期范围创建光箱图片，支持自定义缩略图数量、分布模式、图像大小等。你可以在 `extension\create_custom_lightbox_thumbnail_image` 进行使用；Added custom lightbox thumbnail generator, which can create lightbox images from any date range, supports custom thumbnail count, distribution pattern, image size, etc. You can use it in `extension\create_custom_lightbox_thumbnail_image`;
+- 添加了自定义光箱缩略图生成器，可以从任意日期范围创建光箱图片，支持自定义缩略图数量、分布模式、图像大小等。你可以在 `extension\create_custom_lightbox_thumbnail_image` 进行使用；Added custom lightbox thumbnail generator, which can create lightbox images from any date range, supports custom thumbnail count, distribution pattern, image size, etc. You can use it in `extension\create_custom_lightbox_thumbnail_image`; https://github.com/yuka-friends/Windrecorder/issues/226
 
 ![create_custom_lightbox_thumbnail_image](https://github.com/yuka-friends/Windrecorder/blob/main/extension/create_custom_lightbox_thumbnail_image/_preview.jpg)
 

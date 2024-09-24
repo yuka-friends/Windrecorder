@@ -30,9 +30,16 @@ def render():
     screenshot_interval_second = config.screenshot_interval_second
     record_screenshot_method_capture_foreground_window_only = config.record_screenshot_method_capture_foreground_window_only
     is_record_system_sound = config.is_record_system_sound
-    convert_screenshots_to_vid_while_only_when_idle_or_plugged_in = (
-        config.convert_screenshots_to_vid_while_only_when_idle_or_plugged_in
-    )
+    energy_saving_mode_option = [
+        (0, _t("rs_option_energy_saving_instantly")),
+        (1, _t("rs_option_energy_saving_plug")),
+        (2, _t("rs_option_energy_saving_idle")),
+    ]
+    convert_screenshots_to_vid_energy_saving_mode = [
+        value
+        for index, value in enumerate(energy_saving_mode_option)
+        if value[0] == config.convert_screenshots_to_vid_energy_saving_mode
+    ][0][1]
 
     st.markdown(_t("rs_md_title"))
 
@@ -94,9 +101,16 @@ def render():
                 _t("rs_checkbox_record_screenshot_method_capture_foreground_window_only"),
                 value=config.record_screenshot_method_capture_foreground_window_only,
             )
-            convert_screenshots_to_vid_while_only_when_idle_or_plugged_in = st.checkbox(
-                _t("rs_checkbox_convert_screenshots_to_vid_while_only_when_idle_or_plugged_in"),
-                value=config.convert_screenshots_to_vid_while_only_when_idle_or_plugged_in,
+
+            convert_screenshots_to_vid_energy_saving_mode = st.radio(
+                "🍃 " + _t("rs_text_energy_saving"),
+                [i[1] for i in energy_saving_mode_option],
+                index=[
+                    index
+                    for index, value in enumerate(energy_saving_mode_option)
+                    if value[0] == config.convert_screenshots_to_vid_energy_saving_mode
+                ][0],
+                help=_t("rs_text_energy_saving_help"),
             )
             with record_mode_col_tip1:
                 if record_screenshot_method_capture_foreground_window_only:
@@ -316,8 +330,10 @@ def render():
                 record_screenshot_method_capture_foreground_window_only,
             )
             config.set_and_save_config(
-                "convert_screenshots_to_vid_while_only_when_idle_or_plugged_in",
-                convert_screenshots_to_vid_while_only_when_idle_or_plugged_in,
+                "convert_screenshots_to_vid_energy_saving_mode",
+                [value for value in energy_saving_mode_option if value[1] == convert_screenshots_to_vid_energy_saving_mode][0][
+                    0
+                ],
             )
             config.set_and_save_config("is_record_system_sound", is_record_system_sound)
 
