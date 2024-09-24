@@ -3,5 +3,5 @@
     "developer_name": "antonoko",
     "developer_url": "https://github.com/Antonoko",
     "version": "0.0.1",
-    "description_markdown": "将尚未转换为视频的缓存截图文件转换为视频（适用于 灵活截图模式 下、积攒了许多闲时没来得及被转换为视频的截图缓存时，进行的手动操作）。\nConvert cached screenshot files that have not yet been converted to videos into videos (applicable to manual operations in Flexible Screenshot Mode when there are many cached screenshots that have not been converted to videos in time)."
+    "description_markdown": "此脚本可以将尚未转换为视频的缓存截图文件转换为视频（适用于 灵活截图模式 下、积攒了许多闲时没来得及被转换为视频的截图缓存时，进行的手动操作）。\nThis script can convert cached screenshot files that have not yet been converted to videos into videos (applicable to manual operations in Flexible Screenshot Mode when there are many cached screenshots that have not been converted to videos in time)."
 }

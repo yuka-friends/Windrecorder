@@ -10,6 +10,6 @@ cd ..
 cd ..
 
 :: extension code below
-title windrecorder
-python "_main.py"
+title Windrecorder
+python "extension\manually_convert_screenshot_cache_into_video\_main.py"
 pause
