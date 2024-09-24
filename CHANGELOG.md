@@ -5,14 +5,17 @@
 >
 > If app cannot upgrade correctly, try executing the command `git fetch origin | git reset --hard origin/main` in the directory and then running `install_update.bat`
 
+## 0.0.28
+> 2024-09-24
+- 添加了自定义 webui 背景图功能，可以在 `extension/set_custom_webui_background` 设置；Added custom webui background image, can be set in `extension/set_custom_webui_background`;
+- 🍃 细化 灵活截图模式 的节能策略选项，可以选择立即合成、仅在插电时合成（限笔记本电脑）、仅在电脑空闲时合成视频；修复了 PC 由于一直插电、导致无法设定为仅闲时合成视频的问题；Refine the energy-saving strategy options of Flexible Screenshot Mode, you can choose to synthesize immediately, synthesize only when plugged in (limited to laptops), and synthesize video only when the computer is idle; fix the problem that the PC cannot be set to synthesize video only when idle because it is always plugged in; https://github.com/yuka-friends/Windrecorder/issues/237
+- 提高了 webui 在记录数据较多时的初始化速度，通过优化了 check_is_onboarding 的判断逻辑；Improved the initialization speed of webui when recording a lot of data by optimizing the judgment logic of check_is_onboarding;
+
+---
+
 ## 0.0.27
 > 2024-09-17
 - 添加了是否启用记录浏览器链接的选项，如果感到浏览器卡顿，可以尝试关闭；Added the option to enable recording browser links. If you feel the browser is lagging, you can try to turn it off;
----rollout to new user---
-- 添加了自定义 webui 背景图功能，可以在 `extension/set_custom_webui_background` 设置；Added custom webui background image, can be set in `extension/set_custom_webui_background`;
-- 🍃 细化 灵活截图模式 的节能策略选项，可以选择立即合成、仅在插电时合成（限笔记本电脑）、仅在电脑空闲时合成视频；修复了 PC 由于一直插电、导致无法设定为仅闲时合成视频的问题；Refine the energy-saving strategy options of Flexible Screenshot Mode, you can choose to synthesize immediately, synthesize only when plugged in (limited to laptops), and synthesize video only when the computer is idle; fix the problem that the PC cannot be set to synthesize video only when idle because it is always plugged in; https://github.com/yuka-friends/Windrecorder/issues/237
-- 提高了 webui 在记录数据较多时的初始化速度，通过优化了check_is_onboarding的判断逻辑；Improved the initialization speed of webui when recording a lot of data by optimizing the judgment logic of check_is_onboarding;
-
 
 ### Fixed
 - 修复了在启动一段时间后，当前台窗口标题包含 windrecorder 时可能会被错误隐藏的 bug；Fixed a bug where the foreground window might be hidden incorrectly when its title contains windrecorder after a while of startup;
