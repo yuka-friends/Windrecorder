@@ -845,6 +845,11 @@ class _DBManager:
 
     # 检测是否初次使用工具，如果不存在数据库/数据库中只有一条数据，则判定为是
     def check_is_onboarding(self):
+        if (
+            len(file_utils.get_file_path_list(config.db_path_ud)) > 2
+        ):  # quick check after a period of application, avoid checking all databases
+            return False
+
         is_db_existed = self.db_main_initialize()
         db_file_count = len(self.get_db_filename_dict())
         if not is_db_existed:
