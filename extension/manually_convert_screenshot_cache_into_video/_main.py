@@ -3,7 +3,7 @@ import subprocess
 import sys
 from os import getpid
 
-from windrecorder import record, utils, win_ui
+from windrecorder import img_embed_manager, record, utils, win_ui
 from windrecorder.config import config  # NOQA: E402
 from windrecorder.exceptions import LockExistsException  # NOQA: E402
 from windrecorder.lock import FileLock  # NOQA: E402
@@ -12,6 +12,10 @@ from windrecorder.lock import FileLock  # NOQA: E402
 def convert_process():
     print("\n正在将截图缓存合成为视频...\nCombining screenshot cache into video...")
     record.index_cache_screenshots_dir_process()
+
+    if config.enable_img_embed_search and config.img_embed_module_install:
+        print("\n正在将嵌入视频图片向量...\nEmbedding video image vector...")
+        img_embed_manager.all_videofile_do_img_embedding_routine(video_queue_batch=1000)
 
     print("\n清理已转换的缓存...\nCleaning converted cache...")
     record.clean_cache_screenshots_dir_process()
