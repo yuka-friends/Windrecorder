@@ -57,7 +57,9 @@ def request_llm_one_shot(
     except Exception as e:
         logger.error(e)
         return False, LLM_FAIL_COPY
-
+    if not hasattr(completion, "choices") or len(completion.choices) == 0:
+        logger.error("No completion.choices")
+        return False, LLM_FAIL_COPY
     logger.info(completion.choices[0].message.content)
     return True, completion.choices[0].message.content
 
@@ -365,23 +367,23 @@ def generate_and_save_day_poem(date_in: datetime.date):
     if dt_str in cache_data_tags.keys():
         success, day_poem, plain_text = generate_day_poem_by_tag_lst(date_in, cache_data_tags[dt_str])
 
-    if success:
-        cache_data_poem[dt_str] = day_poem
-        file_utils.save_dict_as_json_to_path(cache_data_poem, cache_path_poem)
-        return True, day_poem, plain_text
-    else:
-        try:
-            if dt_str in cache_data_poem.keys():
-                if len(cache_data_poem[dt_str]) > 0:
-                    if "retry_times" in cache_data_poem[dt_str]:
-                        time_count = int(cache_data_poem[dt_str].split(":")[1])
-                        time_count += 1
-                        cache_data_poem[dt_str] = f"retry_times:{time_count}"
-            else:
-                cache_data_poem[dt_str] = "retry_times:1"
+        if success:
+            cache_data_poem[dt_str] = day_poem
             file_utils.save_dict_as_json_to_path(cache_data_poem, cache_path_poem)
-        except Exception as e:
-            logger.warning(f"caching retry fail: {e}")
+            return True, day_poem, plain_text
+        else:
+            try:
+                if dt_str in cache_data_poem.keys():
+                    if len(cache_data_poem[dt_str]) > 0:
+                        if "retry_times" in cache_data_poem[dt_str]:
+                            time_count = int(cache_data_poem[dt_str].split(":")[1])
+                            time_count += 1
+                            cache_data_poem[dt_str] = f"retry_times:{time_count}"
+                else:
+                    cache_data_poem[dt_str] = "retry_times:1"
+                file_utils.save_dict_as_json_to_path(cache_data_poem, cache_path_poem)
+            except Exception as e:
+                logger.warning(f"caching retry fail: {e}")
         return False, "", plain_text
 
 
