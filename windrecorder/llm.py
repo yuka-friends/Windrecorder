@@ -58,7 +58,7 @@ def request_llm_one_shot(
         logger.error(e)
         return False, LLM_FAIL_COPY
     if not hasattr(completion, "choices") or len(completion.choices) == 0:
-        logger.error("No completion.choices")
+        logger.error(f"No completion.choices, {completion=}")
         return False, LLM_FAIL_COPY
     logger.info(completion.choices[0].message.content)
     return True, completion.choices[0].message.content
