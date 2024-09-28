@@ -13,6 +13,11 @@
 
 ![set_custom_webui_background](https://github.com/yuka-friends/Windrecorder/blob/main/extension/set_custom_webui_background/_preview.jpg)
 
+
+### Fixed
+---rollout to new user---
+- 正确捕获 LLM 生成出错时的异常；Handle exceptions when LLM generation fails; (@X-T-E-R)
+
 ---
 
 ## 0.0.27
