@@ -419,4 +419,4 @@ def component_flag_mark():
         ) and not st.session_state.df_flag_mark_note.equals(st.session_state.df_flag_mark_note_last_change):
             st_save_flag_mark_note_from_editor(st.session_state.df_flag_mark_note_origin, st.session_state.df_flag_mark_note)
             st.session_state.df_flag_mark_note_last_change = st.session_state.df_flag_mark_note  # 更新 diff
-            st.experimental_rerun()
+            st.rerun()
