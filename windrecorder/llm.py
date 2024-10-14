@@ -221,7 +221,7 @@ mix-blend-mode: multiply;
             component_day_poem(date_in)
         _render_tags(day_tags_lst)
     else:
-        if st.button(label="✨ " + _t("lab_btn_generate_tags")):
+        if st.button(label="✨ " + _t("lab_btn_generate_tags"), key=_t("lab_btn_generate_tags") + str(date_in)):
             with st.spinner(_t("lab_text_generating_tags")):
                 success, day_tags_lst, plain_text = generate_and_save_day_or_month_tags(date_in, type=type)
                 if success:
