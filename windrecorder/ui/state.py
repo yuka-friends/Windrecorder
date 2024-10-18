@@ -102,7 +102,8 @@ def render():
                         dt_month_end=datetime.datetime(_dt_lightbox.year, _dt_lightbox.month, _month_days, 23, 59, 59),
                         img_saved_name=current_month_lightbox_img_name,
                     )
-                    del st.session_state[f"html_pic_b64_cache_{current_month_lightbox_img_name}"]
+                    if f"html_pic_b64_cache_{current_month_lightbox_img_name}" in st.session_state:
+                        del st.session_state[f"html_pic_b64_cache_{current_month_lightbox_img_name}"]
 
             if os.path.exists(current_month_lightbox_img_path):
                 st.caption(_t("stat_text_custom_lightbox"))
