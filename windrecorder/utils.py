@@ -357,7 +357,7 @@ def calc_vid_inside_time(df, num):
     # 用记录时的总时间减去视频文件时间（开始记录的时间）即可得到相对的时间
     vid_timestamp = fulltime - dtstr_to_seconds(vidfilename)
     logger.info(f"utils: video file fulltime:{fulltime}\n" f" vidfilename:{vidfilename}\n" f" vid_timestamp:{vid_timestamp}\n")
-    return vid_timestamp
+    return abs(vid_timestamp)
 
 
 # 估计索引时间
