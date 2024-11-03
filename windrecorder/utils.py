@@ -20,9 +20,10 @@ import cv2
 import mss
 import pandas as pd
 import psutil
+import pythoncom
 import requests
 from PIL import Image
-from pyshortcuts import make_shortcut
+from win32com.client import Dispatch
 
 from windrecorder import __version__, file_utils
 from windrecorder.config import config
@@ -723,6 +724,25 @@ def is_file_already_in_startup(filename):
         return False
 
 
+def create_shortcut(target_path, shortcut_path):
+    """
+    创建Windows快捷方式
+    :param target_path: 目标程序的完整路径
+    :param shortcut_path: 快捷方式保存的路径
+    """
+    pythoncom.CoInitialize()
+
+    try:
+        shell = Dispatch("WScript.Shell")
+        shortcut = shell.CreateShortCut(shortcut_path)
+        shortcut.Targetpath = target_path
+        shortcut.WorkingDirectory = os.path.dirname(target_path)
+        shortcut.save()
+    finally:
+        # 释放COM资源
+        pythoncom.CoUninitialize()
+
+
 # 将应用设置为开机启动
 def change_startup_shortcut(is_create=True):
     startup_folder = os.path.join(
@@ -740,7 +760,7 @@ def change_startup_shortcut(is_create=True):
         if not os.path.exists(shortcut_path):
             current_dir = os.getcwd()
             bat_path = os.path.join(current_dir, "start_app.bat")
-            make_shortcut(bat_path, folder=startup_folder)
+            create_shortcut(bat_path, shortcut_path)
             logger.info("record: The shortcut has been created and added to the startup items")
     else:
         # 移除快捷方式
