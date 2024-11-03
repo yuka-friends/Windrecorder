@@ -19,6 +19,7 @@
 - 正确捕获 LLM 生成出错时的异常；Handle exceptions when LLM generation fails; (@X-T-E-R)
 - 统计页跨月时，LLM 标签按钮可能因 key name 冲突而报错；When the statistics page spans across months, the LLM label button may report an error due to key name conflict;
 - 在保存旗标表格时，因使用了过时的 experimental rerun 而导致报错；When saving the flag table, an error occurred due to using the outdated experimental rerun;
+- 修复了创建开机快捷方式可能导致程序崩溃的问题；Fixed an issue where creating a startup shortcut could cause the program to crash;（@zhentouyu）#162
 
 ---
 

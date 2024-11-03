@@ -2768,25 +2768,6 @@ url = "https://pypi.org/simple"
 reference = "pypi-default"
 
 [[package]]
-name = "pyshortcuts"
-version = "1.9.0"
-description = "Create desktop and Start Menu shortcuts for python scripts"
-optional = false
-python-versions = ">=3.8"
-files = [
-    {file = "pyshortcuts-1.9.0-py3-none-any.whl", hash = "sha256:54d12ed8cd29bf83ac15153ce882a77072f2032b5f979474c519a2bac5af849d"},
-    {file = "pyshortcuts-1.9.0.tar.gz", hash = "sha256:016e89111337f74ce1ba3f4b79b295a643bc70b3e63ce4600247aa4bafa06877"},
-]
-
-[package.dependencies]
-pywin32 = {version = "*", markers = "platform_system == \"Windows\""}
-
-[package.source]
-type = "legacy"
-url = "https://pypi.org/simple"
-reference = "pypi-default"
-
-[[package]]
 name = "pystray"
 version = "0.19.5"
 description = "Provides systray integration"
@@ -3988,4 +3969,4 @@ reference = "pypi-default"
 [metadata]
 lock-version = "2.0"
 python-versions = ">=3.10,<3.12"
-content-hash = "16d112d271876b322ec63b380b03efe27cbacb97840d09a389f72a2ce329df92"
+content-hash = "2366d6ce9393f210a199e75a786e9e05e41ae3233c1ce24a2e34012f828839b7"
