@@ -499,6 +499,9 @@ def show_and_locate_video_timestamp_by_filename_and_time(video_file_name, timest
     video_file = open(videofile_path, "rb")
     video_bytes = video_file.read()
     with st.empty():
+        if st.session_state.day_timestamp < 0:
+            st.toast(f"invalid locate timestamp: {st.session_state.day_timestamp}, set to 1s.")
+            st.session_state.day_timestamp = 1
         st.video(video_bytes, start_time=st.session_state.day_timestamp)
 
 

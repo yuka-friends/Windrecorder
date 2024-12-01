@@ -448,7 +448,7 @@ def record_screen_via_screenshot_process():
         datetime_str_record = datetime.datetime.now().strftime(DATETIME_FORMAT)
         datetime_unix_timestamp_record = utils.dtstr_to_seconds(
             datetime_str_record
-        )  # ignore timezone convert walkaround FIXME
+        )  # ignore timezone convert walkaround FIXME 当天第一张截图时间可能小于视频时间，导致定位出现负数
         screenshot_saved_filename = datetime_str_record + ".png"
 
         # if screen lock or system sleep

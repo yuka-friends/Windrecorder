@@ -5,6 +5,19 @@
 >
 > If app cannot upgrade correctly, try executing the command `git fetch origin | git reset --hard origin/main` in the directory and then running `install_update.bat`
 
+## 0.0.29
+> 2024-12-01
+- 支持搜索中同时包含窗口标题和内容，以更准确地筛选过滤结果；Supports including both window title and content in the search to filter the results more accurately;
+
+### Fixed
+- 在定位搜索结果时，如果数据库中定位时间戳错误小于视频开始时间戳时，自动回正到第1秒；When locating search results, if the locating timestamp in the database is less than the video start timestamp, it will automatically return to the first second;
+- 正确捕获 LLM 生成出错时的异常；Handle exceptions when LLM generation fails; (@X-T-E-R)
+- 统计页跨月时，LLM 标签按钮可能因 key name 冲突而报错；When the statistics page spans across months, the LLM label button may report an error due to key name conflict;
+- 在保存旗标表格时，因使用了过时的 experimental rerun 而导致报错；When saving the flag table, an error occurred due to using the outdated experimental rerun;
+- 修复了创建开机快捷方式可能导致程序崩溃的问题；Fixed an issue where creating a startup shortcut could cause the program to crash;（@zhentouyu）#162
+
+---
+
 ## 0.0.28
 > 2024-09-24
 - 添加了自定义 webui 背景图功能，可以在 `extension/set_custom_webui_background` 设置；Added custom webui background image, can be set in `extension/set_custom_webui_background`;
@@ -12,14 +25,6 @@
 - 提高了 webui 在记录数据较多时的初始化速度，通过优化了 check_is_onboarding 的判断逻辑；Improved the initialization speed of webui when recording a lot of data by optimizing the judgment logic of check_is_onboarding;
 
 ![set_custom_webui_background](https://github.com/yuka-friends/Windrecorder/blob/main/extension/set_custom_webui_background/_preview.jpg)
-
-
-### Fixed
----rollout to new user---
-- 正确捕获 LLM 生成出错时的异常；Handle exceptions when LLM generation fails; (@X-T-E-R)
-- 统计页跨月时，LLM 标签按钮可能因 key name 冲突而报错；When the statistics page spans across months, the LLM label button may report an error due to key name conflict;
-- 在保存旗标表格时，因使用了过时的 experimental rerun 而导致报错；When saving the flag table, an error occurred due to using the outdated experimental rerun;
-- 修复了创建开机快捷方式可能导致程序崩溃的问题；Fixed an issue where creating a startup shortcut could cause the program to crash;（@zhentouyu）#162
 
 ---
 
