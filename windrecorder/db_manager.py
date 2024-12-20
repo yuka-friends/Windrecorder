@@ -121,6 +121,8 @@ class _DBManager:
     def db_update_table_product_routine(self):
         for key, value in self._db_filename_dict.items():
             db_filepath = os.path.join(self.db_path, key)
+            if not db_filepath.endswith(".db"):  # 排除非数据库文件
+                continue
 
             # 新增了记录前台进程名功能，需要增加一列 win_title TEXT
             self.db_ensure_row_exist(
