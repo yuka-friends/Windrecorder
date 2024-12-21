@@ -15,6 +15,8 @@
 - 统计页跨月时，LLM 标签按钮可能因 key name 冲突而报错；When the statistics page spans across months, the LLM label button may report an error due to key name conflict;
 - 在保存旗标表格时，因使用了过时的 experimental rerun 而导致报错；When saving the flag table, an error occurred due to using the outdated experimental rerun;
 - 修复了创建开机快捷方式可能导致程序崩溃的问题；Fixed an issue where creating a startup shortcut could cause the program to crash;（@zhentouyu）#162
+-- rollout to new user --
+- 修复了当db文件夹中有其他文件（如未释放的临时数据库时）可能报错阻塞无法启动程序；Fixed the issue that when there are other files in the db folder (such as unreleased temporary databases), the program may be blocked and unable to start; #257
 
 ---
 
