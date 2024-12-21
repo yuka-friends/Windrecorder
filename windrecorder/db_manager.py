@@ -836,7 +836,12 @@ class _DBManager:
             return {}
 
         # 去除非当前用户、且临时使用的内容
-        db_list = list(filter(lambda file: file.startswith(self.user_name) and not file.endswith("_TEMP_READ.db"), db_list))
+        db_list = list(
+            filter(
+                lambda file: file.startswith(self.user_name) and file.endswith(".db") and not file.endswith("_TEMP_READ.db"),
+                db_list,
+            )
+        )
 
         if len(db_list) == 0:  # 如果去除了非当前用户内容后为空
             return {}
