@@ -189,6 +189,11 @@ body {
 
 def ocr_res_position_visualization(ocr_text_full: str, ocr_text_query: str):
     """在全部文本中高亮搜索内容，渲染为 html 卡片显示"""
+    if ocr_text_full is None or ocr_text_query is None:
+        return
+    if ocr_text_full == "" or ocr_text_query == "":
+        return
+
     ocr_text_full = ocr_text_full.replace("\n", " ")
 
     def find_all_occurrences(original_text, pattern):
