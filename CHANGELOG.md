@@ -5,6 +5,17 @@
 >
 > If app cannot upgrade correctly, try executing the command `git fetch origin | git reset --hard origin/main` in the directory and then running `install_update.bat`
 
+## 0.0.30
+> 2025-01-29
+- 在 OCR 搜索时，会高亮显示 OCR 结果和其中的关键词；During OCR search, the OCR results and the keywords in them will be highlighted; #262
+
+![instruction-ocr-highlight](https://github.com/yuka-friends/Windrecorder/blob/main/__assets__/instruction-ocr-highlight.jpg)
+
+### Fixed
+- 修复了当db文件夹中有其他文件（如未释放的临时数据库时）可能报错阻塞无法启动程序；Fixed the issue that when there are other files in the db folder (such as unreleased temporary databases), the program may be blocked and unable to start; #257
+
+---
+
 ## 0.0.29
 > 2024-12-01
 - 支持搜索中同时包含窗口标题和内容，以更准确地筛选过滤结果；Supports including both window title and content in the search to filter the results more accurately;
@@ -15,8 +26,6 @@
 - 统计页跨月时，LLM 标签按钮可能因 key name 冲突而报错；When the statistics page spans across months, the LLM label button may report an error due to key name conflict;
 - 在保存旗标表格时，因使用了过时的 experimental rerun 而导致报错；When saving the flag table, an error occurred due to using the outdated experimental rerun;
 - 修复了创建开机快捷方式可能导致程序崩溃的问题；Fixed an issue where creating a startup shortcut could cause the program to crash;（@zhentouyu）#162
--- rollout to new user --
-- 修复了当db文件夹中有其他文件（如未释放的临时数据库时）可能报错阻塞无法启动程序；Fixed the issue that when there are other files in the db folder (such as unreleased temporary databases), the program may be blocked and unable to start; #257
 
 ---
 
