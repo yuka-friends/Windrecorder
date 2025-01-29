@@ -1,4 +1,5 @@
 import datetime
+import html
 import os
 from pathlib import Path
 
@@ -184,3 +185,86 @@ body {
     st.markdown(f"<style>{custom_css_text}</style>", unsafe_allow_html=True)
     if "css_injected" not in st.session_state:
         st.session_state["css_injected"] = True
+
+
+def ocr_res_position_visualization(ocr_text_full: str, ocr_text_query: str):
+    """在全部文本中高亮搜索内容，渲染为 html 卡片显示"""
+    ocr_text_full = ocr_text_full.replace("\n", " ")
+
+    def find_all_occurrences(original_text, pattern):
+        lower_text = original_text.lower()
+        lower_pattern = pattern.lower()
+        start = 0
+        occurrences = []
+        len_pattern = len(lower_pattern)
+        if len_pattern == 0:
+            return occurrences
+        while True:
+            pos = lower_text.find(lower_pattern, start)
+            if pos == -1:
+                break
+            end = pos + len_pattern - 1
+            occurrences.append((pos, end))
+            start = pos + 1  # 移动到当前匹配之后继续查找
+        return occurrences
+
+    def merge_intervals(intervals):
+        if not intervals:
+            return []
+        sorted_intervals = sorted(intervals, key=lambda x: x[0])
+        merged = [sorted_intervals[0]]
+        for current in sorted_intervals[1:]:
+            last = merged[-1]
+            if current[0] <= last[1] + 1:
+                merged[-1] = (last[0], max(last[1], current[1]))
+            else:
+                merged.append(current)
+        return merged
+
+    # 处理查询词：分割、替换连字符、保留原始大小写
+    search_terms = [term.replace("-", " ") for term in ocr_text_query.split() if term.strip()]
+    search_terms.extend([term.replace("-", "") for term in ocr_text_query.split() if term.strip()])
+
+    # 查找所有匹配区间
+    intervals = []
+    for term in search_terms:
+        if not term:
+            continue
+        # 这里使用原始文本进行实际匹配，但比较时忽略大小写
+        for start, end in find_all_occurrences(ocr_text_full, term):
+            intervals.append((start, end))
+
+    # 合并重叠区间
+    merged = merge_intervals(intervals)
+
+    # 构建文本片段
+    parts = []
+    start_pos = 0
+    for start, end in merged:
+        if start_pos < start:
+            parts.append(ocr_text_full[start_pos:start])
+        parts.append(("highlight", ocr_text_full[start : end + 1]))
+        start_pos = end + 1
+
+    if start_pos < len(ocr_text_full):
+        parts.append(ocr_text_full[start_pos:])
+
+    # Build HTML content
+    html_content = []
+    for part in parts:
+        if isinstance(part, tuple):
+            escaped = html.escape(part[1])
+            html_content.append(
+                f'<span style="background-color: #8262C9; color: white; font-weight: bold; padding: 1px 4px 1px 4px;">{escaped}</span>'
+            )
+        else:
+            escaped = html.escape(part).replace("\n", "<br/>")
+            html_content.append(escaped)
+
+    res = f"""
+<div style="width: 100%; border-radius: 6px; font-size: 10px; color:rgba(0,0,0,.4); background: #F6F2EF; padding: 5px 10px 5px 10px; box-sizing: border-box; mix-blend-mode: multiply;">
+{''.join(html_content)}
+</div>
+""".strip()
+
+    st.markdown(res, unsafe_allow_html=True)

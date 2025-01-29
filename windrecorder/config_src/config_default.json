@@ -116,5 +116,6 @@
   "ai_extract_tag_filter_words": ["Kim Jong-un"],
   "custom_background_filepath": "",
   "custom_background_opacity": 0.9,
-  "convert_screenshots_to_vid_energy_saving_mode": 0
+  "convert_screenshots_to_vid_energy_saving_mode": 0,
+  "enable_ocr_str_highlight_indicator": true
 }
