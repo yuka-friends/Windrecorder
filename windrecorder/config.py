@@ -120,6 +120,7 @@ class Config:
         custom_background_filepath,
         custom_background_opacity,
         convert_screenshots_to_vid_energy_saving_mode,
+        enable_ocr_str_highlight_indicator,
         **other_field,
     ) -> None:
         # If need to process input parameters, they should assign another variable name to prevent recursive writing into the config.
@@ -225,6 +226,7 @@ class Config:
         self.convert_screenshots_to_vid_energy_saving_mode = (
             convert_screenshots_to_vid_energy_saving_mode  # 0: instant, 1: plug-in, 2: idle
         )
+        self.enable_ocr_str_highlight_indicator = enable_ocr_str_highlight_indicator
 
     def set_and_save_config(self, attr: str, value):
         if not hasattr(self, attr):

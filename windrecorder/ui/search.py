@@ -45,6 +45,13 @@ def render():
             st.session_state.timeCost_globalSearch = 0
         if "synonyms_recommend_list" not in st.session_state:  # 近义词推荐
             st.session_state.synonyms_recommend_list = []
+        if "search_method_list" not in st.session_state:  # 搜索模式
+            st.session_state.search_method_list = [
+                _t("gs_option_ocr_text_search_month_range"),
+                _t("gs_option_ocr_text_search_exact_date"),
+                _t("gs_option_img_emb_search"),
+                _t("gs_option_similar_img_search"),
+            ]
 
         # OCR 文本搜索
         if "search_content" not in st.session_state:
@@ -93,19 +100,13 @@ def render():
         # 绘制抬头部分的 UI
         components.web_onboarding()
 
-        search_method_list = [
-            _t("gs_option_ocr_text_search_month_range"),
-            _t("gs_option_ocr_text_search_exact_date"),
-            _t("gs_option_img_emb_search"),
-            _t("gs_option_similar_img_search"),
-        ]
         title_col, search_method = st.columns([4, 2.5])
         with title_col:
             st.markdown(_t("gs_md_search_title"))
         with search_method:
             st.session_state.search_method_selected = st.selectbox(
                 "Search Method",
-                search_method_list,
+                st.session_state.search_method_list,
                 label_visibility="collapsed",
                 on_change=clean_lazy_state_after_change_search_method,
             )
@@ -123,7 +124,7 @@ def render():
         #     else:
         #         st.session_state.use_random_search = False
 
-        match search_method_list.index(st.session_state.search_method_selected):
+        match st.session_state.search_method_list.index(st.session_state.search_method_selected):
             case 0:
                 ui_ocr_text_search(data_type="month_range")
             case 1:
@@ -520,6 +521,16 @@ def show_and_locate_video_timestamp_by_df(df, num):
         video_bytes = video_file.read()
         with st.empty():
             st.video(video_bytes, start_time=st.session_state.vid_vid_timestamp)
+        if (
+            config.enable_ocr_str_highlight_indicator
+            and st.session_state.search_method_list.index(st.session_state.search_method_selected) <= 1
+        ):  # 仅在ocr关键字搜索时启用功能
+            try:
+                components.ocr_res_position_visualization(
+                    ocr_text_full=df.iloc[num]["ocr_text"], ocr_text_query=st.session_state.search_content
+                )
+            except Exception as e:
+                st.error(e)
         st.markdown(f"`{video_filepath}`")
         if df.iloc[num]["deep_linking"]:
             components.render_deep_linking(df.iloc[num]["deep_linking"])
