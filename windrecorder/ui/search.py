@@ -525,9 +525,12 @@ def show_and_locate_video_timestamp_by_df(df, num):
             config.enable_ocr_str_highlight_indicator
             and st.session_state.search_method_list.index(st.session_state.search_method_selected) <= 1
         ):  # 仅在ocr关键字搜索时启用功能
-            components.ocr_res_position_visualization(
-                ocr_text_full=df.iloc[num]["ocr_text"], ocr_text_query=st.session_state.search_content
-            )
+            try:
+                components.ocr_res_position_visualization(
+                    ocr_text_full=df.iloc[num]["ocr_text"], ocr_text_query=st.session_state.search_content
+                )
+            except Exception as e:
+                st.error(e)
         st.markdown(f"`{video_filepath}`")
         if df.iloc[num]["deep_linking"]:
             components.render_deep_linking(df.iloc[num]["deep_linking"])

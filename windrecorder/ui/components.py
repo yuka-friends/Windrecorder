@@ -262,7 +262,7 @@ def ocr_res_position_visualization(ocr_text_full: str, ocr_text_query: str):
             html_content.append(escaped)
 
     res = f"""
-<div style="width: 100%; border-radius: 6px; font-size: 10px; color:rgba(0,0,0,.4); background: #F6F2EF; padding: 5px 10px 5px 10px; box-sizing: border-box; mix-blend-mode: multiply;">
+<div style="width: 100%; border-radius: 6px; font-size: 10px; color:rgba(0,0,0,.4); background: #F6F2EF; padding: 5px 10px 5px 10px; box-sizing: border-box; mix-blend-mode: multiply; margin-bottom: 8px;">
 {''.join(html_content)}
 </div>
 """.strip()
