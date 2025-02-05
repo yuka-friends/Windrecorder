@@ -279,14 +279,37 @@ def render():
             if "265" in video_compress_encoder:
                 st.warning(_t("rs_text_hevc_tips"), icon="🌚")
 
+            # Add CPU thread count selector if using CPU encoder
+            if video_compress_accelerator == "cpu":
+                import multiprocessing
+                cpu_count = multiprocessing.cpu_count()
+                default_threads = max(1, cpu_count // 4)
+                
+                video_compress_cpu_threads = st.number_input(
+                    _t("rs_text_compress_cpu_threads"),
+                    value=getattr(config, "compress_cpu_threads", default_threads),
+                    min_value=1,
+                    max_value=cpu_count,
+                    help=_t("rs_text_compress_cpu_threads_help")
+                )
+            else:
+                video_compress_cpu_threads = None
+
+
             if st.button(_t("rs_btn_encode_benchmark")):
                 with st.spinner(_t("rs_text_encode_benchmark_loading")):
+                    # Pass the CPU thread count if using CPU encoder
+                    cpu_threads = video_compress_cpu_threads if video_compress_accelerator == "cpu" else None
                     result_df = record.encode_preset_benchmark_test(
-                        scale_factor=video_compress_rate_selectbox, crf=video_compress_crf
+                        scale_factor=video_compress_rate_selectbox, 
+                        crf=video_compress_crf,
+                        cpu_threads=cpu_threads
                     )
                     if result_df is not None:
                         st.text(
-                            f'{_t("rs_selectbox_compress_ratio")}: {video_compress_rate_selectbox}, {_t("rs_text_compress_CRF")}: {video_compress_crf}'
+                            f'{_t("rs_selectbox_compress_ratio")}: {video_compress_rate_selectbox}, '
+                            f'{_t("rs_text_compress_CRF")}: {video_compress_crf}, '
+                            f'{_t("rs_text_compress_cpu_threads")}: {cpu_threads}' if cpu_threads else ''
                         )
                         st.dataframe(
                             result_df,
@@ -353,6 +376,9 @@ def render():
             config.set_and_save_config("compress_encoder", video_compress_encoder)
             config.set_and_save_config("compress_accelerator", video_compress_accelerator)
             config.set_and_save_config("compress_quality", video_compress_crf)
+
+            if video_compress_cpu_threads is not None:
+                config.set_and_save_config("compress_cpu_threads", video_compress_cpu_threads)
 
             st.toast(_t("utils_toast_setting_saved"), icon="🦝")
             time.sleep(2)

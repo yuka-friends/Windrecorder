@@ -147,11 +147,19 @@ def get_video_res(video_path):
 
 
 # 压缩视频 CLI
-def compress_video_CLI(video_path, target_width, target_height, encoder, crf_flag, crf, output_path):
-    cmd = f"ffmpeg -hwaccel auto -i {video_path} -vf scale={target_width}:{target_height} -c:v {encoder} {crf_flag} {crf} -pix_fmt yuv420p {output_path}"
+def compress_video_CLI(video_path, target_width, target_height, encoder, crf_flag, crf, output_path, cpu_threads=None):
+    if encoder in ["libx264", "libx265", "libaom-av1"] and cpu_threads is not None:
+        threads_param = f"-threads {cpu_threads}"
+    else:
+        threads_param = ""
+        
+    compress_cmd = (
+        f'ffmpeg -i "{video_path}" -vf scale={target_width}:{target_height} '
+        f'{threads_param} -c:v {encoder} {crf_flag} {crf} -preset medium -y "{output_path}"'
+    )
 
-    logger.info(f"[compress_video_CLI] {cmd=}")
-    subprocess.call(cmd, shell=True)
+    logger.info(f"[compress_video_CLI] {compress_cmd}")
+    subprocess.call(compress_cmd, shell=True)
 
 
 # 压缩视频分辨率到输入倍率
@@ -203,6 +211,7 @@ def compress_video_resolution(video_path, scale_factor, custom_output_name=None)
             crf_flag=crf_flag,
             crf=crf,
             output_path=output_path,
+            cpu_threads=config.compress_cpu_threads if config.compress_accelerator == "cpu" else None
         )
 
         return output_path
@@ -257,8 +266,8 @@ def compress_outdated_videofiles(video_queue_batch=30):
         logger.info("All compress tasks done!")
 
 
-# 测试所有的压制参数，由 webui 指定缩放系数与 crf 压缩质量
-def encode_preset_benchmark_test(scale_factor, crf):
+# 测试所有的压制参数，由 webui 指定缩放系数、crf 压缩质量、CPU线程数
+def encode_preset_benchmark_test(scale_factor, crf, cpu_threads=None):
     scale_factor = float(scale_factor)
     # 准备测试视频
     test_video_filepath = "__assets__\\test_video_compress.mp4"
@@ -292,6 +301,7 @@ def encode_preset_benchmark_test(scale_factor, crf):
             crf_flag=crf_flag,
             crf=crf,
             output_path=output_path,
+            cpu_threads=cpu_threads
         )
 
         return output_path
