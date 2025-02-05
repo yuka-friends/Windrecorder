@@ -283,15 +283,21 @@ def render():
             if video_compress_accelerator == "cpu":
                 import multiprocessing
                 cpu_count = multiprocessing.cpu_count()
-                default_threads = max(1, cpu_count // 4)
+                default_threads = max(1, cpu_count // 4)  # Default to 1/4 of CPU cores
+                
+                current_threads = config.compress_cpu_threads if hasattr(config, "compress_cpu_threads") else default_threads
                 
                 video_compress_cpu_threads = st.number_input(
                     _t("rs_text_compress_cpu_threads"),
-                    value=getattr(config, "compress_cpu_threads", default_threads),
+                    value=current_threads,
                     min_value=1,
                     max_value=cpu_count,
                     help=_t("rs_text_compress_cpu_threads_help")
                 )
+                
+                # Save the CPU thread setting immediately when changed
+                if video_compress_cpu_threads != current_threads:
+                    config.set_and_save_config("compress_cpu_threads", video_compress_cpu_threads)
             else:
                 video_compress_cpu_threads = None
 
@@ -376,7 +382,6 @@ def render():
             config.set_and_save_config("compress_encoder", video_compress_encoder)
             config.set_and_save_config("compress_accelerator", video_compress_accelerator)
             config.set_and_save_config("compress_quality", video_compress_crf)
-
             if video_compress_cpu_threads is not None:
                 config.set_and_save_config("compress_cpu_threads", video_compress_cpu_threads)
 

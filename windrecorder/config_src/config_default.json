@@ -60,6 +60,7 @@
   "compress_encoder": "x264",
   "compress_accelerator": "cpu",
   "compress_quality": 39,
+  "compress_cpu_threads": 2,
   "start_recording_on_startup": true,
   "lock_file_dir": "cache\\locks",
   "maintain_lock_subdir": "LOCK_MAINTAIN",

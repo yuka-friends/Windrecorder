@@ -177,6 +177,10 @@ def compress_video_resolution(video_path, scale_factor, custom_output_name=None)
     encoder_default = CONFIG_VIDEO_COMPRESS_PRESET["x264"]["cpu"]["encoder"]
     crf_flag_default = CONFIG_VIDEO_COMPRESS_PRESET["x264"]["cpu"]["crf_flag"]
     crf_default = 39
+    # Get CPU threads setting if using CPU encoder
+    cpu_threads = None
+    if config.compress_accelerator == "cpu":
+        cpu_threads = config.compress_cpu_threads if hasattr(config, "compress_cpu_threads") else None
     try:
         encoder = CONFIG_VIDEO_COMPRESS_PRESET[config.compress_encoder][config.compress_accelerator]["encoder"]
         crf_flag = CONFIG_VIDEO_COMPRESS_PRESET[config.compress_encoder][config.compress_accelerator]["crf_flag"]
@@ -186,9 +190,15 @@ def compress_video_resolution(video_path, scale_factor, custom_output_name=None)
         encoder = encoder_default
         crf_flag = crf_flag_default
         crf = crf_default
+        cpu_threads = 2
+
+    # Get CPU threads setting if using CPU encoder
+    cpu_threads = None
+    if config.compress_accelerator == "cpu":
+        cpu_threads = config.compress_cpu_threads if hasattr(config, "compress_cpu_threads") else None
 
     # 执行压缩流程
-    def encode_video(encoder=encoder, crf_flag=crf_flag, crf=crf):
+    def encode_video(encoder=encoder, crf_flag=crf_flag, crf=crf,cpu_threads=cpu_threads):
         # 处理压缩视频路径
         if custom_output_name:
             output_newname = custom_output_name
@@ -211,7 +221,7 @@ def compress_video_resolution(video_path, scale_factor, custom_output_name=None)
             crf_flag=crf_flag,
             crf=crf,
             output_path=output_path,
-            cpu_threads=config.compress_cpu_threads if config.compress_accelerator == "cpu" else None
+            cpu_threads=cpu_threads
         )
 
         return output_path
@@ -222,10 +232,10 @@ def compress_video_resolution(video_path, scale_factor, custom_output_name=None)
         if os.stat(output_path).st_size < 1024:
             logger.warning("Parameter not supported, fallback to default setting.")
             send2trash(output_path)  # 清理空文件
-            output_path = encode_video(encoder=encoder_default, crf_flag=crf_flag_default, crf=crf_default)
+            output_path = encode_video(encoder=encoder_default, crf_flag=crf_flag_default, crf=crf_default, cpu_threads=2)
     else:
         logger.warning("Parameter not supported, fallback to default setting.")
-        output_path = encode_video(encoder=encoder_default, crf_flag=crf_flag_default, crf=crf_default)
+        output_path = encode_video(encoder=encoder_default, crf_flag=crf_flag_default, crf=crf_default,cpu_threads=2)
 
     return output_path
 
