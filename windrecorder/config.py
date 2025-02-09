@@ -121,6 +121,7 @@ class Config:
         custom_background_opacity,
         convert_screenshots_to_vid_energy_saving_mode,
         enable_ocr_str_highlight_indicator,
+        compress_cpu_threads=None,
         **other_field,
     ) -> None:
         # If need to process input parameters, they should assign another variable name to prevent recursive writing into the config.
@@ -169,6 +170,8 @@ class Config:
         self.compress_encoder = compress_encoder
         self.compress_accelerator = compress_accelerator
         self.compress_quality = compress_quality
+        self.compress_cpu_threads = compress_cpu_threads
+        
         self.log_dir = log_dir
         self.win_title_dir = win_title_dir
         self.start_recording_on_startup = start_recording_on_startup

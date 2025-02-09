@@ -11,6 +11,10 @@
 
 ![instruction-ocr-highlight](https://github.com/yuka-friends/Windrecorder/blob/main/__assets__/instruction-ocr-highlight.jpg)
 
+---rollout to new user---
+- 添加了 CPU 压缩编码时的最大线程参数，当使用 CPU 压缩视频时，可以降低持续的高负荷占用时间、避免系统卡顿；Added the maximum thread parameter for CPU compression encoding. When using the CPU to compress video, it can reduce the continuous high load time and avoid system lag; (@RTLiang) #206
+
+
 ### Fixed
 - 修复了当db文件夹中有其他文件（如未释放的临时数据库时）可能报错阻塞无法启动程序；Fixed the issue that when there are other files in the db folder (such as unreleased temporary databases), the program may be blocked and unable to start; #257
 
