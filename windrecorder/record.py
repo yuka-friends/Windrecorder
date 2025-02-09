@@ -152,13 +152,13 @@ def compress_video_CLI(video_path, target_width, target_height, encoder, crf_fla
         threads_param = f"-threads {cpu_threads}"
     else:
         threads_param = ""
-        
+
     compress_cmd = (
-        f'ffmpeg -i "{video_path}" -vf scale={target_width}:{target_height} '
-        f'{threads_param} -c:v {encoder} {crf_flag} {crf} -preset medium -y "{output_path}"'
+        f'ffmpeg -hwaccel auto -i "{video_path}" -vf scale={target_width}:{target_height} '
+        f'{threads_param} -c:v {encoder} {crf_flag} {crf} -preset medium -pix_fmt yuv420p -y "{output_path}"'
     )
 
-    logger.info(f"[compress_video_CLI] {compress_cmd}")
+    logger.info(f"[compress_video_CLI] {compress_cmd=}")
     subprocess.call(compress_cmd, shell=True)
 
 
@@ -192,13 +192,8 @@ def compress_video_resolution(video_path, scale_factor, custom_output_name=None)
         crf = crf_default
         cpu_threads = 2
 
-    # Get CPU threads setting if using CPU encoder
-    cpu_threads = None
-    if config.compress_accelerator == "cpu":
-        cpu_threads = config.compress_cpu_threads if hasattr(config, "compress_cpu_threads") else None
-
     # 执行压缩流程
-    def encode_video(encoder=encoder, crf_flag=crf_flag, crf=crf,cpu_threads=cpu_threads):
+    def encode_video(encoder=encoder, crf_flag=crf_flag, crf=crf, cpu_threads=cpu_threads):
         # 处理压缩视频路径
         if custom_output_name:
             output_newname = custom_output_name
@@ -221,7 +216,7 @@ def compress_video_resolution(video_path, scale_factor, custom_output_name=None)
             crf_flag=crf_flag,
             crf=crf,
             output_path=output_path,
-            cpu_threads=cpu_threads
+            cpu_threads=cpu_threads,
         )
 
         return output_path
@@ -235,7 +230,7 @@ def compress_video_resolution(video_path, scale_factor, custom_output_name=None)
             output_path = encode_video(encoder=encoder_default, crf_flag=crf_flag_default, crf=crf_default, cpu_threads=2)
     else:
         logger.warning("Parameter not supported, fallback to default setting.")
-        output_path = encode_video(encoder=encoder_default, crf_flag=crf_flag_default, crf=crf_default,cpu_threads=2)
+        output_path = encode_video(encoder=encoder_default, crf_flag=crf_flag_default, crf=crf_default, cpu_threads=2)
 
     return output_path
 
@@ -311,7 +306,7 @@ def encode_preset_benchmark_test(scale_factor, crf, cpu_threads=None):
             crf_flag=crf_flag,
             crf=crf,
             output_path=output_path,
-            cpu_threads=cpu_threads
+            cpu_threads=cpu_threads,
         )
 
         return output_path

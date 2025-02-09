@@ -282,40 +282,40 @@ def render():
             # Add CPU thread count selector if using CPU encoder
             if video_compress_accelerator == "cpu":
                 import multiprocessing
+
                 cpu_count = multiprocessing.cpu_count()
                 default_threads = max(1, cpu_count // 4)  # Default to 1/4 of CPU cores
-                
+
                 current_threads = config.compress_cpu_threads if hasattr(config, "compress_cpu_threads") else default_threads
-                
-                video_compress_cpu_threads = st.number_input(
+
+                video_compress_cpu_threads = st.slider(
                     _t("rs_text_compress_cpu_threads"),
                     value=current_threads,
                     min_value=1,
                     max_value=cpu_count,
-                    help=_t("rs_text_compress_cpu_threads_help")
+                    help=_t("rs_text_compress_cpu_threads_help"),
                 )
-                
+
                 # Save the CPU thread setting immediately when changed
                 if video_compress_cpu_threads != current_threads:
                     config.set_and_save_config("compress_cpu_threads", video_compress_cpu_threads)
             else:
                 video_compress_cpu_threads = None
 
-
             if st.button(_t("rs_btn_encode_benchmark")):
                 with st.spinner(_t("rs_text_encode_benchmark_loading")):
                     # Pass the CPU thread count if using CPU encoder
                     cpu_threads = video_compress_cpu_threads if video_compress_accelerator == "cpu" else None
                     result_df = record.encode_preset_benchmark_test(
-                        scale_factor=video_compress_rate_selectbox, 
-                        crf=video_compress_crf,
-                        cpu_threads=cpu_threads
+                        scale_factor=video_compress_rate_selectbox, crf=video_compress_crf, cpu_threads=cpu_threads
                     )
                     if result_df is not None:
                         st.text(
                             f'{_t("rs_selectbox_compress_ratio")}: {video_compress_rate_selectbox}, '
                             f'{_t("rs_text_compress_CRF")}: {video_compress_crf}, '
-                            f'{_t("rs_text_compress_cpu_threads")}: {cpu_threads}' if cpu_threads else ''
+                            f'{_t("rs_text_compress_cpu_threads")}: {cpu_threads}'
+                            if cpu_threads
+                            else ""
                         )
                         st.dataframe(
                             result_df,
