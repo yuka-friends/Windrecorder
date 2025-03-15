@@ -11,7 +11,6 @@ import numpy as np
 import pandas as pd
 import pygetwindow
 from PIL import Image, ImageDraw
-from send2trash import send2trash
 
 from windrecorder import file_utils, utils
 from windrecorder.config import (
@@ -206,7 +205,7 @@ def compress_video_resolution(video_path, scale_factor, custom_output_name=None)
 
         # 如果输出目的已存在，将其移至回收站
         if os.path.exists(output_path):
-            send2trash(output_path)
+            file_utils.delete_files_via_config(output_path)
 
         compress_video_CLI(
             video_path=video_path,
@@ -226,7 +225,7 @@ def compress_video_resolution(video_path, scale_factor, custom_output_name=None)
     if os.path.exists(output_path):
         if os.stat(output_path).st_size < 1024:
             logger.warning("Parameter not supported, fallback to default setting.")
-            send2trash(output_path)  # 清理空文件
+            file_utils.delete_files_via_config(output_path)  # 清理空文件
             output_path = encode_video(encoder=encoder_default, crf_flag=crf_flag_default, crf=crf_default, cpu_threads=2)
     else:
         logger.warning("Parameter not supported, fallback to default setting.")
@@ -259,7 +258,7 @@ def compress_outdated_videofiles(video_queue_batch=30):
                 logger.info(f"compressing {item}, {video_process_count=}, {video_queue_batch=}")
                 try:
                     compress_video_resolution(item, config.video_compress_rate)
-                    send2trash(item)
+                    file_utils.delete_files_via_config(item)
                     video_process_count += 1
                 except subprocess.CalledProcessError as e:
                     logger.error(f"{item} seems invalid, error: {e}")
@@ -619,7 +618,7 @@ def submit_data_to_sqlite_db_process(saved_dir_filepath):
             logger.info("tmp_db_json records not enough")
             try:
                 if len(file_utils.get_file_path_list(saved_dir_filepath)) < 10:
-                    send2trash(saved_dir_filepath)
+                    file_utils.delete_files_via_config(saved_dir_filepath)
                 else:
                     os.rename(saved_dir_filepath, saved_dir_filepath + "-DISCARD")
             except Exception as e:
@@ -664,7 +663,7 @@ def convert_screenshots_dir_into_video_process(saved_dir_filepath):
                 custom_output_name=os.path.basename(output_video_filepath).replace("-NOTCOMPRESS", ""),
             )
             if os.path.exists(output_video_filepath_compress):
-                send2trash(output_video_filepath)
+                file_utils.delete_files_via_config(output_video_filepath)
             os.rename(saved_dir_filepath, saved_dir_filepath + "-VIDEO")
             return saved_dir_filepath + "-VIDEO"
         if is_garbage_data_should_be_clean:
@@ -713,16 +712,16 @@ def clean_cache_screenshots_dir_process():
     video_lst = file_utils.get_file_path_list(config.record_videos_dir_ud)
     for dir_path in dir_lst:
         if "-VIDEO" in dir_path and "-IMGEMB" in dir_path:
-            send2trash(dir_path)
+            file_utils.delete_files_via_config(dir_path)
         elif "-VIDEO" in dir_path or any(os.path.basename(dir_path)[:19] in word for word in video_lst):
             if datetime.datetime.now() - utils.dtstr_to_datetime(os.path.basename(dir_path)[:19]) > datetime.timedelta(
                 days=outdate_day
             ):
-                send2trash(dir_path)
+                file_utils.delete_files_via_config(dir_path)
         elif not os.path.exists(os.path.join(dir_path, SCREENSHOT_CACHE_FILEPATH_TMP_DB_ALL_FILES_NAME)):
-            send2trash(dir_path)
+            file_utils.delete_files_via_config(dir_path)
         elif "-DISCARD" in dir_path:
-            send2trash(dir_path)
+            file_utils.delete_files_via_config(dir_path)
 
 
 def get_screenshot_foreground_window():

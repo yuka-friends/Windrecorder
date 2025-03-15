@@ -2,14 +2,21 @@ import json
 import os
 import re
 import shutil
+import stat
 import time
 from json import JSONDecodeError
+from pathlib import Path
 
 import pandas as pd
+from send2trash import send2trash
 
 import windrecorder.utils as utils
 from windrecorder.config import config
-from windrecorder.const import DATETIME_FORMAT_PATTERN, SCREENSHOT_CACHE_FILEPATH
+from windrecorder.const import (
+    DATETIME_FORMAT_PATTERN,
+    SCREENSHOT_CACHE_FILEPATH,
+    SYSTEM_DIRS,
+)
 from windrecorder.logger import get_logger
 
 logger = get_logger(__name__)
@@ -297,3 +304,86 @@ def read_txt_as_list(file_path):
     with open(file_path, "r", encoding="utf8") as f:
         content_list = [line.strip() for line in f.readlines()]
     return content_list
+
+
+# 尽可能安全地删除文件
+def safe_delete(target_path):
+    """
+    安全删除文件或目录
+
+    参数:
+        target_path (str): 要删除的路径
+
+    返回:
+        tuple: (success: bool, message: str)
+    """
+
+    def is_root_directory(abs_path):
+        """检查是否为根目录"""
+        path_obj = Path(abs_path)
+        return path_obj.parent == path_obj
+
+    def is_system_sensitive(abs_path):
+        """检查是否涉及系统敏感目录"""
+        path_parts = Path(abs_path).parts
+        return any(part.lower() in SYSTEM_DIRS for part in path_parts)
+
+    def remove_readonly(func, path, _):
+        """处理只读文件"""
+        os.chmod(path, stat.S_IWRITE)
+        func(path)
+
+    try:
+        # 规范化路径并解析符号链接
+        abs_path = os.path.realpath(target_path)
+
+        # 基础验证
+        if not os.path.exists(abs_path):
+            return False, "The target path does not exist"
+
+        if is_root_directory(abs_path):
+            return False, "Disable root directory deletion"
+
+        if is_system_sensitive(abs_path):
+            return False, "Involving system protection directories"
+
+        # 用户重要目录保护（可选扩展）
+        important_dirs = {
+            os.path.expanduser("~/Desktop"),
+            os.path.expanduser("~/Documents"),
+            os.path.expanduser("~/Downloads"),
+        }
+        if Path(abs_path).resolve() in {Path(p).resolve() for p in important_dirs}:
+            return False, "Important user directories"
+
+        # 执行删除操作
+        if os.path.isfile(abs_path):
+            os.remove(abs_path)
+        else:
+            shutil.rmtree(abs_path, onerror=remove_readonly)
+
+        # 二次验证确保已删除
+        if os.path.exists(abs_path):
+            return False, "Deletion operation not completed"
+
+        return True, "Deleted successfully"
+
+    except PermissionError as e:
+        return False, f"Insufficient permissions: {str(e)}"
+    except FileNotFoundError:
+        return True, "The file no longer exists"  # 可能被其他进程删除
+    except Exception as e:
+        return False, f"Unknown error: {str(e)}"
+
+
+# 删除文件入口
+def delete_files_via_config(target_path):
+    try:
+        if config.delete_files_directly_without_recycling:
+            operation_success, operation_expection = safe_delete(target_path)
+            if not operation_success:
+                raise Exception(operation_expection)
+        else:
+            send2trash(target_path)
+    except Exception as e:
+        logger.error(e)
