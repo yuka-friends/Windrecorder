@@ -121,7 +121,7 @@ class Config:
         custom_background_opacity,
         convert_screenshots_to_vid_energy_saving_mode,
         enable_ocr_str_highlight_indicator,
-        delete_files_directly_without_recycling,
+        recycle_deleted_files,
         compress_cpu_threads=None,
         **other_field,
     ) -> None:
@@ -231,7 +231,7 @@ class Config:
             convert_screenshots_to_vid_energy_saving_mode  # 0: instant, 1: plug-in, 2: idle
         )
         self.enable_ocr_str_highlight_indicator = enable_ocr_str_highlight_indicator
-        self.delete_files_directly_without_recycling = delete_files_directly_without_recycling
+        self.recycle_deleted_files = recycle_deleted_files
 
     def set_and_save_config(self, attr: str, value):
         if not hasattr(self, attr):

@@ -379,11 +379,13 @@ def safe_delete(target_path):
 # 删除文件入口
 def delete_files_via_config(target_path):
     try:
-        if config.delete_files_directly_without_recycling:
+        if config.recycle_deleted_files:
+            logger.info(f"move file to recycle bin: {target_path}")
+            send2trash(target_path)
+        else:
+            logger.info(f"delete file: {target_path}")
             operation_success, operation_expection = safe_delete(target_path)
             if not operation_success:
                 raise Exception(operation_expection)
-        else:
-            send2trash(target_path)
     except Exception as e:
-        logger.error(e)
+        logger.warning(e)

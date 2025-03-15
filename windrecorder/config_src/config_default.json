@@ -119,5 +119,5 @@
   "custom_background_opacity": 0.9,
   "convert_screenshots_to_vid_energy_saving_mode": 0,
   "enable_ocr_str_highlight_indicator": true,
-  "delete_files_directly_without_recycling": false
+  "recycle_deleted_files": true
 }

@@ -228,6 +228,8 @@
         "set_checkbox_synonyms_recommand": "Recommend synonyms when searching",
         "set_help_synonyms_recommand": "If the language is not supported, it will not be enabled. Check the supported languages under config_src\\synonyms.",
         "set_checkbox_reduce_same_content_at_different_time": "When the same content is shown at different time points in a video slice, only the first occurrence is recorded.",
+        "set_checkbox_recycle_deleted_files": "When needing to delete files, put them in the Recycle Bin instead of deleting it directly.",
+        "set_help_recycle_deleted_files": "Windrecorder generates temporary videos or screenshots when running. For data safety, it put the discarded data into the recycle bin by default instead of deleting it directly. The system recycle bin will be automatically cleaned up regularly. If your disk capacity is low or you want to delete the discarded data directly, please turn off this option. All file deletion operations will be logged in cache\\logs.",
 
         "qs_header_1": "Weclome to Windrecorder {__version__}",
         "qs_header_2": "Thanks for downloading! This Quick Wizard will help you set it up. Setting still can be adjusted in app afterwards.",
@@ -551,6 +553,8 @@
         "set_checkbox_synonyms_recommand": "搜索时推荐近义词",
         "set_help_synonyms_recommand": "若语言不支持将不启用，在 config_src\\synonyms 下查看已支持语言。",
         "set_checkbox_reduce_same_content_at_different_time": "当视频片段内有相同内容显示在不同时间点，只记录第一次出现时间点。",
+        "set_checkbox_recycle_deleted_files": "当需要删除文件时，将其放到回收站、而非直接删除。",
+        "set_help_recycle_deleted_files": "捕风记录仪在运行时产生临时视频或截图。为了数据安全，我们默认将废弃数据放到回收站、而非直接删除，由系统回收站定期自动清理。如果你的磁盘容量较低、或希望直接删除废弃数据，请关闭此选项。所有文件删除操作将记录在 cache\\logs 中。",
 
         "qs_header_1": "欢迎使用 捕风记录仪 {__version__}",
         "qs_header_2": "感谢下载使用！本向导将协助你完成基础配置项。不用担心，所有选项之后都可以再次调整。",
@@ -876,6 +880,8 @@
         "set_checkbox_synonyms_recommand": "検索時に同義語を推奨する",
         "set_help_synonyms_recommand": "言語がサポートされていない場合、有効になりません。config_src\\synonyms でサポートされている言語を確認してください。",
         "set_checkbox_reduce_same_content_at_different_time": "ビデオ スライスに同じコンテンツが異なる時点で表示されている場合、最初のコンテンツのみが記録されます。",
+        "set_checkbox_recycle_deleted_files": "ファイルを削除する必要がある場合は、直接削除するのではなく、ごみ箱に入れてください。",
+        "set_help_recycle_deleted_files": "Windrecorder は実行中に一時的なビデオまたはスクリーンショットを生成します。データのセキュリティのため、破棄されたデータは直接削除するのではなく、デフォルトでごみ箱に入れられ、システムのごみ箱は定期的に自動的にクリーンアップされます。ディスク容量が少ない場合や、古いデータを直接削除したい場合は、このオプションをオフにしてください。すべてのファイル削除操作は cache\\logs に記録されます。",
 
         "qs_header_1": "Windrecorder {__version__} へようこそ",
         "qs_header_2": "ダウンロードしていただきありがとうございます。このクイック ウィザードはセットアップに役立ちます。設定は後でアプリで調整できます。",

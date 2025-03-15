@@ -125,6 +125,12 @@ def render():
             value=config.index_reduce_same_content_at_different_time,
         )
 
+        recycle_deleted_files = st.checkbox(
+            label=_t("set_checkbox_recycle_deleted_files"),
+            help=_t("set_help_recycle_deleted_files"),
+            value=config.recycle_deleted_files,
+        )
+
         # 更新数据库按钮
         if update_db_btn:
             try:
@@ -349,6 +355,7 @@ def render():
             config.set_and_save_config("enable_synonyms_recommend", config_enable_synonyms_recommend)
             config.set_and_save_config("img_embed_search_recall_result_per_db", config_img_embed_search_recall_result_per_db)
             config.set_and_save_config("enable_month_lightbox_watermark", enable_month_lightbox_watermark)
+            config.set_and_save_config("recycle_deleted_files", recycle_deleted_files)
 
             # 更改了一天之时缩略图相关选项时，清空缓存时间轴缩略图
             day_begin_minutes = find_value_in_tuple_timelist_by_str(
