@@ -5,14 +5,18 @@
 >
 > If app cannot upgrade correctly, try executing the command `git fetch origin | git reset --hard origin/main` in the directory and then running `install_update.bat`
 
+## 0.0.31
+> 2025-03-16
+- 新增选项：捕风记录仪在删除临时视频与文件时，支持直接删除、而非先放到回收站由系统定期删除，从而降低磁盘占用；New configuration option: When deleting temporary videos and files, windrecorder can now delete them directly instead of putting them in the Recycle Bin and letting the system delete them regularly, thereby reducing disk usage;
+- 添加了 CPU 压缩编码时的最大线程参数，当使用 CPU 压缩视频时，可以降低持续的高负荷占用时间、避免系统卡顿；Added the maximum thread parameter for CPU compression encoding. When using the CPU to compress video, it can reduce the continuous high load time and avoid system lag; (@RTLiang) #206
+
+---
+
 ## 0.0.30
 > 2025-01-29
 - 在 OCR 搜索时，会高亮显示 OCR 结果和其中的关键词；During OCR search, the OCR results and the keywords in them will be highlighted; #262
 
 ![instruction-ocr-highlight](https://github.com/yuka-friends/Windrecorder/blob/main/__assets__/instruction-ocr-highlight.jpg)
-
----rollout to new user---
-- 添加了 CPU 压缩编码时的最大线程参数，当使用 CPU 压缩视频时，可以降低持续的高负荷占用时间、避免系统卡顿；Added the maximum thread parameter for CPU compression encoding. When using the CPU to compress video, it can reduce the continuous high load time and avoid system lag; (@RTLiang) #206
 
 
 ### Fixed
