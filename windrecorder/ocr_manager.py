@@ -8,7 +8,6 @@ import cv2
 import pandas as pd
 import win32file
 from PIL import Image, ImageDraw
-from send2trash import send2trash
 from skimage.metrics import structural_similarity as ssim
 
 import windrecorder.utils as utils
@@ -1041,7 +1040,7 @@ def remove_outdated_videofiles(video_queue_batch=60):
     if len(video_filepath_list_outdate) > 0:
         for item in video_filepath_list_outdate:
             logger.info(f"removing {item}, {video_process_count=}, {video_queue_batch=}")
-            send2trash(item)
+            file_utils.delete_files_via_config(item)
             video_process_count += 1
             if video_process_count > video_queue_batch:
                 break
@@ -1081,7 +1080,7 @@ def backup_dbfile(db_filepath, keep_items_num=15, make_new_backup_timegap=dateti
             # 将最晚x项以外的都删除
             for item in db_date_dict:
                 item_filepath = os.path.join(db_backup_filepath, item)
-                send2trash(item_filepath)
+                file_utils.delete_files_via_config(item_filepath)
     else:
         # 没有新的备份文件，应当创建备份
         make_new_backup_state = True

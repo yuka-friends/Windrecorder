@@ -37,6 +37,18 @@ DATAFRAME_COLUMN_NAMES = [
 DEBUGMODE_TRIGGER = "DEBUGMODE.txt"
 HIDE_CLI_TRIGGER = "hide_CLI_by_python.txt"
 
+SYSTEM_DIRS = {
+    "windows",
+    "program files",
+    "program files (x86)",
+    "system32",
+    "system volume information",
+    "programdata",
+    "users",
+    "boot",
+    "etc",
+}
+
 LLM_FAIL_COPY = "System: Fail to get AI reply, please try again."
 LLM_SYSTEM_PROMPT_DEFAULT = "You are a helpful assistant."
 LLM_SYSTEM_PROMPT_EXTRACT_DAY_TAGS = """
