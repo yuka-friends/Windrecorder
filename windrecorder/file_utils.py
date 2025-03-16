@@ -388,4 +388,8 @@ def delete_files_via_config(target_path):
             if not operation_success:
                 raise Exception(operation_expection)
     except Exception as e:
-        logger.warning(e)
+        try:
+            logger.warning(f"operation failed: {e}, trying to move to recycle bin")
+            send2trash(target_path)
+        except Exception as e:
+            logger.warning(e)
