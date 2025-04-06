@@ -34,6 +34,10 @@
 
 # 🦝 安装
 
+捕风记录仪支持离线和在线安装两种方式，你可以根据需要自行选择：
+
+1. **在线安装**：
+
 - 下载 [ffmpeg](https://github.com/BtbN/FFmpeg-Builds/releases)（下载文件名为：`ffmpeg-master-latest-win64-gpl-shared.zip`） ，将 bin 目录下的所有文件复制至 `C:\Windows\System32` 下（或其他位于 PATH 的目录下）（不包括 bin 目录本身）
 
 - 安装 [Git](https://git-scm.com/download/win)，一路下一步即可；
@@ -46,6 +50,14 @@
     - 可以打开想要安装的文件夹，在路径栏输入`cmd` 并回车，即可在终端定位到当前目录，将以上命令贴入、回车执行；
 
 - 打开目录下的 `install_update.bat` 进行工具安装与配置，顺利的话就可以开始使用了！
+2. **离线安装**：
+> [!IMPORTANT]  
+> 离线安装需要使用一个已连接至互联网的计算机执行完成在线安装、完成环境部署之后导出相应的依赖包
+- 在已完成安装的计算机上执行``generate_offsline_deps.bat``，执行完成后会在``Windrecorder``目录中生成``offline_deps``目录
+- 在离线机器上安装[ffmpeg](https://github.com/BtbN/FFmpeg-Builds/releases)并完成相关配置
+- 安装 [Python](https://www.python.org/ftp/python/3.11.7/python-3.11.7-amd64.exe)，安装时确保勾选 `Add python.exe to PATH`
+    - **注意！目前暂未支持 python 3.12**，推荐使用 python 3.11，即上面链接指向的版本，此外，要确保离线机器所安装python版本与已完成安装的计算机python版本**完全一致**
+- 将已完成安装的计算机的``Windrecorder``目录完整拷贝，并执行``install_offline.bat``。该文件会自动完成工具安装与配置，顺利的话就可以开始使用了！
 
 
 # 🦝 如何使用
