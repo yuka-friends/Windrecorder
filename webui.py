@@ -1,5 +1,5 @@
 import hashlib
-
+import os
 import streamlit as st
 
 import windrecorder.ui.components
@@ -9,6 +9,7 @@ import windrecorder.ui.recording
 import windrecorder.ui.search
 import windrecorder.ui.setting
 import windrecorder.ui.state
+import windrecorder.ui.natural_search
 from windrecorder import state
 from windrecorder.config import config
 from windrecorder.utils import get_text as _t
@@ -62,22 +63,25 @@ def web_footer_state():
 def main_webui():
     st.markdown(_t("main_title"))
 
-    oneday_tab, search_tab, state_tab, lab_tab, recording_tab, setting_tab = st.tabs(
+    oneday_tab, search_tab, ai_search_tab,state_tab, lab_tab, recording_tab, setting_tab = st.tabs(
         [
             _t("tab_name_oneday"),
             _t("tab_name_search"),
+            _t("natural_search_page_name"),
             _t("tab_name_stat"),
             _t("tab_name_lab"),
             _t("tab_name_recording"),
             _t("tab_name_setting") + st.session_state.update_badge_emoji,
         ]
     )
-
     with oneday_tab:
         windrecorder.ui.oneday.render()
 
     with search_tab:
         windrecorder.ui.search.render()
+
+    with ai_search_tab:
+        windrecorder.ui.natural_search.render_natural_search_page()
 
     with state_tab:
         windrecorder.ui.state.render()
