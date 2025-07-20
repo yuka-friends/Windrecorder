@@ -90,7 +90,7 @@ def render():
             )
         st.text("")
         st.button(
-            _t("lab_btn_open_LLM_search_and_summary"),
+            "🔍 " + _t("lab_btn_open_LLM_search_and_summary"),
             on_click=lambda: os.startfile(os.path.join("extension", "LLM_search_and_summary", "LLM_search_and_summary.bat")),
         )
 
