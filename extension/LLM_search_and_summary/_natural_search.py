@@ -15,8 +15,6 @@ from windrecorder.utils import get_text as _t
 
 logger = get_logger(__name__)
 
-st.set_page_config(page_title="Windrecord - LLM search and summary - AI-based natural language search", page_icon="🦝")
-
 
 def parse_natural_query(query: str) -> dict | None:
     """
