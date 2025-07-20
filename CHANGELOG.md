@@ -10,6 +10,9 @@
 - 新增选项：捕风记录仪在删除临时视频与文件时，支持直接删除、而非先放到回收站由系统定期删除，从而降低磁盘占用；New configuration option: When deleting temporary videos and files, windrecorder can now delete them directly instead of putting them in the Recycle Bin and letting the system delete them regularly, thereby reducing disk usage;
 - 添加了 CPU 压缩编码时的最大线程参数，当使用 CPU 压缩视频时，可以降低持续的高负荷占用时间、避免系统卡顿；Added the maximum thread parameter for CPU compression encoding. When using the CPU to compress video, it can reduce the continuous high load time and avoid system lag; (@RTLiang) #206
 
+--rollout to new user--
+- 新增插件 LLM_search_and_summary：可以使用AI（大语言模型）对记录的内容进行自然语言搜索与总结了；New plugin LLM_search_and_summary: AI (Large Language Model) can be used to perform natural language search and summary of recorded content; (@yuansui486) #277
+
 ---
 
 ## 0.0.30
