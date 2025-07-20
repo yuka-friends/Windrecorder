@@ -29,7 +29,9 @@ Windrecorder is a memory search app by records everything on your screen in smal
 > This project is still in the early stages of development, and you may encounter some minor problems in experience and use, feel free to submit issue feedback, follow updates, and initiate discussions or roadmap in [Discussions](https://github.com/yuka-friends/Windrecorder/discussions). You are also welcome to help us optimize and build the project, submit PR / code review.
 
 # 🦝 Installation
+The wind capture recorder supports offline and online installation methods. You can choose according to your needs:
 
+1. **Online Installation**：
 - Download [ffmpeg](https://github.com/BtbN/FFmpeg-Builds/releases) (the download file name is: `ffmpeg-master-latest-win64-gpl-shared.zip`), extract all files in `bin` directory(excluding the bin directory itself) to `C:\Windows\System32` (or other directories located in PATH)
 
 - Install [Git](https://git-scm.com/download/win), just keep clicking next step.
@@ -42,7 +44,14 @@ Windrecorder is a memory search app by records everything on your screen in smal
      - You can open the folder you want to install, enter `cmd` in the path bar and press Enter, and you will be located into current directory in terminal, then paste the above command and press Enter to execute;
 
 - Open `install_update.bat` in the directory to install dependencies and configure the app. If everything goes well, you can start using it!
-
+2. **Offline Installer**：
+> [!IMPORTANT]  
+> Offline installation requires using a computer connected to the Internet to perform online installation and export the corresponding dependency packages after completing environment deployment
+- Run ``generate_offsline_deps.bat`` on the computer that has completed installation. After execution, the ``offline_deps`` directory will be generated in the ``Windrecorder`` directory
+- Install [ffmpeg](https://github.com/BtbN/FFmpeg-Builds/releases) on an offline machine and complete the relevant configuration
+- Install  [Python](https://www.python.org/ftp/python/3.11.7/python-3.11.7-amd64.exe), make sure that `Add python.exe to PATH` is checked during installation
+    - **Currently, Python 3.12 is not supported**. It is recommended to use python 3.11, which is the version pointed to by the link above.In addition, make sure that the python version installed on the offline machine is exactly ``the same as the python version of the computer that has been installed``.
+- Make a complete copy of the ``Windrecorder`` directory of the computer that has been installed and execute ``install_offline.bat``. This file will automatically complete the installation and configuration of the tool. If it goes smoothly, you can start using it!
 
 # 🦝 How to use
 
