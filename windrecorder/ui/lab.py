@@ -1,3 +1,5 @@
+import os
+
 import streamlit as st
 from PIL import Image
 from streamlit_tags import st_tags
@@ -86,6 +88,11 @@ def render():
             ai_extract_tag_filter_words = st_tags(
                 label=_t("lab_text_tag_filter_words"), text=_t("rs_tag_input_tip"), value=config.ai_extract_tag_filter_words
             )
+        st.text("")
+        st.button(
+            "🔍 " + _t("lab_btn_open_LLM_search_and_summary"),
+            on_click=lambda: os.startfile(os.path.join("extension", "LLM_search_and_summary", "LLM_search_and_summary.bat")),
+        )
 
         st.divider()
 
