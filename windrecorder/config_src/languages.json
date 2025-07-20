@@ -115,6 +115,7 @@
         "lab_btn_generate_tags": "Summary Tags",
         "lab_text_generating_tags": "Generating tags... \nDepending on the LLM service, it may take 5~20 seconds.",
         "lab_text_generating_tags_fail": "Failed to generate tags: {plain_text}",
+        "lab_btn_open_LLM_search_and_summary": "Search and summarize using natural language (Open Extension/LLM_search_and_summary)",
 
         "rs_text_need_to_restart_after_save_setting": "After saving the settings on this page, you need to restart 'Windrecorder' to take effect.",
         "rs_md_title": "### 📼 Recording & Video Storage",
@@ -475,6 +476,7 @@
         "lab_btn_generate_tags": "生成标签",
         "lab_text_generating_tags": "生成中... \n取决于语言模型，这可能需要 5~20 秒。",
         "lab_text_generating_tags_fail": "生成标签失败: {plain_text}",
+        "lab_btn_open_LLM_search_and_summary": "使用自然语言搜索并总结（打开插件：LLM_search_and_summary）",
 
         "rs_text_need_to_restart_after_save_setting": "本页的设置在保存后，需重启 「捕风记录仪」 才能生效。",
         "rs_md_title": "### 📼 录制与视频存储",
@@ -837,6 +839,7 @@
         "lab_btn_generate_tags": "概要タグ",
         "lab_text_generating_tags": "タグを生成しています... \nLLM サービスによっては、5～20 秒かかる場合があります。",
         "lab_text_generating_tags_fail": "タグを生成できませんでした: {plain_text}",
+        "lab_btn_open_LLM_search_and_summary": "自然言語を使用して検索および要約する（プラグインを開く: LLM_search_and_summary）",
 
         "rs_text_need_to_restart_after_save_setting": "このページの設定を保存した後、Windrecorder を再起動する必要があります。",
         "rs_md_title": "### 📼 録画とビデオストレージ",

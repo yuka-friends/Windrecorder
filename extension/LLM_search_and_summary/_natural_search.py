@@ -1,19 +1,21 @@
 # -*- coding: utf-8 -*-
-import re
-
-import streamlit as st
-import pandas as pd
 import datetime
 import json
+import re
+
+import pandas as pd
+import streamlit as st
+
+from windrecorder import llm, utils
 from windrecorder.config import config
 from windrecorder.db_manager import db_manager
-from windrecorder import llm, utils, file_utils
-from windrecorder.ui import components
-
-from windrecorder.utils import get_text as _t
 from windrecorder.logger import get_logger
+from windrecorder.ui import components
+from windrecorder.utils import get_text as _t
 
 logger = get_logger(__name__)
+
+st.set_page_config(page_title="Windrecord - LLM search and summary - AI-based natural language search", page_icon="🦝")
 
 
 def parse_natural_query(query: str) -> dict | None:
@@ -80,7 +82,14 @@ def parse_natural_query(query: str) -> dict | None:
             try:
                 response_text = response_text.strip().removeprefix("```json").removesuffix("```")
                 parsed_data = json.loads(response_text)
-                required_keys = ["keywords", "exclude_keywords", "applications", "time_description", "user_intent", "occurrence"] # Added occurrence
+                required_keys = [
+                    "keywords",
+                    "exclude_keywords",
+                    "applications",
+                    "time_description",
+                    "user_intent",
+                    "occurrence",
+                ]  # Added occurrence
                 if all(key in parsed_data for key in required_keys):
                     for key in ["keywords", "exclude_keywords", "applications"]:
                         if not isinstance(parsed_data.get(key), list):
@@ -144,7 +153,7 @@ def estimate_time_range(time_description: str) -> tuple[datetime.datetime, datet
         success, response_text = llm.request_llm_one_shot(
             user_content=time_description,
             system_prompt=prompt,
-            temperature=0.1, # 对于日期，temperatur低一些即可
+            temperature=0.1,  # 对于日期，temperatur低一些即可
             api_key=config.open_ai_api_key,
             base_url=config.open_ai_base_url,
             model=config.open_ai_modelname,
@@ -166,7 +175,7 @@ def estimate_time_range(time_description: str) -> tuple[datetime.datetime, datet
                 st.error(_t("error_llm_date_parsing_failed"))
                 # Fallback
                 end_dt = datetime.datetime.now()
-                start_dt = end_dt - datetime.timedelta(days=7) # 无法正确分析日期则默认7天
+                start_dt = end_dt - datetime.timedelta(days=7)  # 无法正确分析日期则默认7天
                 return start_dt, end_dt
         else:
             logger.error(f"LLM date estimation failed: {response_text}")
@@ -199,12 +208,11 @@ def summarize_results(ocr_snippets: list[str], user_intent: str, original_query:
     language_instruction = "Respond concisely in the same language as the User's Original Query."
 
     MAX_SUMMARY_CHARS = 10000
-    context_text = "\n---\n".join(filter(None, ocr_snippets)) # 过滤none
+    context_text = "\n---\n".join(filter(None, ocr_snippets))  # 过滤none
     if len(context_text) > MAX_SUMMARY_CHARS:
         context_text = context_text[:MAX_SUMMARY_CHARS] + "..."
     elif not context_text.strip():
-         return _t("info_no_text_to_summarize") # 处理为空的情况
-
+        return _t("info_no_text_to_summarize")  # 处理为空的情况
 
     prompt = f"""
     Based on the following screen recording text snippets (which may contain OCR errors) and the user's original query and intent, provide a concise summary or answer.
@@ -256,6 +264,7 @@ def summarize_results(ocr_snippets: list[str], user_intent: str, original_query:
 
 # --- Main Page Rendering ---
 
+
 def render_natural_search_page():
     st.title(f"🧐 {_t('natural_search_title')}")
     st.caption(_t("natural_search_caption"))
@@ -263,10 +272,11 @@ def render_natural_search_page():
     if not config.open_ai_api_key or not config.open_ai_base_url:
         st.warning(_t("warn_openai_api_needed"), icon="🔑")
 
-    query = st.text_input(_t("natural_search_input_label"), placeholder=_t("natural_search_placeholder"), key="natural_query_input")
+    query = st.text_input(
+        _t("natural_search_input_label"), placeholder=_t("natural_search_placeholder"), key="natural_query_input"
+    )
 
     if st.button(_t("natural_search_button"), key="natural_search_exec", disabled=(not query or not config.open_ai_api_key)):
-
         with st.spinner(_t("natural_search_spinner_parsing")):
             parsed_params = parse_natural_query(query)
 
@@ -286,7 +296,9 @@ def render_natural_search_page():
             # --- Time Estimation ---
             with st.spinner(_t("natural_search_spinner_time")):
                 start_date, end_date = estimate_time_range(time_desc)
-                st.info(f"{_t('natural_search_time_range_info')} **{start_date.strftime('%Y-%m-%d')}** {_t('natural_search_time_range_to')} **{end_date.strftime('%Y-%m-%d')}**")
+                st.info(
+                    f"{_t('natural_search_time_range_info')} **{start_date.strftime('%Y-%m-%d')}** {_t('natural_search_time_range_to')} **{end_date.strftime('%Y-%m-%d')}**"
+                )
 
             # --- Database Search ---
             df_all = pd.DataFrame()
@@ -294,16 +306,18 @@ def render_natural_search_page():
             search_keywords = keywords_str
             # 如果是一个summary不是 keyword 则搜索时间范围内的所有内容
             if user_intent == "summarize activities" and not keywords_list:
-                search_keywords = "" # Search for empty string to get all records
-                logger.info(f"Intent is 'summarize activities' with no keywords. Searching all records in time range.")
+                search_keywords = ""  # Search for empty string to get all records
+                logger.info("Intent is 'summarize activities' with no keywords. Searching all records in time range.")
 
             with st.spinner(_t("natural_search_spinner_searching_db")):
-                logger.info(f"Performing DB search: Keywords='{search_keywords}', Exclude='{exclude_keywords_str}', Start='{start_date}', End='{end_date}'")
+                logger.info(
+                    f"Performing DB search: Keywords='{search_keywords}', Exclude='{exclude_keywords_str}', Start='{start_date}', End='{end_date}'"
+                )
                 df_all, row_count, _ = db_manager.db_search_data(
                     keyword_input=search_keywords,
                     date_in=start_date,
                     date_out=end_date,
-                    keyword_input_exclude=exclude_keywords_str
+                    keyword_input_exclude=exclude_keywords_str,
                 )
                 logger.info(f"Initial DB search returned {row_count} rows.")
 
@@ -312,53 +326,54 @@ def render_natural_search_page():
             if applications:
                 with st.spinner(_t("natural_search_spinner_filtering")):
                     try:
-                        app_filter_pattern = '|'.join(map(re.escape, applications))
-                        df_filtered = df_all[df_all['win_title'].fillna('').str.contains(app_filter_pattern, case=False, regex=True)]
+                        app_filter_pattern = "|".join(map(re.escape, applications))
+                        df_filtered = df_all[
+                            df_all["win_title"].fillna("").str.contains(app_filter_pattern, case=False, regex=True)
+                        ]
                         logger.info(f"Filtered down to {len(df_filtered)} rows based on applications: {applications}")
                         st.info(f"{_t('natural_search_filter_info')} {', '.join(applications)}")
                     except Exception as filter_e:
-                         logger.error(f"Error during application filtering: {filter_e}", exc_info=True)
-                         st.warning("Could not apply application filter due to an error.")
-                         df_filtered = df_all
-
+                        logger.error(f"Error during application filtering: {filter_e}", exc_info=True)
+                        st.warning("Could not apply application filter due to an error.")
+                        df_filtered = df_all
 
             # --- Process and Display Results ---
             st.write("---")
             if not df_filtered.empty:
                 # --- Handle First/Last Occurrence ---
-                df_processed = df_filtered.copy() # Work on a copy
+                df_processed = df_filtered.copy()  # Work on a copy
                 if occurrence == "first":
-                    df_processed = df_processed.sort_values(by='videofile_time', ascending=True)
+                    df_processed = df_processed.sort_values(by="videofile_time", ascending=True)
                     df_display_final = df_processed.head(1)
                     st.info(_t("natural_search_showing_first"))
                     logger.info("Showing first occurrence based on user query.")
                 elif occurrence == "last":
-                    df_processed = df_processed.sort_values(by='videofile_time', ascending=False)
+                    df_processed = df_processed.sort_values(by="videofile_time", ascending=False)
                     df_display_final = df_processed.head(1)
                     st.info(_t("natural_search_showing_last"))
                     logger.info("Showing last occurrence based on user query.")
                 else:
                     # 默认按按最近的一次排序
-                    df_processed = df_processed.sort_values(by='videofile_time', ascending=False)
+                    df_processed = df_processed.sort_values(by="videofile_time", ascending=False)
                     df_display_final = df_processed
 
                 df_display_component = db_manager.db_refine_search_data_global(df_display_final)
 
-
                 # --- Summarization ---
-                needs_summary = "summarize" in user_intent.lower() or (user_intent == "general search" and not df_display_final.empty)
+                needs_summary = "summarize" in user_intent.lower() or (
+                    user_intent == "general search" and not df_display_final.empty
+                )
 
                 if needs_summary:
-                     with st.spinner(_t("natural_search_spinner_summarizing")):
-                         # 当用户意图包含"summarize"或是普通搜索且有结果时，会触发汇总功能
-                         # 从最终结果中提取前30条记录的OCR文本 该选项应可由用户自由设置
-                         ocr_context = df_display_final.head(30)['ocr_text'].tolist()
-                         summary = summarize_results(ocr_context, user_intent, query)
-                         if summary:
-                             st.subheader(_t("natural_search_summary_header"))
-                             st.markdown(summary)
-                             st.write("---")
-
+                    with st.spinner(_t("natural_search_spinner_summarizing")):
+                        # 当用户意图包含"summarize"或是普通搜索且有结果时，会触发汇总功能
+                        # 从最终结果中提取前30条记录的OCR文本 该选项应可由用户自由设置
+                        ocr_context = df_display_final.head(30)["ocr_text"].tolist()
+                        summary = summarize_results(ocr_context, user_intent, query)
+                        if summary:
+                            st.subheader(_t("natural_search_summary_header"))
+                            st.markdown(summary)
+                            st.write("---")
 
                 # 展示结果
                 st.subheader(_t("natural_search_relevant_moments"))
@@ -371,7 +386,7 @@ def render_natural_search_page():
                     components.video_dataframe(df_display_component.head(MAX_RESULTS_DISPLAY), heightIn=600)
                     if len(df_display_component) > MAX_RESULTS_DISPLAY:
                         with st.expander(_t("natural_search_show_all_results").format(count=len(df_display_component))):
-                             components.video_dataframe(df_display_component, heightIn=800)
+                            components.video_dataframe(df_display_component, heightIn=800)
 
             else:
                 st.warning(_t("natural_search_no_results"), icon="🤷")
@@ -379,6 +394,8 @@ def render_natural_search_page():
             # 错误信息由parse_natural_query 提供
             pass
 
+    st.caption("---\nmade by [@yuansui486](https://github.com/yuansui486), version 0.0.1")
+
+
 # def add_natural_search_to_ui(pages_dict: dict):
 #     pages_dict[_t("natural_search_page_name")] = render_natural_search_page
-

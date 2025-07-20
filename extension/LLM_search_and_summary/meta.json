@@ -1,0 +1,7 @@
+{
+    "extension_name": "LLM search and summary - AI-based natural language search",
+    "developer_name": "yuansui486",
+    "developer_url": "https://github.com/yuansui486",
+    "version": "0.0.1",
+    "description_markdown": "本扩展可以基于AI（大语言模型）进行自然语言搜索与总结。This extension can perform natural language search and summarization based on AI (large language model)."
+}
