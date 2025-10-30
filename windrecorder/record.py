@@ -44,6 +44,93 @@ from windrecorder.record_wintitle import (
 logger = get_logger(__name__)
 
 
+# 录制音频
+def record_audio_via_ffmpeg(
+    output_dir=config.record_audios_dir_ud,
+    record_time=config.record_seconds,
+    audio_type="system",
+):
+    """
+    用 ffmpeg 录制音频（系统音或麦克风）
+
+    Args:
+        output_dir: 输出目录
+        record_time: 录制时长（秒）
+        audio_type: 'system' 或 'mic'
+    """
+    if not config.enable_audio_recording:
+        return None, None
+
+    # 检查是否启用对应音源
+    if audio_type == "system" and not config.record_system_audio:
+        return None, None
+    if audio_type == "mic" and not config.record_mic_audio:
+        return None, None
+
+    # 构建输出文件名（使用 mp3 格式）
+    now = datetime.datetime.now()
+    audio_out_name = now.strftime(DATETIME_FORMAT) + f"_{audio_type}.mp3"
+    output_dir_with_date = now.strftime(DATE_FORMAT)
+    audio_saved_dir = os.path.join(output_dir, output_dir_with_date)
+    file_utils.ensure_dir(audio_saved_dir)
+    out_path = os.path.join(audio_saved_dir, audio_out_name)
+
+    # 获取音频设备名称
+    device_name = config.system_audio_device_name if audio_type == "system" else config.mic_audio_device_name
+
+    # 构建 ffmpeg 命令（使用 MP3 编码，比特率 64kbps）
+    ffmpeg_cmd = [
+        config.ffmpeg_path,
+        "-f", "dshow",
+        "-i", f"audio={device_name}",
+        "-ar", str(config.audio_sample_rate),  # 16kHz 采样率
+        "-ac", str(config.audio_channels),     # 单声道
+        "-b:a", "64k",                         # 64kbps 比特率
+        "-c:a", "libmp3lame",                  # MP3 编码
+        "-t", str(record_time),
+        out_path,
+    ]
+
+    try:
+        logger.info(f"record_audio ({audio_type}): ffmpeg cmd: {ffmpeg_cmd}")
+        subprocess.run(ffmpeg_cmd, check=True, capture_output=True)
+
+        # 检查文件是否生成且大小合理
+        if os.path.exists(out_path):
+            file_size = os.path.getsize(out_path)
+            if file_size > 1024:  # 至少 1KB
+                logger.info(f"Audio recorded successfully: {out_path} ({file_size} bytes)")
+
+                # 注册音频到数据库
+                from windrecorder.db_manager import db_manager
+
+                db_manager.db_add_audiofile(
+                    audiofile_name=audio_out_name,
+                    audio_type=audio_type,
+                    created_time=now.strftime(DATETIME_FORMAT),
+                    file_size_bytes=file_size,
+                )
+
+                return audio_saved_dir, audio_out_name
+            else:
+                logger.warning(f"Audio file too small, possibly empty: {out_path} ({file_size} bytes)")
+                if os.path.exists(out_path):
+                    os.remove(out_path)
+                return None, None
+        else:
+            logger.error(f"Audio file not created: {out_path}")
+            return None, None
+
+    except subprocess.CalledProcessError as ex:
+        logger.error(f"Audio recording failed: {ex.cmd} | Return code: {ex.returncode}")
+        if ex.stderr:
+            logger.error(f"FFmpeg error: {ex.stderr.decode('utf-8', errors='ignore')}")
+        return None, None
+    except Exception as e:
+        logger.error(f"Audio recording error: {e}", exc_info=True)
+        return None, None
+
+
 # 录制屏幕
 def record_screen_via_ffmpeg(
     output_dir=config.record_videos_dir_ud,

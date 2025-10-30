@@ -132,10 +132,18 @@ class _DBManager:
                 db_filepath=db_filepath, column_name="deep_linking", column_type="TEXT", table_name="video_text"
             )
 
+            # 确保 audiofile_state 表存在
+            self._db_ensure_audiofile_state_table_exist(db_filepath)
+
+            # 确保 audio_text 表存在（音频 ASR 数据独立存储）
+            self._db_ensure_audio_text_table_exist(db_filepath)
+
     # 创建表
     def db_create_table(self, db_filepath):
         logger.info("Making table")
         conn = sqlite3.connect(db_filepath)
+
+        # 创建 video_text 表（不包含 ASR 列）
         conn.execute(
             """CREATE TABLE video_text
                    (videofile_name VARCHAR(100),
@@ -148,6 +156,18 @@ class _DBManager:
                    win_title TEXT,
                    deep_linking TEXT);"""
         )
+
+        # 创建 audio_text 表（独立存储音频 ASR 数据）
+        conn.execute(
+            """CREATE TABLE audio_text
+                   (audio_timestamp INT PRIMARY KEY,
+                   asr_text_system TEXT,
+                   asr_text_mic TEXT,
+                   asr_language TEXT,
+                   audiofile_system TEXT,
+                   audiofile_mic TEXT);"""
+        )
+
         conn.close()
 
     # 插入数据
@@ -295,9 +315,12 @@ class _DBManager:
 
             conn = sqlite3.connect(db_filepath)  # 连接数据库
 
-            # 构建sql
+            # 构建sql - 使用 LEFT JOIN 关联 audio_text 表
             keywords = keyword_input.split()  # 用空格分割所有的关键词，存为list
-            query = "SELECT * FROM video_text WHERE "
+            query = """SELECT v.*, a.asr_text_system, a.asr_text_mic, a.asr_language
+                       FROM video_text v
+                       LEFT JOIN audio_text a ON v.videofile_time = a.audio_timestamp
+                       WHERE """
 
             if not keyword_input.isspace() and keyword_input:  # 关键词不为空时
                 # 每个关键词执行相近字形匹配（配置项开）
@@ -308,11 +331,11 @@ class _DBManager:
                         similar_strings = self.generate_similar_ch_strings(keyword)
                         similar_strings_list.append(similar_strings)
 
-                    # 构建所有关键词的sql
+                    # 构建所有关键词的sql (包括 OCR、ASR、窗口标题)
                     conditions = []
                     for keywords in similar_strings_list:
                         group_condition = " OR ".join(
-                            f"(ocr_text LIKE '%{keyword}%') OR (win_title LIKE '%{keyword}%')" for keyword in keywords
+                            f"(v.ocr_text LIKE '%{keyword}%') OR (v.win_title LIKE '%{keyword}%') OR (a.asr_text_system LIKE '%{keyword}%') OR (a.asr_text_mic LIKE '%{keyword}%')" for keyword in keywords
                         )
                         conditions.append(f"({group_condition})")
 
@@ -320,16 +343,16 @@ class _DBManager:
                     # 输出参考：(ocr_text LIKE '%a1%' AND ocr_text LIKE '%a2%' AND ocr_text LIKE '%a3%') OR (ocr_text LIKE '%b1%' AND ocr_text LIKE '%b2%') OR (ocr_text LIKE '%c%');
 
                 else:
-                    # 不使用相近字形搜索：直接遍历所有空格区分开的关键词
+                    # 不使用相近字形搜索：直接遍历所有空格区分开的关键词 (包括 OCR、ASR、窗口标题)
                     conditions = []
                     for keyword in keywords:
                         # Convert the "-" hyphen to spaces
                         keyword = re.sub(r"(?<=\w)-(?=\w)", " ", keyword)
-                        conditions.append(f"(ocr_text LIKE '%{keyword}%') OR (win_title LIKE '%{keyword}%')")
+                        conditions.append(f"(v.ocr_text LIKE '%{keyword}%') OR (v.win_title LIKE '%{keyword}%') OR (a.asr_text_system LIKE '%{keyword}%') OR (a.asr_text_mic LIKE '%{keyword}%')")
                     query += " AND ".join(conditions)
 
             else:  # 关键词为空
-                query += f"ocr_text LIKE '%{keyword_input}%'"
+                query += f"v.ocr_text LIKE '%{keyword_input}%'"
 
             # 是否排除关键词
             if keyword_input_exclude and not keyword_input_exclude.isspace():
@@ -339,11 +362,11 @@ class _DBManager:
                 for keyword_exclude in keywords_exclude:
                     # Convert the "-" hyphen to spaces
                     keyword_exclude = re.sub(r"(?<=\w)-(?=\w)", " ", keyword_exclude)
-                    conditions.append(f"ocr_text NOT LIKE '%{keyword_exclude}%'")
+                    conditions.append(f"v.ocr_text NOT LIKE '%{keyword_exclude}%'")
                 query += " AND ".join(conditions)
 
             # 限定查询的时间范围
-            query += f" AND (videofile_time BETWEEN {date_in_ts} AND {date_out_ts})"
+            query += f" AND (v.videofile_time BETWEEN {date_in_ts} AND {date_out_ts})"
 
             logger.info(f"SQL query:\n {query}")
             df = pd.read_sql_query(query, conn)
@@ -427,19 +450,35 @@ class _DBManager:
         df = df.drop(columns=["picturefile_name", "is_picturefile_exist", "is_videofile_exist"])
 
         # 3. Rearrange columns and return the processed dataframe
-        df = df[
-            [
-                "thumbnail",
-                "timestamp",
-                "win_title",
-                "ocr_text",
-                "videofile",
-                "videofile_name",
-                "locate_time",
-                "videofile_time",
-                "deep_linking",
-            ]
+        # Check if ASR columns exist (they may be None if ASR is disabled or not yet processed)
+        available_columns = list(df.columns)
+        ordered_columns = [
+            "thumbnail",
+            "timestamp",
+            "win_title",
+            "ocr_text",
         ]
+
+        # Add ASR columns if they exist in the dataframe
+        if "asr_text_system" in available_columns:
+            ordered_columns.append("asr_text_system")
+        if "asr_text_mic" in available_columns:
+            ordered_columns.append("asr_text_mic")
+        if "asr_language" in available_columns:
+            ordered_columns.append("asr_language")
+
+        # Add remaining columns
+        ordered_columns.extend([
+            "videofile",
+            "videofile_name",
+            "locate_time",
+            "videofile_time",
+            "deep_linking",
+        ])
+
+        # Only select columns that exist in df
+        final_columns = [col for col in ordered_columns if col in available_columns]
+        df = df[final_columns]
         return df
 
     # 优化一天之时数据结果的展示
@@ -865,6 +904,294 @@ class _DBManager:
         if latest_db_records == 1 and db_file_count == 1:
             return True
         return False
+
+    # ========== 音频 ASR 相关方法 ==========
+
+    def _db_ensure_audiofile_state_table_exist(self, db_filepath):
+        """确保 audiofile_state 表存在"""
+        conn = sqlite3.connect(db_filepath)
+        cursor = conn.cursor()
+
+        # 检查表是否存在
+        cursor.execute("SELECT name FROM sqlite_master WHERE type='table' AND name='audiofile_state'")
+        if cursor.fetchone() is None:
+            # 创建 audiofile_state 表
+            cursor.execute(
+                """CREATE TABLE audiofile_state (
+                    audiofile_name TEXT PRIMARY KEY,
+                    audio_type TEXT,
+                    created_time TEXT,
+                    file_size_bytes INTEGER,
+                    asr_indexed INTEGER DEFAULT 0,
+                    asr_success INTEGER DEFAULT 0
+                )"""
+            )
+            logger.info("audiofile_state table created")
+
+        conn.commit()
+        cursor.close()
+        conn.close()
+
+    def _db_ensure_audio_text_table_exist(self, db_filepath):
+        """确保 audio_text 表存在"""
+        conn = sqlite3.connect(db_filepath)
+        cursor = conn.cursor()
+
+        # 检查表是否存在
+        cursor.execute("SELECT name FROM sqlite_master WHERE type='table' AND name='audio_text'")
+        if cursor.fetchone() is None:
+            # 创建 audio_text 表
+            cursor.execute(
+                """CREATE TABLE audio_text (
+                    audio_timestamp INT PRIMARY KEY,
+                    asr_text_system TEXT,
+                    asr_text_mic TEXT,
+                    asr_language TEXT,
+                    audiofile_system TEXT,
+                    audiofile_mic TEXT
+                )"""
+            )
+            logger.info("audio_text table created")
+
+        conn.commit()
+        cursor.close()
+        conn.close()
+
+    def db_add_audiofile(self, audiofile_name, audio_type, created_time, file_size_bytes):
+        """
+        添加音频文件记录到数据库
+
+        Args:
+            audiofile_name: 音频文件名 (如 "2025-01-28_10-00-00_system.mp3")
+            audio_type: 音频类型 ("system" 或 "mic")
+            created_time: 创建时间字符串 (YYYY-MM-DD_HH-MM-SS)
+            file_size_bytes: 文件大小（字节）
+        """
+        # 根据时间戳确定数据库
+        # 从文件名中提取时间戳部分：YYYY-MM-DD_HH-MM-SS
+        timestamp_str = audiofile_name[:19]  # 取前19个字符
+        insert_datetime = utils.dtstr_to_datetime(timestamp_str)
+        db_filepath = file_utils.get_db_filepath_by_datetime(insert_datetime)
+
+        # 确保表存在
+        self._db_ensure_audiofile_state_table_exist(db_filepath)
+
+        conn = sqlite3.connect(db_filepath)
+        cursor = conn.cursor()
+
+        try:
+            cursor.execute(
+                """INSERT INTO audiofile_state (audiofile_name, audio_type, created_time, file_size_bytes, asr_indexed, asr_success)
+                   VALUES (?, ?, ?, ?, 0, 0)""",
+                (audiofile_name, audio_type, created_time, file_size_bytes),
+            )
+            conn.commit()
+            logger.info(f"Audio file added to database: {audiofile_name}")
+        except sqlite3.IntegrityError:
+            logger.warning(f"Audio file already exists in database: {audiofile_name}")
+        finally:
+            cursor.close()
+            conn.close()
+
+    def db_get_pending_asr_audiofiles(self, limit=10):
+        """
+        查询待 ASR 处理的音频文件
+
+        Args:
+            limit: 返回数量限制
+
+        Returns:
+            list: 音频文件信息列表，每项包含 audiofile_name, audio_type, audio_path
+        """
+        result = []
+
+        # 遍历所有数据库
+        for db_filename in self._db_filename_dict.keys():
+            db_filepath = os.path.join(self.db_path, db_filename)
+
+            # 确保表存在
+            self._db_ensure_audiofile_state_table_exist(db_filepath)
+
+            conn = sqlite3.connect(db_filepath)
+            cursor = conn.cursor()
+
+            # 查询未处理的音频
+            cursor.execute(
+                """SELECT audiofile_name, audio_type, created_time
+                   FROM audiofile_state
+                   WHERE asr_indexed = 0
+                   ORDER BY created_time ASC
+                   LIMIT ?""",
+                (limit - len(result),),
+            )
+
+            rows = cursor.fetchall()
+
+            for row in rows:
+                audiofile_name, audio_type, created_time = row
+
+                # 构造音频文件路径
+                date_part = created_time[:7]  # YYYY-MM
+                audio_path = os.path.join(config.record_audios_dir_ud, date_part, audiofile_name)
+
+                result.append(
+                    {
+                        "audiofile_name": audiofile_name,
+                        "audio_type": audio_type,
+                        "audio_path": audio_path,
+                    }
+                )
+
+                if len(result) >= limit:
+                    break
+
+            cursor.close()
+            conn.close()
+
+            if len(result) >= limit:
+                break
+
+        return result
+
+    def db_mark_audio_asr_indexed(self, audiofile_name, success=True):
+        """
+        标记音频文件已完成 ASR 处理
+
+        Args:
+            audiofile_name: 音频文件名 (如 "2025-10-30_12-32-02_mic.mp3")
+            success: ASR 是否成功
+        """
+        # 根据文件名确定数据库
+        # 文件名格式：YYYY-MM-DD_HH-MM-SS_{system|mic}.mp3
+        video_timestamp_str = audiofile_name[:19]  # 提取前19个字符
+        insert_datetime = utils.dtstr_to_datetime(video_timestamp_str)
+        db_filepath = file_utils.get_db_filepath_by_datetime(insert_datetime)
+
+        conn = sqlite3.connect(db_filepath)
+        cursor = conn.cursor()
+
+        cursor.execute(
+            """UPDATE audiofile_state
+               SET asr_indexed = 1, asr_success = ?
+               WHERE audiofile_name = ?""",
+            (1 if success else 0, audiofile_name),
+        )
+
+        conn.commit()
+        cursor.close()
+        conn.close()
+
+        logger.info(f"Audio file marked as ASR indexed: {audiofile_name} (success={success})")
+
+    def db_update_asr_text(self, audiofile_name, asr_text, asr_language, audio_source):
+        """
+        更新 audio_text 表中的 ASR 文本
+
+        Args:
+            audiofile_name: 音频文件名 (如 "2025-10-30_12-32-02_mic.mp3")
+            asr_text: ASR 转录文本
+            asr_language: 检测到的语言
+            audio_source: 音频来源 (1=系统音, 2=麦克风)
+        """
+        # 从音频文件名提取时间戳
+        # 文件名格式：YYYY-MM-DD_HH-MM-SS_{system|mic}.mp3
+        timestamp_str = audiofile_name[:19]  # YYYY-MM-DD_HH-MM-SS
+        audio_timestamp = int(utils.dtstr_to_seconds(timestamp_str))
+
+        # 确定数据库
+        insert_datetime = utils.dtstr_to_datetime(timestamp_str)
+        db_filepath = file_utils.get_db_filepath_by_datetime(insert_datetime)
+
+        conn = sqlite3.connect(db_filepath)
+        cursor = conn.cursor()
+
+        # 先检查是否已存在该时间戳的记录
+        cursor.execute("SELECT * FROM audio_text WHERE audio_timestamp = ?", (audio_timestamp,))
+        existing = cursor.fetchone()
+
+        if existing:
+            # 更新现有记录
+            if audio_source == 1:  # 系统音
+                cursor.execute(
+                    """UPDATE audio_text
+                       SET asr_text_system = ?, asr_language = ?, audiofile_system = ?
+                       WHERE audio_timestamp = ?""",
+                    (asr_text, asr_language, audiofile_name, audio_timestamp)
+                )
+            else:  # 麦克风
+                cursor.execute(
+                    """UPDATE audio_text
+                       SET asr_text_mic = ?, asr_language = ?, audiofile_mic = ?
+                       WHERE audio_timestamp = ?""",
+                    (asr_text, asr_language, audiofile_name, audio_timestamp)
+                )
+        else:
+            # 插入新记录
+            if audio_source == 1:  # 系统音
+                cursor.execute(
+                    """INSERT INTO audio_text (audio_timestamp, asr_text_system, asr_language, audiofile_system)
+                       VALUES (?, ?, ?, ?)""",
+                    (audio_timestamp, asr_text, asr_language, audiofile_name)
+                )
+            else:  # 麦克风
+                cursor.execute(
+                    """INSERT INTO audio_text (audio_timestamp, asr_text_mic, asr_language, audiofile_mic)
+                       VALUES (?, ?, ?, ?)""",
+                    (audio_timestamp, asr_text, asr_language, audiofile_name)
+                )
+
+        conn.commit()
+        cursor.close()
+        conn.close()
+
+        logger.info(f"ASR text updated in audio_text table: timestamp={audio_timestamp}, audio_source={audio_source}")
+
+    def db_get_old_audio_files(self, cutoff_date):
+        """
+        查询需要删除的旧音频文件
+
+        Args:
+            cutoff_date: 截止日期字符串 (YYYY-MM-DD)
+
+        Returns:
+            list: 旧音频文件信息列表
+        """
+        result = []
+
+        for db_filename in self._db_filename_dict.keys():
+            db_filepath = os.path.join(self.db_path, db_filename)
+
+            # 确保表存在
+            self._db_ensure_audiofile_state_table_exist(db_filepath)
+
+            conn = sqlite3.connect(db_filepath)
+            cursor = conn.cursor()
+
+            cursor.execute(
+                """SELECT audiofile_name, audio_type, created_time
+                   FROM audiofile_state
+                   WHERE created_time < ?""",
+                (cutoff_date,),
+            )
+
+            rows = cursor.fetchall()
+
+            for row in rows:
+                audiofile_name, audio_type, created_time = row
+                date_part = created_time[:7]
+                audio_path = os.path.join(config.record_audios_dir_ud, date_part, audiofile_name)
+
+                result.append(
+                    {
+                        "name": audiofile_name,
+                        "audio_path": audio_path,
+                    }
+                )
+
+            cursor.close()
+            conn.close()
+
+        return result
 
 
 db_manager = _DBManager(

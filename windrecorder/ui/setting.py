@@ -316,6 +316,8 @@ def render():
             f'🔒 {_t("set_pwd_text")}', value=config.webui_access_password_md5, help=_t("set_pwd_help"), type="password"
         )
 
+        st.divider()
+
         # 选择语言
         lang_selection = list(lang_map.values())
         lang_index = lang_selection.index(lang_map[config.lang])

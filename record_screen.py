@@ -97,6 +97,23 @@ def idle_maintain_process_main():
         record.try_empty_cache_dir_in_idle_routine()
         # 统计webui footer info
         state.make_webui_footer_state_data_cache(ask_from="idle")
+        # ASR 处理音频文件
+        if config.enable_audio_recording and config.enable_audio_asr:
+            if config.asr_processing_paused:
+                logger.info("ASR processing is paused by user")
+            else:
+                try:
+                    from windrecorder.asr_manager import asr_manager
+
+                    asr_lock = FileLock(config.asr_lock_path, str(getpid()), timeout_s=60 * 60)  # 1小时超时
+                    with asr_lock:
+                        asr_manager.process_pending_audio_files(batch_size=config.batch_size_asr_in_idle)
+                        # 清理过期音频文件
+                        asr_manager.cleanup_old_audio_files()
+                except LockExistsException:
+                    logger.warning("another ASR processing is running.")
+                except Exception as e:
+                    logger.error(f"Error in ASR processing: {e}", exc_info=True)
         # 生成 AI tags
         if config.enable_ai_extract_tag and config.enable_ai_extract_tag_in_idle:
             cache_day_tags_in_idle_routine()
@@ -152,7 +169,37 @@ def continuously_record_screen():
         else:
             subprocess.run("color 2f", shell=True)  # 设定背景色为活动
             if config.record_mode == "ffmpeg":
-                video_saved_dir, video_out_name = record.record_screen_via_ffmpeg()  # 使用 ffmpeg 录制屏幕
+                # 启动音频录制线程（如果启用）- 与视频同时开始
+                audio_threads = []
+                if config.enable_audio_recording:
+                    if config.record_system_audio:
+                        thread_system_audio = threading.Thread(
+                            target=record.record_audio_via_ffmpeg,
+                            kwargs={"audio_type": "system"},
+                            daemon=True,
+                        )
+                        thread_system_audio.start()
+                        audio_threads.append(thread_system_audio)
+                        logger.info("System audio recording thread started")
+
+                    if config.record_mic_audio:
+                        thread_mic_audio = threading.Thread(
+                            target=record.record_audio_via_ffmpeg,
+                            kwargs={"audio_type": "mic"},
+                            daemon=True,
+                        )
+                        thread_mic_audio.start()
+                        audio_threads.append(thread_mic_audio)
+                        logger.info("Mic audio recording thread started")
+
+                # 视频录制（主线程，阻塞等待）
+                video_saved_dir, video_out_name = record.record_screen_via_ffmpeg()
+
+                # 等待音频录制完成
+                for t in audio_threads:
+                    t.join(timeout=10)  # 最多等待10秒
+                    if t.is_alive():
+                        logger.warning("Audio recording thread did not finish in time")
 
                 # 自动索引策略
                 if config.OCR_index_strategy == 1:

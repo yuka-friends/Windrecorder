@@ -514,6 +514,10 @@ def show_and_locate_video_timestamp_by_filename_and_time(video_file_name, timest
             st.session_state.day_timestamp = 1
         st.video(video_bytes, start_time=st.session_state.day_timestamp)
 
+    # 显示音频播放器（如果启用音频录制）
+    if config.enable_audio_recording:
+        show_audio_players(video_file_name, timestamp)
+
 
 # 显示时间轴
 def daily_timeline_html(image_b64):
@@ -521,6 +525,45 @@ def daily_timeline_html(image_b64):
         f"<img style='max-width: 97%;max-height: 100%;margin: 0 0px 5px 50px' src='data:image/png;base64, {image_b64}'/>",
         unsafe_allow_html=True,
     )
+
+
+# 显示音频播放器
+def show_audio_players(video_file_name, timestamp):
+    """显示系统音频和麦克风音频播放器"""
+    # 获取音频文件路径
+    system_audio_path = utils.get_audio_path(video_file_name, "system")
+    mic_audio_path = utils.get_audio_path(video_file_name, "mic")
+
+    # 创建两列布局
+    audio_col1, audio_col2 = st.columns(2)
+
+    with audio_col1:
+        st.markdown(f"**{_t('oneday_audio_system')}**")
+        if system_audio_path and os.path.exists(system_audio_path):
+            try:
+                # 读取并显示音频
+                with open(system_audio_path, "rb") as audio_file:
+                    audio_bytes = audio_file.read()
+                    st.audio(audio_bytes, format="audio/mp3", start_time=int(timestamp))
+            except Exception as e:
+                logger.error(f"Error loading system audio: {e}")
+                st.caption(f"⚠️ {_t('oneday_audio_not_available')}")
+        else:
+            st.caption(f"⚠️ {_t('oneday_audio_not_available')}")
+
+    with audio_col2:
+        st.markdown(f"**{_t('oneday_audio_mic')}**")
+        if mic_audio_path and os.path.exists(mic_audio_path):
+            try:
+                # 读取并显示音频
+                with open(mic_audio_path, "rb") as audio_file:
+                    audio_bytes = audio_file.read()
+                    st.audio(audio_bytes, format="audio/mp3", start_time=int(timestamp))
+            except Exception as e:
+                logger.error(f"Error loading mic audio: {e}")
+                st.caption(f"⚠️ {_t('oneday_audio_not_available')}")
+        else:
+            st.caption(f"⚠️ {_t('oneday_audio_not_available')}")
 
 
 # 优化显示回溯截图

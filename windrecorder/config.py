@@ -122,6 +122,32 @@ class Config:
         convert_screenshots_to_vid_energy_saving_mode,
         enable_ocr_str_highlight_indicator,
         recycle_deleted_files,
+        enable_audio_recording,
+        record_system_audio,
+        record_mic_audio,
+        record_audios_dir,
+        enable_audio_asr,
+        asr_engine,
+        asr_model_dir,
+        asr_use_gpu,
+        asr_language,
+        asr_use_itn,
+        asr_ban_emo_unk,
+        asr_batch_size_s,
+        asr_merge_vad,
+        asr_merge_length_s,
+        asr_music_filter_keywords,
+        asr_min_text_length,
+        asr_repetitive_threshold,
+        asr_auto_delete_audio_days,
+        batch_size_asr_in_idle,
+        asr_processing_paused,
+        audio_store_day,
+        system_audio_device_name,
+        mic_audio_device_name,
+        audio_sample_rate,
+        audio_channels,
+        asr_lock_name,
         compress_cpu_threads=None,
         **other_field,
     ) -> None:
@@ -232,6 +258,34 @@ class Config:
         )
         self.enable_ocr_str_highlight_indicator = enable_ocr_str_highlight_indicator
         self.recycle_deleted_files = recycle_deleted_files
+
+        # Audio recording and ASR settings
+        self.enable_audio_recording = enable_audio_recording
+        self.record_system_audio = record_system_audio
+        self.record_mic_audio = record_mic_audio
+        self.record_audios_dir_ud = os.path.join(userdata_dir, record_audios_dir)
+        self.enable_audio_asr = enable_audio_asr
+        self.asr_engine = asr_engine
+        self.asr_model_dir = asr_model_dir
+        self.asr_use_gpu = asr_use_gpu
+        self.asr_language = asr_language
+        self.asr_use_itn = asr_use_itn
+        self.asr_ban_emo_unk = asr_ban_emo_unk
+        self.asr_batch_size_s = asr_batch_size_s
+        self.asr_merge_vad = asr_merge_vad
+        self.asr_merge_length_s = asr_merge_length_s
+        self.asr_music_filter_keywords = asr_music_filter_keywords
+        self.asr_min_text_length = asr_min_text_length
+        self.asr_repetitive_threshold = asr_repetitive_threshold
+        self.asr_auto_delete_audio_days = asr_auto_delete_audio_days
+        self.batch_size_asr_in_idle = batch_size_asr_in_idle
+        self.asr_processing_paused = asr_processing_paused
+        self.audio_store_day = audio_store_day
+        self.system_audio_device_name = system_audio_device_name
+        self.mic_audio_device_name = mic_audio_device_name
+        self.audio_sample_rate = audio_sample_rate
+        self.audio_channels = audio_channels
+        self.asr_lock_path = os.path.join(lock_file_dir, asr_lock_name)
 
     def set_and_save_config(self, attr: str, value):
         if not hasattr(self, attr):

@@ -1,3 +1,18 @@
+import os
+import sys
+
+#导入一次troch是为了解决funasr的问题，如果不先导入一次troch会导致后续加载funasr的时候卡住，展示没有找到更好的解决办法
+os.environ['KMP_DUPLICATE_LIB_OK'] = 'True'
+os.environ['OMP_NUM_THREADS'] = '1'
+# 将 torch lib 路径添加到 DLL 搜索路径
+venv_path = os.path.dirname(os.path.dirname(sys.executable))
+torch_lib_path = os.path.join(venv_path, 'Lib', 'site-packages', 'torch', 'lib')
+if os.path.exists(torch_lib_path):
+    os.add_dll_directory(torch_lib_path)
+import torch
+#todo 解决funasr的导入问题
+
+
 import hashlib
 
 import streamlit as st

@@ -950,3 +950,82 @@ def calc_max_thumbnail_size(image_list, sample_time=5):
         original_height = 39
 
     return original_width, original_height
+
+
+def get_audio_path(videofile_name, audio_type="system"):
+    """根据视频文件名获取对应音频文件路径"""
+    timestamp = videofile_name[:19]
+    filename = f"{timestamp}_{audio_type}.mp3"
+    date_dir = timestamp[:7]
+    path = os.path.join(config.record_audios_dir_ud, date_dir, filename)
+    return path if os.path.exists(path) else None
+
+
+def get_audio_devices():
+    """获取所有可用音频设备"""
+    try:
+        cmd = [config.ffmpeg_path, "-list_devices", "true", "-f", "dshow", "-i", "dummy"]
+        result = subprocess.run(cmd, capture_output=True, timeout=5)
+
+        # 尝试多种编码解码
+        output = ""
+        for encoding in ['utf-8', 'gbk', 'gb2312']:
+            try:
+                output = result.stderr.decode(encoding)
+                break
+            except:
+                continue
+
+        if not output:
+            output = result.stderr.decode('utf-8', errors='ignore')
+
+        devices = []
+        for line in output.split('\n'):
+            if '(audio)' in line and '"' in line:
+                match = re.search(r'"([^"]+)"\s*\(audio\)', line)
+                if match:
+                    devices.append(match.group(1))
+
+        logger.info(f"Found {len(devices)} audio devices: {devices}")
+        return {'all_devices': devices}
+    except Exception as e:
+        logger.error(f"Failed to get audio devices: {e}")
+        return {'all_devices': []}
+
+
+def test_audio_device(device_name, duration=2):
+    """测试音频设备录制功能"""
+    import tempfile
+
+    test_file = None
+    try:
+        with tempfile.NamedTemporaryFile(suffix='.mp3', delete=False) as f:
+            test_file = f.name
+
+        cmd = [
+            config.ffmpeg_path, "-f", "dshow", "-i", f"audio={device_name}",
+            "-ar", "16000", "-ac", "1", "-b:a", "64k", "-c:a", "libmp3lame",
+            "-t", str(duration), test_file, "-y"
+        ]
+
+        result = subprocess.run(cmd, capture_output=True, timeout=duration + 5)
+
+        if result.returncode == 0 and os.path.exists(test_file):
+            size = os.path.getsize(test_file)
+            return (True, f"Success: {size} bytes", size) if size > 1024 else (False, "No audio data", 0)
+
+        error = result.stderr.decode('utf-8', errors='ignore') if result.stderr else "Unknown"
+        if "Could not find audio" in error:
+            return False, "Device not found", 0
+        return False, error[-200:], 0
+
+    except subprocess.TimeoutExpired:
+        return False, "Timeout", 0
+    except Exception as e:
+        return False, str(e), 0
+    finally:
+        if test_file and os.path.exists(test_file):
+            try:
+                os.remove(test_file)
+            except:
+                pass
