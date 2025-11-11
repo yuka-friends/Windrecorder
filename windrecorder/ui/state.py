@@ -74,6 +74,11 @@ def render():
         )
         get_show_month_data_state(st.session_state.stat_select_month_datetime)  # 显示当月概览
 
+        # Audio Statistics (if audio recording is enabled)
+        if config.enable_audio_recording:
+            st.markdown(_t("stat_audio_title"))
+            get_show_audio_statistics(st.session_state.stat_select_month_datetime)
+
         stat_year_title = st.session_state.stat_select_month_datetime.year
         st.markdown(_t("stat_md_year_title").format(stat_year_title=stat_year_title))
         get_show_year_data_state(st.session_state.stat_select_month_datetime)  # 显示当年概览
@@ -222,3 +227,81 @@ def get_show_year_data_state(stat_select_year_datetime: datetime.datetime):
         color="#C873A6",
         height=350,
     )
+
+
+def get_show_audio_statistics(dt: datetime.datetime):
+    """显示当月音频统计"""
+    import sqlite3
+
+    try:
+        date_str = f"{dt.year:04d}-{dt.month:02d}"
+        audio_dir = os.path.join(config.record_audios_dir_ud, date_str)
+
+        # 统计音频文件
+        stats = {'total': 0, 'system': 0, 'mic': 0, 'size': 0, 'asr_ok': 0, 'asr_all': 0}
+
+        if os.path.exists(audio_dir):
+            files = [f for f in os.listdir(audio_dir) if f.endswith('.mp3')]
+            stats['total'] = len(files)
+            stats['system'] = sum(1 for f in files if f.endswith('_system.mp3'))
+            stats['mic'] = sum(1 for f in files if f.endswith('_mic.mp3'))
+            stats['size'] = sum(os.path.getsize(os.path.join(audio_dir, f)) for f in files)
+
+        # 统计ASR
+        if config.enable_audio_asr:
+            month_days = calendar.monthrange(dt.year, dt.month)[1]
+            dt_start = datetime.datetime(dt.year, dt.month, 1)
+            dt_end = datetime.datetime(dt.year, dt.month, month_days, 23, 59, 59)
+
+            db_filenames = db_manager.db_get_dbfilename_by_datetime(dt_start, dt_end)
+            for db_filename in db_filenames:
+                try:
+                    db_path = os.path.join(config.db_dir_ud, db_filename)
+                    conn = sqlite3.connect(db_path)
+                    cur = conn.cursor()
+                    cur.execute("SELECT name FROM sqlite_master WHERE type='table' AND name='audiofile_state'")
+                    if cur.fetchone():
+                        cur.execute("SELECT COUNT(*) FROM audiofile_state WHERE asr_indexed=1")
+                        stats['asr_all'] += cur.fetchone()[0] or 0
+                        cur.execute("SELECT COUNT(*) FROM audiofile_state WHERE asr_success=1")
+                        stats['asr_ok'] += cur.fetchone()[0] or 0
+                    conn.close()
+                except:
+                    pass
+
+        # 显示
+        col1, col2, col3 = st.columns(3)
+
+        with col1:
+            st.metric(_t("stat_audio_metric_total"), stats['total'])
+            st.metric(_t("stat_audio_metric_system"), stats['system'])
+            st.metric(_t("stat_audio_metric_mic"), stats['mic'])
+
+        with col2:
+            size = stats['size']
+            if size < 1024**2:
+                size_str = f"{size/1024:.1f} KB"
+            elif size < 1024**3:
+                size_str = f"{size/(1024**2):.1f} MB"
+            else:
+                size_str = f"{size/(1024**3):.2f} GB"
+            st.metric(_t("stat_audio_metric_size"), size_str)
+
+            if config.enable_audio_asr:
+                st.metric(_t("stat_audio_metric_asr_done"), stats['asr_all'])
+                st.metric(_t("stat_audio_metric_asr_ok"), stats['asr_ok'])
+
+        with col3:
+            if stats['total'] > 0:
+                mins = stats['total'] * config.record_seconds / 60
+                time_str = f"{mins:.0f} min" if mins < 60 else f"{mins/60:.1f}h"
+                st.metric(_t("stat_audio_metric_duration"), time_str)
+
+                avg_mb = stats['size'] / (1024**2) / stats['total']
+                st.metric("Avg Size", f"{avg_mb:.2f} MB")
+
+        st.caption(f"`{audio_dir}`")
+
+    except Exception as e:
+        st.error(f"Load audio stats failed: {e}")
+

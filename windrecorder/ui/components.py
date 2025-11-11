@@ -38,19 +38,42 @@ def video_dataframe(df, heightIn=800):
     # ~~is_videofile_exist~~ videofile 渲染为可选框
     # ocr_text 更大的展示空间
     # thumbnail 渲染为图像
+    # ASR text columns (if available)
+    column_config = {
+        "videofile": st.column_config.CheckboxColumn(
+            "videofile",
+            default=False,
+        ),
+        "ocr_text": st.column_config.TextColumn("ocr_text", width="medium"),
+        "win_title": st.column_config.TextColumn("title", width="medium"),
+        "thumbnail": st.column_config.ImageColumn(
+            "thumbnail",
+        ),
+    }
+
+    # Add ASR column configs if they exist in the dataframe
+    if "asr_text_system" in df.columns:
+        column_config["asr_text_system"] = st.column_config.TextColumn(
+            "🔊 System Audio ASR",
+            width="medium",
+            help="ASR transcription from system audio (speakers/apps)"
+        )
+    if "asr_text_mic" in df.columns:
+        column_config["asr_text_mic"] = st.column_config.TextColumn(
+            "🎤 Microphone ASR",
+            width="medium",
+            help="ASR transcription from microphone"
+        )
+    if "asr_language" in df.columns:
+        column_config["asr_language"] = st.column_config.TextColumn(
+            "🌐 Lang",
+            width="small",
+            help="Detected language from ASR"
+        )
+
     st.dataframe(
         df,
-        column_config={
-            "videofile": st.column_config.CheckboxColumn(
-                "videofile",
-                default=False,
-            ),
-            "ocr_text": st.column_config.TextColumn("ocr_text", width="medium"),
-            "win_title": st.column_config.TextColumn("title", width="medium"),
-            "thumbnail": st.column_config.ImageColumn(
-                "thumbnail",
-            ),
-        },
+        column_config=column_config,
         height=heightIn,
     )
 

@@ -326,6 +326,10 @@ def ui_ocr_text_search(data_type="month_range"):
     with col_page:  # 搜索结果翻页
         ui_component_pagination()
 
+    # Show info if audio recording and ASR are enabled
+    if config.enable_audio_recording and config.enable_audio_asr:
+        st.info(_t("gs_text_asr_enabled_info"), icon="💡")
+
     do_global_keyword_search()
 
 
@@ -532,6 +536,32 @@ def show_and_locate_video_timestamp_by_df(df, num):
             except Exception as e:
                 st.error(e)
         st.markdown(f"`{video_filepath}`")
+
+        # 音频播放
+        if config.enable_audio_recording:
+            st.markdown("### 🎧 Audio")
+            col_sys, col_mic = st.columns(2)
+
+            with col_sys:
+                if config.record_system_audio:
+                    path = utils.get_audio_path(df_videofile_name, "system")
+                    if path:
+                        st.markdown("**🔊 System**")
+                        st.audio(open(path, "rb").read(), format="audio/mp3")
+                        st.caption(f"`{path}`")
+                    else:
+                        st.info("System audio not found", icon="ℹ️")
+
+            with col_mic:
+                if config.record_mic_audio:
+                    path = utils.get_audio_path(df_videofile_name, "mic")
+                    if path:
+                        st.markdown("**🎤 Mic**")
+                        st.audio(open(path, "rb").read(), format="audio/mp3")
+                        st.caption(f"`{path}`")
+                    else:
+                        st.info("Mic not found", icon="ℹ️")
+
         if df.iloc[num]["deep_linking"]:
             components.render_deep_linking(df.iloc[num]["deep_linking"])
     else:
