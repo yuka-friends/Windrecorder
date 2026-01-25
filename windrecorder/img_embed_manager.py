@@ -34,6 +34,8 @@ logger = get_logger(__name__)
 MODEL_NAME = "unum-cloud/uform3-image-text-multilingual-base"
 
 
+import gc
+
 def get_model_and_processor():
     # model_text, model_image, processor_text, processor_image = get_model_and_processor()
     processors, models = get_model("unum-cloud/uform3-image-text-multilingual-base")
@@ -43,6 +45,18 @@ def get_model_and_processor():
     processor_image = processors[Modality.IMAGE_ENCODER]
 
     return model_text, model_image, processor_text, processor_image
+
+
+def unload_model(model_text, model_image, processor_text, processor_image):
+    """
+    释放模型占用的内存
+    """
+    del model_text
+    del model_image
+    del processor_text
+    del processor_image
+    gc.collect()
+
 
 
 def embed_img(model_image, processor_image, img_filepath):
