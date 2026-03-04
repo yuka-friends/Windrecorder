@@ -5,6 +5,11 @@
 <p align="center"> <a href="https://github.com/yuka-friends/Windrecorder/blob/main/README.md">English</a>  | <a href="https://github.com/yuka-friends/Windrecorder/blob/main/__assets__/README-sc.md">简体中文</a></p>
 
 ---
+Windrecorder – Furllamm Edition
+Modified by Furllamm Team, 2026
+Features: Filter, Local AI, Addiction Mode
+Original project: https://github.com/yuka-friends/Windrecorder
+
 
 Windrecorder is a memory search app by records everything on your screen in small size, to let you rewind what you have seen, query through OCR text or image description, and get activity statistics. All its capabilities run completely locally, without the need for an Internet connection or uploading any data, you should own all your data.
 
