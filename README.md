@@ -7,7 +7,6 @@
 ---
 Windrecorder – Furllamm Edition
 Modified by Furllamm Team, 2026
-Features: Filter, Local AI, Addiction Mode
 Original project: https://github.com/yuka-friends/Windrecorder
 
 
