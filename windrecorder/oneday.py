@@ -1,5 +1,4 @@
 import base64
-import calendar
 import datetime
 import os
 import re
@@ -31,28 +30,8 @@ class OneDay:
         :param dt_in: datetime.datetime/date 当天其中一个时间点，会自动转为当天的范围
         :param search_content: str 搜索内容
         """
-        # 入参：查询时间，搜索内容
-        day_begin_minutes = config.day_begin_minutes
-        if type(dt_in) is datetime.date:
-            # datetime 对象只包含年月日信息
-            search_date_range_in = datetime.datetime.combine(
-                dt_in, datetime.time(day_begin_minutes // 60, day_begin_minutes % 60, 0)
-            )
-            _, month_days = calendar.monthrange(dt_in.year, dt_in.month)
-            if dt_in.day == month_days:  # month last day
-                search_date_range_out = datetime.datetime.combine(
-                    dt_in.replace(month=dt_in.month + 1, day=1),
-                    datetime.time((23 + day_begin_minutes // 60) % 24, (59 + day_begin_minutes % 60) % 60, 59),
-                )
-            else:
-                search_date_range_out = datetime.datetime.combine(
-                    dt_in.replace(day=dt_in.day + (1 if day_begin_minutes > 0 else 0)),
-                    datetime.time((23 + day_begin_minutes // 60) % 24, (59 + day_begin_minutes % 60) % 60, 59),
-                )
-        elif type(dt_in) is datetime.datetime:
-            # datetime 对象包含年月日以及时间信息
-            search_date_range_in = utils.get_datetime_in_day_range_pole_by_config_day_begin(dt_in, range="start")
-            search_date_range_out = utils.get_datetime_in_day_range_pole_by_config_day_begin(dt_in, range="end")
+        search_date_range_in = utils.get_datetime_in_day_range_pole_by_config_day_begin(dt_in, range="start")
+        search_date_range_out = utils.get_datetime_in_day_range_pole_by_config_day_begin(dt_in, range="end")
 
         df, _, _ = db_manager.db_search_data(search_content, search_date_range_in, search_date_range_out)
         return df

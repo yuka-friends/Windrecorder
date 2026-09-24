@@ -266,33 +266,13 @@ def get_datetime_in_day_range_pole_by_config_day_begin(dt: datetime.datetime, ra
     param: dt 一天中的一个时间点
     param: range 指定为 start/end 获取开始与结束
     """
-    if type(dt) is datetime.date:
-        dt = datetime.datetime.combine(dt, datetime.datetime.min.time())
-
-    day_begin_minutes = config.day_begin_minutes
+    day = dt.date() if isinstance(dt, datetime.datetime) else dt
+    start = datetime.datetime.combine(day, datetime.time()) + datetime.timedelta(minutes=config.day_begin_minutes)
     if range == "start":
-        res = dt.replace(hour=day_begin_minutes // 60, minute=day_begin_minutes % 60, second=0, microsecond=0)
+        return start
     if range == "end":
-        _, month_days = calendar.monthrange(dt.year, dt.month)
-        if dt.day == month_days:  # month last day
-            res = dt.replace(
-                month=dt.month + (1 if day_begin_minutes > 0 and dt.month < 12 else 0),
-                day=1 if day_begin_minutes > 0 else dt.day,
-                hour=(23 + day_begin_minutes // 60) % 24,
-                minute=(59 + day_begin_minutes % 60) % 60,
-                second=59,
-                microsecond=0,
-            )
-        else:
-            res = dt.replace(
-                day=dt.day + (1 if day_begin_minutes > 0 else 0),
-                hour=(23 + day_begin_minutes // 60) % 24,
-                minute=(59 + day_begin_minutes % 60) % 60,
-                second=59,
-                microsecond=0,
-            )
-
-    return res
+        return start + datetime.timedelta(days=1, seconds=-1)
+    raise ValueError("range must be start or end")
 
 
 # 将输入的不完整的datetime补齐为默认年月日时分秒的datetime

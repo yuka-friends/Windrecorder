@@ -26,3 +26,10 @@ video, FAISS index, user setting, or existing generated image is migrated.
 On an empty month, the page shows an explicit message and disables image generation.
 On an empty library it shows an empty state instead of constructing invalid date
 controls. Record bounds skip empty shards, including a newly created current month.
+
+Daily views share one date-range calculation for `date` and `datetime` inputs.
+The configured day start is added to midnight, with the end exactly one day minus
+one second later; this preserves inclusive search while handling month/year changes
+and non-hour offsets such as 00:30. This affects queries only, not stored seconds.
+Window-title statistics clean and sort a copy of the query result so other views
+can safely reuse the original rows.

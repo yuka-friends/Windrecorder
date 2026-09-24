@@ -94,7 +94,7 @@ def get_cached_calendar_overview(dt, period):
                 and frame.data_count.ge(0).all()
             ):
                 return frame
-    except (FileNotFoundError, ValueError, TypeError, KeyError):
+    except (OSError, ValueError, TypeError, KeyError):
         pass
     frame = _calendar_overview(dt, period, frequency)
     # A write during the query makes this view transient; do not cache it as current.
@@ -229,8 +229,10 @@ def add_watermark_to_lightbox_img(input_image, dt_in: datetime.datetime, dt_out:
 
 def get_footer_state_data():
     res = {}
-    res["first_record_time_str"] = utils.seconds_to_date_goodlook_formart(db_manager.db_first_earliest_record_time())
-    res["latest_record_time_str"] = utils.seconds_to_date_goodlook_formart(db_manager.db_latest_record_time())
+    first = db_manager.db_first_earliest_record_time()
+    latest = db_manager.db_latest_record_time()
+    res["first_record_time_str"] = utils.seconds_to_date_goodlook_formart(first) if first is not None else "—"
+    res["latest_record_time_str"] = utils.seconds_to_date_goodlook_formart(latest) if latest is not None else "—"
     res["latest_db_records_num"] = db_manager.db_num_records()
     res["videos_file_size"] = round(file_utils.get_dir_size(config.record_videos_dir_ud) / (1024 * 1024 * 1024), 3)
     res["videos_files_count"], _ = file_utils.get_videos_and_ocred_videos_count(config.record_videos_dir_ud)
