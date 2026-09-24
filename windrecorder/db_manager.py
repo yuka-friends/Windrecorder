@@ -2,11 +2,11 @@ import datetime
 import math
 import os
 import re
+import sqlite3
 import tempfile
 from contextlib import closing
-from pathlib import Path
-import sqlite3
 from itertools import product
+from pathlib import Path
 from subprocess import CalledProcessError
 
 import numpy as np
@@ -58,19 +58,23 @@ class _DBManager:
     def db_initialize(self, db_filepath, *, insert_welcome=False):
         is_db_exist = os.path.exists(db_filepath)
         with closing(sqlite3.connect(db_filepath)) as conn:
-            has_table = conn.execute(
-                "SELECT name FROM sqlite_master WHERE type='table' AND name='video_text'"
-            ).fetchone() is not None
+            has_table = (
+                conn.execute("SELECT name FROM sqlite_master WHERE type='table' AND name='video_text'").fetchone() is not None
+            )
         if not has_table:
             self.db_create_table(db_filepath)
             if insert_welcome:
                 now = datetime.datetime.now()
                 self.db_update_data(
-                    now.strftime("%Y-%m-%d_%H-%M-%S") + ".mp4", "0.jpg", utils.datetime_to_seconds(now),
+                    now.strftime("%Y-%m-%d_%H-%M-%S") + ".mp4",
+                    "0.jpg",
+                    utils.datetime_to_seconds(now),
                     "Welcome! Go to Setting and Update your screen recording files.",
-                    False, False,
+                    False,
+                    False,
                     "iVBORw0KGgoAAAANSUhEUgAAAEYAAAAnCAYAAACyhj57AAAAoUlEQVRoBe3BAQEAAAwBMCrpp6RCHkCFb7RSvEErxRu0UrxBK8UbtFK8QSvFG7RSvEErxRu0UrxBK8UbtFK8QSvFG7RSvEErxRu0UrxBK8UbtFK8QSvFG7RSvEErxRu0UrxBK8UbtFK8QSvFG7RSvEErxRu0UrxBK8UbtFK8QSvFG7RSvEErxRu0UrxBK8UbtFK8QSvFG7RSvEErxRu0UrxBK8UbtFK8QSvFG7RSvEErxRu0UrxxUOdhqPjngTYAAAAASUVORK5CYII=",
-                    None, "",
+                    None,
+                    "",
                 )
         self._db_filename_dict = self._init_db_filename_dict()
         return is_db_exist
@@ -152,7 +156,9 @@ class _DBManager:
 
         # 获取插入时间，取得对应的数据库
         insert_db_datetime = utils.set_full_datetime_to_YYYY_MM(utils.seconds_to_datetime(videofile_time))
-        db_filepath = file_utils.get_db_filepath_by_datetime(insert_db_datetime, self.db_path, self.user_name)  # 直接获取对应时间的数据库路径
+        db_filepath = file_utils.get_db_filepath_by_datetime(
+            insert_db_datetime, self.db_path, self.user_name
+        )  # 直接获取对应时间的数据库路径
 
         conn = sqlite3.connect(db_filepath)
         c = conn.cursor()
@@ -265,8 +271,11 @@ class _DBManager:
             conditions = []
             params = []
             for keyword in keyword_input.split():
-                variants = (self.generate_similar_ch_strings(keyword) if config.use_similar_ch_char_to_search
-                            else [re.sub(r"(?<=\w)-(?=\w)", " ", keyword)])
+                variants = (
+                    self.generate_similar_ch_strings(keyword)
+                    if config.use_similar_ch_char_to_search
+                    else [re.sub(r"(?<=\w)-(?=\w)", " ", keyword)]
+                )
                 group = []
                 for variant in variants:
                     group.append("(ocr_text LIKE ? OR win_title LIKE ?)")
@@ -677,13 +686,14 @@ class _DBManager:
         if source.stem.endswith("_TEMP_READ"):
             return str(source)
         destination = source.with_name(source.stem + "_TEMP_READ.db")
+
         # WAL commits may not change the main file. Track both files.
         def signature():
             result = []
             for path in (source, Path(str(source) + "-wal")):
                 try:
                     info = path.stat()
-                    result.append((info.st_mtime_ns, info.st_size))
+                    result.append((info.st_mtime_ns, info.st_size, info.st_ino))
                 except FileNotFoundError:
                     result.append(None)
             return tuple(result)
@@ -698,7 +708,14 @@ class _DBManager:
             with closing(sqlite3.connect(source.as_uri() + "?mode=ro", uri=True)) as reader:
                 with closing(sqlite3.connect(temporary)) as writer:
                     reader.backup(writer)
-            os.replace(temporary, destination)
+            try:
+                os.replace(temporary, destination)
+            except PermissionError:
+                # Windows readers may still hold the last complete snapshot open.
+                # Keep serving it and retry refresh on the next request.
+                if destination.exists():
+                    return str(destination)
+                raise
             self._snapshot_signatures[str(source)] = current
         finally:
             if os.path.exists(temporary):

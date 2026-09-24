@@ -248,8 +248,9 @@ class Config:
         # 把 python 对象转为 dict
         with open(FILEPATH_CONFIG_DEFAULT, encoding="utf-8") as stream:
             persisted_keys = json.load(stream)
-        now_config_json = {key: value for key, value in (vars(self) if updates is None else updates).items()
-                           if key in persisted_keys}
+        now_config_json = {
+            key: value for key, value in (vars(self) if updates is None else updates).items() if key in persisted_keys
+        }
         # 更新设置
         config_json.update(now_config_json)
         # 去除不必要的字段

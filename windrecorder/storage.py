@@ -1,4 +1,5 @@
 """Small persistence primitives without application or desktop imports."""
+
 import json
 import os
 import tempfile

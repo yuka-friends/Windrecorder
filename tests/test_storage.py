@@ -35,18 +35,37 @@ def test_persisted_wall_clock_timestamp_roundtrip(timestamp):
     assert utils.datetime_to_seconds(utils.seconds_to_datetime(seconds)) == seconds
 
 
+@pytest.mark.parametrize("seconds", [-0.5, 0.5, 1700000000.125])
+def test_fractional_wall_clock_timestamps_remain_naive(seconds):
+    from windrecorder import utils
+
+    assert utils.seconds_to_datetime(seconds) == dt.datetime(1970, 1, 1) + dt.timedelta(seconds=seconds)
+
+
 def test_legacy_schema_upgrade_is_additive_and_repeatable(db):
     path = Path(db.db_path) / "default_2020-01_wind.db"
     with sqlite3.connect(path) as conn:
-        conn.execute("CREATE TABLE video_text (videofile_name TEXT, picturefile_name TEXT, videofile_time INT, "
-                     "ocr_text TEXT, is_videofile_exist BOOLEAN, is_picturefile_exist BOOLEAN, thumbnail TEXT)")
+        conn.execute(
+            "CREATE TABLE video_text (videofile_name TEXT, picturefile_name TEXT, videofile_time INT, "
+            "ocr_text TEXT, is_videofile_exist BOOLEAN, is_picturefile_exist BOOLEAN, thumbnail TEXT)"
+        )
         conn.execute("INSERT INTO video_text VALUES ('old.mp4', '0.jpg', 123, '旧数据', 1, 0, 'image')")
     db._db_filename_dict = db._init_db_filename_dict()
     db.db_update_table_product_routine()
     db.db_update_table_product_routine()
     with sqlite3.connect(path) as conn:
         assert conn.execute("SELECT rowid, * FROM video_text").fetchone() == (
-            1, "old.mp4", "0.jpg", 123, "旧数据", 1, 0, "image", None, None)
+            1,
+            "old.mp4",
+            "0.jpg",
+            123,
+            "旧数据",
+            1,
+            0,
+            "image",
+            None,
+            None,
+        )
 
 
 def test_dataframe_roundtrip_preserves_schema_and_rowids(db, make_rows):
@@ -56,7 +75,9 @@ def test_dataframe_roundtrip_preserves_schema_and_rowids(db, make_rows):
     with sqlite3.connect(path) as conn:
         assert [c[1] for c in conn.execute("PRAGMA table_info(video_text)")] == list(rows.columns)
         assert conn.execute("SELECT rowid, ocr_text, deep_linking FROM video_text").fetchall() == [
-            (1, "hello", "https://example.com"), (2, "hello", "https://example.com")]
+            (1, "hello", "https://example.com"),
+            (2, "hello", "https://example.com"),
+        ]
 
 
 def test_single_row_batch_is_saved(db, make_rows):
@@ -104,8 +125,10 @@ def test_atomic_json_failure_preserves_original_and_cleans_temp(tmp_path, monkey
 
     path = tmp_path / "settings.json"
     path.write_text('{"old": true}', encoding="utf-8")
+
     def fail(*args):
         raise PermissionError("file in use")
+
     monkeypatch.setattr(storage.os, "replace", fail)
     with pytest.raises(PermissionError):
         storage.atomic_write_json(path, {"new": True})
@@ -132,6 +155,16 @@ def test_config_reads_do_not_rewrite_and_single_setting_preserves_other_edits(wo
     assert "db_path_ud" not in saved
 
 
+def test_malformed_config_is_reported_without_overwriting_original(workspace):
+    from windrecorder import config as module
+
+    path = Path(module.FILEPATH_CONFIG_USER)
+    path.write_bytes(b'{"unfinished":')
+    with pytest.raises(json.JSONDecodeError):
+        module.get_config_json()
+    assert path.read_bytes() == b'{"unfinished":'
+
+
 def test_legacy_migration_never_removes_small_current_database(workspace, monkeypatch):
     from windrecorder import upgrade_migration_routine as migration
 
@@ -154,13 +187,25 @@ def test_legacy_migration_never_removes_small_current_database(workspace, monkey
 
 
 def test_database_discovery_ignores_backups_other_users_and_invalid_dates(db):
-    for name in ["default_2020-03_wind.db", "default_2020-99_wind.db", "default2_2020-01_wind.db",
-                 "default_2020-03_wind_TEMP_READ.db", "default_backup.db"]:
+    for name in [
+        "default_2020-03_wind.db",
+        "default_2020-99_wind.db",
+        "default2_2020-01_wind.db",
+        "default_2020-03_wind_TEMP_READ.db",
+        "default_backup.db",
+    ]:
         (Path(db.db_path) / name).touch()
     names = db.get_db_filename_dict()
     assert "default_2020-03_wind.db" in names
-    assert not any(name in names for name in ["default_2020-99_wind.db", "default_backup.db",
-                                             "default2_2020-01_wind.db", "default_2020-03_wind_TEMP_READ.db"])
+    assert not any(
+        name in names
+        for name in [
+            "default_2020-99_wind.db",
+            "default_backup.db",
+            "default2_2020-01_wind.db",
+            "default_2020-03_wind_TEMP_READ.db",
+        ]
+    )
 
 
 def test_database_manager_uses_its_own_directory_and_username(workspace):

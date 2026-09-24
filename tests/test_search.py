@@ -79,3 +79,27 @@ def test_similar_character_search_still_applies_time_and_exclusions(search_db, m
     frame, count, _ = search(search_db, "alpha", "beta")
     assert count == 2
     assert set(frame.win_title) == {"beta browser", "editor"}
+
+
+def test_busy_snapshot_is_preserved_and_refresh_retries(db, monkeypatch):
+    from windrecorder import db_manager as module
+
+    path = Path(db.db_path) / "default_2020-02_wind.db"
+    with sqlite3.connect(path) as writer:
+        writer.execute("CREATE TABLE video_text (ocr_text TEXT)")
+        writer.execute("INSERT INTO video_text VALUES ('old')")
+        writer.commit()
+        snapshot = db.get_temp_dbfilepath(str(path))
+        writer.execute("INSERT INTO video_text VALUES ('new')")
+        writer.commit()
+    writer.close()
+
+    def busy(*args):
+        raise PermissionError("reader has snapshot open")
+
+    with monkeypatch.context() as patch:
+        patch.setattr(module.os, "replace", busy)
+        assert db.get_temp_dbfilepath(str(path)) == snapshot
+    with sqlite3.connect(db.get_temp_dbfilepath(str(path))) as reader:
+        assert reader.execute("SELECT ocr_text FROM video_text").fetchall() == [("old",), ("new",)]
+    reader.close()

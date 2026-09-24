@@ -88,3 +88,19 @@ Before release, manually verify the system tray, startup shortcut, monitor captu
 FFmpeg encoders, Windows OCR language packs, WeChat's external binary and a complete
 embedding-model download/search on representative machines. These depend on hardware,
 OS installation or external assets and are not established by passing unit tests.
+
+## Final local verification (2026-09-24)
+
+- Windows x64, Python 3.11.13: **64 passed** with all extras.
+- Windows x64, Python 3.12.14, uv 0.12.18: **64 passed** with all extras and coverage.
+- Focused coverage: config 98%, atomic storage 100%, locks 84%, environment migration
+  72%, DB manager 48%; combined 66% for these modules. This is not whole-app coverage.
+- Locked resolution, installed dependency consistency, Ruff checks on maintained
+  modules, and bytecode compilation passed.
+- Real setup succeeded from both an ordinary shell and an activated environment.
+  Replacing an environment still in use failed safely and retained its ready state.
+- Legacy FAISS 1.7.4 fixture, bundled OCR inference and a Streamlit password-page
+  render passed. The bundled English reference image produced 24 recognized lines.
+- Upstream protobuf/jieba deprecation/syntax warnings remain; tests report them.
+- CI is configured for Windows / Python 3.11 and 3.12, base and all-extras installs;
+  the remote workflow has not been run from this local branch.

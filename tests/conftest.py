@@ -1,4 +1,5 @@
 """Run application imports only after switching to a disposable workspace."""
+
 import importlib
 import shutil
 from pathlib import Path
@@ -39,11 +40,21 @@ def make_rows():
     from windrecorder.utils import dtstr_to_seconds
 
     def make(*timestamps, text="hello", title="window"):
-        return pd.DataFrame([
-            dict(videofile_name=t + ".mp4", picturefile_name="0.jpg", videofile_time=dtstr_to_seconds(t),
-                 ocr_text=text, is_videofile_exist=True, is_picturefile_exist=False,
-                 thumbnail="base64", win_title=title, deep_linking="https://example.com")
-            for t in timestamps
-        ])
+        return pd.DataFrame(
+            [
+                dict(
+                    videofile_name=t + ".mp4",
+                    picturefile_name="0.jpg",
+                    videofile_time=dtstr_to_seconds(t),
+                    ocr_text=text,
+                    is_videofile_exist=True,
+                    is_picturefile_exist=False,
+                    thumbnail="base64",
+                    win_title=title,
+                    deep_linking="https://example.com",
+                )
+                for t in timestamps
+            ]
+        )
 
     return make
