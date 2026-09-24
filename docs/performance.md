@@ -44,3 +44,46 @@ peak-memory measurement. Result counts and first-page contents were identical.
 These are local measurements, not guarantees for every disk, dataset, or query.
 Substring searches still scan candidate text; a full-text index would change
 matching semantics and is intentionally not part of this compatibility update.
+
+## Capture changes
+
+The screenshot loop reuses the accepted frame's ORB descriptors, bypasses feature
+extraction for identical pixels, and handles blank frames or resolution changes.
+The existing ORB score and thresholds remain unchanged for textured frames. OCR
+failure leaves the previous baseline intact, so an unchanged screen can be retried.
+Segment duration uses elapsed monotonic time, including OCR work. Repeated content
+checking now actually skips the outer insertion rather than only the inner loop.
+
+WeChat OCR requests are serialized. Completion is cleared before dispatch, so a
+fast callback cannot lose its notification. Timeouts raise an error instead of
+returning the previous screenshot's text; late callbacks for other paths are ignored.
+
+Capture submission builds a dataframe once and inserts in a transaction per monthly
+shard. Retrying the same video/image/timestamp skips an existing row while keeping
+its rowid. Existing duplicates are not removed and there is no unique constraint.
+Even a single valid OCR result is submitted. A failed cross-month submission keeps
+its JSON and images, and can retry already-committed months safely.
+
+Active capture folders have a process marker released on exit. Video conversion
+and cleanup share a nonblocking Windows lock, automatically released on a crash;
+busy maintenance is deferred. Unsubmitted, active, short, or malformed caches are
+retained for recovery. Successful conversion requires a submitted index and an
+existing compressed output of the same minimum size used by the compressor.
+The video writer is checked and released on failure. Each screenshot is displayed
+from its own timestamp until the next capture, fixing the old one-frame shift.
+
+These markers are additive; existing JSON layouts, database columns, video names,
+and wall-clock timestamps remain compatible. Incomplete and very short caches can
+occupy disk longer than before: preservation is intentional, and persistent OCR or
+encoding failures still need investigation via the logs. This change does not
+implement historical re-OCR recovery or rewrite previously generated videos.
+
+`python scripts/benchmark_capture.py` compares 20 synthetic 854×480 frame pairs.
+Three-run local medians were approximately 0.61s → 0.002s for identical frames and
+0.69s → 0.37s for changing textured frames, with matching similarity scores. This
+measures frame comparison only, not end-to-end OCR, screen capture or encoding.
+
+Regression tests cover deferred pages, committed WAL reads, deleted rowids,
+vector score association, concurrent submission, retry after a partial monthly
+commit, active-cache protection, lock contention, OCR timeout/callback ordering,
+capture-loop retry and duration, blank frames, failed encoding and video timing.

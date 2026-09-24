@@ -2,6 +2,7 @@ import datetime
 import os
 import shutil
 import subprocess
+import threading
 import time
 
 import cv2
@@ -12,6 +13,7 @@ from skimage.metrics import structural_similarity as ssim
 
 import windrecorder.utils as utils
 from windrecorder import file_utils, record_wintitle
+from windrecorder.capture import FrameChangeDetector
 from windrecorder.config import config
 from windrecorder.const import (
     CACHE_DIR_OCR_IMG_PREPROCESSOR,
@@ -35,6 +37,11 @@ third_party_ocr_actived_manager = {
     "WeChatOCR": False,
 }
 
+wx_ocr_request_lock = threading.Lock()
+wx_ocr_state_lock = threading.Lock()
+wx_ocr_pending_path = None
+WECHAT_OCR_TIMEOUT_SECONDS = 5
+
 
 # WeChatOCR输出结果用的回调函数
 def wx_ocr_result_callback(img_path, results: dict):
@@ -51,12 +58,11 @@ def wx_ocr_result_callback(img_path, results: dict):
         return "".join(texts)
 
     global wx_ocr_result
-    # 设置OCR结果
-    wx_ocr_result = _extract_text_from_json(results)
-    # 设置事件，通知get_ocr_res_me函数结果已准备好
-    wx_ocr_complete_event.set()
-    # 重置事件，为下次调用准备
-    wx_ocr_complete_event.clear()
+    with wx_ocr_state_lock:
+        if os.path.normcase(os.path.abspath(img_path)) != wx_ocr_pending_path:
+            return  # Ignore a late callback belonging to a different screenshot.
+        wx_ocr_result = _extract_text_from_json(results)
+        wx_ocr_complete_event.set()
 
 
 def initialize_third_part_ocr_engine(ocr_engine_name=config.ocr_engine):
@@ -92,8 +98,6 @@ def initialize_third_part_ocr_engine(ocr_engine_name=config.ocr_engine):
 
     if ocr_engine_name == "WeChatOCR" and not third_party_ocr_actived_manager["WeChatOCR"]:
         try:
-            import threading
-
             global wx_ocr_complete_event, wx_ocr_result, wx_ocr_manager
             # 创建一个事件对象
             wx_ocr_complete_event = threading.Event()
@@ -225,7 +229,9 @@ def crop_iframe(directory):
         img_width, img_height = image.size
         fallback_condition = False
         display_index = -1
-        if not config.record_single_display_index <= len(display_info):  # 当记录的显示器索引不存在于所有显示器中时，当作一个完整显示器使用默认参数处理
+        if not config.record_single_display_index <= len(
+            display_info
+        ):  # 当记录的显示器索引不存在于所有显示器中时，当作一个完整显示器使用默认参数处理
             fallback_condition = True
         elif config.multi_display_record_strategy == "single":
             # 当图片分辨率符合其中某个显示器的完整尺寸时，对其单独处理
@@ -326,7 +332,7 @@ def crop_iframe(directory):
 # OCR 输入图片预处理器
 def ocr_img_preprocessor(img_input):
     def _save_cache_img(img: Image):
-        img_save_name = f"preprocess_{int(time.time()*100000000000)}.jpg"
+        img_save_name = f"preprocess_{int(time.time() * 100000000000)}.jpg"
         try:
             file_utils.ensure_dir(CACHE_DIR_OCR_IMG_PREPROCESSOR)
             save_filepath = os.path.join(CACHE_DIR_OCR_IMG_PREPROCESSOR, img_save_name)
@@ -454,18 +460,23 @@ def ocr_image_paddleocr(img_input, force_initialize=False):
 
 # OCR文本-WeChat
 def ocr_image_wechatocr(img_input, force_initialize=False):
-    if force_initialize and not third_party_ocr_actived_manager["WeChatOCR"]:
-        initialize_third_part_ocr_engine(ocr_engine_name="WeChatOCR")
-
-    # 从识别结果的json中提取字符串，拼接到一起
-    logger.debug("OCR text by WeChatOCR")
-    # 发送任务给OCR后端
-    wx_ocr_manager.DoOCRTask(img_input)
-    # 等待ocr_result_callback设置事件
-    wx_ocr_complete_event.wait(timeout=5)
-    if wx_ocr_result is None:
-        raise Exception("wechat ocr not run correctly.")
-    return wx_ocr_result
+    global wx_ocr_result, wx_ocr_pending_path
+    with wx_ocr_request_lock:
+        if force_initialize and not third_party_ocr_actived_manager["WeChatOCR"]:
+            initialize_third_part_ocr_engine(ocr_engine_name="WeChatOCR")
+        logger.debug("OCR text by WeChatOCR")
+        with wx_ocr_state_lock:
+            wx_ocr_complete_event.clear()
+            wx_ocr_result = None
+            wx_ocr_pending_path = os.path.normcase(os.path.abspath(img_input))
+        try:
+            wx_ocr_manager.DoOCRTask(img_input)
+            if not wx_ocr_complete_event.wait(timeout=WECHAT_OCR_TIMEOUT_SECONDS):
+                raise TimeoutError("WeChat OCR timed out; no result received for this screenshot")
+            return wx_ocr_result
+        finally:
+            with wx_ocr_state_lock:
+                wx_ocr_pending_path = None
 
 
 # OCR文本-chineseOCRlite
@@ -697,34 +708,10 @@ def compare_image_similarity(img_path1, img_path2, threshold=0.85):
 
 # 计算两张图片重合率 - 通过内存内np.array比较的方式
 def compare_image_similarity_np(img1, img2):
-    # 将图片数据转换为灰度图像
-    gray_img1 = cv2.cvtColor(img1, cv2.COLOR_BGR2GRAY)
-    gray_img2 = cv2.cvtColor(img2, cv2.COLOR_BGR2GRAY)
-
-    # 初始化ORB特征检测器
-    orb = cv2.ORB_create()
-
-    # 检测图像的关键点和描述符
-    keypoints1, descriptors1 = orb.detectAndCompute(gray_img1, None)
-    keypoints2, descriptors2 = orb.detectAndCompute(gray_img2, None)
-
-    # logger.info("-----debug:descriptors1.dtype, descriptors1.shape",descriptors1.dtype, descriptors1.shape)
-    # logger.info("-----debug:descriptors2.dtype, descriptors2.shape",descriptors2.dtype, descriptors2.shape)
-
-    # 初始化一个暴力匹配器
-    matcher = cv2.BFMatcher(cv2.NORM_HAMMING, crossCheck=True)
-
-    # 对描述符进行匹配
-    matches = matcher.match(descriptors1, descriptors2)
-
-    # 根据匹配结果排序
-    matches = sorted(matches, key=lambda x: x.distance)
-
-    # 计算相似度
-    similarity = len(matches) / max(len(keypoints1), len(keypoints2))
-    logger.debug(f"compare_image_similarity_np:{similarity}")
-
-    return similarity
+    detector = FrameChangeDetector()
+    detector.compare(img1)
+    detector.accept()
+    return detector.compare(img2)
 
 
 # 移除df中指定列包含重复项的行
@@ -939,7 +926,7 @@ def ocr_process_single_video(video_path, vid_file_name, iframe_path, optimize_fo
         os.rename(file_path, os.path.join(new_name_dir, new_name))
 
         with open(f"cache\\LOG_ERROR_{new_name}.MD", "w", encoding="utf-8") as f:
-            f.write(f'{datetime.datetime.now().strftime("%Y-%m-%d_%H-%M-%S")}\n{e}')
+            f.write(f"{datetime.datetime.now().strftime('%Y-%m-%d_%H-%M-%S')}\n{e}")
     else:
         logger.info("Add tags to video file")
         new_file_path = file_path.replace("-INDEX", "-OCRED")

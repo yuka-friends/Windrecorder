@@ -151,7 +151,7 @@ class _DBManager:
         logger.info("Making table")
         conn = sqlite3.connect(db_filepath)
         conn.execute(
-            """CREATE TABLE video_text
+            """CREATE TABLE IF NOT EXISTS video_text
                    (videofile_name VARCHAR(100),
                    picturefile_name VARCHAR(100),
                    videofile_time INT,
@@ -208,7 +208,7 @@ class _DBManager:
         conn.close()
 
     # 以df入参形式批量插入新数据，考虑到跨月数据库处理的流程
-    def db_add_dataframe_to_db_process(self, dataframe):
+    def db_add_dataframe_to_db_process(self, dataframe, *, deduplicate=False):
         if dataframe.empty:
             return
         # Group by full year/month, independent of row ordering or DataFrame index.
@@ -218,10 +218,22 @@ class _DBManager:
                 datetime.datetime.strptime(month, "%Y-%m"), self.db_path, self.user_name
             )
             self.db_initialize(database_path)
-            self.db_add_dataframe_to_db(database_path, rows)
+            self.db_add_dataframe_to_db(database_path, rows, deduplicate=deduplicate)
 
     # 将df插入到数据库中
-    def db_add_dataframe_to_db(self, database_path, dataframe):
+    def db_add_dataframe_to_db(self, database_path, dataframe, *, deduplicate=False):
+        if deduplicate:
+            values = dataframe[VIDEO_TEXT_COLUMNS].astype(object).where(pd.notna(dataframe[VIDEO_TEXT_COLUMNS]), None)
+            # Serialize check-and-insert across processes. No unique constraint or
+            # deletion is imposed on old duplicate rows; retry only skips this frame.
+            with closing(sqlite3.connect(database_path, timeout=15)) as conn, conn:
+                conn.execute("BEGIN IMMEDIATE")
+                query = (
+                    f"INSERT INTO video_text ({','.join(VIDEO_TEXT_COLUMNS)}) SELECT {','.join('?' for _ in VIDEO_TEXT_COLUMNS)} "
+                    "WHERE NOT EXISTS (SELECT 1 FROM video_text WHERE videofile_name=? AND picturefile_name=? AND videofile_time=?)"
+                )
+                conn.executemany(query, (row + row[:3] for row in values.values.tolist()))
+            return
         conn = sqlite3.connect(database_path)
 
         # 设置数据类型映射，确保列的数据类型在写入数据库时不会出错
