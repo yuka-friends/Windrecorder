@@ -5,6 +5,7 @@ import shutil
 from send2trash import send2trash
 
 from windrecorder.logger import get_logger
+from windrecorder.storage import atomic_write_json
 
 logger = get_logger(__name__)
 
@@ -239,20 +240,22 @@ class Config:
             return
             # raise AttributeError("{} not exist in config!".format(attr))
         setattr(self, attr, value)
-        self.save_config()
+        self.save_config(updates={attr: value})
 
-    def save_config(self):
+    def save_config(self, updates=None):
         # 读取 config.json 获取旧设置
         config_json = get_config_json()
         # 把 python 对象转为 dict
-        now_config_json = vars(self)
+        with open(FILEPATH_CONFIG_DEFAULT, encoding="utf-8") as stream:
+            persisted_keys = json.load(stream)
+        now_config_json = {key: value for key, value in (vars(self) if updates is None else updates).items()
+                           if key in persisted_keys}
         # 更新设置
         config_json.update(now_config_json)
         # 去除不必要的字段
         self.filter_unwanted_field(config_json)
         # 写入 config.json 文件
-        with open(FILEPATH_CONFIG_USER, "w", encoding="utf-8") as f:
-            json.dump(config_json, f, indent=2, ensure_ascii=False)
+        atomic_write_json(FILEPATH_CONFIG_USER, config_json)
 
     def filter_unwanted_field(self, config_json):
         return config_json
@@ -267,16 +270,14 @@ def update_config_files_from_default_to_user():
         user_data = json.load(f)
 
     # 将 default 中有的、user 中没有的属性从 default 写入 user中
+    changed = False
     for key, value in default_data.items():
         if key not in user_data:
             user_data[key] = value
-    # 将 default 中没有的、user 中有的属性从 user 中删除
-    keys_to_remove = [key for key in user_data.keys() if key not in default_data]
-    for key in keys_to_remove:
-        del user_data[key]
-    # 将更新后的 default 数据写入 user.json 文件
-    with open(FILEPATH_CONFIG_USER, "w", encoding="utf-8") as f:
-        json.dump(user_data, f, indent=2, ensure_ascii=False)
+            changed = True
+    # Unknown fields can belong to extensions or a newer version. Retain them.
+    if changed:
+        atomic_write_json(FILEPATH_CONFIG_USER, user_data)
 
 
 def initialize_config():
@@ -284,7 +285,7 @@ def initialize_config():
     if not os.path.exists(DIR_USERDATA):
         os.makedirs(DIR_USERDATA)
 
-    if os.path.exists("config\\config_user.json"):
+    if os.path.exists("config\\config_user.json") and not os.path.exists(FILEPATH_CONFIG_USER):
         shutil.copyfile("config\\config_user.json", FILEPATH_CONFIG_USER)
         send2trash("config\\config_user.json")
 

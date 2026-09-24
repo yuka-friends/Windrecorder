@@ -2,7 +2,9 @@ import datetime
 import math
 import os
 import re
-import shutil
+import tempfile
+from contextlib import closing
+from pathlib import Path
 import sqlite3
 from itertools import product
 from subprocess import CalledProcessError
@@ -25,6 +27,7 @@ class _DBManager:
         self.db_max_page_result = db_max_page_result  # 最大查询页数
         self.user_name = user_name  # 用户名
         self._db_filename_dict = self._init_db_filename_dict()
+        self._snapshot_signatures = {}
 
         self.db_main_initialize()
         self.db_update_table_product_routine()  # 程序更新后调整数据结构
@@ -44,51 +47,32 @@ class _DBManager:
     # 初始化对应时间的数据库流程
     def db_main_initialize(self):
         logger.info("Initialize the database...")
-        db_filepath_today = file_utils.get_db_filepath_by_datetime(datetime.datetime.today())
+        db_filepath_today = file_utils.get_db_filepath_by_datetime(datetime.datetime.today(), self.db_path, self.user_name)
 
         # 初始化最新的数据库
-        conn_check = self.db_initialize(db_filepath_today)
+        conn_check = self.db_initialize(db_filepath_today, insert_welcome=True)
 
         return conn_check
 
     # 初始化数据库：检查、创建、连接入参数据库对象，如果内容为空，则创建表初始化
-    def db_initialize(self, db_filepath):
+    def db_initialize(self, db_filepath, *, insert_welcome=False):
         is_db_exist = os.path.exists(db_filepath)
-
-        # 检查数据库是否存在
-        if not is_db_exist:
-            logger.info("db not existed")
-            if not os.path.exists(self.db_path):
-                os.mkdir(self.db_path)
-                logger.info("db dir not existed, mkdir")
-            db_filename = os.path.basename(db_filepath)
-            self._db_filename_dict[db_filename] = utils.extract_date_from_db_filename(db_filename)
-
-        conn = sqlite3.connect(db_filepath)
-        c = conn.cursor()
-        c.execute("SELECT name FROM sqlite_master WHERE type='table' AND name='video_text'")
-
-        if c.fetchone() is None:
-            logger.info("db is empty, writing new table.")
+        with closing(sqlite3.connect(db_filepath)) as conn:
+            has_table = conn.execute(
+                "SELECT name FROM sqlite_master WHERE type='table' AND name='video_text'"
+            ).fetchone() is not None
+        if not has_table:
             self.db_create_table(db_filepath)
-            now = datetime.datetime.now()
-            now_name = now.strftime("%Y-%m-%d_%H-%M-%S")
-            now_time = int(utils.dtstr_to_seconds(now_name))
-            default_base64 = "iVBORw0KGgoAAAANSUhEUgAAAEYAAAAnCAYAAACyhj57AAAAoUlEQVRoBe3BAQEAAAwBMCrpp6RCHkCFb7RSvEErxRu0UrxBK8UbtFK8QSvFG7RSvEErxRu0UrxBK8UbtFK8QSvFG7RSvEErxRu0UrxBK8UbtFK8QSvFG7RSvEErxRu0UrxBK8UbtFK8QSvFG7RSvEErxRu0UrxBK8UbtFK8QSvFG7RSvEErxRu0UrxBK8UbtFK8QSvFG7RSvEErxRu0UrxxUOdhqPjngTYAAAAASUVORK5CYII="
-            self.db_update_data(
-                now_name + ".mp4",
-                "0.jpg",
-                now_time,
-                "Welcome! Go to Setting and Update your screen recording files.",
-                False,
-                False,
-                default_base64,
-                None,
-                "",
-            )
-        else:
-            logger.info("db existed and not empty")
-
+            if insert_welcome:
+                now = datetime.datetime.now()
+                self.db_update_data(
+                    now.strftime("%Y-%m-%d_%H-%M-%S") + ".mp4", "0.jpg", utils.datetime_to_seconds(now),
+                    "Welcome! Go to Setting and Update your screen recording files.",
+                    False, False,
+                    "iVBORw0KGgoAAAANSUhEUgAAAEYAAAAnCAYAAACyhj57AAAAoUlEQVRoBe3BAQEAAAwBMCrpp6RCHkCFb7RSvEErxRu0UrxBK8UbtFK8QSvFG7RSvEErxRu0UrxBK8UbtFK8QSvFG7RSvEErxRu0UrxBK8UbtFK8QSvFG7RSvEErxRu0UrxBK8UbtFK8QSvFG7RSvEErxRu0UrxBK8UbtFK8QSvFG7RSvEErxRu0UrxBK8UbtFK8QSvFG7RSvEErxRu0UrxBK8UbtFK8QSvFG7RSvEErxRu0UrxxUOdhqPjngTYAAAAASUVORK5CYII=",
+                    None, "",
+                )
+        self._db_filename_dict = self._init_db_filename_dict()
         return is_db_exist
 
     # 重新读取配置文件
@@ -168,7 +152,7 @@ class _DBManager:
 
         # 获取插入时间，取得对应的数据库
         insert_db_datetime = utils.set_full_datetime_to_YYYY_MM(utils.seconds_to_datetime(videofile_time))
-        db_filepath = file_utils.get_db_filepath_by_datetime(insert_db_datetime)  # 直接获取对应时间的数据库路径
+        db_filepath = file_utils.get_db_filepath_by_datetime(insert_db_datetime, self.db_path, self.user_name)  # 直接获取对应时间的数据库路径
 
         conn = sqlite3.connect(db_filepath)
         c = conn.cursor()
@@ -192,30 +176,16 @@ class _DBManager:
 
     # 以df入参形式批量插入新数据，考虑到跨月数据库处理的流程
     def db_add_dataframe_to_db_process(self, dataframe):
-        if len(dataframe) < 2:
+        if dataframe.empty:
             return
-        # 寻找db中最大最小时间戳，以确定需要插入的数据库
-        # 如果都在同一个月，则插入当月的数据库文件；如果在不同月，则找到分歧点后分开插入
-        max_timestamp, min_timestamp = self.db_get_dataframe_max_min_videotimestamp(dataframe)
-        max_datetime = utils.seconds_to_datetime(max_timestamp)
-        min_datetime = utils.seconds_to_datetime(min_timestamp)
-
-        if max_datetime.month == min_datetime.month:
-            database_path = file_utils.get_db_filepath_by_datetime(max_datetime)
-            self.db_add_dataframe_to_db(database_path, dataframe)
-        else:
-            # 分流处理
-            neariest_timestamp = utils.datetime_to_seconds(
-                datetime.datetime(max_datetime.year, max_datetime.month, 1, 0, 0, 1)
-            )  # 以最大月第一天作为分割线
-            df_before, df_after = self.split_dataframe_by_nearest_timestamp(dataframe, neariest_timestamp)  # 以此时间点分为两部分df
-            database_path_before = file_utils.get_db_filepath_by_datetime(min_datetime)  # 获取两部分的数据库
-            database_path_after = file_utils.get_db_filepath_by_datetime(min_datetime)  # 获取两部分的数据库
-            # 由于出现在新的一月开头，所以得先初始下新月的数据库
-            self.db_initialize(database_path_after)
-
-            self.db_add_dataframe_to_db(database_path_before, df_before)
-            self.db_add_dataframe_to_db(database_path_after, df_after)
+        # Group by full year/month, independent of row ordering or DataFrame index.
+        months = dataframe["videofile_time"].map(lambda value: utils.seconds_to_datetime(value).strftime("%Y-%m"))
+        for month, rows in dataframe.groupby(months, sort=True):
+            database_path = file_utils.get_db_filepath_by_datetime(
+                datetime.datetime.strptime(month, "%Y-%m"), self.db_path, self.user_name
+            )
+            self.db_initialize(database_path)
+            self.db_add_dataframe_to_db(database_path, rows)
 
     # 将df插入到数据库中
     def db_add_dataframe_to_db(self, database_path, dataframe):
@@ -268,7 +238,6 @@ class _DBManager:
         :param keyword_input_exclude: str 排除词
         """
         logger.info("Querying keywords")
-        keyword_input = keyword_input.replace("'", "''")
         # 初始化查询数据
         self.db_update_read_config(config)
         date_in_ts = int(utils.dtstr_to_seconds(date_in.strftime("%Y-%m-%d_%H-%M-%S")))
@@ -293,78 +262,30 @@ class _DBManager:
             db_filepath = self.get_temp_dbfilepath(db_filepath_origin)  # 检查/创建临时查询用的数据库
             logger.info(f"Querying {db_filepath}")
 
-            conn = sqlite3.connect(db_filepath)  # 连接数据库
-
-            # 构建sql
-            keywords = keyword_input.split()  # 用空格分割所有的关键词，存为list
-            query = "SELECT * FROM video_text WHERE "
-
-            if not keyword_input.isspace() and keyword_input:  # 关键词不为空时
-                # 每个关键词执行相近字形匹配（配置项开）
-                if config.use_similar_ch_char_to_search:
-                    # 查询每个关键词的相近字形结果，获得总共需要搜索的条目
-                    similar_strings_list = []
-                    for keyword in keywords:
-                        similar_strings = self.generate_similar_ch_strings(keyword)
-                        similar_strings_list.append(similar_strings)
-
-                    # 构建所有关键词的sql
-                    conditions = []
-                    for keywords in similar_strings_list:
-                        group_condition = " OR ".join(
-                            f"(ocr_text LIKE '%{keyword}%') OR (win_title LIKE '%{keyword}%')" for keyword in keywords
-                        )
-                        conditions.append(f"({group_condition})")
-
-                    query = query + " AND ".join(conditions)
-                    # 输出参考：(ocr_text LIKE '%a1%' AND ocr_text LIKE '%a2%' AND ocr_text LIKE '%a3%') OR (ocr_text LIKE '%b1%' AND ocr_text LIKE '%b2%') OR (ocr_text LIKE '%c%');
-
-                else:
-                    # 不使用相近字形搜索：直接遍历所有空格区分开的关键词
-                    conditions = []
-                    for keyword in keywords:
-                        # Convert the "-" hyphen to spaces
-                        keyword = re.sub(r"(?<=\w)-(?=\w)", " ", keyword)
-                        conditions.append(f"(ocr_text LIKE '%{keyword}%') OR (win_title LIKE '%{keyword}%')")
-                    query += " AND ".join(conditions)
-
-            else:  # 关键词为空
-                query += f"ocr_text LIKE '%{keyword_input}%'"
-
-            # 是否排除关键词
-            if keyword_input_exclude and not keyword_input_exclude.isspace():
-                query += " AND "
-                keywords_exclude = keyword_input_exclude.split()
-                conditions = []
-                for keyword_exclude in keywords_exclude:
-                    # Convert the "-" hyphen to spaces
-                    keyword_exclude = re.sub(r"(?<=\w)-(?=\w)", " ", keyword_exclude)
-                    conditions.append(f"ocr_text NOT LIKE '%{keyword_exclude}%'")
-                query += " AND ".join(conditions)
-
-            # 限定查询的时间范围
-            query += f" AND (videofile_time BETWEEN {date_in_ts} AND {date_out_ts})"
-
-            logger.info(f"SQL query:\n {query}")
-            df = pd.read_sql_query(query, conn)
-
-            # 查询所有关键词和时间段下的结果
-            # if keyword_input_exclude:
-            #     df = pd.read_sql_query(f"""
-            #                           SELECT * FROM video_text
-            #                           WHERE ocr_text LIKE '%{keyword_input}%'
-            #                           AND ocr_text NOT LIKE '%{keyword_input_exclude}%'
-            #                           AND videofile_time BETWEEN {date_in_ts} AND {date_out_ts} """
-            #                            , conn)
-            # else:
-            #     df = pd.read_sql_query(f"""
-            #                           SELECT * FROM video_text
-            #                           WHERE ocr_text LIKE '%{keyword_input}%'
-            #                           AND videofile_time BETWEEN {date_in_ts} AND {date_out_ts} """
-            #                            , conn)
-
+            conditions = []
+            params = []
+            for keyword in keyword_input.split():
+                variants = (self.generate_similar_ch_strings(keyword) if config.use_similar_ch_char_to_search
+                            else [re.sub(r"(?<=\w)-(?=\w)", " ", keyword)])
+                group = []
+                for variant in variants:
+                    group.append("(ocr_text LIKE ? OR win_title LIKE ?)")
+                    params.extend([f"%{variant}%", f"%{variant}%"])
+                conditions.append("(" + " OR ".join(group) + ")")
+            if not conditions:
+                conditions.append("ocr_text LIKE ?")
+                params.append("%")
+            for keyword in keyword_input_exclude.split():
+                keyword = re.sub(r"(?<=\w)-(?=\w)", " ", keyword)
+                conditions.append("ocr_text NOT LIKE ?")
+                params.append(f"%{keyword}%")
+            conditions.append("videofile_time BETWEEN ? AND ?")
+            params.extend([date_in_ts, date_out_ts])
+            query = "SELECT * FROM video_text WHERE " + " AND ".join(conditions)
+            query += " ORDER BY videofile_time, rowid"
+            with closing(sqlite3.connect(db_filepath)) as conn:
+                df = pd.read_sql_query(query, conn, params=params)
             df_all = pd.concat([df_all, df], ignore_index=True)
-            conn.close()
 
         row_count = len(df_all)
         page_count_all = int(math.ceil(int(row_count) / int(self.db_max_page_result)))
@@ -752,29 +673,37 @@ class _DBManager:
 
     # 所有读的操作都访问已复制的临时数据库，不与原有数据库冲突
     def get_temp_dbfilepath(self, db_filepath):
-        db_filename = os.path.basename(db_filepath)
+        source = Path(db_filepath).resolve()
+        if source.stem.endswith("_TEMP_READ"):
+            return str(source)
+        destination = source.with_name(source.stem + "_TEMP_READ.db")
+        # WAL commits may not change the main file. Track both files.
+        def signature():
+            result = []
+            for path in (source, Path(str(source) + "-wal")):
+                try:
+                    info = path.stat()
+                    result.append((info.st_mtime_ns, info.st_size))
+                except FileNotFoundError:
+                    result.append(None)
+            return tuple(result)
 
-        maintaining = os.path.isfile(config.maintain_lock_path)
-        db_filename_temp = os.path.splitext(db_filename)[0] + "_TEMP_READ.db"  # 创建临时文件名
-        filepath_temp_read = os.path.join(self.db_path, db_filename_temp)  # 创建读取的临时路径
-        if "_TEMP_READ" not in db_filename:
-            if os.path.exists(filepath_temp_read):  # 检测是否已存在临时数据库
-                # 是，检查同根数据库是否更新，阈值为大于5分钟
-                (
-                    db_origin_newer,
-                    db_timestamp_diff,
-                ) = file_utils.is_fileA_modified_newer_than_fileB(db_filepath, filepath_temp_read)
-                if db_origin_newer and db_timestamp_diff > 5:
-                    # 过时了，复制创建一份
-                    if not maintaining:  # 数据库是否正在被索引？是则用上一份，不进行复制更新。
-                        shutil.copy2(db_filepath, filepath_temp_read)  # 保留原始文件的修改时间以更好地对比策略
-            else:
-                # 不存在临时数据库，复制创建一份
-                shutil.copy2(db_filepath, filepath_temp_read)
-
-            return filepath_temp_read  # 返回临时路径
-        else:
-            return filepath_temp_read
+        current = signature()
+        if destination.exists() and self._snapshot_signatures.get(str(source)) == current:
+            return str(destination)
+        fd, temporary = tempfile.mkstemp(prefix=destination.name + ".", suffix=".tmp", dir=source.parent)
+        os.close(fd)
+        try:
+            # SQLite's backup API includes committed WAL pages and works while indexing.
+            with closing(sqlite3.connect(source.as_uri() + "?mode=ro", uri=True)) as reader:
+                with closing(sqlite3.connect(temporary)) as writer:
+                    reader.backup(writer)
+            os.replace(temporary, destination)
+            self._snapshot_signatures[str(source)] = current
+        finally:
+            if os.path.exists(temporary):
+                os.unlink(temporary)
+        return str(destination)
 
     # 检查更新数据库中的条目是否有对应视频
     def db_update_videofile_exist_status(self):
@@ -826,29 +755,21 @@ class _DBManager:
             conn.close()
 
     def get_db_filename_dict(self):
+        self._db_filename_dict = self._init_db_filename_dict()
         return self._db_filename_dict
 
     # 取得数据库文件夹下的完整数据库路径列表
     def _init_db_filename_dict(self):
-        db_list = os.listdir(self.db_path)
-        if len(db_list) == 0:
-            # 目录为空
-            return {}
-
-        # 去除非当前用户、且临时使用的内容
-        db_list = list(
-            filter(
-                lambda file: file.startswith(self.user_name) and file.endswith(".db") and not file.endswith("_TEMP_READ.db"),
-                db_list,
-            )
-        )
-
-        if len(db_list) == 0:  # 如果去除了非当前用户内容后为空
-            return {}
-
-        db_list_datetime = [utils.extract_date_from_db_filename(file) for file in db_list]
-
-        return dict(sorted(zip(db_list, db_list_datetime), key=lambda x: x[1]))
+        pattern = re.compile(re.escape(self.user_name) + r"_\d{4}-\d{2}_wind\.db$")
+        result = {}
+        for path in Path(self.db_path).iterdir():
+            if not path.is_file() or not pattern.fullmatch(path.name):
+                continue
+            try:
+                result[path.name] = utils.extract_date_from_db_filename(path.name, self.user_name)
+            except ValueError:
+                logger.warning("Ignoring invalid database filename: %s", path.name)
+        return dict(sorted(result.items(), key=lambda item: item[1]))
 
     # 检测是否初次使用工具，如果不存在数据库/数据库中只有一条数据，则判定为是
     def check_is_onboarding(self):

@@ -27,3 +27,18 @@ FAISS indexes refer to SQLite rowids, so no table rewrite or reindex is planned.
 
 Tests never import the application before changing into a temporary directory.
 They do not record the desktop, call OCR services, download models or open user DBs.
+
+## Milestone 2 verification
+
+22 Windows tests pass. The original seven strict expected failures now pass normally.
+Monthly routing handles singleton, unsorted and cross-year batches; queries bind all
+values and parenthesize keyword alternatives. Read snapshots use SQLite backup and
+track WAL changes. Existing schema migrations preserve rowids and data. Configuration
+reads retain unknown fields, only write missing defaults, and publish JSON atomically.
+Single-setting saves do not overwrite unrelated settings from another application
+instance. Lock release is idempotent; timeout threads are daemonized. Legacy migration
+retains both copies when directories conflict and never deletes a DB based on its size.
+
+The existing application-wide import-time config/DB objects are retained for compatibility;
+new persistence primitives have no desktop dependencies, and DB instances now respect
+their own paths/usernames. A wholesale service/container rewrite is intentionally deferred.
