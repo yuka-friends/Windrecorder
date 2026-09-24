@@ -34,6 +34,8 @@ uiautomation = "^2.0.20"
 openai = "^1.40.8"
 
 [tool.poetry.group.dev.dependencies]
+pytest = "^8.3.0"
+pytest-cov = "^6.0.0"
 pre-commit = "^3.5.0"
 ipykernel = "^6.29.2"
 
@@ -55,3 +57,8 @@ priority = "supplemental"
 [build-system]
 requires = ["poetry-core"]
 build-backend = "poetry.core.masonry.api"
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+pythonpath = ["."]
+addopts = "-ra"
