@@ -19,6 +19,18 @@ from windrecorder.logger import get_logger
 
 logger = get_logger(__name__)
 
+VIDEO_TEXT_COLUMNS = [
+    "videofile_name",
+    "picturefile_name",
+    "videofile_time",
+    "ocr_text",
+    "is_videofile_exist",
+    "is_picturefile_exist",
+    "thumbnail",
+    "win_title",
+    "deep_linking",
+]
+
 
 class _DBManager:
     def __init__(self, db_path, db_max_page_result, user_name):
@@ -261,7 +273,7 @@ class _DBManager:
         logger.info(f"{datetime_start=}, {datetime_end=}")
 
         # 遍历查询所有数据库信息
-        df_all = pd.DataFrame()
+        frames = []
         row_count = 0
         for key in query_db_name_list:
             db_filepath_origin = os.path.join(self.db_path, key)  # 构建完整路径
@@ -294,12 +306,50 @@ class _DBManager:
             query += " ORDER BY videofile_time, rowid"
             with closing(sqlite3.connect(db_filepath)) as conn:
                 df = pd.read_sql_query(query, conn, params=params)
-            df_all = pd.concat([df_all, df], ignore_index=True)
+            frames.append(df)
 
+        # A missing monthly shard and a query with no matches have the same contract.
+        df_all = pd.concat(frames, ignore_index=True) if frames else pd.DataFrame(columns=VIDEO_TEXT_COLUMNS)
         row_count = len(df_all)
         page_count_all = int(math.ceil(int(row_count) / int(self.db_max_page_result)))
 
         return df_all, row_count, page_count_all
+
+    def db_get_record_counts(self, start, end, frequency):
+        """Count calendar buckets in [start, end), without loading OCR text/images.
+
+        Stored seconds represent naive wall-clock time. SQLite's unixepoch modifier
+        decodes those numbers without applying the host timezone or DST rules.
+        """
+        formats = {"hour": "%Y-%m-%d %H:00:00", "day": "%Y-%m-%d 00:00:00", "month": "%Y-%m-01 00:00:00"}
+        date_format = formats[frequency]
+        counts = {}
+        for name in self.db_get_dbfilename_by_datetime(start, end - datetime.timedelta(microseconds=1)):
+            path = (Path(self.db_path) / name).resolve()
+            with closing(sqlite3.connect(path.as_uri() + "?mode=ro", uri=True)) as conn:
+                rows = conn.execute(
+                    "SELECT strftime(?, videofile_time, 'unixepoch'), COUNT(*) FROM video_text "
+                    "WHERE videofile_time >= ? AND videofile_time < ? GROUP BY 1",
+                    (date_format, utils.datetime_to_seconds(start), utils.datetime_to_seconds(end)),
+                ).fetchall()
+            for bucket, count in rows:
+                counts[bucket] = counts.get(bucket, 0) + count
+        return counts
+
+    def db_period_signature(self, start, end):
+        """Invalidate derived statistics after imports/deletions, including WAL commits."""
+        result = []
+        for name in sorted(self.db_get_dbfilename_by_datetime(start, end - datetime.timedelta(microseconds=1))):
+            source = Path(self.db_path) / name
+            signatures = []
+            for path in (source, Path(str(source) + "-wal")):
+                try:
+                    info = path.stat()
+                    signatures.append([info.st_mtime_ns, info.st_size, info.st_ino])
+                except FileNotFoundError:
+                    signatures.append(None)
+            result.append([str(source.resolve()), signatures])
+        return result
 
     # 拿到完整df后进行翻页检索操作
     def db_search_data_page_turner(self, df, page_index):
@@ -511,33 +561,22 @@ class _DBManager:
 
     # 获取表内最新的记录时间
     def db_latest_record_time(self):
-        full_db_name_ondisk_dict = self.get_db_filename_dict()
-        db_name_ondisk_lastest = utils.get_lastest_datetime_key(full_db_name_ondisk_dict)
-        db_filepath_origin = os.path.join(self.db_path, db_name_ondisk_lastest)
-        db_filepath = self.get_temp_dbfilepath(db_filepath_origin)
-
-        conn = sqlite3.connect(db_filepath)
-        c = conn.cursor()
-
-        c.execute("SELECT MAX(videofile_time) FROM video_text")
-        max_time = c.fetchone()[0]
-        conn.close()
-        return max_time  # 返回时间戳
+        return self._record_time_bound(latest=True)
 
     # 获取表内最早的记录时间
     def db_first_earliest_record_time(self):
-        full_db_name_ondisk_dict = self.get_db_filename_dict()
-        db_name_ondisk_lastest = utils.get_earliest_datetime_key(full_db_name_ondisk_dict)
-        db_filepath_origin = os.path.join(self.db_path, db_name_ondisk_lastest)
-        db_filepath = self.get_temp_dbfilepath(db_filepath_origin)
+        return self._record_time_bound(latest=False)
 
-        conn = sqlite3.connect(db_filepath)
-        c = conn.cursor()
-
-        c.execute("SELECT MIN(videofile_time) FROM video_text")
-        min_time = c.fetchone()[0]
-        conn.close()
-        return min_time  # 返回时间戳
+    def _record_time_bound(self, *, latest):
+        names = self.get_db_filename_dict()
+        aggregate = "MAX" if latest else "MIN"
+        for name in sorted(names, key=names.get, reverse=latest):
+            path = (Path(self.db_path) / name).resolve()
+            with closing(sqlite3.connect(path.as_uri() + "?mode=ro", uri=True)) as conn:
+                value = conn.execute(f"SELECT {aggregate}(videofile_time) FROM video_text").fetchone()[0]
+            if value is not None:
+                return value
+        return None
 
     # 回滚操作：删除输入视频文件名相关的所有条目
     def db_rollback_delete_video_refer_record(self, videofile_name):
@@ -570,7 +609,7 @@ class _DBManager:
             "videofile_time"
         ].max()  # 差距阈值:second
         if math.isnan(closest_timestamp):  # 如果无结果为 NaN
-            return pd.DataFrame()
+            return df.iloc[:0].copy()
         row = df[df["videofile_time"] == closest_timestamp]
         return row
 
