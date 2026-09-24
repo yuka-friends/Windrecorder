@@ -131,6 +131,20 @@ class _DBManager:
             self.db_ensure_row_exist(
                 db_filepath=db_filepath, column_name="deep_linking", column_type="TEXT", table_name="video_text"
             )
+            self.db_ensure_indexes(db_filepath)
+
+    def db_ensure_indexes(self, db_filepath):
+        # Additive, non-unique indexes preserve every existing row and FAISS rowid.
+        with closing(sqlite3.connect(db_filepath)) as conn, conn:
+            conn.execute("CREATE INDEX IF NOT EXISTS wr_video_time ON video_text(videofile_time)")
+            conn.execute(
+                "CREATE INDEX IF NOT EXISTS wr_capture_identity "
+                "ON video_text(videofile_name, picturefile_name, videofile_time)"
+            )
+
+    def read_connection(self, db_filepath):
+        """Short-lived, committed SQLite reads; never create a missing shard."""
+        return closing(sqlite3.connect(Path(db_filepath).resolve().as_uri() + "?mode=ro", uri=True, timeout=5))
 
     # 创建表
     def db_create_table(self, db_filepath):
@@ -149,6 +163,7 @@ class _DBManager:
                    deep_linking TEXT);"""
         )
         conn.close()
+        self.db_ensure_indexes(db_filepath)
 
     # 插入数据
     def db_update_data(
@@ -228,6 +243,7 @@ class _DBManager:
         # 提交更改并关闭连接
         conn.commit()
         conn.close()
+        self.db_ensure_indexes(database_path)
 
     # 寻找df中最大最小时间戳
     def db_get_dataframe_max_min_videotimestamp(self, df: pd.DataFrame) -> tuple:
@@ -245,7 +261,7 @@ class _DBManager:
         df_after = df.loc[nearest_index + 1 :]
         return df_before, df_after
 
-    def db_search_data(self, keyword_input, date_in, date_out, keyword_input_exclude=""):
+    def db_search_data(self, keyword_input, date_in, date_out, keyword_input_exclude="", *, defer_payload=False):
         """
         查询选定日期当天的关键词数据，返回完整的结果 dataframe
         返回值：关于结果的所有数据 df，所有结果的总行数
@@ -272,44 +288,49 @@ class _DBManager:
         query_db_name_list = self.db_get_dbfilename_by_datetime(datetime_start, datetime_end)
         logger.info(f"{datetime_start=}, {datetime_end=}")
 
+        conditions = []
+        params = []
+        for keyword in keyword_input.split():
+            variants = (
+                self.generate_similar_ch_strings(keyword)
+                if config.use_similar_ch_char_to_search
+                else [re.sub(r"(?<=\w)-(?=\w)", " ", keyword)]
+            )
+            group = []
+            for variant in variants:
+                group.append("(ocr_text LIKE ? OR win_title LIKE ?)")
+                params.extend([f"%{variant}%", f"%{variant}%"])
+            conditions.append("(" + " OR ".join(group) + ")")
+        if not conditions:
+            conditions.append("ocr_text LIKE ?")
+            params.append("%")
+        for keyword in keyword_input_exclude.split():
+            keyword = re.sub(r"(?<=\w)-(?=\w)", " ", keyword)
+            conditions.append("ocr_text NOT LIKE ?")
+            params.append(f"%{keyword}%")
+        conditions.append("videofile_time BETWEEN ? AND ?")
+        params.extend([date_in_ts, date_out_ts])
+        columns = "rowid, videofile_time" if defer_payload else "*"
+        query = f"SELECT {columns} FROM video_text WHERE " + " AND ".join(conditions)
+        query += " ORDER BY videofile_time, rowid"
+
         # 遍历查询所有数据库信息
         frames = []
         row_count = 0
         for key in query_db_name_list:
             db_filepath_origin = os.path.join(self.db_path, key)  # 构建完整路径
-            db_filepath = self.get_temp_dbfilepath(db_filepath_origin)  # 检查/创建临时查询用的数据库
+            db_filepath = db_filepath_origin
             logger.info(f"Querying {db_filepath}")
 
-            conditions = []
-            params = []
-            for keyword in keyword_input.split():
-                variants = (
-                    self.generate_similar_ch_strings(keyword)
-                    if config.use_similar_ch_char_to_search
-                    else [re.sub(r"(?<=\w)-(?=\w)", " ", keyword)]
-                )
-                group = []
-                for variant in variants:
-                    group.append("(ocr_text LIKE ? OR win_title LIKE ?)")
-                    params.extend([f"%{variant}%", f"%{variant}%"])
-                conditions.append("(" + " OR ".join(group) + ")")
-            if not conditions:
-                conditions.append("ocr_text LIKE ?")
-                params.append("%")
-            for keyword in keyword_input_exclude.split():
-                keyword = re.sub(r"(?<=\w)-(?=\w)", " ", keyword)
-                conditions.append("ocr_text NOT LIKE ?")
-                params.append(f"%{keyword}%")
-            conditions.append("videofile_time BETWEEN ? AND ?")
-            params.extend([date_in_ts, date_out_ts])
-            query = "SELECT * FROM video_text WHERE " + " AND ".join(conditions)
-            query += " ORDER BY videofile_time, rowid"
-            with closing(sqlite3.connect(db_filepath)) as conn:
+            with self.read_connection(db_filepath) as conn:
                 df = pd.read_sql_query(query, conn, params=params)
+            if defer_payload:
+                df["_db_filename"] = key
             frames.append(df)
 
         # A missing monthly shard and a query with no matches have the same contract.
-        df_all = pd.concat(frames, ignore_index=True) if frames else pd.DataFrame(columns=VIDEO_TEXT_COLUMNS)
+        empty_columns = ["rowid", "videofile_time", "_db_filename"] if defer_payload else VIDEO_TEXT_COLUMNS
+        df_all = pd.concat(frames, ignore_index=True) if frames else pd.DataFrame(columns=empty_columns)
         row_count = len(df_all)
         page_count_all = int(math.ceil(int(row_count) / int(self.db_max_page_result)))
 
@@ -363,7 +384,30 @@ class _DBManager:
         row_start_index = (page_index - 1) * self.db_max_page_result
         row_end_index = row_start_index + self.db_max_page_result
 
-        df_current_page = df[row_start_index:row_end_index]
+        df_current_page = df.iloc[row_start_index:row_end_index].copy()
+        if "_db_filename" in df_current_page.columns:
+            frames = []
+            for name, references in df_current_page.groupby("_db_filename", sort=False):
+                path = Path(self.db_path) / name
+                if not path.exists():
+                    continue  # A recording may have been removed since this search.
+                with self.read_connection(path) as conn:
+                    for offset in range(0, len(references), 900):
+                        batch = references.iloc[offset : offset + 900]
+                        ids = batch.rowid.tolist()
+                        placeholders = ",".join("?" for _ in ids)
+                        rows = pd.read_sql_query(
+                            f"SELECT rowid, * FROM video_text WHERE rowid IN ({placeholders})", conn, params=ids
+                        ).set_index("rowid")
+                        batch = batch[batch.rowid.isin(rows.index)]
+                        rows = rows.reindex(batch.rowid.tolist())
+                        valid = rows.videofile_time.to_numpy() == batch.videofile_time.to_numpy()
+                        rows = rows.loc[valid].copy()
+                        rows.index = batch.index[valid]
+                        frames.append(rows)
+            return (
+                pd.concat(frames).sort_index().reset_index(drop=True) if frames else pd.DataFrame(columns=VIDEO_TEXT_COLUMNS)
+            )
 
         # 返回当前页的dataframe
         return df_current_page
@@ -491,14 +535,10 @@ class _DBManager:
         df_origin = pd.DataFrame()
         for item in db_name_list:
             db_filepath = os.path.join(self.db_path, item)
-            db_filepath = self.get_temp_dbfilepath(db_filepath)
-            conn = sqlite3.connect(db_filepath)
-
-            # 使用pandas的read_sql_query函数执行查询并将结果转换为DataFrame
-            query = f"SELECT rowid, * FROM video_text WHERE videofile_name LIKE '%{vid_filename[:19]}%'"
-            df = pd.read_sql_query(query, conn)
-
-            conn.close()
+            with self.read_connection(db_filepath) as conn:
+                df = pd.read_sql_query(
+                    "SELECT rowid, * FROM video_text WHERE videofile_name LIKE ?", conn, params=[f"%{vid_filename[:19]}%"]
+                )
             df_origin = pd.concat([df_origin, df])
 
         return df_origin
@@ -508,19 +548,17 @@ class _DBManager:
         根据 rowid - 相似度 元组构成的 list 提取数据库文件对应行与标注对应相似度，合在以 dataframe 形式返回
         """
         db_filepath = os.path.join(self.db_path, db_filename)
-        db_filepath = self.get_temp_dbfilepath(db_filepath)
-        conn = sqlite3.connect(db_filepath)
-        rowid_list = [tuple[0] for tuple in rowid_probs_list]
-        probs_list = [tuple[1] for tuple in rowid_probs_list]
-        rowid_str = ",".join(map(str, rowid_list))  # 将 rowid 列表转换为逗号分隔的字符串
-
-        # 构建SQL查询语句
-        query = f"SELECT * FROM video_text WHERE rowid IN ({rowid_str})"
-        result_df = pd.read_sql_query(query, conn)
-        conn.close()
-
-        result_df["probs"] = probs_list
-        return result_df
+        records = []
+        with self.read_connection(db_filepath) as conn:
+            for offset in range(0, len(rowid_probs_list), 900):
+                batch = rowid_probs_list[offset : offset + 900]
+                ids = [int(identity) for identity, _ in batch]
+                query = f"SELECT rowid, * FROM video_text WHERE rowid IN ({','.join('?' for _ in ids)})"
+                rows = pd.read_sql_query(query, conn, params=ids).set_index("rowid")
+                for identity, probability in batch:
+                    if identity in rows.index:
+                        records.append({**rows.loc[identity].to_dict(), "probs": probability})
+        return pd.DataFrame(records, columns=[*VIDEO_TEXT_COLUMNS, "probs"])
 
     # 列出所有数据
     def db_list_all_data(self):
@@ -532,15 +570,9 @@ class _DBManager:
         full_db_name_ondisk_dict = self.get_db_filename_dict()
         for key, value in full_db_name_ondisk_dict.items():
             db_filepath_origin = os.path.join(self.db_path, key)
-            db_filepath = self.get_temp_dbfilepath(db_filepath_origin)
-
-            conn = sqlite3.connect(db_filepath)
-            c = conn.cursor()
-            c.execute("SELECT * FROM video_text")
-            rows = c.fetchall()
-            for row in rows:
-                logger.debug(str(row))
-            conn.close()
+            with self.read_connection(db_filepath_origin) as conn:
+                for row in conn.execute("SELECT * FROM video_text"):
+                    logger.debug(str(row))
 
     # 查询全部数据库一共有多少行
     def db_num_records(self):
@@ -548,14 +580,10 @@ class _DBManager:
         rows_count_all = 0
         for key, value in full_db_name_ondisk_dict.items():
             db_filepath_origin = os.path.join(self.db_path, key)
-            db_filepath = self.get_temp_dbfilepath(db_filepath_origin)
-            conn = sqlite3.connect(db_filepath)
-            c = conn.cursor()
-            c.execute("SELECT COUNT(*) FROM video_text")
-            rows_count = c.fetchone()[0]
-            conn.close()
+            with self.read_connection(db_filepath_origin) as conn:
+                rows_count = conn.execute("SELECT COUNT(*) FROM video_text").fetchone()[0]
             rows_count_all += rows_count
-            logger.info(f"db_filepath: {db_filepath}, rows_count: {rows_count}")
+            logger.debug(f"db_filepath: {db_filepath_origin}, rows_count: {rows_count}")
         logger.info(f"rows_count_all: {rows_count_all}")
         return rows_count_all
 

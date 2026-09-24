@@ -282,12 +282,6 @@ def ui_ocr_text_search(data_type="month_range"):
         ):
             return
 
-        # 更新懒状态
-        st.session_state.search_content_lazy = st.session_state.search_content
-        st.session_state.search_content_exclude_lazy = st.session_state.search_content_exclude
-        st.session_state.search_date_range_in_lazy = st.session_state.search_date_range_in
-        st.session_state.search_date_range_out_lazy = st.session_state.search_date_range_out
-
         # 重置每次进行新搜索需要重置的状态
         st.session_state.page_index = 1
 
@@ -306,7 +300,14 @@ def ui_ocr_text_search(data_type="month_range"):
                 utils.get_datetime_in_day_range_pole_by_config_day_begin(st.session_state.search_date_range_in, range="start"),
                 utils.get_datetime_in_day_range_pole_by_config_day_begin(st.session_state.search_date_range_out, range="end"),
                 keyword_input_exclude=st.session_state.search_content_exclude,
+                defer_payload=True,
             )
+
+            # 更新懒状态
+            st.session_state.search_content_lazy = st.session_state.search_content
+            st.session_state.search_content_exclude_lazy = st.session_state.search_content_exclude
+            st.session_state.search_date_range_in_lazy = st.session_state.search_date_range_in
+            st.session_state.search_date_range_out_lazy = st.session_state.search_date_range_out
 
             if config.enable_synonyms_recommend:
                 st.session_state.synonyms_recommend_list = get_query_synonyms(keyword=st.session_state.search_content)  # 获取近义词

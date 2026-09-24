@@ -4,6 +4,7 @@ import os
 import re
 from io import BytesIO
 
+import numpy as np
 import pandas as pd
 from PIL import Image
 
@@ -76,20 +77,14 @@ class OneDay:
         :param start_dt: datetime.datetime 开始时间
         :param end_dt: datetime.datetime 结束时间
         """
-        df_B = df.copy()
-        # 新建一份表，统计每个时间段中有多少视频
-        df_C = pd.DataFrame(columns=["hour", "data"])
-        for step in pd.date_range(start=start_dt, end=end_dt, freq="6min"):
-            filtered = df_B[
-                (df_B["videofile_time"] >= step.timestamp())
-                & (df_B["videofile_time"] < (step + pd.Timedelta(minutes=6)).timestamp())
-            ]
-            df_C.loc[len(df_C)] = [step, len(filtered)]
-
-        df_C["hour"] = df_C["hour"].dt.round("1min")
-        # df_C['hour'] = df_C['hour'].apply(int)
-        # df_C["hour"] = df_C["hour"].round(1)
-        return df_C
+        dates = pd.date_range(start=start_dt, end=end_dt, freq="6min")
+        if dates.empty:
+            return pd.DataFrame(columns=["hour", "data"])
+        # Sort timestamps once instead of scanning the full payload for each bucket.
+        times = np.sort(df["videofile_time"].dropna().to_numpy())
+        boundaries = np.append(dates.asi8 / 1e9, (dates[-1] + pd.Timedelta(minutes=6)).value / 1e9)
+        counts = np.diff(np.searchsorted(times, boundaries, side="left"))
+        return pd.DataFrame({"hour": dates.round("1min"), "data": counts})
 
     def find_closest_video_by_filesys(
         self,
