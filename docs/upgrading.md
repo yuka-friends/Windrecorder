@@ -19,6 +19,8 @@ without installing Python separately. Existing Python/Poetry users can simply ru
 4. The old local environment is renamed to `.venv-backup-<timestamp>-<id>`;
    an external Poetry environment stays at its original location. A new `.venv`
    is created at its final path so Windows entry points contain the correct paths.
+   Setup runs under an external managed Python, including on repeat upgrades, so
+   its own process cannot lock the environment being backed up on Windows.
 5. Dependencies come from `uv.lock`. Native and selected extension imports must
    pass before `.uv-state.json` is marked ready and onboarding opens.
 

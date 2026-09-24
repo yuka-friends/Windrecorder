@@ -40,7 +40,9 @@ try {
         if ($LASTEXITCODE -ne 0) { throw 'Python download failed; existing environment has not been changed.' }
     }
     Write-Host '[Setup] Locating Python...' -ForegroundColor Cyan
-    $controllerPython = (& $uvPath python find --managed-python 3.12).Trim()
+    # --managed-python alone can still select the project's .venv, even when
+    # VIRTUAL_ENV is unset. --system excludes virtual environments from discovery.
+    $controllerPython = (& $uvPath python find --system --managed-python 3.12).Trim()
     if ($LASTEXITCODE -ne 0) { throw 'Cannot locate managed Python 3.12.' }
     $arguments = @("$PSScriptRoot\manage_environment.py", '--uv', $uvPath)
     if ($AddExtra) { $arguments += @('--add-extra', $AddExtra) }

@@ -136,7 +136,17 @@ def restore(root, journal):
     atomic_write_json(root / STATE_NAME, previous)
 
 
+def check_controller_outside_environment(root):
+    environment = (root / ".venv").resolve()
+    if any(Path(path).resolve().is_relative_to(environment) for path in (sys.prefix, sys.executable)):
+        raise RuntimeError(
+            "Setup is running inside the .venv it needs to replace. "
+            "Run install_update.bat or scripts/setup.ps1 to use an external Python interpreter."
+        )
+
+
 def install(root, uv, *, add=None, remove=None, run=subprocess.run):
+    check_controller_outside_environment(root)
     print("[Environment] Checking the previous installation and installed extensions...", flush=True)
     state = read_state(root)
     if state.get("status") == "installing":
@@ -211,6 +221,7 @@ def install(root, uv, *, add=None, remove=None, run=subprocess.run):
 
 
 def rollback(root):
+    check_controller_outside_environment(root)
     print("[Environment] Restoring the previous environment...", flush=True)
     state = read_state(root)
     if not state.get("backup") or not checked_backup(root, state["backup"]).exists():

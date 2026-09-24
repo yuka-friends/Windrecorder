@@ -2,6 +2,7 @@ import json
 import shutil
 import subprocess
 import sys
+import sysconfig
 from pathlib import Path
 
 import pytest
@@ -172,3 +173,77 @@ def test_batch_activation_in_directory_with_spaces_and_unicode(workspace):
     )
     result = subprocess.run(["cmd", "/d", "/c", str(launcher)], capture_output=True, text=True, check=True)
     assert ascii(str(root / ".venv")) in result.stdout
+
+
+@pytest.mark.parametrize("operation", ["install", "rollback"])
+def test_controller_inside_target_environment_stops_before_mutation(workspace, monkeypatch, operation):
+    old = legacy_env(workspace)
+    state = {"status": "installing", "backup": ".venv-backup-interrupted", "had_environment": True}
+    setup.atomic_write_json(workspace / setup.STATE_NAME, state)
+    before = (workspace / setup.STATE_NAME).read_bytes()
+    monkeypatch.setattr(sys, "prefix", str(old))
+    with pytest.raises(RuntimeError, match="setup.ps1"):
+        if operation == "install":
+            setup.install(workspace, "uv", run=runner(workspace, []))
+        else:
+            setup.rollback(workspace)
+    assert (workspace / setup.STATE_NAME).read_bytes() == before
+    assert (old / "old-marker").read_text() == "keep me"
+    assert not list(workspace.glob(".venv-failed-*"))
+
+
+@pytest.mark.parametrize("activated", [False, True])
+def test_powershell_controller_runs_outside_existing_managed_venv(workspace, activated):
+    """Exercise real uv discovery: --managed-python alone also finds .venv."""
+    import os
+
+    candidates = [shutil.which("uv"), str(Path(sysconfig.get_path("scripts", scheme="nt_user")) / "uv.exe")]
+    uv = None
+    for candidate in candidates:
+        if candidate and Path(candidate).is_file():
+            version = subprocess.check_output([candidate, "--version"], text=True).split()[1]
+            if tuple(map(int, version.split("."))) >= (0, 12, 18):
+                uv = candidate
+                break
+    if not uv:
+        pytest.skip("Requires uv >= 0.12.18")
+    env = dict(os.environ, UV_PYTHON_DOWNLOADS="never")
+    base = subprocess.run(
+        [uv, "python", "find", "--system", "--managed-python", "3.12"],
+        env=env,
+        capture_output=True,
+        text=True,
+        check=False,
+    )
+    if base.returncode:
+        pytest.skip("Requires an installed uv-managed Python 3.12")
+    root = workspace / "setup with spaces"
+    scripts = root / "scripts"
+    scripts.mkdir(parents=True)
+    subprocess.run([base.stdout.strip(), "-m", "venv", "--without-pip", str(root / ".venv")], check=True)
+    shutil.copyfile(Path(setup.__file__).with_name("setup.ps1"), scripts / "setup.ps1")
+    # Probe the controller selected by the real entry point, without installing packages.
+    (scripts / "manage_environment.py").write_text(
+        "import sys\nfrom pathlib import Path\n"
+        "root = Path(__file__).resolve().parents[1]\n"
+        "assert Path(sys.prefix).resolve() != (root / '.venv').resolve()\n"
+        "old = root / '.venv'\nbackup = root / '.venv-backup-probe'\n"
+        "old.rename(backup)\nbackup.rename(old)\n"
+        "print('Controller can move the previous environment')\n",
+        encoding="utf-8",
+    )
+    env.pop("VIRTUAL_ENV", None)
+    env["PATH"] = str(Path(uv).parent) + os.pathsep + env["PATH"]
+    if activated:
+        env["VIRTUAL_ENV"] = str(root / ".venv")
+        env["PATH"] = str(root / ".venv/Scripts") + os.pathsep + env["PATH"]
+    # Rollback takes the same discovery path while skipping Python download/update.
+    result = subprocess.run(
+        ["powershell", "-NoProfile", "-ExecutionPolicy", "Bypass", "-File", str(scripts / "setup.ps1"), "-Rollback"],
+        env=env,
+        capture_output=True,
+        text=True,
+        timeout=45,
+    )
+    assert result.returncode == 0, result.stdout + result.stderr
+    assert "Controller can move the previous environment" in result.stdout
