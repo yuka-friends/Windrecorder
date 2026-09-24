@@ -2,7 +2,12 @@
 echo Loading extension, please stand by.
 echo.
 
-cd /d %~dp0
+cd /d "%~dp0"
+call "%~dp0..\..\scripts\activate_runtime.bat"
+if errorlevel 1 (
+    pause
+    exit /b 1
+)
 chcp 65001
 
 :start_install
@@ -38,7 +43,13 @@ goto start_install
 
 @REM -------------------------------------------------
 :install_module
-poetry run pip install wechat-ocr -i https://pypi.tuna.tsinghua.edu.cn/simple
+powershell -NoProfile -ExecutionPolicy Bypass -File "%~dp0..\..\scripts\setup.ps1" -AddExtra wechat
+if errorlevel 1 (
+    pause
+    exit /b 1
+)
+call "%~dp0..\..\scripts\activate_runtime.bat"
+if errorlevel 1 exit /b 1
 cd ..
 cd ..
 cd ocr_lib
@@ -54,7 +65,6 @@ goto :finish
 echo.
 echo   checking the installation results... 检查安装结果……
 echo.
-for /F "tokens=* USEBACKQ" %%A in (`python -m poetry env info --path`) do call "%%A\Scripts\activate.bat"
 python _test_install.py
 echo.
 echo   The installation script has been completed. 已执行完安装脚本。

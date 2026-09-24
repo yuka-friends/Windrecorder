@@ -120,7 +120,7 @@ def dtstr_to_datetime(datetime_str):
 def seconds_to_date(seconds):
     # start_time = 946684800
     start_time = 0
-    dt = datetime.datetime.utcfromtimestamp(start_time + seconds)
+    dt = (datetime.datetime(1970, 1, 1) + datetime.timedelta(seconds=float(start_time + seconds)))
     return dt.strftime(DATETIME_FORMAT)
 
     # 旧实现
@@ -132,7 +132,7 @@ def seconds_to_date(seconds):
 # 将时间戳秒数格式化为时间 %Y-%m-%d_%H-%M-%S（更容易看些，只能用在展示
 def seconds_to_date_goodlook_formart(seconds):
     start_time = 0
-    dt = datetime.datetime.utcfromtimestamp(start_time + seconds)
+    dt = (datetime.datetime(1970, 1, 1) + datetime.timedelta(seconds=float(start_time + seconds)))
     # todo: 这里时间格式需要封为统一的可配置项
     return dt.strftime("%Y/%m/%d   %H:%M:%S")
 
@@ -141,14 +141,14 @@ def seconds_to_date_goodlook_formart(seconds):
 def seconds_to_datetime(seconds):
     # start_time = 946684800
     start_time = 0
-    dt = datetime.datetime.utcfromtimestamp(start_time + seconds)
+    dt = (datetime.datetime(1970, 1, 1) + datetime.timedelta(seconds=float(start_time + seconds)))
     return dt
 
 
 # 将时间戳秒数格式化为时间 %H-%M-%S （当天）
 def seconds_to_date_dayHMS(seconds):
     start_time = 0
-    dt = datetime.datetime.utcfromtimestamp(start_time + seconds)
+    dt = (datetime.datetime(1970, 1, 1) + datetime.timedelta(seconds=float(start_time + seconds)))
     return dt.strftime("%H:%M:%S")
 
 

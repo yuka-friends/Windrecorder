@@ -38,14 +38,13 @@
 
 - 安装 [Git](https://git-scm.com/download/win)，一路下一步即可；
 
-- 安装 [Python](https://www.python.org/ftp/python/3.11.7/python-3.11.7-amd64.exe)，安装时确保勾选 `Add python.exe to PATH`
-    - **注意！目前暂未支持 python 3.12**，推荐使用 python 3.11，即上面链接指向的版本
+- 安装 [uv](https://docs.astral.sh/uv/getting-started/installation/)。安装器会自动管理 **Python 3.12**，无需单独安装 Python。已有 Python / Poetry 的用户可以直接运行升级脚本。
 
 - 在文件管理器中，导航到想要安装此工具目录（推荐放在空间富足的分区中），通过终端命令 `git clone https://github.com/yuka-friends/Windrecorder` 下载该工具；
 
     - 可以打开想要安装的文件夹，在路径栏输入`cmd` 并回车，即可在终端定位到当前目录，将以上命令贴入、回车执行；
 
-- 打开目录下的 `install_update.bat` 进行工具安装与配置，顺利的话就可以开始使用了！
+- 打开目录下的 `install_update.bat` 进行安装与配置。老用户请先退出捕风记录仪；升级脚本会自动迁移到 uv、恢复已安装的内置扩展，并保留用户数据和旧环境。详见[升级与回退说明](../docs/upgrading.md)。
 
 
 # 🦝 如何使用

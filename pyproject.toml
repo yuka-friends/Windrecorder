@@ -1,64 +1,70 @@
+[project]
+name = "windrecorder"
+version = "0.0.31"
+description = "Local screen recording, OCR memory search and activity statistics for Windows"
+authors = [{name = "yuka-friends"}]
+license = "GPL-2.0"
+readme = "README.md"
+requires-python = ">=3.11,<3.13"
+dependencies = [
+    "jieba>=0.42.1,<0.43",
+    "matplotlib>=3.8,<4",
+    "numpy>=1.26.4,<2",
+    "onnxruntime>=1.20.1,<1.21",
+    "opencv-python>=4.10,<4.12",
+    "pandas>=2.2,<3",
+    "pyclipper>=1.3.0.post6,<1.4",
+    "pywin32>=307; sys_platform == 'win32'",
+    "Send2Trash>=1.8.2,<2",
+    "Shapely>=2.0.6,<2.1",
+    "streamlit>=1.41.1,<1.42",
+    "pillow>=10.4,<12",
+    "wordcloud>=1.9.3,<2",
+    "pystray>=0.19.5,<0.20",
+    "customtkinter>=5.2.1,<6",
+    "psutil>=5.9.8,<8",
+    "scikit-image>=0.24,<0.26",
+    "faiss-cpu>=1.9.0.post1,<1.10",
+    "tqdm>=4.65,<5",
+    "streamlit-tags>=1.2.8,<2",
+    "mss>=9.0.1,<10",
+    "pygetwindow>=0.0.9,<0.1",
+    "uiautomation>=2.0.20,<3; sys_platform == 'win32'",
+    "openai>=1.40.8,<2",
+    "requests>=2.32,<3",
+]
+
+[project.optional-dependencies]
+rapidocr = ["rapidocr-onnxruntime==1.4.4"]
+wechat = ["wechat-ocr==0.0.3"]
+# Keep the existing uform3 model and ONNX backend; no embedding/index migration.
+embedding = ["uform[onnx]==3.1.3", "onnx>=1.16.2,<1.18", "huggingface-hub>=0.26,<1"]
+
+[dependency-groups]
+dev = ["pytest>=8.3,<9", "pytest-cov>=6,<7", "ruff>=0.11,<0.12"]
+
+[tool.uv]
+package = false
+required-version = ">=0.12.18"
+environments = ["sys_platform == 'win32' and platform_machine == 'AMD64'"]
+
+# Discovery bridge for old Poetry launchers during their first upgrade only.
+# All dependencies and installation are managed by [project] and uv.lock.
 [tool.poetry]
 name = "windrecorder"
 version = "0.0.31"
-description = "Windrecorder is a memory search app by records everything on your screen in small size, to let you rewind what you have seen, query through OCR text or image description, and get activity statistics. Developed as MacOS App Rewind.ai / Copilot Recall alternative tool on Windows platform."
+description = "Legacy environment discovery bridge"
 authors = ["yuka-friends"]
-license = "GPL-2.0"
-readme = "README.md"
-
-[tool.poetry.dependencies]
-python = ">=3.10,<3.12"
-jieba = "^0.42.1"
-matplotlib = "^3.7.1"
-numpy = "^1.24.2"
-onnxruntime = "~1.15.1"
-opencv_python = "~4.5.5.64"
-pandas = "^2.0.3"
-pyclipper = "~1.3.0.post4"
-pywin32 = "~306"
-Send2Trash = "^1.8.2"
-Shapely = "~2.0.1"
-streamlit = "^1.29.0"
-pillow = "^10.1.0"
-wordcloud = "^1.9.2"
-pystray = "^0.19.5"
-customtkinter = "^5.2.1"
-psutil = "^5.9.5"
-scikit-image = "^0.22.0"
-faiss-cpu = "^1.7.4"
-tqdm = "^4.65.0"
-streamlit-tags = "^1.2.8"
-mss = "^9.0.1"
-pygetwindow = "^0.0.9"
-uiautomation = "^2.0.20"
-openai = "^1.40.8"
-
-[tool.poetry.group.dev.dependencies]
-pytest = "^8.3.0"
-pytest-cov = "^6.0.0"
-pre-commit = "^3.5.0"
-ipykernel = "^6.29.2"
-
-[[tool.poetry.source]]
-name = "pypi-default"
-url = "https://pypi.org/simple"
-priority = "primary"
-
-[[tool.poetry.source]]
-name = "tsinghua"
-url = "https://pypi.tuna.tsinghua.edu.cn/simple"
-priority = "supplemental"
-
-[[tool.poetry.source]]
-name = "aliyun"
-url = "https://mirrors.aliyun.com/pypi/simple"
-priority = "supplemental"
-
-[build-system]
-requires = ["poetry-core"]
-build-backend = "poetry.core.masonry.api"
+package-mode = false
 
 [tool.pytest.ini_options]
 testpaths = ["tests"]
 pythonpath = ["."]
 addopts = "-ra"
+
+[tool.ruff]
+line-length = 127
+target-version = "py311"
+
+[tool.ruff.lint]
+select = ["E4", "E7", "E9", "F", "I"]

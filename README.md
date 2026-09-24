@@ -34,14 +34,13 @@ Windrecorder is a memory search app by records everything on your screen in smal
 
 - Install [Git](https://git-scm.com/download/win), just keep clicking next step.
 
-- Install [Python](https://www.python.org/ftp/python/3.11.7/python-3.11.7-amd64.exe), make sure to check `Add python.exe to PATH` when installing.
-     - **Currently, Python 3.12 is not supported**. It is recommended to use python 3.11, which is the version pointed to by the link above.
+- Install [uv](https://docs.astral.sh/uv/getting-started/installation/). The installer automatically manages **Python 3.12**; a separate Python installation is not required. Existing Python/Poetry users can keep their installation and run the updater directly.
 
 - In file explorer, navigate to the directory where you want to install Windrecorder (it is recommended to place it in a partition with sufficient space), and download the app through the terminal command `git clone https://github.com/yuka-friends/Windrecorder`
 
      - You can open the folder you want to install, enter `cmd` in the path bar and press Enter, and you will be located into current directory in terminal, then paste the above command and press Enter to execute;
 
-- Open `install_update.bat` in the directory to install dependencies and configure the app. If everything goes well, you can start using it!
+- Open `install_update.bat` to install dependencies and configure the app. Existing users should close Windrecorder first; the updater migrates Poetry environments and supported extensions to uv while preserving user data and a rollback environment. See [upgrade and recovery](docs/upgrading.md).
 
 
 # 🦝 How to use
@@ -97,8 +96,7 @@ Q: The mouse pointer flicker during recording (Direct Video Recording via FFmpeg
 
 Q: There is no data in the recent period when opening webui.
 
-- A: When the tool is indexing data, webui will not create the latest temporary database file.
-Solution: Try to wait for a while, wait for the tool indexing to complete, refresh the webui interface, or delete the database file with the suffix _TEMP_READ.db in the db directory and refresh it (if there is a database file damage prompt, don’t worry, it may be The tool is still in the index, please try refreshing/removing it after some time). This strategy will be fixed and refactored in the future. [#26](https://github.com/yuka-friends/Windrecorder/issues/26)
+- A: Check that recording and OCR indexing have completed. Search reads a consistent SQLite backup including committed WAL data and refreshes after writes. If a query reports a database error, retain the original database and include the error log when reporting the issue.
 
 Q: When opening webui, it prompts: `FileNotFoundError: [WinError 2] The system cannot find the file specified: './db\\user_2023-10_wind.db-journal'`
 

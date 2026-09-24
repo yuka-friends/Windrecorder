@@ -1,3 +1,8 @@
+from scripts.legacy_bootstrap import handoff_if_needed
+
+if __name__ == "__main__":
+    handoff_if_needed("onboard_setting.py")
+
 import getpass
 import os
 import subprocess

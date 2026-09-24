@@ -2,7 +2,12 @@
 echo Loading extension, please stand by.
 echo.
 
-cd /d %~dp0
+cd /d "%~dp0"
+call "%~dp0..\..\scripts\activate_runtime.bat"
+if errorlevel 1 (
+    pause
+    exit /b 1
+)
 chcp 65001
 
 :start_install
@@ -28,13 +33,18 @@ goto start_install
 
 @REM -------------------------------------------------
 :uninstall_module
-poetry run pip uninstall rapidocr_onnxruntime
+powershell -NoProfile -ExecutionPolicy Bypass -File "%~dp0..\..\scripts\setup.ps1" -RemoveExtra rapidocr
+if errorlevel 1 (
+    pause
+    exit /b 1
+)
+call "%~dp0..\..\scripts\activate_runtime.bat"
+if errorlevel 1 exit /b 1
 goto :finish
 
 
 @REM -------------------------------------------------
 :finish
-for /F "tokens=* USEBACKQ" %%A in (`python -m poetry env info --path`) do call "%%A\Scripts\activate.bat"
 python _uninstall.py
 echo.
 echo   The uninstallation script has been completed. 已执行完卸载脚本。
