@@ -15,18 +15,10 @@ if errorlevel 1 (
     exit /b 1
 )
 
-if exist "hide_CLI_by_python.txt" (
-    goto begin
-) else (
-    goto hide
+"%~dp0.venv\Scripts\python.exe" -u "%~dp0scripts\launch_app.py"
+if errorlevel 1 (
+    echo.
+    echo Windrecorder could not start. Check cache\logs\startup.log for details.
+    pause
+    exit /b 1
 )
-
-:hide
-@REM hide CLI immediately
-if "%1"=="h" goto begin
-start mshta vbscript:createobject("wscript.shell").run("%~nx0"^&" h",0)^&(window.close) && exit /b
-
-:begin
-cd /d "%~dp0"
-
-"%~dp0.venv\Scripts\python.exe" "%~dp0main.py"

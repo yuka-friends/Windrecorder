@@ -199,7 +199,12 @@ def get_screenshots_cache_dir_lst(directory=SCREENSHOT_CACHE_FILEPATH):
     """获取所有合法的截图缓存文件夹目录"""
     pattern = DATETIME_FORMAT_PATTERN
     matching_folders = []
-    for item in os.listdir(directory):
+    try:
+        items = os.listdir(directory)
+    except FileNotFoundError:
+        # Startup maintenance can run before the first screenshot creates its cache.
+        return []
+    for item in items:
         folder_path = os.path.join(directory, item)
         if os.path.isdir(folder_path) and re.match(pattern, item):
             matching_folders.append(folder_path)

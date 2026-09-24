@@ -85,6 +85,19 @@ dependencies or requiring network access. Installation and initial model downloa
 still require network access. Configure uv's index/proxy environment variables if
 PyPI is unavailable; no third-party mirror is silently substituted.
 
+## Startup diagnostics
+
+`start_app.bat` keeps its console visible until the tray is ready, then hides its
+own console without using MSHTA or VBScript. The old `hide_CLI_by_python.txt`
+workaround is no longer needed. A startup failure restores the console and keeps
+the error message visible instead of closing the window.
+
+`cache/logs/startup.log` captures Python output and tracebacks from before the
+application imports; it records `Tray ready` when tray setup succeeds. Logs append
+across launches, with one previous file retained once the log exceeds 5 MB at
+startup. General application logs remain in `cache/logs/wr.log`; recording output
+and errors are in `recording.log` and `recording.err` in the same directory.
+
 ## Development
 
 ```powershell

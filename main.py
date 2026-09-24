@@ -5,17 +5,13 @@ import shutil
 import signal
 import subprocess
 import sys
-import threading
 import time
 import webbrowser
 from os import getpid
 from subprocess import Popen
 
-import pygetwindow
 import pystray
 import requests
-import win32con
-import win32gui
 from PIL import Image
 from streamlit.file_util import get_streamlit_file_path
 
@@ -24,7 +20,6 @@ os.chdir(PROJECT_ROOT)
 
 from windrecorder import file_utils, flag_mark_note, utils, win_ui  # NOQA: E402
 from windrecorder.config import config  # NOQA: E402
-from windrecorder.const import HIDE_CLI_TRIGGER  # NOQA: E402
 from windrecorder.exceptions import LockExistsException  # NOQA: E402
 from windrecorder.lock import FileLock  # NOQA: E402
 from windrecorder.logger import get_logger  # NOQA: E402
@@ -278,30 +273,7 @@ def interrupt_start_no_ffmpeg_and_ffprobe(reason):
     sys.exit()
 
 
-def hide_cli_window():
-    # 隐藏该 CLI 窗口
-    subprocess.run("cls", shell=True)
-    print()
-
-    timeout_count = 1200
-    for i in range(timeout_count):
-        print(f"   Trying to hide CLI window... ({i}/{timeout_count})")
-        try:
-            title = str(pygetwindow.getActiveWindowTitle())
-            if "Windrecorder" in title:
-                hide_CLI = win32gui.GetForegroundWindow()
-                win32gui.ShowWindow(hide_CLI, win32con.SW_HIDE)
-                break
-        except Exception as e:
-            print(f"   -Exception: {e}")
-            logger.error(e)
-            continue
-        finally:
-            time.sleep(1)
-    print("\n   Hide CLI window fail. Please minimize this window manually.")
-
-
-def main():
+def main(on_ready=None):
     # 启动时加锁，防止重复启动
     while True:
         try:
@@ -321,11 +293,7 @@ def main():
                     pass
 
     with tray_lock:
-        if os.path.exists(HIDE_CLI_TRIGGER):
-            thread_hide_cli_window = threading.Thread(target=hide_cli_window)
-            thread_hide_cli_window.start()
-        else:
-            logger.info("\nRun in CLI mode.\n")
+        logger.info("Starting tray application.")
 
         ff_available, ff_callback = utils.check_ffmpeg_and_ffprobe()
         if not ff_available:
@@ -343,12 +311,17 @@ def main():
             tray_icon_init = get_tray_icon(state="recording")
             tray_title_init = _t("tray_tip_record")
 
+        def setup_tray(icon):
+            setup(icon)
+            if on_ready is not None:
+                on_ready()
+
         pystray.Icon(
             "Windrecorder",
             tray_icon_init,
             title=tray_title_init,
             menu=pystray.Menu(menu_callback),
-        ).run(setup=setup)
+        ).run(setup=setup_tray)
 
 
 if __name__ == "__main__":
