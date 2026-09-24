@@ -9,7 +9,10 @@ without installing Python separately. Existing Python/Poetry users can simply ru
 ## Existing installations
 
 1. Exit Windrecorder and any recording, embedding or standalone web UI processes.
-2. Run `install_update.bat`. Git must fast-forward successfully before setup runs.
+2. Run `install_update.bat`. If the current branch has an upstream, Git must
+   fast-forward successfully before setup runs. Local branches without an upstream
+   and detached checkouts skip the pull with a notice and install the current code.
+   Setup does not switch branches or assign an upstream automatically.
 3. Setup discovers the local `.venv` or Poetry's external environment, inventories
    installed packages, and restores the RapidOCR, WeChat OCR and uform extensions
    indicated by the old environment or configuration.
