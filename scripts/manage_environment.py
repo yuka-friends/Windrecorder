@@ -137,8 +137,10 @@ def restore(root, journal):
 
 
 def install(root, uv, *, add=None, remove=None, run=subprocess.run):
+    print("[Environment] Checking the previous installation and installed extensions...", flush=True)
     state = read_state(root)
     if state.get("status") == "installing":
+        print("[Environment] Recovering the interrupted installation...", flush=True)
         restore(root, state)
         state = read_state(root)
     legacy = discover_legacy(root, run)
@@ -165,6 +167,7 @@ def install(root, uv, *, add=None, remove=None, run=subprocess.run):
     atomic_write_json(root / STATE_NAME, journal)
     try:
         if backup:
+            print("[Environment] Saving the previous environment for recovery...", flush=True)
             environment.rename(backup)
         report = root / ".uv-migration" / f"{uuid.uuid4().hex}.json"
         atomic_write_json(report, {"legacy_environment": str(legacy) if legacy else None, "packages": packages})
@@ -173,6 +176,7 @@ def install(root, uv, *, add=None, remove=None, run=subprocess.run):
             command += ["--extra", extra]
         env = dict(os.environ, UV_PROJECT_ENVIRONMENT=str(environment), UV_LINK_MODE="copy")
         env.pop("VIRTUAL_ENV", None)
+        print("[Environment] Downloading and installing dependencies. This may take several minutes...", flush=True)
         run(command, cwd=root, env=env, check=True)
         # Packaged releases keep FFmpeg and its DLLs at the old environment root.
         asset_source = backup or legacy
@@ -187,6 +191,7 @@ def install(root, uv, *, add=None, remove=None, run=subprocess.run):
             imports += "; import wechat_ocr"
         if "embedding" in extras:
             imports += "; from uform import Modality,get_model; import uform.onnx_encoders,uform.numpy_processors"
+        print("[Environment] Verifying installed components. First-time loading may take a while...", flush=True)
         run([str(environment / "Scripts/python.exe"), "-c", imports], cwd=root, check=True)
         atomic_write_json(
             root / STATE_NAME,
@@ -199,12 +204,14 @@ def install(root, uv, *, add=None, remove=None, run=subprocess.run):
             },
         )
     except BaseException:
+        print("[Environment] Setup failed. Restoring the previous environment state...", flush=True)
         restore(root, journal)
         raise
-    print("uv environment ready. Previous environments and package inventories have been retained.")
+    print("uv environment ready. Previous environments and package inventories have been retained.", flush=True)
 
 
 def rollback(root):
+    print("[Environment] Restoring the previous environment...", flush=True)
     state = read_state(root)
     if not state.get("backup") or not checked_backup(root, state["backup"]).exists():
         raise RuntimeError("No local environment backup is available; consult .uv-migration for an external Poetry path.")
