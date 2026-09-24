@@ -87,10 +87,17 @@ PyPI is unavailable; no third-party mirror is silently substituted.
 
 ## Startup diagnostics
 
-`start_app.bat` keeps its console visible until the tray is ready, then hides its
-own console without using MSHTA or VBScript. The old `hide_CLI_by_python.txt`
-workaround is no longer needed. A startup failure restores the console and keeps
-the error message visible instead of closing the window.
+`start_app.bat` immediately displays a loading message and keeps its startup
+window open until the tray is ready. The application runs in a separate hidden
+console; once ready, the launcher exits so its terminal window can close rather
+than remain on the taskbar. Loading reminders appear every ten seconds. Neither
+MSHTA nor VBScript is needed, and the old `hide_CLI_by_python.txt` workaround is
+obsolete. A startup failure keeps the error message visible in the startup window.
+If launched from an existing terminal, that terminal returns to its prompt.
+
+For foreground diagnostics, run `.venv/Scripts/python.exe scripts/launch_app.py
+--foreground` on one line. The hidden application retains a console for graceful
+recording shutdown; subsequent application failures display an error dialog.
 
 `cache/logs/startup.log` captures Python output and tracebacks from before the
 application imports; it records `Tray ready` when tray setup succeeds. Logs append

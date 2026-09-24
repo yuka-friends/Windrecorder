@@ -1,11 +1,12 @@
 @echo off
+chcp 65001 >nul
+echo.
+echo   正在加载 Windrecorder，请稍候……
+echo   Loading Windrecorder. Please wait...
 title Windrecorder
-mode con cols=70 lines=10
-color 75
 echo.
-echo   Initializing Windrecorder, please stand by...
-echo.
-echo   Please stay in this window until it disappears
+echo   托盘就绪后此窗口将自动关闭，请勿提前关闭。
+echo   This window will close when the tray is ready. Please keep it open.
 echo.
 
 cd /d "%~dp0"
@@ -22,3 +23,4 @@ if errorlevel 1 (
     pause
     exit /b 1
 )
+exit /b 0
