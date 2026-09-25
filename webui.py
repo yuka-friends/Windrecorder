@@ -93,9 +93,9 @@ def main_webui():
 
     web_footer_state()
 
-    # 尝试预加载嵌入模型
-    if config.img_embed_module_install and config.enable_synonyms_recommend:
-        windrecorder.ui.components.load_emb_model_cache()
+    # 尝试预加载嵌入模型 - 已移除以优化内存，改为懒加载
+    # if config.img_embed_module_install and config.enable_synonyms_recommend:
+    #     windrecorder.ui.components.load_emb_model_cache()
 
 
 # 检查 webui 是否启用密码保护
