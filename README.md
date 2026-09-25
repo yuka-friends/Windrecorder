@@ -45,6 +45,7 @@ Windrecorder is a memory search app by records everything on your screen in smal
 
 # 🦝 How to use
 
+- Use an AI agent to search your records: [Memory skill installation and usage (简体中文)](__assets__/how_to_use_memory_skill.md).
 - Open `start_app.bat` in the directory, the tool will run on the system tray and be used through the right-click menu;
 - All data (video, database, statistical information) will be stored in `userdata` directory under Windrecorder. If you want to copy or move the app location (for example, if you change the computer), you can delete `.venv` in the directory and moved, then re-run `install_update.bat` to install the virtual environment to use it;
 
