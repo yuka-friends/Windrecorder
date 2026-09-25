@@ -1,0 +1,4 @@
+interface:
+  display_name: "Windrecorder Memory"
+  short_description: "Search local screen records and notes with source citations"
+  default_prompt: "Use $windrecorder-memory to find records relevant to my question and answer with timestamps and sources."

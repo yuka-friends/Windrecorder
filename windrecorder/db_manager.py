@@ -16,6 +16,7 @@ import windrecorder.utils as utils
 from windrecorder import file_utils
 from windrecorder.config import config
 from windrecorder.logger import get_logger
+from windrecorder.query_sql import keyword_conditions, record_counts
 
 logger = get_logger(__name__)
 
@@ -300,26 +301,11 @@ class _DBManager:
         query_db_name_list = self.db_get_dbfilename_by_datetime(datetime_start, datetime_end)
         logger.info(f"{datetime_start=}, {datetime_end=}")
 
-        conditions = []
-        params = []
-        for keyword in keyword_input.split():
-            variants = (
-                self.generate_similar_ch_strings(keyword)
-                if config.use_similar_ch_char_to_search
-                else [re.sub(r"(?<=\w)-(?=\w)", " ", keyword)]
-            )
-            group = []
-            for variant in variants:
-                group.append("(ocr_text LIKE ? OR win_title LIKE ?)")
-                params.extend([f"%{variant}%", f"%{variant}%"])
-            conditions.append("(" + " OR ".join(group) + ")")
-        if not conditions:
-            conditions.append("ocr_text LIKE ?")
-            params.append("%")
-        for keyword in keyword_input_exclude.split():
-            keyword = re.sub(r"(?<=\w)-(?=\w)", " ", keyword)
-            conditions.append("ocr_text NOT LIKE ?")
-            params.append(f"%{keyword}%")
+        conditions, params = keyword_conditions(
+            keyword_input,
+            keyword_input_exclude,
+            variants=self.generate_similar_ch_strings if config.use_similar_ch_char_to_search else None,
+        )
         conditions.append("videofile_time BETWEEN ? AND ?")
         params.extend([date_in_ts, date_out_ts])
         columns = "rowid, videofile_time" if defer_payload else "*"
@@ -354,17 +340,11 @@ class _DBManager:
         Stored seconds represent naive wall-clock time. SQLite's unixepoch modifier
         decodes those numbers without applying the host timezone or DST rules.
         """
-        formats = {"hour": "%Y-%m-%d %H:00:00", "day": "%Y-%m-%d 00:00:00", "month": "%Y-%m-01 00:00:00"}
-        date_format = formats[frequency]
         counts = {}
         for name in self.db_get_dbfilename_by_datetime(start, end - datetime.timedelta(microseconds=1)):
             path = (Path(self.db_path) / name).resolve()
             with closing(sqlite3.connect(path.as_uri() + "?mode=ro", uri=True)) as conn:
-                rows = conn.execute(
-                    "SELECT strftime(?, videofile_time, 'unixepoch'), COUNT(*) FROM video_text "
-                    "WHERE videofile_time >= ? AND videofile_time < ? GROUP BY 1",
-                    (date_format, utils.datetime_to_seconds(start), utils.datetime_to_seconds(end)),
-                ).fetchall()
+                rows = record_counts(conn, utils.datetime_to_seconds(start), utils.datetime_to_seconds(end), frequency)
             for bucket, count in rows:
                 counts[bucket] = counts.get(bucket, 0) + count
         return counts
