@@ -142,10 +142,43 @@ def render():
 def get_show_month_data_state(stat_select_month_datetime: datetime.datetime):
     with st.spinner(_t("text_updating_month_stat")):
         st.session_state.df_month_stat = state.get_cached_calendar_overview(stat_select_month_datetime, "month")
-    st.scatter_chart(st.session_state.df_month_stat, x="day", y="hours", size="data_count", color="#AC79D5")
+    _show_calendar_scatter(st.session_state.df_month_stat, x="day", y="hours", color="#AC79D5")
 
 
 def get_show_year_data_state(stat_select_year_datetime: datetime.datetime):
     with st.spinner(_t("text_updating_yearly_stat")):
         st.session_state.df_year_stat = state.get_cached_calendar_overview(stat_select_year_datetime, "year")
-    st.scatter_chart(st.session_state.df_year_stat, x="month", y="day", size="data_count", color="#C873A6", height=350)
+    _show_calendar_scatter(st.session_state.df_year_stat, x="month", y="day", color="#C873A6", height=350)
+
+
+def _show_calendar_scatter(frame, *, x, y, color, height=0):
+    # Keep the full calendar in the data/cache, but never render zero-count marks.
+    # Explicit axis domains preserve empty days/months even when no marks remain.
+    points = frame.loc[frame["data_count"] > 0]
+    axes = {
+        axis: {
+            "field": field,
+            "type": "quantitative",
+            "axis": {"tickMinStep": 1, "format": "d"},
+            "scale": {"domain": [int(frame[field].min()), int(frame[field].max())], "zero": False, "nice": False},
+        }
+        for axis, field in (("x", x), ("y", y))
+    }
+    st.vega_lite_chart(
+        points,
+        {
+            "height": height,
+            "mark": {"type": "point", "filled": True, "color": color},
+            "encoding": {
+                **axes,
+                "size": {
+                    "field": "data_count",
+                    "type": "quantitative",
+                    "scale": {"domain": [0, max(1, int(frame["data_count"].max()))], "rangeMin": 0},
+                    "legend": {"orient": "bottom", "offset": 5} if not points.empty else None,
+                },
+                "tooltip": [{"field": field, "type": "quantitative"} for field in (x, y, "data_count")],
+            },
+        },
+        use_container_width=True,
+    )

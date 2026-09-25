@@ -24,6 +24,9 @@ boundary calculation. No source database schema, rowid, thumbnail, timestamp,
 video, FAISS index, user setting, or existing generated image is migrated.
 
 On an empty month, the page shows an explicit message and disables image generation.
+Calendar charts render only positive-count buckets, while retaining complete axis
+domains and the original zero-filled statistics/cache. Empty months or years show
+axes without dots or a size legend; no artificial records are added for scaling.
 On an empty library it shows an empty state instead of constructing invalid date
 controls. Record bounds skip empty shards, including a newly created current month.
 
