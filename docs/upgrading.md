@@ -16,13 +16,17 @@ without installing Python separately. Existing Python/Poetry users can simply ru
 3. Setup discovers the local `.venv` or Poetry's external environment, inventories
    installed packages, and restores the RapidOCR, WeChat OCR and uform extensions
    indicated by the old environment or configuration.
-4. The old local environment is renamed to `.venv-backup-<timestamp>-<id>`;
+4. The old local environment is temporarily renamed to `.venv-backup-<timestamp>-<id>`;
    an external Poetry environment stays at its original location. A new `.venv`
    is created at its final path so Windows entry points contain the correct paths.
    Setup runs under an external managed Python, including on repeat upgrades, so
    its own process cannot lock the environment being backed up on Windows.
 5. Dependencies come from `uv.lock`. Native and selected extension imports must
    pass before `.uv-state.json` is marked ready and onboarding opens.
+   Once ready, setup deletes the temporary backup and ordinary local environment
+   backups left by earlier updates. Backups locked by another process are reported
+   and cleanup is retried after the next successful setup. External Poetry
+   environments and package inventory reports are retained.
 
 `userdata`, video files, SQLite databases, FAISS indexes and model download caches
 are not moved or rewritten by environment setup. Packaged FFmpeg executables and
@@ -41,7 +45,7 @@ legacy environment discovery. `uv.lock` is the authoritative dependency lock.
 
 Install/import failure automatically restores the previous local environment.
 An interrupted install is recovered on the next attempt. Partial environments are
-retained under `.venv-failed-*`; no recursive deletion is used. The installer holds
+retained under `.venv-failed-*`. The installer holds
 an OS lock, which is released automatically if it crashes.
 
 To retry environment setup without pulling Git or opening onboarding, run from the
@@ -51,7 +55,9 @@ project directory:
 powershell -NoProfile -ExecutionPolicy Bypass -File scripts/setup.ps1
 ```
 
-To restore the most recent local environment explicitly:
+Successful setup no longer keeps a rollback environment; rerun setup to reinstall
+dependencies if needed. For a backup left by an older installer, explicit rollback
+remains available before the next successful setup cleans it up:
 
 ```powershell
 powershell -NoProfile -ExecutionPolicy Bypass -File scripts/setup.ps1 -Rollback
@@ -60,10 +66,10 @@ powershell -NoProfile -ExecutionPolicy Bypass -File scripts/setup.ps1 -Rollback
 An explicitly restored legacy environment stays ready for offline launching. This
 restores packages, not repository code. External Poetry environment paths and all
 old package versions are recorded in `.uv-migration/*.json`. Unrecognized, manually
-installed packages are inventoried and retained in the old environment; they are not
+installed packages are inventoried; they are not
 blindly copied between Python versions. Reinstall custom plugins after checking
-their Python 3.12 compatibility. Keep the backup until recording and your preferred
-OCR/embedding engine have been checked; backups can consume significant disk space.
+their Python 3.12 compatibility. Temporary backups are automatically removed to
+avoid accumulating full copies of dependencies on every update.
 
 ## Extensions and offline launching
 

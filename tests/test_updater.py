@@ -102,3 +102,36 @@ def test_unavailable_upstream_stops_before_setup(tracked_repo, workspace):
     assert result.returncode != 0
     assert "Git update failed" in result.stdout
     assert not (tracked_repo / "setup-called.txt").exists()
+
+
+def test_conflicting_uncommitted_file_is_preserved(source_repo, tracked_repo):
+    commit_file(source_repo, "initial.txt", "upstream change")
+    (tracked_repo / "initial.txt").write_text("user changes", encoding="utf-8")
+    before = git(tracked_repo, "rev-parse", "HEAD")
+    result = update(tracked_repo)
+    assert result.returncode != 0
+    assert (tracked_repo / "initial.txt").read_text() == "user changes"
+    assert git(tracked_repo, "rev-parse", "HEAD") == before
+    assert not (tracked_repo / "setup-called.txt").exists()
+
+
+def test_pulled_installer_is_used_and_its_failure_propagates(source_repo, tracked_repo):
+    commit_file(source_repo, "scripts/setup.ps1", "Write-Host 'new installer used'\nexit 17\n")
+    result = update(tracked_repo)
+    assert result.returncode == 17
+    assert "new installer used" in result.stdout
+    assert not (tracked_repo / "setup-called.txt").exists()
+
+
+def test_batch_preserves_setup_failure_status(tracked_repo):
+    shutil.copyfile(ROOT / "install_update.bat", tracked_repo / "install_update.bat")
+    (tracked_repo / "scripts/setup.ps1").write_text("exit 17\n", encoding="utf-8")
+    result = subprocess.run(
+        ["cmd", "/d", "/c", str(tracked_repo / "install_update.bat")],
+        input="\n",
+        capture_output=True,
+        encoding="utf-8",
+        timeout=45,
+    )
+    assert result.returncode == 17
+    assert "Update failed" in result.stdout

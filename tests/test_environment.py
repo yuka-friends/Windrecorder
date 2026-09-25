@@ -36,7 +36,7 @@ def runner(root, commands, *, fail=False):
     return run
 
 
-def test_upgrade_retains_old_environment_assets_and_optional_extension(workspace):
+def test_upgrade_cleans_backups_and_retains_assets_and_optional_extension(workspace):
     old = legacy_env(workspace, "rapidocr_onnxruntime")
     (old / "ffmpeg.exe").write_bytes(b"release asset")
     commands = []
@@ -44,7 +44,8 @@ def test_upgrade_retains_old_environment_assets_and_optional_extension(workspace
     state = setup.read_state(workspace)
     assert state["status"] == "ready"
     assert state["extras"] == ["rapidocr"]
-    assert (workspace / state["backup"] / "old-marker").read_text() == "keep me"
+    assert state["backup"] is None
+    assert not list(workspace.glob(".venv-backup-*"))
     assert (workspace / ".venv/ffmpeg.exe").read_bytes() == b"release asset"
     assert commands[0][-2:] == ["--extra", "rapidocr"]
     assert "--locked" in commands[0] and "--inexact" in commands[0]
@@ -65,8 +66,9 @@ def test_failed_sync_restores_old_environment_and_user_data(workspace):
 
 
 def test_explicit_rollback_to_poetry_remains_ready_for_offline_launch(workspace):
-    legacy_env(workspace)
-    setup.install(workspace, "uv", run=runner(workspace, []))
+    # Backward compatibility for backups left by an older installer.
+    legacy_env(workspace).rename(workspace / ".venv-backup-legacy")
+    setup.atomic_write_json(workspace / setup.STATE_NAME, {"status": "ready", "backup": ".venv-backup-legacy"})
     setup.rollback(workspace)
     assert (workspace / ".venv/old-marker").read_text() == "keep me"
     assert setup.read_state(workspace)["status"] == "ready"
@@ -83,8 +85,55 @@ def test_interrupted_upgrade_recovers_before_retry(workspace):
     (old / "partial-install").write_text("incomplete")
     setup.install(workspace, "uv", run=runner(workspace, []))
     state = setup.read_state(workspace)
-    assert (workspace / state["backup"] / "old-marker").exists()
+    assert state["status"] == "ready"
+    assert not list(workspace.glob(".venv-backup-*"))
     assert any(p.joinpath("partial-install").exists() for p in workspace.glob(".venv-failed-*"))
+
+
+def test_successful_upgrade_cleans_historical_backups_only(workspace):
+    legacy_env(workspace).rename(workspace / ".venv-backup-historical")
+    unrelated = workspace / ".venv-backup-user-files"
+    unrelated.mkdir()
+    (unrelated / "keep.txt").write_text("keep")
+    other = workspace / ".venv-tests"
+    other.mkdir()
+    (other / "pyvenv.cfg").write_text("version = 3.12")
+    legacy_env(workspace)
+    setup.install(workspace, "uv", run=runner(workspace, []))
+    assert not (workspace / ".venv-backup-historical").exists()
+    assert (unrelated / "keep.txt").read_text() == "keep"
+    assert (other / "pyvenv.cfg").exists()
+
+
+def test_cleanup_failure_keeps_new_environment_ready(workspace, monkeypatch):
+    legacy_env(workspace)
+    original_rmtree = shutil.rmtree
+
+    def fail_cleanup(path):
+        assert setup.read_state(workspace)["status"] == "ready"
+        raise PermissionError("locked")
+
+    monkeypatch.setattr(shutil, "rmtree", fail_cleanup)
+    setup.install(workspace, "uv", run=runner(workspace, []))
+    assert setup.read_state(workspace)["backup"] is None
+    assert not (workspace / ".venv/old-marker").exists()
+    assert len(list(workspace.glob(".venv-backup-*"))) == 1
+    monkeypatch.setattr(shutil, "rmtree", original_rmtree)
+    setup.install(workspace, "uv", run=runner(workspace, []))
+    assert not list(workspace.glob(".venv-backup-*"))
+
+
+def test_cleanup_does_not_follow_backup_junction(workspace, tmp_path_factory):
+    external = tmp_path_factory.mktemp("external-backup")
+    (external / "pyvenv.cfg").write_text("version = 3.12")
+    junction = workspace / ".venv-backup-linked"
+    subprocess.run(["cmd", "/d", "/c", "mklink", "/J", str(junction), str(external)], check=True, capture_output=True)
+    try:
+        setup.cleanup_backups(workspace)
+        assert (external / "pyvenv.cfg").exists()
+        assert junction.exists()
+    finally:
+        junction.rmdir()
 
 
 def test_remove_extra_is_remembered_across_updates(workspace):
@@ -104,6 +153,39 @@ def test_running_recorder_stops_upgrade_before_mutation(workspace):
     with pytest.raises(RuntimeError, match="1234"):
         setup.check_not_running(workspace, alive=lambda pid: True)
     assert not (workspace / setup.STATE_NAME).exists()
+
+
+def test_legacy_config_running_recorder_stops_upgrade(workspace):
+    (workspace / "userdata/config_user.json").unlink()
+    old_config = workspace / "config/config_user.json"
+    old_config.parent.mkdir()
+    old_config.write_text(json.dumps({"lock_file_dir": "old-locks", "record_lock_name": "record.lock"}))
+    lock = workspace / "old-locks/record.lock"
+    lock.parent.mkdir()
+    lock.write_text("1234")
+    with pytest.raises(RuntimeError, match="1234"):
+        setup.check_not_running(workspace, alive=lambda pid: True)
+
+
+def test_locked_environment_is_preserved_when_backup_rename_fails(workspace, monkeypatch):
+    old = legacy_env(workspace)
+    previous = {"status": "ready", "extras": ["wechat"]}
+    setup.atomic_write_json(workspace / setup.STATE_NAME, previous)
+    original_rename = Path.rename
+
+    def rename(path, target):
+        if path == old:
+            raise PermissionError("environment in use")
+        return original_rename(path, target)
+
+    monkeypatch.setattr(Path, "rename", rename)
+    commands = []
+    with pytest.raises(PermissionError):
+        setup.install(workspace, "uv", run=runner(workspace, commands))
+    assert commands == []
+    assert (old / "old-marker").read_text() == "keep me"
+    assert setup.read_state(workspace) == previous
+    assert not list(workspace.glob(".venv-backup-*"))
 
 
 def test_discover_external_poetry_environment(workspace, tmp_path_factory):

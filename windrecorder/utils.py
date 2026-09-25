@@ -1,3 +1,4 @@
+import ast
 import base64
 import calendar
 import ctypes
@@ -525,11 +526,29 @@ def get_random_word_from_lexicon():
 def get_github_version(
     url="https://raw.githubusercontent.com/yuka-friends/Windrecorder/main/windrecorder/__init__.py",
 ):
-    response = requests.get(url)
-    global_vars = {}
-    exec(response.text, global_vars)
-    version = global_vars["__version__"]
-    return version
+    response = requests.get(url, timeout=5)
+    response.raise_for_status()
+    try:
+        module = ast.parse(response.text)
+    except SyntaxError as error:
+        raise ValueError("Invalid version response from GitHub.") from error
+    for node in module.body:
+        if isinstance(node, ast.Assign) and any(
+            isinstance(target, ast.Name) and target.id == "__version__" for target in node.targets
+        ):
+            version = ast.literal_eval(node.value)
+            _version_key(version)
+            return version
+    raise ValueError("GitHub response does not contain a version.")
+
+
+def _version_key(version):
+    """Order supported releases numerically, with beta builds before stable ones."""
+    match = re.fullmatch(r"(\d+)\.(\d+)\.(\d+)(?:b(\d*))?", version) if isinstance(version, str) else None
+    if match is None:
+        raise ValueError(f"Invalid Windrecorder version: {version!r}")
+    major, minor, patch, beta = match.groups()
+    return int(major), int(minor), int(patch), beta is None, int(beta or 0)
 
 
 # 获得当前版本号
@@ -541,16 +560,7 @@ def get_current_version():
 def get_new_version_if_available():
     remote_version = get_github_version()
     current_version = get_current_version()
-    remote_list = remote_version.split(".")
-    current_list = current_version.split(".")
-    for i, j in zip(remote_list, current_list):
-        try:
-            if int(i) > int(j):
-                return remote_version
-        except ValueError:
-            if i.split("b") > j.split("b"):
-                return remote_version
-    return None
+    return remote_version if _version_key(remote_version) > _version_key(current_version) else None
 
 
 # 输入cmd命令，返回结果回显内容

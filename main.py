@@ -185,7 +185,8 @@ def menu_callback():
     try:
         # 获取可用的新版本（如果有）
         new_version = utils.get_new_version_if_available()
-    except requests.ConnectionError:
+    except (requests.RequestException, ValueError) as error:
+        logger.warning("Could not check for updates: %s", error)
         new_version = None
     current_version = utils.get_current_version()  # 获取当前版本
 

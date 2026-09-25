@@ -1,7 +1,7 @@
 """Transactional uv installation; stdlib only, never import application config.
 
 Run through setup.ps1 so this process does not use the .venv being replaced.
-Old environments and package inventories are retained, never recursively deleted.
+Old local environments are temporary recovery backups, removed after successful setup.
 """
 
 import argparse
@@ -97,6 +97,8 @@ def process_alive(pid):
 def check_not_running(root, alive=process_alive):
     config = json.loads((root / "windrecorder/config_src/config_default.json").read_text(encoding="utf-8"))
     user = root / "userdata/config_user.json"
+    if not user.exists():
+        user = root / "config/config_user.json"
     if user.exists():
         config.update(json.loads(user.read_text(encoding="utf-8")))
     lock_dir = root / config["lock_file_dir"]
@@ -121,6 +123,22 @@ def checked_backup(root, name):
     if path.parent != root.resolve() or not path.name.startswith(".venv-backup-"):
         raise ValueError("Backup path must be a .venv-backup-* directory inside this checkout.")
     return path
+
+
+def cleanup_backups(root):
+    """Only delete ordinary local backup environments after the new one is ready."""
+    for candidate in root.glob(".venv-backup-*"):
+        try:
+            if candidate.is_symlink() or (hasattr(candidate, "is_junction") and candidate.is_junction()):
+                continue
+            backup = checked_backup(root, candidate.name)
+            if backup != root.resolve() / candidate.name:
+                continue
+            if not (backup / "pyvenv.cfg").is_file():
+                continue
+            shutil.rmtree(backup)
+        except (OSError, ValueError) as error:
+            print(f"[Environment] Could not remove backup {candidate}: {error}. Retry cleanup on the next setup.", flush=True)
 
 
 def restore(root, journal):
@@ -209,15 +227,17 @@ def install(root, uv, *, add=None, remove=None, run=subprocess.run):
                 "status": "ready",
                 "python": "3.12",
                 "extras": sorted(extras),
-                "backup": backup.name if backup else None,
-                "previous_state": {k: v for k, v in state.items() if k != "previous_state"},
+                "backup": None,
             },
         )
     except BaseException:
         print("[Environment] Setup failed. Restoring the previous environment state...", flush=True)
         restore(root, journal)
         raise
-    print("uv environment ready. Previous environments and package inventories have been retained.", flush=True)
+    # Commit the ready state before cleanup: a cleanup failure must never roll back
+    # to a backup which may already have been partially deleted.
+    cleanup_backups(root)
+    print("uv environment ready. Temporary local backups cleaned up; package inventories retained.", flush=True)
 
 
 def rollback(root):
@@ -225,7 +245,7 @@ def rollback(root):
     print("[Environment] Restoring the previous environment...", flush=True)
     state = read_state(root)
     if not state.get("backup") or not checked_backup(root, state["backup"]).exists():
-        raise RuntimeError("No local environment backup is available; consult .uv-migration for an external Poetry path.")
+        raise RuntimeError("No local environment backup is available. Run setup again to reinstall dependencies.")
     restore(root, state)
     if read_state(root).get("status") != "ready":
         # An explicitly restored pre-uv environment must remain usable offline.

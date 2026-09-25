@@ -12,5 +12,7 @@ echo   Downloads and dependency installation may take several minutes.
 echo.
 cd /d "%~dp0"
 powershell -NoProfile -ExecutionPolicy Bypass -File "%~dp0scripts\update.ps1"
-if errorlevel 1 echo Update failed. Please read the error above and retry.
+set "update_status=%errorlevel%"
+if not "%update_status%"=="0" echo Update failed. Please read the error above and retry.
 pause
+exit /b %update_status%
