@@ -1,8 +1,14 @@
 # 用 AI Agent 检索 Windrecorder 记录
 
+最简单的方式：让支持 skill 安装的本地 AI Agent 帮你安装，直接发送：
+
+> 请安装 E:\Windrecorder\extension\windrecorder-memory 这个 skill。
+
+将 `E:\Windrecorder` 换成你的实际安装目录，并确认 Windrecorder 已更新、包含该 skill 文件夹。
+
 需要一个能读取本机文件、执行 Python 的 AI Agent。无需在 Windrecorder 中配置 LLM API。
 
-## 安装（以 Codex 为例）
+## 手动安装（以 Codex 为例）
 
 1. 更新 Windrecorder，确认安装目录中已有 `extension\windrecorder-memory` 文件夹。
 2. 将这个**完整文件夹**复制到 `%USERPROFILE%\.agents\skills\`（没有该目录就创建），最终应有：
