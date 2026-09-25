@@ -1,6 +1,6 @@
 [project]
 name = "windrecorder"
-version = "0.0.31"
+version = "0.1.0"
 description = "Local screen recording, OCR memory search and activity statistics for Windows"
 authors = [{name = "yuka-friends"}]
 license = "GPL-2.0"
@@ -52,7 +52,7 @@ environments = ["sys_platform == 'win32' and platform_machine == 'AMD64'"]
 # All dependencies and installation are managed by [project] and uv.lock.
 [tool.poetry]
 name = "windrecorder"
-version = "0.0.31"
+version = "0.1.0"
 description = "Legacy environment discovery bridge"
 authors = ["yuka-friends"]
 package-mode = false

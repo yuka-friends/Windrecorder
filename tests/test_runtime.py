@@ -79,7 +79,11 @@ def test_streamlit_password_gate_renders_without_desktop_capture(monkeypatch):
     from windrecorder.config import config
 
     monkeypatch.setattr(config, "webui_access_password_md5", hashlib.md5(b"test-only").hexdigest())
-    # Cold scientific-library/font imports take longer under coverage on Windows CI.
+    # Validate real page imports before starting AppTest's rendering deadline.
+    # Coverage of cold third-party imports can exceed 90s on Windows; import
+    # failures must still fail this test, without timing out a healthy password form.
+    for page in ("components", "lab", "oneday", "recording", "search", "setting", "state"):
+        importlib.import_module(f"windrecorder.ui.{page}")
     app = AppTest.from_file(str(Path(__file__).resolve().parents[1] / "webui.py"), default_timeout=90).run()
     assert not app.exception
     assert len(app.text_input) == 1

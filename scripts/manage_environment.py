@@ -136,6 +136,10 @@ def cleanup_backups(root):
                 continue
             if not (backup / "pyvenv.cfg").is_file():
                 continue
+            print(
+                f"[Environment] Removing temporary backup {backup.name}. Large environments may take a few minutes...",
+                flush=True,
+            )
             shutil.rmtree(backup)
         except (OSError, ValueError) as error:
             print(f"[Environment] Could not remove backup {candidate}: {error}. Retry cleanup on the next setup.", flush=True)
@@ -237,7 +241,7 @@ def install(root, uv, *, add=None, remove=None, run=subprocess.run):
     # Commit the ready state before cleanup: a cleanup failure must never roll back
     # to a backup which may already have been partially deleted.
     cleanup_backups(root)
-    print("uv environment ready. Temporary local backups cleaned up; package inventories retained.", flush=True)
+    print("uv environment ready. Backup cleanup finished; package inventories retained.", flush=True)
 
 
 def rollback(root):

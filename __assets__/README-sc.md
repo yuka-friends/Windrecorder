@@ -26,11 +26,8 @@
 
 ---
 
-> [!WARNING]
-> 该项目仍在较早期开发阶段，体验与使用上可能会遇上些小问题，欢迎提出 issue 反馈、关注更新、在 [Discussions 讨论区](https://github.com/yuka-friends/Windrecorder/discussions)发起讨论与查看 roadmap。也欢迎帮助我们优化与构建项目，提出 PR / review。
-
 > [!IMPORTANT]  
-> 由于代码编写小失误，`0.0.5` 以前版本可能无法正常检测更新、或通过 install_update.bat 进行升级。如是，请在 `Windrecorder` 根目录的路径框输入`cmd`打开命令行，输入`git pull`进行更新。🙇‍♀️
+> 如无法自动更新，请先退出捕风记录仪，在 `Windrecorder` 根目录的路径框输入 `cmd` 打开命令行，运行 `git pull --ff-only` 后重新打开 `install_update.bat`。若 Git 提示冲突，请参考[升级与恢复说明](../docs/upgrading.md)。🙇‍♀️
 
 # 🦝 安装
 
@@ -44,7 +41,7 @@
 
     - 可以打开想要安装的文件夹，在路径栏输入`cmd` 并回车，即可在终端定位到当前目录，将以上命令贴入、回车执行；
 
-- 打开目录下的 `install_update.bat` 进行安装与配置。老用户请先退出捕风记录仪；升级脚本会自动迁移到 uv、恢复已安装的内置扩展，并保留用户数据和旧环境。详见[升级与回退说明](../docs/upgrading.md)。
+- 打开目录下的 `install_update.bat` 进行安装与配置。
 
 
 # 🦝 如何使用
@@ -59,9 +56,6 @@
 > **当画面没有变化、或屏幕睡眠时将自动暂停记录。当电脑空闲无人使用时，工具会自动维护数据库、压缩、清理过期视频。**
 > 
 > _Just set it and forget it！_
-
-> [!NOTE]
-> 如果打开`start_app.bat`后命令行窗口一闪而过、**过了一段时间 捕风记录仪 仍没有出现在系统托盘中**，请在目录下创建一个名为`hide_CLI_by_python.txt`的文件并打开`start_app.bat`重试； [#232](https://github.com/yuka-friends/Windrecorder/issues/232)
 
 
 # 🦝 运作原理
@@ -102,13 +96,11 @@ Q: 录制过程中鼠标闪烁（通过 ffmpeg 直接录制模式）
 
 Q: 打开 webui 时没有近期一段时间的数据。
 
-- A: 当工具正在索引数据时，webui 将不会创建最新的临时数据库文件。
-解决方法：尝试稍等一段时间，等待工具索引完毕后，刷新 webui 界面，或删除 db 目录下后缀为 _TEMP_READ.db 的数据库文件后刷新即可（若出现数据库文件损坏提示，不必担心，可能是工具仍然在索引中，请尝试过段时间刷新/删除）。此项策略未来将会修复重构。 [#26](https://github.com/yuka-friends/Windrecorder/issues/26)
+- A: 请确认录制与 OCR 索引已完成，再刷新页面。搜索现在通过 SQLite 只读连接直接读取已提交的数据，无需删除临时数据库。若仍然报错，请保留数据库并附上错误日志反馈。
 
 Q: 在打开webui时提示：`FileNotFoundError: [WinError 2] The system cannot find the file specified: './db\\user_2023-10_wind.db-journal'`
 
-- A: 通常在初次访问 webui 时、工具仍正在索引数据时出现。
-解决方法：在工具后台索引完毕后，删除 db 文件夹下对应后缀为 _TEMP_READ.db 的数据库文件后刷新即可。
+- A: 这是旧版复制数据库机制的问题，请更新捕风记录仪并重启 webui。不要删除 SQLite 的 journal 或 WAL 文件；如仍然报错，请保留数据库并反馈错误日志。
 
 Q: Windows.Media.Ocr.Cli OCR 不可用/识别率过低
 
@@ -116,7 +108,7 @@ Q: Windows.Media.Ocr.Cli OCR 不可用/识别率过低
 
 - A2: 在 `extension` 目录下安装第三方 OCR 引擎，它们通常会有更高的识别精度、支持同时识别多种语言，不过可能占用稍多的性能；
 
-- A2: Windows.Media.Ocr.Cli 对较小的文本识别率可能不良，对于中文用户，通过在设置中打开「相近字形搜索」选项可以提高搜索时的召回命中率。
+- A3: Windows.Media.Ocr.Cli 对较小的文本识别率可能不良，对于中文用户，通过在设置中打开「相近字形搜索」选项可以提高搜索时的召回命中率。
 
 
 # 🧡
@@ -141,26 +133,6 @@ Q: Windows.Media.Ocr.Cli OCR 不可用/识别率过低
 <a href="https://www.producthunt.com/posts/windrecorder?utm_source=badge-featured&utm_medium=badge&utm_souce=badge-windrecorder" target="_blank"><img src="https://api.producthunt.com/widgets/embed-image/v1/featured.svg?post_id=441411&theme=neutral" alt="Windrecorder - search&#0032;&#0038;&#0032;rewind&#0032;everything&#0032;happened&#0032;on&#0032;your&#0032;screen | Product Hunt" style="width: 250px; height: 54px;" width="250" height="54" /></a>
 
 ---
-
-### 🧠 除了 捕风记录仪，还有哪些工具提供了类似的功能？
-
-欢迎补充，希望你能找到适合的工具：
-
-- 跨平台桌面端:
-     - (开源) https://github.com/openrecall/openrecall
-- Windows:
-    - （商业付费）https://timesnapper.com/
-    - （商业付费）https://www.manictime.com/
-    - （商业付费）https://apse.io/
-    - （商业付费）https://www.screen-record.com/screen_anytime.htm
-- Linux: 
-    - （开源）https://github.com/apirrone/Memento
-- MacOS: 
-    - （开源）https://github.com/jasonjmcghee/rem
-    - （商业付费）https://screenmemory.app
-    - （商业付费）https://www.rewind.ai/
-- Android: 
-    - （免费，提供内购项）https://play.google.com/store/apps/details?id=io.github.mthli.snapseek
 
 在 HackerNews 上关于此应用领域的更多讨论参考:
 - https://news.ycombinator.com/item?id=38787892

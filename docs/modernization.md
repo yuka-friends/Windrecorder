@@ -89,7 +89,7 @@ FFmpeg encoders, Windows OCR language packs, WeChat's external binary and a comp
 embedding-model download/search on representative machines. These depend on hardware,
 OS installation or external assets and are not established by passing unit tests.
 
-## Final local verification (2026-09-24)
+## Earlier milestone verification (2026-09-24)
 
 - Windows x64, Python 3.11.13: **64 passed** with all extras.
 - Windows x64, Python 3.12.14, uv 0.12.18: **64 passed** with all extras and coverage.
@@ -104,3 +104,42 @@ OS installation or external assets and are not established by passing unit tests
 - Upstream protobuf/jieba deprecation/syntax warnings remain; tests report them.
 - CI is configured for Windows / Python 3.11 and 3.12, base and all-extras installs;
   the remote workflow has not been run from this local branch.
+
+## 0.1.0 release review (2026-09-25)
+
+The review covered the actual PowerShell/Git updater, the old Poetry onboarding
+handoff, managed-Python discovery, environment replacement, backup cleanup,
+failure recovery and offline launch paths. Regression tests additionally cover
+conflicting local changes, newly pulled installer code, failure exit codes,
+legacy custom lock paths and Windows environment rename failures.
+
+Fixed version comparison across minor releases and beta builds: `0.0.31` must
+not be offered as an update to `0.1.0`. The GitHub response is parsed as a literal
+version assignment rather than executed, with HTTP validation and a five-second
+request timeout. Network errors and invalid responses leave the tray menu usable.
+
+A real uv 0.12.18 / PowerShell rehearsal in an isolated directory migrated a
+Python 3.11 virtual environment to managed Python 3.12.14, then repeated setup
+with that new environment activated. Both runs preserved all three extension
+selections and a bundled-executable fixture, passed native/extension imports and
+`uv pip check`, and cleaned temporary backups. Config, SQLite, video and FAISS
+fixture files had identical SHA-256 hashes before and after both runs. Production
+data was not used or changed by this rehearsal.
+
+All dependency versions and artifact hashes in `uv.lock` are unchanged by the
+release version bump. Project metadata, the legacy Poetry discovery table, the
+application version and the lock entry agree on `0.1.0`. Local documentation links,
+locked resolution and Ruff checks also pass.
+
+The first Python 3.12 coverage run passed 170 tests but exceeded the password-page
+test's 90-second rendering deadline during dependency initialization. That test now
+validates all real UI imports before starting the rendering deadline; import
+errors still fail the test. No imports are mocked and no application behavior is
+changed by this test adjustment.
+
+Final local results: **171 passed** on Python 3.11.13; **171 passed** on Python
+3.12.14 with coverage, both with all optional extensions installed. The adjusted
+password-page test was also rerun successfully on Python 3.11. The Python 3.12
+run reports one upstream protobuf deprecation warning. The base/all-extras GitHub
+Actions matrix still needs to run remotely; hardware checks remain as described
+under Validation boundaries.

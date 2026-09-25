@@ -1277,7 +1277,7 @@ wheels = [
 
 [[package]]
 name = "windrecorder"
-version = "0.0.31"
+version = "0.1.0"
 source = { virtual = "." }
 dependencies = [
     { name = "customtkinter", marker = "platform_machine == 'AMD64' and sys_platform == 'win32'" },
