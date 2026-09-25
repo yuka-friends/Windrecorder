@@ -2,8 +2,12 @@
 echo Loading extension, please stand by.
 echo.
 
-cd /d %~dp0
-for /F "tokens=* USEBACKQ" %%A in (`python -m poetry env info --path`) do call "%%A\Scripts\activate.bat"
+cd /d "%~dp0"
+call "%~dp0..\..\scripts\activate_runtime.bat"
+if errorlevel 1 (
+    pause
+    exit /b 1
+)
 chcp 65001
 
 :start_uninstall
@@ -35,10 +39,13 @@ goto start_uninstall
 :uninstall_module
 :: 这不是一个干净的卸载，但可以移除掉大部分的容量。
 :: This is not a clean uninstall, but it removes most of the capacity.
-poetry run pip uninstall uform
-poetry run pip uninstall torch
-poetry run pip uninstall torchaudio
-poetry run pip uninstall torchvision
+powershell -NoProfile -ExecutionPolicy Bypass -File "%~dp0..\..\scripts\setup.ps1" -RemoveExtra embedding
+if errorlevel 1 (
+    pause
+    exit /b 1
+)
+call "%~dp0..\..\scripts\activate_runtime.bat"
+if errorlevel 1 exit /b 1
 
 python _uninstall.py
 echo.

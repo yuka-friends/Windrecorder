@@ -2,14 +2,12 @@ import calendar
 import datetime
 import os
 
-import pandas as pd
 import streamlit as st
 from PIL import Image
 
 import windrecorder.state as state
 import windrecorder.utils as utils
 import windrecorder.wordcloud as wordcloud
-from windrecorder import file_utils
 from windrecorder.config import config
 from windrecorder.db_manager import db_manager
 from windrecorder.llm import component_month_poem
@@ -21,13 +19,13 @@ from windrecorder.utils import get_text as _t
 def render():
     state_col, memory_col = st.columns([1, 2])
     with state_col:
-        # 懒加载
-        if "stat_db_earliest_datetime" not in st.session_state:
-            st.session_state["stat_db_earliest_datetime"] = utils.seconds_to_datetime(
-                db_manager.db_first_earliest_record_time()
-            )
-        if "stat_db_latest_datetime" not in st.session_state:
-            st.session_state["stat_db_latest_datetime"] = utils.seconds_to_datetime(db_manager.db_latest_record_time())
+        first = db_manager.db_first_earliest_record_time()
+        latest = db_manager.db_latest_record_time()
+        if first is None or latest is None:
+            st.info(_t("stat_text_no_records"))
+            return
+        st.session_state.stat_db_earliest_datetime = utils.seconds_to_datetime(first)
+        st.session_state.stat_db_latest_datetime = utils.seconds_to_datetime(latest)
 
         st.markdown(_t("stat_md_month_title"))
         # 年月时间选择器
@@ -72,7 +70,10 @@ def render():
             0,
             0,
         )
-        get_show_month_data_state(st.session_state.stat_select_month_datetime)  # 显示当月概览
+        get_show_month_data_state(st.session_state.stat_select_month_datetime)
+        has_month_data = bool(st.session_state.df_month_stat.data_count.sum())
+        if not has_month_data:
+            st.info(_t("stat_text_no_month_data"))
 
         stat_year_title = st.session_state.stat_select_month_datetime.year
         st.markdown(_t("stat_md_year_title").format(stat_year_title=stat_year_title))
@@ -84,7 +85,8 @@ def render():
         col1_mem, col2_mem = st.columns([1, 1])
         with col1_mem:
             st.empty()
-            component_month_wintitle_stat(st.session_state.stat_select_month_datetime)  # 显示当月活动统计
+            if has_month_data:
+                component_month_wintitle_stat(st.session_state.stat_select_month_datetime)
 
         with col2_mem:
             # light box
@@ -93,12 +95,12 @@ def render():
             )
             current_month_lightbox_img_path = os.path.join(config.lightbox_result_dir_ud, current_month_lightbox_img_name)
 
-            if st.button(_t("stat_btn_generate_lightbox")):
+            if st.button(_t("stat_btn_generate_lightbox"), disabled=not has_month_data):
                 with st.spinner(_t("stat_text_generating_lightbox")):
                     _dt_lightbox = st.session_state.stat_select_month_datetime
                     _month_days = calendar.monthrange(_dt_lightbox.year, _dt_lightbox.month)[1]
                     state.generate_lightbox_from_datetime_range(
-                        dt_month_start=datetime.datetime(_dt_lightbox.year, _dt_lightbox.month, 1, 0, 0, 1),
+                        dt_month_start=datetime.datetime(_dt_lightbox.year, _dt_lightbox.month, 1),
                         dt_month_end=datetime.datetime(_dt_lightbox.year, _dt_lightbox.month, _month_days, 23, 59, 59),
                         img_saved_name=current_month_lightbox_img_name,
                     )
@@ -114,7 +116,7 @@ def render():
                 st.info(_t("stat_text_no_month_lightbox"))
 
             # ai poem
-            if config.enable_ai_day_poem:
+            if config.enable_ai_day_poem and has_month_data:
                 component_month_poem(st.session_state.stat_select_month_datetime)
 
             # word cloud
@@ -123,7 +125,7 @@ def render():
             )
             current_month_cloud_img_path = os.path.join(config.wordcloud_result_dir_ud, current_month_cloud_img_name)
 
-            if st.button(_t("stat_btn_generate_update_word_cloud")):
+            if st.button(_t("stat_btn_generate_update_word_cloud"), disabled=not has_month_data):
                 with st.spinner(_t("stat_text_generating_word_cloud")):
                     wordcloud.generate_word_cloud_in_month(
                         utils.datetime_to_seconds(st.session_state.stat_select_month_datetime),
@@ -137,88 +139,46 @@ def render():
                 st.info(_t("stat_text_no_month_word_cloud_pic"))
 
 
-# 生成并显示每月数据量概览
 def get_show_month_data_state(stat_select_month_datetime: datetime.datetime):
-    if "df_month_stat" not in st.session_state:  # 初始化显示的表状态
-        st.session_state.df_month_stat = pd.DataFrame()
-    if "df_month_stat_dt_last_time" not in st.session_state:  # diff 当前显示表的日期，用于和控件用户输入对比判断是否更新
-        st.session_state.df_month_stat_dt_last_time = stat_select_month_datetime
-
-    df_file_name = stat_select_month_datetime.strftime("%Y-%m") + "_month_data_state.csv"
-    df_cache_dir = config.date_state_dir_ud
-    df_filepath = os.path.join(df_cache_dir, df_file_name)
-
-    update_condition = False
-    if utils.set_full_datetime_to_YYYY_MM(st.session_state.df_month_stat_dt_last_time) != utils.set_full_datetime_to_YYYY_MM(
-        stat_select_month_datetime
-    ):
-        update_condition = True
-        st.session_state.df_month_stat_dt_last_time = stat_select_month_datetime
-
-    if st.session_state.df_month_stat.empty or update_condition:  # 页面内无缓存，或不是当月日期
-        # 检查磁盘上有无统计缓存，然后检查是否过时
-        if os.path.exists(df_filepath):  # 存在
-            if df_file_name[:7] == datetime.datetime.today().strftime("%Y-%m"):  # 如果是需要时效性的当下月数据
-                if not file_utils.is_file_modified_recently(df_filepath, time_gap=120):  # 超过120分钟未更新，过时 重新生成
-                    # 更新操作
-                    with st.spinner(_t("text_updating_month_stat")):
-                        st.session_state.df_month_stat = state.get_month_day_overview_scatter(stat_select_month_datetime)
-                        file_utils.save_dataframe_to_path(st.session_state.df_month_stat, file_path=df_filepath)
-            # 进行读取操作
-            st.session_state.df_month_stat = file_utils.read_dataframe_from_path(file_path=df_filepath)
-
-        else:  # 磁盘上不存在缓存
-            with st.spinner(_t("text_updating_month_stat")):
-                st.session_state.df_month_stat = state.get_month_day_overview_scatter(stat_select_month_datetime)
-                file_utils.save_dataframe_to_path(st.session_state.df_month_stat, file_path=df_filepath)
-
-    st.scatter_chart(
-        st.session_state.df_month_stat,
-        x="day",
-        y="hours",
-        size="data_count",
-        color="#AC79D5",
-    )
+    with st.spinner(_t("text_updating_month_stat")):
+        st.session_state.df_month_stat = state.get_cached_calendar_overview(stat_select_month_datetime, "month")
+    _show_calendar_scatter(st.session_state.df_month_stat, x="day", y="hours", color="#AC79D5")
 
 
-# 生成并显示每年数据量概览
 def get_show_year_data_state(stat_select_year_datetime: datetime.datetime):
-    if "df_year_stat" not in st.session_state:  # 初始化显示的表状态
-        st.session_state.df_year_stat = pd.DataFrame()
-    if "df_year_stat_dt_last_time" not in st.session_state:  # diff 当前显示表的日期，用于和控件用户输入对比判断是否更新
-        st.session_state.df_year_stat_dt_last_time = stat_select_year_datetime
+    with st.spinner(_t("text_updating_yearly_stat")):
+        st.session_state.df_year_stat = state.get_cached_calendar_overview(stat_select_year_datetime, "year")
+    _show_calendar_scatter(st.session_state.df_year_stat, x="month", y="day", color="#C873A6", height=350)
 
-    df_file_name = stat_select_year_datetime.strftime("%Y") + "_year_data_state.csv"
-    df_cache_dir = config.date_state_dir_ud
-    df_filepath = os.path.join(df_cache_dir, df_file_name)
 
-    update_condition = False
-    if st.session_state.df_year_stat_dt_last_time.year != st.session_state.stat_select_month_datetime.year:
-        update_condition = True
-        st.session_state.df_year_stat_dt_last_time = stat_select_year_datetime
-
-    if st.session_state.df_year_stat.empty or update_condition:  # 页面内无缓存，或不是当年日期
-        # 检查磁盘上有无统计缓存，然后检查是否过时
-        if os.path.exists(df_filepath):  # 存在
-            if not file_utils.is_file_modified_recently(df_filepath, time_gap=3000):  # 超过3000分钟未更新，过时 重新生成
-                # 更新操作
-                with st.spinner(_t("text_updating_yearly_stat")):
-                    st.session_state.df_year_stat = state.get_year_data_overview_scatter(stat_select_year_datetime)
-                    file_utils.save_dataframe_to_path(st.session_state.df_year_stat, file_path=df_filepath)
-            else:
-                # 未过时，进行读取操作
-                st.session_state.df_year_stat = file_utils.read_dataframe_from_path(file_path=df_filepath)
-
-        else:  # 磁盘上不存在缓存
-            with st.spinner(_t("text_updating_yearly_stat")):
-                st.session_state.df_year_stat = state.get_year_data_overview_scatter(stat_select_year_datetime)
-                file_utils.save_dataframe_to_path(st.session_state.df_year_stat, file_path=df_filepath)
-
-    st.scatter_chart(
-        st.session_state.df_year_stat,
-        x="month",
-        y="day",
-        size="data_count",
-        color="#C873A6",
-        height=350,
+def _show_calendar_scatter(frame, *, x, y, color, height=0):
+    # Keep the full calendar in the data/cache, but never render zero-count marks.
+    # Explicit axis domains preserve empty days/months even when no marks remain.
+    points = frame.loc[frame["data_count"] > 0]
+    axes = {
+        axis: {
+            "field": field,
+            "type": "quantitative",
+            "axis": {"tickMinStep": 1, "format": "d"},
+            "scale": {"domain": [int(frame[field].min()), int(frame[field].max())], "zero": False, "nice": False},
+        }
+        for axis, field in (("x", x), ("y", y))
+    }
+    st.vega_lite_chart(
+        points,
+        {
+            "height": height,
+            "mark": {"type": "point", "filled": True, "color": color},
+            "encoding": {
+                **axes,
+                "size": {
+                    "field": "data_count",
+                    "type": "quantitative",
+                    "scale": {"domain": [0, max(1, int(frame["data_count"].max()))], "rangeMin": 0},
+                    "legend": {"orient": "bottom", "offset": 5} if not points.empty else None,
+                },
+                "tooltip": [{"field": field, "type": "quantitative"} for field in (x, y, "data_count")],
+            },
+        },
+        use_container_width=True,
     )

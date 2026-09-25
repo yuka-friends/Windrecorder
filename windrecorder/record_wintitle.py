@@ -229,6 +229,7 @@ def count_all_page_times_by_raw_dataframe(df: pd.DataFrame):
     value: int 秒数
     """
     # 在生成前清洗数据：
+    df = df.copy()
     df["win_title"] = df["win_title"].apply(optimize_wintitle_name)
     df.sort_values(by="videofile_time", ascending=True, inplace=True)
     df = df.reset_index(drop=True)
@@ -282,7 +283,7 @@ def get_wintitle_stat_in_day(dt_in: datetime.datetime, optimize_for_display=True
 
 def get_wintitle_stat_dict_in_month(dt_in: datetime.datetime):
     """流程：获取当月前台窗口标题的时间统计 dict"""
-    dt_start = datetime.datetime(dt_in.year, dt_in.month, 1, 0, 0, 1)
+    dt_start = datetime.datetime(dt_in.year, dt_in.month, 1)
     dt_end = datetime.datetime(dt_in.year, dt_in.month, calendar.monthrange(dt_in.year, dt_in.month)[1], 23, 59, 59)
     df, _, _ = db_manager.db_search_data("", dt_start, dt_end)
     stat = count_all_page_times_by_raw_dataframe(df)

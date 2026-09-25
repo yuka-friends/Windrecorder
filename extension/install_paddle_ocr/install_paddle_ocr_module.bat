@@ -2,8 +2,12 @@
 echo Loading extension, please stand by.
 echo.
 
-cd /d %~dp0
-for /F "tokens=* USEBACKQ" %%A in (`python -m poetry env info --path`) do call "%%A\Scripts\activate.bat"
+cd /d "%~dp0"
+call "%~dp0..\..\scripts\activate_runtime.bat"
+if errorlevel 1 (
+    pause
+    exit /b 1
+)
 chcp 65001
 
 :start_install
@@ -39,7 +43,13 @@ goto start_install
 
 @REM -------------------------------------------------
 :install_module
-poetry run pip install rapidocr_onnxruntime -i https://pypi.tuna.tsinghua.edu.cn/simple
+powershell -NoProfile -ExecutionPolicy Bypass -File "%~dp0..\..\scripts\setup.ps1" -AddExtra rapidocr
+if errorlevel 1 (
+    pause
+    exit /b 1
+)
+call "%~dp0..\..\scripts\activate_runtime.bat"
+if errorlevel 1 exit /b 1
 goto :finish
 
 

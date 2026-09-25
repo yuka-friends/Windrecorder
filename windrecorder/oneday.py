@@ -1,10 +1,10 @@
 import base64
-import calendar
 import datetime
 import os
 import re
 from io import BytesIO
 
+import numpy as np
 import pandas as pd
 from PIL import Image
 
@@ -31,28 +31,8 @@ class OneDay:
         :param dt_in: datetime.datetime/date 当天其中一个时间点，会自动转为当天的范围
         :param search_content: str 搜索内容
         """
-        # 入参：查询时间，搜索内容
-        day_begin_minutes = config.day_begin_minutes
-        if type(dt_in) is datetime.date:
-            # datetime 对象只包含年月日信息
-            search_date_range_in = datetime.datetime.combine(
-                dt_in, datetime.time(day_begin_minutes // 60, day_begin_minutes % 60, 0)
-            )
-            _, month_days = calendar.monthrange(dt_in.year, dt_in.month)
-            if dt_in.day == month_days:  # month last day
-                search_date_range_out = datetime.datetime.combine(
-                    dt_in.replace(month=dt_in.month + 1, day=1),
-                    datetime.time((23 + day_begin_minutes // 60) % 24, (59 + day_begin_minutes % 60) % 60, 59),
-                )
-            else:
-                search_date_range_out = datetime.datetime.combine(
-                    dt_in.replace(day=dt_in.day + (1 if day_begin_minutes > 0 else 0)),
-                    datetime.time((23 + day_begin_minutes // 60) % 24, (59 + day_begin_minutes % 60) % 60, 59),
-                )
-        elif type(dt_in) is datetime.datetime:
-            # datetime 对象包含年月日以及时间信息
-            search_date_range_in = utils.get_datetime_in_day_range_pole_by_config_day_begin(dt_in, range="start")
-            search_date_range_out = utils.get_datetime_in_day_range_pole_by_config_day_begin(dt_in, range="end")
+        search_date_range_in = utils.get_datetime_in_day_range_pole_by_config_day_begin(dt_in, range="start")
+        search_date_range_out = utils.get_datetime_in_day_range_pole_by_config_day_begin(dt_in, range="end")
 
         df, _, _ = db_manager.db_search_data(search_content, search_date_range_in, search_date_range_out)
         return df
@@ -97,20 +77,14 @@ class OneDay:
         :param start_dt: datetime.datetime 开始时间
         :param end_dt: datetime.datetime 结束时间
         """
-        df_B = df.copy()
-        # 新建一份表，统计每个时间段中有多少视频
-        df_C = pd.DataFrame(columns=["hour", "data"])
-        for step in pd.date_range(start=start_dt, end=end_dt, freq="6min"):
-            filtered = df_B[
-                (df_B["videofile_time"] >= step.timestamp())
-                & (df_B["videofile_time"] < (step + pd.Timedelta(minutes=6)).timestamp())
-            ]
-            df_C.loc[len(df_C)] = [step, len(filtered)]
-
-        df_C["hour"] = df_C["hour"].dt.round("1min")
-        # df_C['hour'] = df_C['hour'].apply(int)
-        # df_C["hour"] = df_C["hour"].round(1)
-        return df_C
+        dates = pd.date_range(start=start_dt, end=end_dt, freq="6min")
+        if dates.empty:
+            return pd.DataFrame(columns=["hour", "data"])
+        # Sort timestamps once instead of scanning the full payload for each bucket.
+        times = np.sort(df["videofile_time"].dropna().to_numpy())
+        boundaries = np.append(dates.asi8 / 1e9, (dates[-1] + pd.Timedelta(minutes=6)).value / 1e9)
+        counts = np.diff(np.searchsorted(times, boundaries, side="left"))
+        return pd.DataFrame({"hour": dates.round("1min"), "data": counts})
 
     def find_closest_video_by_filesys(
         self,

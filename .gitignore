@@ -1,6 +1,16 @@
 __pycache__
 venv
 .venv
+.venv-tests
+.venv-*/
+.uv-state.json
+.uv-setup.lock
+.uv-migration/
+.pytest_cache/
+.coverage
+.coverage.*
+coverage.xml
+htmlcov/
 i_frames
 videos
 db

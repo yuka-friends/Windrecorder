@@ -1,3 +1,4 @@
+import ast
 import base64
 import calendar
 import ctypes
@@ -120,7 +121,7 @@ def dtstr_to_datetime(datetime_str):
 def seconds_to_date(seconds):
     # start_time = 946684800
     start_time = 0
-    dt = datetime.datetime.utcfromtimestamp(start_time + seconds)
+    dt = (datetime.datetime(1970, 1, 1) + datetime.timedelta(seconds=float(start_time + seconds)))
     return dt.strftime(DATETIME_FORMAT)
 
     # 旧实现
@@ -132,7 +133,7 @@ def seconds_to_date(seconds):
 # 将时间戳秒数格式化为时间 %Y-%m-%d_%H-%M-%S（更容易看些，只能用在展示
 def seconds_to_date_goodlook_formart(seconds):
     start_time = 0
-    dt = datetime.datetime.utcfromtimestamp(start_time + seconds)
+    dt = (datetime.datetime(1970, 1, 1) + datetime.timedelta(seconds=float(start_time + seconds)))
     # todo: 这里时间格式需要封为统一的可配置项
     return dt.strftime("%Y/%m/%d   %H:%M:%S")
 
@@ -141,14 +142,14 @@ def seconds_to_date_goodlook_formart(seconds):
 def seconds_to_datetime(seconds):
     # start_time = 946684800
     start_time = 0
-    dt = datetime.datetime.utcfromtimestamp(start_time + seconds)
+    dt = (datetime.datetime(1970, 1, 1) + datetime.timedelta(seconds=float(start_time + seconds)))
     return dt
 
 
 # 将时间戳秒数格式化为时间 %H-%M-%S （当天）
 def seconds_to_date_dayHMS(seconds):
     start_time = 0
-    dt = datetime.datetime.utcfromtimestamp(start_time + seconds)
+    dt = (datetime.datetime(1970, 1, 1) + datetime.timedelta(seconds=float(start_time + seconds)))
     return dt.strftime("%H:%M:%S")
 
 
@@ -266,33 +267,13 @@ def get_datetime_in_day_range_pole_by_config_day_begin(dt: datetime.datetime, ra
     param: dt 一天中的一个时间点
     param: range 指定为 start/end 获取开始与结束
     """
-    if type(dt) is datetime.date:
-        dt = datetime.datetime.combine(dt, datetime.datetime.min.time())
-
-    day_begin_minutes = config.day_begin_minutes
+    day = dt.date() if isinstance(dt, datetime.datetime) else dt
+    start = datetime.datetime.combine(day, datetime.time()) + datetime.timedelta(minutes=config.day_begin_minutes)
     if range == "start":
-        res = dt.replace(hour=day_begin_minutes // 60, minute=day_begin_minutes % 60, second=0, microsecond=0)
+        return start
     if range == "end":
-        _, month_days = calendar.monthrange(dt.year, dt.month)
-        if dt.day == month_days:  # month last day
-            res = dt.replace(
-                month=dt.month + (1 if day_begin_minutes > 0 and dt.month < 12 else 0),
-                day=1 if day_begin_minutes > 0 else dt.day,
-                hour=(23 + day_begin_minutes // 60) % 24,
-                minute=(59 + day_begin_minutes % 60) % 60,
-                second=59,
-                microsecond=0,
-            )
-        else:
-            res = dt.replace(
-                day=dt.day + (1 if day_begin_minutes > 0 else 0),
-                hour=(23 + day_begin_minutes // 60) % 24,
-                minute=(59 + day_begin_minutes % 60) % 60,
-                second=59,
-                microsecond=0,
-            )
-
-    return res
+        return start + datetime.timedelta(days=1, seconds=-1)
+    raise ValueError("range must be start or end")
 
 
 # 将输入的不完整的datetime补齐为默认年月日时分秒的datetime
@@ -545,11 +526,29 @@ def get_random_word_from_lexicon():
 def get_github_version(
     url="https://raw.githubusercontent.com/yuka-friends/Windrecorder/main/windrecorder/__init__.py",
 ):
-    response = requests.get(url)
-    global_vars = {}
-    exec(response.text, global_vars)
-    version = global_vars["__version__"]
-    return version
+    response = requests.get(url, timeout=5)
+    response.raise_for_status()
+    try:
+        module = ast.parse(response.text)
+    except SyntaxError as error:
+        raise ValueError("Invalid version response from GitHub.") from error
+    for node in module.body:
+        if isinstance(node, ast.Assign) and any(
+            isinstance(target, ast.Name) and target.id == "__version__" for target in node.targets
+        ):
+            version = ast.literal_eval(node.value)
+            _version_key(version)
+            return version
+    raise ValueError("GitHub response does not contain a version.")
+
+
+def _version_key(version):
+    """Order supported releases numerically, with beta builds before stable ones."""
+    match = re.fullmatch(r"(\d+)\.(\d+)\.(\d+)(?:b(\d*))?", version) if isinstance(version, str) else None
+    if match is None:
+        raise ValueError(f"Invalid Windrecorder version: {version!r}")
+    major, minor, patch, beta = match.groups()
+    return int(major), int(minor), int(patch), beta is None, int(beta or 0)
 
 
 # 获得当前版本号
@@ -561,16 +560,7 @@ def get_current_version():
 def get_new_version_if_available():
     remote_version = get_github_version()
     current_version = get_current_version()
-    remote_list = remote_version.split(".")
-    current_list = current_version.split(".")
-    for i, j in zip(remote_list, current_list):
-        try:
-            if int(i) > int(j):
-                return remote_version
-        except ValueError:
-            if i.split("b") > j.split("b"):
-                return remote_version
-    return None
+    return remote_version if _version_key(remote_version) > _version_key(current_version) else None
 
 
 # 输入cmd命令，返回结果回显内容

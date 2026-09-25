@@ -1,0 +1,35 @@
+name: Windows compatibility
+on:
+  push:
+  pull_request:
+
+permissions:
+  contents: read
+
+jobs:
+  tests:
+    runs-on: windows-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        python: ['3.11', '3.12']
+        extras: ['', '--all-extras']
+    steps:
+      - uses: actions/checkout@v4
+      - uses: astral-sh/setup-uv@v6
+        with:
+          version: '0.12.18'
+          enable-cache: true
+      - name: Install locked dependencies
+        run: uv sync --locked --python ${{ matrix.python }} ${{ matrix.extras }}
+      - name: Check installed dependency metadata
+        run: uv pip check --python .venv/Scripts/python.exe
+      - name: Test storage, migration, native imports and bundled OCR
+        run: .venv/Scripts/python.exe -m pytest --cov=windrecorder --cov=scripts --cov-report=term --cov-report=xml
+      - name: Lint maintained modules
+        run: .venv/Scripts/ruff.exe check tests scripts windrecorder/storage.py windrecorder/config.py windrecorder/db_manager.py windrecorder/lock.py windrecorder/upgrade_migration_routine.py
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: coverage-${{ matrix.python }}-${{ strategy.job-index }}
+          path: coverage.xml

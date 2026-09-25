@@ -1,5 +1,5 @@
 import os
-from threading import Timer
+from threading import Lock, Timer
 
 from windrecorder.exceptions import LockExistsException
 from windrecorder.file_utils import ensure_dir
@@ -41,9 +41,13 @@ class FileLock:
         except FileExistsError:
             raise LockExistsException
         self.path = path
+        self._release_lock = Lock()
+        self._released = False
+        self._identity = os.stat(path).st_ino
         self.timeout_timer = None
         if timeout_s:
-            self.timeout_timer = Timer(timeout_s, os.remove, [path])
+            self.timeout_timer = Timer(timeout_s, self.release)
+            self.timeout_timer.daemon = True
             self.timeout_timer.start()
 
     def __enter__(self):
@@ -53,9 +57,14 @@ class FileLock:
         self.release()
 
     def release(self):
-        try:
-            os.remove(self.path)
-        except FileNotFoundError:
-            pass
-        if self.timeout_timer:
-            self.timeout_timer.cancel()
+        with self._release_lock:
+            if self._released:
+                return
+            self._released = True
+            if self.timeout_timer:
+                self.timeout_timer.cancel()
+            try:
+                if os.stat(self.path).st_ino == self._identity:
+                    os.remove(self.path)
+            except FileNotFoundError:
+                pass

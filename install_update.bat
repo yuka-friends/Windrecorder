@@ -1,22 +1,18 @@
 @echo off
-title Windrecorder - installing dependence and updating
-mode con cols=150 lines=50
-
-cd /d %~dp0
-
-echo -git: updating repository
-git pull
-
-echo -updating dependencies
-python -m pip install poetry
-python -m pip install -i https://pypi.tuna.tsinghua.edu.cn/simple poetry
-python -m poetry config virtualenvs.in-project true
-python -m poetry install
-
-for /F "usebackq tokens=*" %%A in (`python -m poetry env info --path`) do call "%%A\Scripts\activate.bat"
-
-color 0e
-title Windrecorder - Quick Setup
-python "%~dp0\onboard_setting.py"
-
+setlocal
+title Windrecorder - install or update
+chcp 65001 >nul
+echo.
+echo   Windrecorder - Install / Update
+echo   正在启动安装与升级，请保持此窗口打开。
+echo   Starting setup. Please keep this window open.
+echo.
+echo   首次安装或升级可能需要几分钟，连接网络或安装依赖时可能暂时没有新输出。
+echo   Downloads and dependency installation may take several minutes.
+echo.
+cd /d "%~dp0"
+powershell -NoProfile -ExecutionPolicy Bypass -File "%~dp0scripts\update.ps1"
+set "update_status=%errorlevel%"
+if not "%update_status%"=="0" echo Update failed. Please read the error above and retry.
 pause
+exit /b %update_status%

@@ -1,8 +1,9 @@
 import base64
-import calendar
 import datetime
+import json
 import os
 from io import BytesIO
+from pathlib import Path
 
 import pandas as pd
 from PIL import Image, ImageDraw, ImageFont
@@ -13,84 +14,96 @@ from windrecorder.config import config
 from windrecorder.const import ASSET_DIR, FOOTER_STATE_CAHCE_FILEPATH
 from windrecorder.db_manager import db_manager
 from windrecorder.logger import get_logger
+from windrecorder.storage import atomic_write_json
 
 logger = get_logger(__name__)
 
 
-# 统计当月数据概览：条形图
+def calendar_range(dt, period):
+    """Calendar boundaries use the same naive wall clock as persisted timestamps."""
+    if period == "month":
+        start = datetime.datetime(dt.year, dt.month, 1)
+        end = (start + datetime.timedelta(days=32)).replace(day=1)
+    elif period == "year":
+        start = datetime.datetime(dt.year, 1, 1)
+        end = datetime.datetime(dt.year + 1, 1, 1)
+    else:
+        raise ValueError("period must be month or year")
+    return start, end
+
+
+def _calendar_grid(dt, period, frequency):
+    start, end = calendar_range(dt, period)
+    dates = pd.date_range(start, end, freq={"hour": "h", "day": "D", "month": "MS"}[frequency], inclusive="left")
+    if period == "month":
+        axes = {"day": dates.day}
+        if frequency == "hour":
+            # Keep the existing chart labels: 1 denotes 00:00–01:00, 24 the last hour.
+            axes["hours"] = dates.hour + 1
+    else:
+        axes = {"month": dates.month}
+        if frequency == "day":
+            axes["day"] = dates.day
+    return pd.DataFrame(axes, dtype="int64"), dates
+
+
+def _calendar_overview(dt, period, frequency):
+    start, end = calendar_range(dt, period)
+    frame, dates = _calendar_grid(dt, period, frequency)
+    counts = db_manager.db_get_record_counts(start, end, frequency)
+    frame["data_count"] = [counts.get(date.strftime("%Y-%m-%d %H:%M:%S"), 0) for date in dates]
+    return frame
+
+
 def get_month_data_overview(dt: datetime.datetime):
-    month_days = calendar.monthrange(dt.year, dt.month)[1]
-
-    df_month_data = pd.DataFrame(columns=["day", "data_count"])
-    for day in range(1, month_days + 1):
-        day_datetime_start = datetime.datetime(dt.year, dt.month, day, 0, 0, 1)
-        day_datetime_end = datetime.datetime(dt.year, dt.month, day, 23, 59, 59)
-
-        df, _, _ = db_manager.db_search_data("", day_datetime_start, day_datetime_end)
-
-        row_count = len(df)
-        df_month_data.loc[day - 1] = [day, row_count]
-
-    return df_month_data
+    return _calendar_overview(dt, "month", "day")
 
 
-# 统计当月数据概览：散点图
 def get_month_day_overview_scatter(dt: datetime.datetime):
-    month_days = calendar.monthrange(dt.year, dt.month)[1]
-
-    df_month_data = pd.DataFrame(columns=["day", "hours", "data_count"])
-
-    query_month_start = datetime.datetime(dt.year, dt.month, 1, 0, 0, 1)
-    query_month_end = datetime.datetime(dt.year, dt.month, month_days, 23, 59, 59)
-    df, _, _ = db_manager.db_search_data("", query_month_start, query_month_end)  # 获取当月所有数据
-
-    for day in range(1, month_days + 1):
-        for hour in range(1, 24):
-            timestamp_start = utils.datetime_to_seconds(datetime.datetime(dt.year, dt.month, day, hour - 1, 0, 0))
-            timestamp_end = utils.datetime_to_seconds(datetime.datetime(dt.year, dt.month, day, hour, 0, 0))
-            result = df.loc[(df["videofile_time"] >= timestamp_start) & (df["videofile_time"] <= timestamp_end)]  # 获取当小时的所有数据
-            row_count = len(result)
-            df_month_data.loc[len(df_month_data.index)] = [day, hour, row_count]
-
-    return df_month_data
+    return _calendar_overview(dt, "month", "hour")
 
 
-# 统计全年数据概览
 def get_year_data_overview(dt: datetime.datetime):
-    months_count = 12
-
-    df_year_data = pd.DataFrame(columns=["month", "data_count"])
-    for month in range(1, months_count + 1):
-        month_days = calendar.monthrange(dt.year, month)[1]
-        dt_month_start = datetime.datetime(dt.year, month, 1, 0, 0, 1)
-        dt_month_end = datetime.datetime(dt.year, month, month_days, 23, 59, 59)
-
-        df, _, _ = db_manager.db_search_data("", dt_month_start, dt_month_end)
-
-        row_count = len(df)
-        df_year_data.loc[month - 1] = [month, row_count]
-
-    return df_year_data
+    return _calendar_overview(dt, "year", "month")
 
 
-# 统计全年数据概览：散点图
 def get_year_data_overview_scatter(dt: datetime.datetime):
-    df_year_data = pd.DataFrame(columns=["month", "day", "data_count"])
+    return _calendar_overview(dt, "year", "day")
 
-    query_year_start = datetime.datetime(dt.year, 1, 1, 0, 0, 1)
-    query_year_end = datetime.datetime(dt.year, 12, 1, 23, 59, 59)
-    df, _, _ = db_manager.db_search_data("", query_year_start, query_year_end)  # 获取全年所有数据
 
-    for month in range(1, 13):
-        month_days = calendar.monthrange(dt.year, month)[1]
-        for day in range(1, month_days + 1):
-            day_ts_start = utils.datetime_to_seconds(datetime.datetime(dt.year, month, day, 0, 0, 1))
-            day_ts_end = utils.datetime_to_seconds(datetime.datetime(dt.year, month, day, 23, 59, 59))
-            result = df.loc[(df["videofile_time"] >= day_ts_start) & (df["videofile_time"] <= day_ts_end)]  # 获取当小时的所有数据
-            row_count = len(result)
-            df_year_data.loc[len(df_year_data.index)] = [month, day, row_count]
+def get_cached_calendar_overview(dt, period):
+    """Derived cache belongs to the data layer, never to a Streamlit selection.
 
-    return df_year_data
+    Versioned JSON leaves legacy CSVs intact. Source fingerprints also invalidate
+    historical periods when recordings are imported, deleted, or committed to WAL.
+    """
+    start, end = calendar_range(dt, period)
+    frequency = "hour" if period == "month" else "day"
+    key = start.strftime("%Y-%m" if period == "month" else "%Y")
+    path = Path(config.date_state_dir_ud) / f"{key}_calendar_v2.json"
+    signature = db_manager.db_period_signature(start, end)
+    expected, _ = _calendar_grid(dt, period, frequency)
+    try:
+        cached = json.loads(path.read_text(encoding="utf-8"))
+        if cached["version"] == 2 and cached["source"] == signature:
+            frame = pd.DataFrame(cached["records"])
+            if (
+                list(frame.columns) == [*expected.columns, "data_count"]
+                and frame[expected.columns].equals(expected)
+                and pd.api.types.is_integer_dtype(frame.data_count)
+                and frame.data_count.ge(0).all()
+            ):
+                return frame
+    except (OSError, ValueError, TypeError, KeyError):
+        pass
+    frame = _calendar_overview(dt, period, frequency)
+    # A write during the query makes this view transient; do not cache it as current.
+    if signature == db_manager.db_period_signature(start, end):
+        try:
+            atomic_write_json(path, {"version": 2, "source": signature, "records": frame.to_dict("records")})
+        except OSError as error:
+            logger.warning("Cannot save summary cache %s: %s", path, error)
+    return frame
 
 
 # 生成当月光箱（规格：1000x1000，每边30张图）
@@ -216,8 +229,10 @@ def add_watermark_to_lightbox_img(input_image, dt_in: datetime.datetime, dt_out:
 
 def get_footer_state_data():
     res = {}
-    res["first_record_time_str"] = utils.seconds_to_date_goodlook_formart(db_manager.db_first_earliest_record_time())
-    res["latest_record_time_str"] = utils.seconds_to_date_goodlook_formart(db_manager.db_latest_record_time())
+    first = db_manager.db_first_earliest_record_time()
+    latest = db_manager.db_latest_record_time()
+    res["first_record_time_str"] = utils.seconds_to_date_goodlook_formart(first) if first is not None else "—"
+    res["latest_record_time_str"] = utils.seconds_to_date_goodlook_formart(latest) if latest is not None else "—"
     res["latest_db_records_num"] = db_manager.db_num_records()
     res["videos_file_size"] = round(file_utils.get_dir_size(config.record_videos_dir_ud) / (1024 * 1024 * 1024), 3)
     res["videos_files_count"], _ = file_utils.get_videos_and_ocred_videos_count(config.record_videos_dir_ud)

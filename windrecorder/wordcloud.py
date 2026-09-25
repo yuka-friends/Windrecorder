@@ -1,5 +1,6 @@
 import os
 from datetime import datetime
+from pathlib import Path
 
 import jieba
 import matplotlib.pyplot as plt
@@ -55,7 +56,9 @@ def generate_all_word_lexicon_by_month():
     # 检查已生成词典中尾缀为'_now.txt'一项，有且超过一定时间未更新则写入索引数据库队列
     for filename in file_list:
         if suffix in filename:  # 若有
-            if not file_utils.is_file_modified_recently(os.path.join(lexicon_directory, filename), time_gap=14400):  # 超过十天未修改
+            if not file_utils.is_file_modified_recently(
+                os.path.join(lexicon_directory, filename), time_gap=14400
+            ):  # 超过十天未修改
                 send2trash(os.path.join(lexicon_directory, filename))
                 file_list_to_generate_lexicon.append(filename[:-8] + ".db")
 
@@ -175,7 +178,7 @@ def generate_word_cloud_pic(text_file_path, img_save_path, mask_img="month"):
 def get_month_ocr_result(timestamp, text_file_path="cache/get_month_ocr_result_out.txt"):
     timestamp_datetime = utils.seconds_to_datetime(timestamp)
     # 查询当月所有识别到的数据，存储在文本中
-    date_in = datetime(timestamp_datetime.year, timestamp_datetime.month, 1, 0, 0, 1)
+    date_in = datetime(timestamp_datetime.year, timestamp_datetime.month, 1)
     date_out = datetime(
         timestamp_datetime.year,
         timestamp_datetime.month,
@@ -186,12 +189,13 @@ def get_month_ocr_result(timestamp, text_file_path="cache/get_month_ocr_result_o
     )
     df, _, _ = db_manager.db_search_data("", date_in, date_out)
     # ocr_text_data = df["ocr_text"].to_string(index=False)
-    ocr_text_data = "".join(df["ocr_text"].tolist())
+    ocr_text_data = "".join(df["ocr_text"].dropna().astype(str))
     ocr_text_data = utils.delete_short_lines(ocr_text_data, less_than=10)
 
     # 移除换行符
     ocr_text_data = ocr_text_data.replace("\n", "").replace("\r", "")
     # 输出到文件
+    Path(text_file_path).parent.mkdir(parents=True, exist_ok=True)
     with open(text_file_path, "w", encoding="utf-8") as file:
         file.write(ocr_text_data)
     return text_file_path
@@ -209,13 +213,14 @@ def get_day_ocr_result(timestamp):
     dt_out = utils.get_datetime_in_day_range_pole_by_config_day_begin(timestamp_datetime, range="end")
 
     df, _, _ = db_manager.db_search_data("", dt_in, dt_out)
-    ocr_text_data = "".join(df["ocr_text"].tolist())
+    ocr_text_data = "".join(df["ocr_text"].dropna().astype(str))
     ocr_text_data = utils.delete_short_lines(ocr_text_data, less_than=10)
 
     # 移除换行符
     ocr_text_data = ocr_text_data.replace("\n", "").replace("\r", "")
     # 输出到文件
     text_file_path = "cache/get_day_ocr_result_out.txt"
+    Path(text_file_path).parent.mkdir(parents=True, exist_ok=True)
     with open(text_file_path, "w", encoding="utf-8") as file:
         file.write(ocr_text_data)
     return text_file_path

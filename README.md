@@ -25,8 +25,8 @@ Windrecorder is a memory search app by records everything on your screen in smal
 
 ---
 
-> [!WARNING]
-> This project is still in the early stages of development, and you may encounter some minor problems in experience and use, feel free to submit issue feedback, follow updates, and initiate discussions or roadmap in [Discussions](https://github.com/yuka-friends/Windrecorder/discussions). You are also welcome to help us optimize and build the project, submit PR / code review.
+> [!IMPORTANT]
+> If automatic updates fail, close Windrecorder, open `cmd` in the Windrecorder root directory, run `git pull --ff-only`, then reopen `install_update.bat`. See [upgrade and recovery](docs/upgrading.md) if Git reports a conflict.
 
 # 🦝 Installation
 
@@ -34,18 +34,18 @@ Windrecorder is a memory search app by records everything on your screen in smal
 
 - Install [Git](https://git-scm.com/download/win), just keep clicking next step.
 
-- Install [Python](https://www.python.org/ftp/python/3.11.7/python-3.11.7-amd64.exe), make sure to check `Add python.exe to PATH` when installing.
-     - **Currently, Python 3.12 is not supported**. It is recommended to use python 3.11, which is the version pointed to by the link above.
+- Install [uv](https://docs.astral.sh/uv/getting-started/installation/). The installer automatically manages **Python 3.12**; a separate Python installation is not required. Existing Python/Poetry users can keep their installation and run the updater directly.
 
 - In file explorer, navigate to the directory where you want to install Windrecorder (it is recommended to place it in a partition with sufficient space), and download the app through the terminal command `git clone https://github.com/yuka-friends/Windrecorder`
 
      - You can open the folder you want to install, enter `cmd` in the path bar and press Enter, and you will be located into current directory in terminal, then paste the above command and press Enter to execute;
 
-- Open `install_update.bat` in the directory to install dependencies and configure the app. If everything goes well, you can start using it!
+- Open `install_update.bat` to install and configure the app.
 
 
 # 🦝 How to use
 
+- Use an AI agent to search your records: [Memory skill installation and usage (简体中文)](__assets__/how_to_use_memory_skill.md).
 - Open `start_app.bat` in the directory, the tool will run on the system tray and be used through the right-click menu;
 - All data (video, database, statistical information) will be stored in `userdata` directory under Windrecorder. If you want to copy or move the app location (for example, if you change the computer), you can delete `.venv` in the directory and moved, then re-run `install_update.bat` to install the virtual environment to use it;
 
@@ -55,9 +55,6 @@ Windrecorder is a memory search app by records everything on your screen in smal
 > **Recording will be automatically paused when there is no change in the picture or the screen is sleeping. When the computer is idle and no one is using it, the tool will automatically maintain the database, compress, and clean up expired videos.**
 >
 > _Just set it and forget it!_
-
-> [!NOTE]
-> If the command line window flashes after opening `start_app.bat` and **Windrecorder still does not appear in the system tray after a while**, please create a file named `hide_CLI_by_python.txt` in the directory and open `start_app.bat` and try again; [#232](https://github.com/yuka-friends/Windrecorder/issues/232)
 
 # 🦝 How it works
 ![Windrecorder](https://github.com/yuka-friends/Windrecorder/blob/main/__assets__/how-it-work-en.jpg)
@@ -97,19 +94,19 @@ Q: The mouse pointer flicker during recording (Direct Video Recording via FFmpeg
 
 Q: There is no data in the recent period when opening webui.
 
-- A: When the tool is indexing data, webui will not create the latest temporary database file.
-Solution: Try to wait for a while, wait for the tool indexing to complete, refresh the webui interface, or delete the database file with the suffix _TEMP_READ.db in the db directory and refresh it (if there is a database file damage prompt, don’t worry, it may be The tool is still in the index, please try refreshing/removing it after some time). This strategy will be fixed and refactored in the future. [#26](https://github.com/yuka-friends/Windrecorder/issues/26)
+- A: Check that recording and OCR indexing have completed, then refresh the page. Search reads committed data directly through read-only SQLite connections; there is no need to delete temporary databases. If an error persists, retain the database and include the error log when reporting the issue.
 
 Q: When opening webui, it prompts: `FileNotFoundError: [WinError 2] The system cannot find the file specified: './db\\user_2023-10_wind.db-journal'`
 
-- A: Usually occurs when accessing the webui for the first time, while the tool is still indexing data.
-Solution: After the tool background indexing is completed, delete the corresponding database file with the suffix _TEMP_READ.db in the db folder and refresh it.
+- A: This is an old database-copying issue. Update Windrecorder and restart the web UI. Do not delete SQLite journal or WAL files; if the error persists, retain the database and report the error log.
 
 Q: Windows.Media.Ocr.Cli OCR is not available/the recognition rate is too low
 
 - A1: Check whether the language pack/input method of the target language has been added to the system: https://learn.microsoft.com/en-us/uwp/api/windows.media.ocr
 
 - A2: Install a third-party OCR engine in the `extension` directory. They usually have higher recognition accuracy and support simultaneous recognition of multiple languages, but may take up slightly more performance;
+
+- A3: Windows.Media.Ocr.Cli may struggle with small text. For Chinese text, enable similar-character search in Settings to improve recall when OCR confuses characters with similar shapes.
 
 # 🧡
 Thanks to the following projects
@@ -133,28 +130,6 @@ Vote **Windrecorder** on Product Hunt:
 <a href="https://www.producthunt.com/posts/windrecorder?utm_source=badge-featured&utm_medium=badge&utm_souce=badge-windrecorder" target="_blank"><img src="https://api.producthunt.com/widgets/embed-image/v1/featured.svg?post_id=441411&theme=neutral" alt="Windrecorder - search&#0032;&#0038;&#0032;rewind&#0032;everything&#0032;happened&#0032;on&#0032;your&#0032;screen | Product Hunt" style="width: 250px; height: 54px;" width="250" height="54" /></a>
 
 ---
-
-### 🧠 In addition to Windrecorder, what other tools provide similar functions?
-
-Feel free to supplement, and hope you find the tool that suits you:
-
-- Cross-platform Desktop:
-     - (open source) https://github.com/louis030195/screen-pipe
-     - (open source) https://github.com/jasonjmcghee/xrem
-     - (open source) https://github.com/openrecall/openrecall
-- Windows:
-     - (commercial) https://timesnapper.com/
-     - (commercial) https://www.manictime.com/
-     - (commercial) https://apse.io/
-     - (commercial) https://www.screen-record.com/screen_anytime.htm
-- Linux:
-     - (open source) https://github.com/apirrone/Memento
-- MacOS:
-     - (open source) https://github.com/jasonjmcghee/rem
-     - (commercial) https://screenmemory.app
-     - (commercial) https://www.rewind.ai/
-- Android:
-     - (free, in-app purchases) https://play.google.com/store/apps/details?id=io.github.mthli.snapseek
 
 For more research and discussion on HackerNews:
 - https://news.ycombinator.com/item?id=38787892

@@ -1,0 +1,331 @@
+import json
+import shutil
+import subprocess
+import sys
+import sysconfig
+from pathlib import Path
+
+import pytest
+
+from scripts import manage_environment as setup
+
+
+def legacy_env(root, package=None):
+    env = root / ".venv"
+    env.mkdir(exist_ok=True)
+    (env / "pyvenv.cfg").write_text("version = 3.11.7")
+    (env / "old-marker").write_text("keep me")
+    if package:
+        metadata = env / "Lib/site-packages" / (package + "-1.dist-info")
+        metadata.mkdir(parents=True)
+        (metadata / "METADATA").write_text(f"Name: {package}\nVersion: 1\n")
+    return env
+
+
+def runner(root, commands, *, fail=False):
+    def run(command, **kwargs):
+        commands.append(command)
+        if "sync" in command:
+            env = root / ".venv"
+            env.mkdir()
+            (env / "pyvenv.cfg").write_text("version = 3.12")
+            if fail:
+                raise subprocess.CalledProcessError(1, command)
+        return subprocess.CompletedProcess(command, 0, stdout="")
+
+    return run
+
+
+def test_upgrade_cleans_backups_and_retains_assets_and_optional_extension(workspace):
+    old = legacy_env(workspace, "rapidocr_onnxruntime")
+    (old / "ffmpeg.exe").write_bytes(b"release asset")
+    commands = []
+    setup.install(workspace, "uv", run=runner(workspace, commands))
+    state = setup.read_state(workspace)
+    assert state["status"] == "ready"
+    assert state["extras"] == ["rapidocr"]
+    assert state["backup"] is None
+    assert not list(workspace.glob(".venv-backup-*"))
+    assert (workspace / ".venv/ffmpeg.exe").read_bytes() == b"release asset"
+    assert commands[0][-2:] == ["--extra", "rapidocr"]
+    assert "--locked" in commands[0] and "--inexact" in commands[0]
+    report = json.loads(next((workspace / ".uv-migration").glob("*.json")).read_text())
+    assert report["packages"] == {"rapidocr-onnxruntime": "1"}
+
+
+def test_failed_sync_restores_old_environment_and_user_data(workspace):
+    old = legacy_env(workspace)
+    config = workspace / "userdata/config_user.json"
+    before = config.read_bytes()
+    with pytest.raises(subprocess.CalledProcessError):
+        setup.install(workspace, "uv", run=runner(workspace, [], fail=True))
+    assert (old / "old-marker").read_text() == "keep me"
+    assert config.read_bytes() == before
+    assert setup.read_state(workspace) == {}
+    assert len(list(workspace.glob(".venv-failed-*"))) == 1
+
+
+def test_explicit_rollback_to_poetry_remains_ready_for_offline_launch(workspace):
+    # Backward compatibility for backups left by an older installer.
+    legacy_env(workspace).rename(workspace / ".venv-backup-legacy")
+    setup.atomic_write_json(workspace / setup.STATE_NAME, {"status": "ready", "backup": ".venv-backup-legacy"})
+    setup.rollback(workspace)
+    assert (workspace / ".venv/old-marker").read_text() == "keep me"
+    assert setup.read_state(workspace)["status"] == "ready"
+    assert setup.read_state(workspace)["python"] == "legacy"
+
+
+def test_interrupted_upgrade_recovers_before_retry(workspace):
+    old = legacy_env(workspace)
+    backup = workspace / ".venv-backup-interrupted"
+    journal = {"status": "installing", "backup": backup.name, "had_environment": True, "previous_state": {}}
+    setup.atomic_write_json(workspace / setup.STATE_NAME, journal)
+    old.rename(backup)
+    old.mkdir()
+    (old / "partial-install").write_text("incomplete")
+    setup.install(workspace, "uv", run=runner(workspace, []))
+    state = setup.read_state(workspace)
+    assert state["status"] == "ready"
+    assert not list(workspace.glob(".venv-backup-*"))
+    assert any(p.joinpath("partial-install").exists() for p in workspace.glob(".venv-failed-*"))
+
+
+def test_successful_upgrade_cleans_historical_backups_only(workspace):
+    legacy_env(workspace).rename(workspace / ".venv-backup-historical")
+    unrelated = workspace / ".venv-backup-user-files"
+    unrelated.mkdir()
+    (unrelated / "keep.txt").write_text("keep")
+    other = workspace / ".venv-tests"
+    other.mkdir()
+    (other / "pyvenv.cfg").write_text("version = 3.12")
+    legacy_env(workspace)
+    setup.install(workspace, "uv", run=runner(workspace, []))
+    assert not (workspace / ".venv-backup-historical").exists()
+    assert (unrelated / "keep.txt").read_text() == "keep"
+    assert (other / "pyvenv.cfg").exists()
+
+
+def test_cleanup_failure_keeps_new_environment_ready(workspace, monkeypatch):
+    legacy_env(workspace)
+    original_rmtree = shutil.rmtree
+
+    def fail_cleanup(path):
+        assert setup.read_state(workspace)["status"] == "ready"
+        raise PermissionError("locked")
+
+    monkeypatch.setattr(shutil, "rmtree", fail_cleanup)
+    setup.install(workspace, "uv", run=runner(workspace, []))
+    assert setup.read_state(workspace)["backup"] is None
+    assert not (workspace / ".venv/old-marker").exists()
+    assert len(list(workspace.glob(".venv-backup-*"))) == 1
+    monkeypatch.setattr(shutil, "rmtree", original_rmtree)
+    setup.install(workspace, "uv", run=runner(workspace, []))
+    assert not list(workspace.glob(".venv-backup-*"))
+
+
+def test_cleanup_does_not_follow_backup_junction(workspace, tmp_path_factory):
+    external = tmp_path_factory.mktemp("external-backup")
+    (external / "pyvenv.cfg").write_text("version = 3.12")
+    junction = workspace / ".venv-backup-linked"
+    subprocess.run(["cmd", "/d", "/c", "mklink", "/J", str(junction), str(external)], check=True, capture_output=True)
+    try:
+        setup.cleanup_backups(workspace)
+        assert (external / "pyvenv.cfg").exists()
+        assert junction.exists()
+    finally:
+        junction.rmdir()
+
+
+def test_remove_extra_is_remembered_across_updates(workspace):
+    legacy_env(workspace, "uform")
+    setup.atomic_write_json(workspace / setup.STATE_NAME, {"status": "ready", "extras": ["embedding", "wechat"]})
+    setup.install(workspace, "uv", remove="embedding", run=runner(workspace, []))
+    assert setup.read_state(workspace)["extras"] == ["wechat"]
+    setup.install(workspace, "uv", run=runner(workspace, []))
+    assert setup.read_state(workspace)["extras"] == ["wechat"]
+
+
+def test_running_recorder_stops_upgrade_before_mutation(workspace):
+    config = json.loads((workspace / "windrecorder/config_src/config_default.json").read_text())
+    lock = workspace / config["lock_file_dir"] / config["record_lock_name"]
+    lock.parent.mkdir(parents=True)
+    lock.write_text("1234")
+    with pytest.raises(RuntimeError, match="1234"):
+        setup.check_not_running(workspace, alive=lambda pid: True)
+    assert not (workspace / setup.STATE_NAME).exists()
+
+
+def test_legacy_config_running_recorder_stops_upgrade(workspace):
+    (workspace / "userdata/config_user.json").unlink()
+    old_config = workspace / "config/config_user.json"
+    old_config.parent.mkdir()
+    old_config.write_text(json.dumps({"lock_file_dir": "old-locks", "record_lock_name": "record.lock"}))
+    lock = workspace / "old-locks/record.lock"
+    lock.parent.mkdir()
+    lock.write_text("1234")
+    with pytest.raises(RuntimeError, match="1234"):
+        setup.check_not_running(workspace, alive=lambda pid: True)
+
+
+def test_locked_environment_is_preserved_when_backup_rename_fails(workspace, monkeypatch):
+    old = legacy_env(workspace)
+    previous = {"status": "ready", "extras": ["wechat"]}
+    setup.atomic_write_json(workspace / setup.STATE_NAME, previous)
+    original_rename = Path.rename
+
+    def rename(path, target):
+        if path == old:
+            raise PermissionError("environment in use")
+        return original_rename(path, target)
+
+    monkeypatch.setattr(Path, "rename", rename)
+    commands = []
+    with pytest.raises(PermissionError):
+        setup.install(workspace, "uv", run=runner(workspace, commands))
+    assert commands == []
+    assert (old / "old-marker").read_text() == "keep me"
+    assert setup.read_state(workspace) == previous
+    assert not list(workspace.glob(".venv-backup-*"))
+
+
+def test_discover_external_poetry_environment(workspace, tmp_path_factory):
+    external = tmp_path_factory.mktemp("external-poetry")
+    (external / "pyvenv.cfg").write_text("version = 3.11")
+
+    def run(command, **kwargs):
+        assert command[-3:] == ["env", "info", "--path"]
+        return subprocess.CompletedProcess(command, 0, stdout=str(external) + "\n")
+
+    assert setup.discover_legacy(workspace, run) == external
+
+
+@pytest.mark.parametrize("path", ["../outside", "userdata", "C:/Windows"])
+def test_rollback_rejects_paths_outside_environment_backups(workspace, path):
+    with pytest.raises(ValueError):
+        setup.checked_backup(workspace, path)
+
+
+def test_existing_user_config_restores_extensions_even_without_old_python(workspace):
+    (workspace / "userdata/config_user.json").write_text(
+        json.dumps({"img_embed_module_install": True, "support_ocr_lst": ["PaddleOCR", "WeChatOCR"]}), encoding="utf-8"
+    )
+    assert setup.select_extras(workspace, {}, {}) == {"embedding", "rapidocr", "wechat"}
+
+
+def test_unrelated_venv_directory_is_not_moved(workspace):
+    (workspace / ".venv").mkdir()
+    (workspace / ".venv/user-file").write_text("data")
+    with pytest.raises(RuntimeError, match="ordinary virtual environment"):
+        setup.install(workspace, "uv", run=runner(workspace, []))
+    assert (workspace / ".venv/user-file").read_text() == "data"
+
+
+def test_clean_install_and_failed_clean_install(workspace):
+    setup.install(workspace, "uv", run=runner(workspace, []))
+    assert setup.read_state(workspace)["backup"] is None
+    assert setup.read_state(workspace)["status"] == "ready"
+
+
+def test_smoke_import_failure_restores_previous_environment(workspace):
+    old = legacy_env(workspace)
+    sync = runner(workspace, [])
+
+    def run(command, **kwargs):
+        if "-c" in command:
+            raise subprocess.CalledProcessError(1, command)
+        return sync(command, **kwargs)
+
+    with pytest.raises(subprocess.CalledProcessError):
+        setup.install(workspace, "uv", run=run)
+    assert (old / "old-marker").exists()
+
+
+def test_batch_activation_in_directory_with_spaces_and_unicode(workspace):
+    root = workspace / "space and 中文"
+    subprocess.run([sys.executable, "-m", "venv", "--without-pip", str(root / ".venv")], check=True)
+    (root / "scripts").mkdir()
+    shutil.copyfile(Path(setup.__file__).with_name("activate_runtime.bat"), root / "scripts/activate_runtime.bat")
+    setup.atomic_write_json(root / setup.STATE_NAME, {"status": "ready"})
+    launcher = root / "check.bat"
+    launcher.write_text(
+        '@echo off\ncall "%~dp0scripts\\activate_runtime.bat"\n'
+        "if errorlevel 1 exit /b 1\n"
+        'python -c "import sys; print(ascii(sys.prefix))"\n',
+        encoding="utf-8",
+    )
+    result = subprocess.run(["cmd", "/d", "/c", str(launcher)], capture_output=True, text=True, check=True)
+    assert ascii(str(root / ".venv")) in result.stdout
+
+
+@pytest.mark.parametrize("operation", ["install", "rollback"])
+def test_controller_inside_target_environment_stops_before_mutation(workspace, monkeypatch, operation):
+    old = legacy_env(workspace)
+    state = {"status": "installing", "backup": ".venv-backup-interrupted", "had_environment": True}
+    setup.atomic_write_json(workspace / setup.STATE_NAME, state)
+    before = (workspace / setup.STATE_NAME).read_bytes()
+    monkeypatch.setattr(sys, "prefix", str(old))
+    with pytest.raises(RuntimeError, match="setup.ps1"):
+        if operation == "install":
+            setup.install(workspace, "uv", run=runner(workspace, []))
+        else:
+            setup.rollback(workspace)
+    assert (workspace / setup.STATE_NAME).read_bytes() == before
+    assert (old / "old-marker").read_text() == "keep me"
+    assert not list(workspace.glob(".venv-failed-*"))
+
+
+@pytest.mark.parametrize("activated", [False, True])
+def test_powershell_controller_runs_outside_existing_managed_venv(workspace, activated):
+    """Exercise real uv discovery: --managed-python alone also finds .venv."""
+    import os
+
+    candidates = [shutil.which("uv"), str(Path(sysconfig.get_path("scripts", scheme="nt_user")) / "uv.exe")]
+    uv = None
+    for candidate in candidates:
+        if candidate and Path(candidate).is_file():
+            version = subprocess.check_output([candidate, "--version"], text=True).split()[1]
+            if tuple(map(int, version.split("."))) >= (0, 12, 18):
+                uv = candidate
+                break
+    if not uv:
+        pytest.skip("Requires uv >= 0.12.18")
+    env = dict(os.environ, UV_PYTHON_DOWNLOADS="never")
+    base = subprocess.run(
+        [uv, "python", "find", "--system", "--managed-python", "3.12"],
+        env=env,
+        capture_output=True,
+        text=True,
+        check=False,
+    )
+    if base.returncode:
+        pytest.skip("Requires an installed uv-managed Python 3.12")
+    root = workspace / "setup with spaces"
+    scripts = root / "scripts"
+    scripts.mkdir(parents=True)
+    subprocess.run([base.stdout.strip(), "-m", "venv", "--without-pip", str(root / ".venv")], check=True)
+    shutil.copyfile(Path(setup.__file__).with_name("setup.ps1"), scripts / "setup.ps1")
+    # Probe the controller selected by the real entry point, without installing packages.
+    (scripts / "manage_environment.py").write_text(
+        "import sys\nfrom pathlib import Path\n"
+        "root = Path(__file__).resolve().parents[1]\n"
+        "assert Path(sys.prefix).resolve() != (root / '.venv').resolve()\n"
+        "old = root / '.venv'\nbackup = root / '.venv-backup-probe'\n"
+        "old.rename(backup)\nbackup.rename(old)\n"
+        "print('Controller can move the previous environment')\n",
+        encoding="utf-8",
+    )
+    env.pop("VIRTUAL_ENV", None)
+    env["PATH"] = str(Path(uv).parent) + os.pathsep + env["PATH"]
+    if activated:
+        env["VIRTUAL_ENV"] = str(root / ".venv")
+        env["PATH"] = str(root / ".venv/Scripts") + os.pathsep + env["PATH"]
+    # Rollback takes the same discovery path while skipping Python download/update.
+    result = subprocess.run(
+        ["powershell", "-NoProfile", "-ExecutionPolicy", "Bypass", "-File", str(scripts / "setup.ps1"), "-Rollback"],
+        env=env,
+        capture_output=True,
+        text=True,
+        timeout=45,
+    )
+    assert result.returncode == 0, result.stdout + result.stderr
+    assert "Controller can move the previous environment" in result.stdout

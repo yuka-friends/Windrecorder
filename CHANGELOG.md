@@ -1,9 +1,21 @@
 # Changelog 更新日志
 
 > [!TIP]
-> 如果无法升级，请尝试在目录下执行命令 `git fetch origin | git reset --hard origin/main` 后运行 `install_update.bat`
+> 升级前请退出捕风记录仪，运行 `install_update.bat`。如需手动更新代码，请运行 `git pull --ff-only` 后重新打开安装器；若提示冲突，请先处理冲突。详见[升级与恢复说明](docs/upgrading.md)。
 >
-> If app cannot upgrade correctly, try executing the command `git fetch origin | git reset --hard origin/main` in the directory and then running `install_update.bat`
+> Exit Windrecorder before running `install_update.bat`. To update code manually, run `git pull --ff-only`, resolve any reported conflicts, then reopen the installer. See [upgrade and recovery](docs/upgrading.md).
+
+## 0.1.0
+> 2026-09-25
+- **改用 uv 管理环境**，默认使用 Python 3.12，兼容 Python 3.11；旧版可直接升级，保留已启用的扩展和用户数据。 Switched to uv and Python 3.12, with Python 3.11 support. Existing installations upgrade with extensions and user data preserved.
+- **让 AI 帮你找回屏幕上的记忆**：新增只读 `windrecorder-memory` skill，让 Agent 按时间、关键词、上下文和旗标备注查找记录，例如“帮我找上周看过的那篇文章”。[安装说明](__assets__/how_to_use_memory_skill.md)  
+  **Let AI help you rediscover what was on your screen.** The new read-only `windrecorder-memory` skill lets agents search your records by time, keywords, context and flag notes—for example, “Find that article I read last week.” [Setup guide](__assets__/how_to_use_memory_skill.md)
+- 优化搜索与分页加载，减少等待和内存占用；改进录制去重、失败恢复与数据存储，提升稳定性并保留原有配置和历史数据。Faster search and pagination with lower memory usage. Improved recording deduplication, failure recovery and storage reliability while preserving existing settings and historical data.
+- 改进更新流程，修复 Windows 安装权限、进程锁检查和错误报告问题。优化启动提示与后台运行，修复版本比较问题，提高更新检查可靠性。Improved updates and fixed Windows installation permissions, process lock checks and error reporting. Improved startup feedback and background operation, fixed version comparisons and made update checks more reliable.
+- 修复空月份统计报错、日期边界和缓存刷新问题，图表不再显示零记录圆点，保留历史记录兼容性。Fixed empty-month errors, date boundaries and stale statistics. Charts now hide zero-count marks while preserving historical record compatibility.
+- 扩充回归测试，覆盖 Windows、Python 3.11 / 3.12、可选扩展及旧版向量索引兼容性。Expanded regression tests across Windows, Python 3.11/3.12, optional extensions and legacy vector indexes.
+
+---
 
 ## 0.0.31
 > 2025-03-16
