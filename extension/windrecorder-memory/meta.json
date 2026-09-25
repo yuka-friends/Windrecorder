@@ -1,0 +1,7 @@
+{
+    "extension_name": "Windrecorder Memory — AI Agent Skill / 记忆检索技能",
+    "developer_name": "yuka-friends",
+    "developer_url": "https://github.com/yuka-friends/Windrecorder",
+    "version": "0.1.0",
+    "description_markdown": "让本地 AI Agent 按时间、关键词、上下文和旗标备注只读检索 Windrecorder 记录。无需配置 Windrecorder LLM API。请将整个 skill 文件夹安装到 Agent 的技能目录；[简明安装说明](https://github.com/yuka-friends/Windrecorder/blob/main/__assets__/how_to_use_memory_skill.md)。\nRead-only memory queries for local AI agents, using dates, keywords, surrounding records and flag notes. No Windrecorder LLM API configuration is required. Install the complete skill folder in your agent's skills directory."
+}

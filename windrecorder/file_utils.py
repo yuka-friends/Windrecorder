@@ -284,13 +284,20 @@ def read_json_as_dict_from_path(filepath):
 def get_extension(extension_filepath="extension"):
     dir_list = get_file_dir_list_first_level(extension_filepath)
     extension_dict = {}
-    for dir in dir_list:
+    for directory in dir_list:
+        if directory == "LLM_search_and_summary":
+            continue  # Retired extension, including locally retained copies.
+        metadata_path = Path(extension_filepath) / directory / "meta.json"
         try:
-            with open(f"{extension_filepath}\\{dir}\\meta.json", encoding="utf-8") as file:
+            with metadata_path.open(encoding="utf-8") as file:
                 data = json.load(file)
-                extension_dict[data["extension_name"]] = data
-        except Exception as e:
-            logger.warning(str(e))
+            if not isinstance(data, dict) or not isinstance(data.get("extension_name"), str) or not data["extension_name"].strip():
+                raise ValueError("Metadata must contain a nonempty extension_name.")
+            extension_dict[data["extension_name"]] = data
+        except FileNotFoundError:
+            continue  # Git may leave untracked caches or non-extension folders.
+        except (OSError, ValueError) as error:
+            logger.warning("Cannot read extension metadata %s: %s", metadata_path, error)
     return extension_dict
 
 

@@ -5,6 +5,10 @@
 >
 > Exit Windrecorder before running `install_update.bat`. To update code manually, run `git pull --ff-only`, resolve any reported conflicts, then reopen the installer. See [upgrade and recovery](docs/upgrading.md).
 
+## Unreleased / 未发布
+
+- 为 `windrecorder-memory` skill 补充扩展元信息和安装说明链接，修复安装向导缺少 `meta.json` 的警告；扩展列表忽略无元信息的目录及已移除的 LLM 插件，升级时清理旧插件仅剩的字节码缓存，保留用户文件。Added memory skill metadata and an installation guide link. Extension discovery skips folders without metadata and the retired LLM plugin; upgrades remove its leftover bytecode-only directory while preserving user files.
+
 ## 0.1.0
 > 2026-09-25
 - **改用 uv 管理环境**，默认使用 Python 3.12，兼容 Python 3.11；旧版可直接升级，保留已启用的扩展和用户数据。 Switched to uv and Python 3.12, with Python 3.11 support. Existing installations upgrade with extensions and user data preserved.

@@ -1,12 +1,43 @@
 # 本脚本用于在用户升级后，清理更改早期版本的旧设定
 import os
 import shutil
+from pathlib import Path
 
 from windrecorder import file_utils, utils
 from windrecorder.config import config
+from windrecorder.logger import get_logger
+
+logger = get_logger(__name__)
+
+
+def cleanup_retired_extension_cache(extension_dir="extension"):
+    """Remove only an empty retired extension or its sole bytecode cache."""
+    root = Path(extension_dir).absolute()
+    retired = root / "LLM_search_and_summary"
+    try:
+        # Preserve linked paths and any user files; no recursive deletion is needed.
+        if not retired.is_dir() or root.resolve() != root or retired.resolve() != retired:
+            return
+        entries = list(retired.iterdir())
+        if entries:
+            if len(entries) != 1 or entries[0].name != "__pycache__":
+                return
+            cache = entries[0]
+            if not cache.is_dir() or cache.resolve() != cache:
+                return
+            files = list(cache.iterdir())
+            if any(not path.is_file() or path.is_symlink() or path.suffix != ".pyc" for path in files):
+                return
+            for path in files:
+                path.unlink()
+            cache.rmdir()
+        retired.rmdir()
+    except OSError as error:
+        logger.warning("Could not remove retired extension cache %s: %s", retired, error)
 
 
 def main():
+    cleanup_retired_extension_cache()
     # - 0.0.5 更新操作
     # 如果原先用户开机启动中存在 start_record.bat，替换创建为新的 start_app.bat
     print("- 0.0.5 update routine")
