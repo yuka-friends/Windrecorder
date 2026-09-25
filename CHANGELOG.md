@@ -7,27 +7,13 @@
 
 ## 0.1.0
 > 2026-09-25
-
-### 安装与升级 / Installation and upgrades
-
-- 包管理迁移至 uv，默认使用自动管理的 Python 3.12，保留 Python 3.11 兼容测试。旧 Poetry 安装可通过原有升级入口迁移，并保留已启用的 RapidOCR、WeChat OCR 和图像嵌入扩展；Moved package management to uv with managed Python 3.12 and continued Python 3.11 test coverage. Existing Poetry installations migrate through the usual updater and retain supported extension selections.
-- 安装失败或中断后可恢复之前的本地环境；安装验证成功后自动清理临时环境备份，保留包清单与外部 Poetry 环境。用户数据、视频、数据库和向量索引不随环境迁移改写；Failed or interrupted setup can restore the previous local environment. After successful verification, temporary backups are cleaned up while package inventories and external Poetry environments remain. Environment migration preserves user data, videos, databases and vector indexes.
-- 更新使用 Git fast-forward；无上游分支或 detached checkout 会提示并安装当前代码。修复安装器使用目标虚拟环境导致的 Windows 拒绝访问问题；Updates require a Git fast-forward; local branches without an upstream and detached checkouts install their current code with a notice. Fixed Windows access-denied errors caused by running the installer inside the environment being replaced.
-- 升级前检查旧版配置中的自定义进程锁，并正确传递安装失败退出码；Upgrade checks honor custom process locks in legacy configuration and preserve installer failure exit codes.
-- 启动与安装时立即显示进度提示，托盘就绪后关闭启动窗口，后台终端不再留在任务栏；启动失败保留提示与日志。修复跨次版本、beta 版本比较，并为更新检查增加超时与响应校验；Added immediate startup/setup feedback, a hidden background console and startup diagnostics. Fixed minor-version and beta-version ordering, and added timeouts and response validation to update checks.
-
-### 查询与采集 / Search and capture
-
-- 搜索改用 SQLite 只读连接，避免反复复制整库；分页时才加载 OCR 正文与缩略图，减少等待与内存占用，并正确读取已提交的 WAL 数据；Search now uses read-only SQLite connections instead of repeated database copies, loading OCR text and thumbnails only for the requested page and reading committed WAL data.
-- 复用截图特征、跳过相同画面，改进 OCR 重试、录制锁、截图入库和视频转换失败恢复，避免重复记录或过早清理未完成数据；Reused capture features and skipped identical frames. Improved OCR retries, recording locks, idempotent ingestion and failed video-conversion recovery to reduce duplicate records and premature cleanup.
-- 加固配置原子写入、历史数据迁移与跨月存储，保留未知配置字段和旧数据；Hardened atomic configuration writes, legacy migrations and cross-month storage while preserving unknown settings and historical data.
-
-### 记忆摘要与扩展 / Summaries and extensions
-
-- 修复无记录月份的 `KeyError: videofile_time`，统一自定义每日起始时间和跨月/跨年边界，改善统计缓存刷新与历史记录兼容；Fixed empty-month summary crashes, custom day boundaries, month/year transitions and stale summary caches while retaining historical record compatibility.
-- 当月及年度散点图不再绘制零记录的数据点，空月份也不会出现放大的圆点；Monthly and annual charts omit zero-count marks, including entirely empty months.
-- 移除 `LLM_search_and_summary` 插件及其 WebUI 入口；新增只读 `windrecorder-memory` skill，支持 Agent 按时间、关键词、上下文和旗标备注查询记录，并提供[简明安装文档](__assets__/how_to_use_memory_skill.md)。原有活动标签总结功能保留；Removed the `LLM_search_and_summary` plugin and its WebUI entry. Added a read-only memory skill for agent queries by time, keywords, context and flag notes, with a short installation guide. Existing activity tag summaries remain available.
-- 新增存储、查询、采集、摘要、升级恢复与启动回归测试；Windows CI 覆盖 Python 3.11 / 3.12、基础依赖及全部可选扩展，并验证旧版 FAISS 索引可读；Added regression coverage for storage, queries, capture, summaries, upgrades and startup. Windows CI covers Python 3.11/3.12 with base and optional dependencies, including legacy FAISS index compatibility.
+- **改用 uv 管理环境**，默认使用 Python 3.12，兼容 Python 3.11；旧版可直接升级，保留已启用的扩展和用户数据。 Switched to uv and Python 3.12, with Python 3.11 support. Existing installations upgrade with extensions and user data preserved.
+- **让 AI 帮你找回屏幕上的记忆**：新增只读 `windrecorder-memory` skill，让 Agent 按时间、关键词、上下文和旗标备注查找记录，例如“帮我找上周看过的那篇文章”。[安装说明](__assets__/how_to_use_memory_skill.md)  
+  **Let AI help you rediscover what was on your screen.** The new read-only `windrecorder-memory` skill lets agents search your records by time, keywords, context and flag notes—for example, “Find that article I read last week.” [Setup guide](__assets__/how_to_use_memory_skill.md)
+- 优化搜索与分页加载，减少等待和内存占用；改进录制去重、失败恢复与数据存储，提升稳定性并保留原有配置和历史数据。Faster search and pagination with lower memory usage. Improved recording deduplication, failure recovery and storage reliability while preserving existing settings and historical data.
+- 改进更新流程，修复 Windows 安装权限、进程锁检查和错误报告问题。优化启动提示与后台运行，修复版本比较问题，提高更新检查可靠性。Improved updates and fixed Windows installation permissions, process lock checks and error reporting. Improved startup feedback and background operation, fixed version comparisons and made update checks more reliable.
+- 修复空月份统计报错、日期边界和缓存刷新问题，图表不再显示零记录圆点，保留历史记录兼容性。Fixed empty-month errors, date boundaries and stale statistics. Charts now hide zero-count marks while preserving historical record compatibility.
+- 扩充回归测试，覆盖 Windows、Python 3.11 / 3.12、可选扩展及旧版向量索引兼容性。Expanded regression tests across Windows, Python 3.11/3.12, optional extensions and legacy vector indexes.
 
 ---
 
