@@ -115,6 +115,30 @@ def load_emb_model_cache():
             config.set_and_save_config("img_embed_module_install", False)
 
 
+def unload_emb_model_cache():
+    """
+    Unload embedding model from memory
+    """
+    if config.img_embed_module_install:
+        try:
+            from windrecorder import img_embed_manager
+
+            if "emb_model_text" in st.session_state:
+                img_embed_manager.unload_model(
+                    st.session_state["emb_model_text"],
+                    st.session_state["emb_model_image"],
+                    st.session_state["emb_processor_text"],
+                    st.session_state["emb_processor_image"]
+                )
+                del st.session_state["emb_model_text"]
+                del st.session_state["emb_model_image"]
+                del st.session_state["emb_processor_text"]
+                del st.session_state["emb_processor_image"]
+        except Exception as e:
+            logger.warning(f"Failed to unload embedding model: {e}")
+
+
+
 # 显示 deep linking
 def render_deep_linking(url):
     if isinstance(url, str):

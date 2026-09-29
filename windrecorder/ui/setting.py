@@ -328,6 +328,21 @@ def render():
 
         st.divider()
 
+        st.markdown("### Memory Management / 内存管理")
+        col_mem1, col_mem2 = st.columns([1, 1])
+        with col_mem1:
+            if st.button("Unload Embedding Models / 释放嵌入模型内存", help="Free up RAM by unloading image embedding models when not in use."):
+                components.unload_emb_model_cache()
+                st.toast("Embedding models unloaded.", icon="🧹")
+        
+        with col_mem2:
+            if st.button("Unload OCR Engines / 释放OCR引擎内存", help="Free up RAM by unloading OCR engines."):
+                from windrecorder import ocr_manager
+                ocr_manager.unload_ocr_engine()
+                st.toast("OCR engines unloaded.", icon="🧹")
+
+        st.divider()
+
         if st.button(
             "Save and Apply All Changes / " + _t("text_apply_changes")
             if config.lang != "en"

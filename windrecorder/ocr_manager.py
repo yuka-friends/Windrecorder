@@ -126,6 +126,45 @@ def initialize_third_part_ocr_engine(ocr_engine_name=config.ocr_engine):
             reset_ocr_engine_config_to_windows()
 
 
+def unload_ocr_engine(ocr_engine_name=None):
+    """
+    Unload specific or all OCR engines to free memory.
+    """
+    global paddle_ocr_engine, col_ocr_handle, wx_ocr_manager
+    
+    if ocr_engine_name == "PaddleOCR" or ocr_engine_name is None:
+        if third_party_ocr_actived_manager["PaddleOCR"]:
+            try:
+                del paddle_ocr_engine
+                third_party_ocr_actived_manager["PaddleOCR"] = False
+                logger.info("PaddleOCR engine unloaded.")
+            except NameError:
+                pass
+
+    if ocr_engine_name == "ChineseOCR_lite_onnx" or ocr_engine_name is None:
+        if third_party_ocr_actived_manager["ChineseOCR_lite_onnx"]:
+            try:
+                del col_ocr_handle
+                third_party_ocr_actived_manager["ChineseOCR_lite_onnx"] = False
+                logger.info("ChineseOCR_lite_onnx engine unloaded.")
+            except NameError:
+                pass
+
+    if ocr_engine_name == "WeChatOCR" or ocr_engine_name is None:
+        if third_party_ocr_actived_manager["WeChatOCR"]:
+            try:
+                if wx_ocr_manager:
+                    wx_ocr_manager.StopWeChatOCR()
+                del wx_ocr_manager
+                third_party_ocr_actived_manager["WeChatOCR"] = False
+                logger.info("WeChatOCR engine unloaded.")
+            except Exception as e:
+                logger.warning(f"Error unloading WeChatOCR: {e}")
+
+    gc.collect()
+
+
+
 # 使用 win32file 的判断实现，检查文件是否被占用
 def is_file_in_use(file_path):
     try:
