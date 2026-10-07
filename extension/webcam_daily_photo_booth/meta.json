@@ -1,0 +1,7 @@
+{
+    "extension_name": "Webcam Daily Photo Booth",
+    "developer_name": "antonoko",
+    "developer_url": "https://github.com/Antonoko",
+    "version": "0.0.1",
+    "description_markdown": "该功能可通过调用摄像头，每天随机拍一组大头贴照片，作为个人日常状态的记录，并按年月拼成一板大合照或延时视频。\nThis function can randomly take a set of photo booth every day by calling the webcam as a record of an individual's daily state, and combine them into a large group photo or time-lapse video by month and year."
+}
